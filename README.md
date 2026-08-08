@@ -127,7 +127,8 @@ Browser → Caddy (TLS) → PureScript server (Bun.serve)
 - **Server**: PureScript + `Bun.serve` via tamed FFI boundary (`App.ServerBun`,
   ADR-007) — no HTTP framework, no `node-http`.
 - **HTML**: Custom `Html` ADT — sum type with `render :: Html -> String`,
-  escaping via `Bun.escapeHTML`.
+  escaping via `Bun.escapeHTML` (SIMD-accelerated via Google Highway; short
+  strings use a SWAR fallback).
 - **Routing**: `routing-duplex` — bidirectional codec (parse + print from one
   declaration), one per language, dynamic segments via `int segment`. Adding a
   `Route` constructor without updating the codec is a compile error.
