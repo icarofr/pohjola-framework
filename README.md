@@ -35,14 +35,14 @@ server incidents. It does not prove the FFI is honest, that Bun won't
 segfault, or that memory won't exhaust.
 
 ### What the FFI boundary contains
-
 Bun gives GC memory safety, native `fetch`, `Bun.escapeHTML`, `Bun.XML.stringify`,
 `Bun.CookieMap`, and the npm ecosystem. Access goes through a **3-module FFI
 allowlist** (`App.ServerBun`, `App.FetchBun`, `App.Bun`); the Makefile gate
 rejects `foreign import` elsewhere, and every FFI function returns `Aff (Either
-AppError a)`. Each wrapper is defensive — `ServerBun.makeFetch` catches all
-exceptions and returns a 500 with security headers, `FetchBun` routes fetch
-errors to the `Either` channel, `stringifyXML` catches and returns `Nothing`.
+AppError a)`. Each wrapper is defensive — `App.ServerBun`'s `makeFetch` catches
+all exceptions and returns a 500 with security headers, `App.FetchBun` routes
+fetch errors to the `Either` channel, `App.Bun`'s `stringifyXML` catches and
+returns `Nothing`.
 
 This is a **trust boundary, not a type-proven one** — as is every FFI in every
 language (Haskell's FFI to C, Rust's `unsafe`). The compiler can't verify the
@@ -51,7 +51,6 @@ entry point forces callers to handle failure, and the wrappers are tested.
 What's not: a bug in a wrapper itself, or a Bun behavioural change, could
 escape. Haskell/Rust FFI to C is memory-unsafe on top; this is the niche for
 teams that need JS ecosystem access without paying TypeScript's soundness tax.
-
 ### What CI enforces beyond the compiler
 
 - **Makefile gate** (~2s) — grep-bans `unsafeCoerce`, `unsafePerformEffect`,
@@ -138,8 +137,10 @@ Browser → Caddy (TLS) → PureScript server (Bun.serve)
 - **Interactivity**: Alpine.js 3.15.12 + Alpine AJAX 0.12.7 (self-hosted,
   pinned). Typed constructors in `App.Alpine` — no raw Alpine attribute strings
   (ContractSpec enforces). The standard Alpine build requires `unsafe-eval`
-  and `unsafe-inline` in CSP for script-src; a CSP build exists but we don't
-  use it.
+  and `unsafe-inline` in CSP for script-src; the CSP build exists but can't
+  evaluate global function calls like the `fetch(...)` in `prefetchHover`, and
+  would require nonced `<script>` blocks that violate ADR-000's no-custom-JS
+  rule.
 - **SPA navigation**: `spaLink` helper bakes in AJAX swap + hover prefetch.
   Degrades to normal `<a>` if JS fails — the href is always real.
 - **Styling**: Tailwind CSS v4 (dark mode via class).
