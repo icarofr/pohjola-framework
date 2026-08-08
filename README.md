@@ -39,14 +39,17 @@ Bun gives GC memory safety, native `fetch`, `Bun.escapeHTML` (SIMD),
 `Bun.XML.stringify`, `Bun.CookieMap`, and the npm ecosystem. Access goes
 through a **7-module FFI allowlist** with boundary decoders; the Makefile gate
 rejects `foreign import` elsewhere, and every FFI function returns `Aff (Either
-AppError a)`.
+AppError a)`. Each wrapper is defensive — `ServerBun.makeFetch` catches all
+exceptions and returns a 500 with security headers, `FetchBun` routes fetch
+errors to the `Either` channel, `stringifyXML` catches and returns `Nothing`.
 
-This is a **trust boundary, not a type-proven one**. A missed JS exception, a
-Bun behavioural change, or a decoder gap can still crash the process. The
-boundary buys containment — blast radius is 7 audited modules, every entry
-point forces callers to handle failure — not proof. Haskell/Rust FFI to C is
-memory-unsafe; this is the niche for teams that need JS ecosystem access
-without paying TypeScript's soundness tax.
+This is a **trust boundary, not a type-proven one** — as is every FFI in every
+language (Haskell's FFI to C, Rust's `unsafe`). The compiler can't verify the
+JS we call. What's contained: the blast radius is 7 audited modules, every
+entry point forces callers to handle failure, and the wrappers are tested.
+What's not: a bug in a wrapper itself, or a Bun behavioural change, could
+escape. Haskell/Rust FFI to C is memory-unsafe on top; this is the niche for
+teams that need JS ecosystem access without paying TypeScript's soundness tax.
 
 ### What CI enforces beyond the compiler
 
@@ -64,17 +67,20 @@ without paying TypeScript's soundness tax.
 Not the maximum-guarantee stack. Rust's borrow checker eliminates
 memory/concurrency bugs a GC runtime hides; Haskell's Servant publishes the
 API as a type-level contract (we use `routing-duplex` — type-safe round-trips
-via a Generic codec, but not a publishable type-level API); TypeScript with
-`fp-ts` or `Effect` gets close to our effect tracking without leaving npm.
-The claim is narrower: **maximum-guarantee-per-unit-of-effort that keeps JS
-runtime access**.
+via a Generic codec, but not a publishable type-level API). TypeScript with
+`fp-ts` or `Effect` can approximate our effect tracking, but it's opt-in — the
+TS compiler doesn't force you to use them, and `as any` / `!` / thrown
+exceptions remain available everywhere. PS's effect tracking is language-level
+and inescapable. The claim is narrower: **maximum-guarantee-per-unit-of-effort
+that keeps JS runtime access**.
 
 Costs: the gate, ContractSpec, and Html ADT are bespoke — readable in this
-repo, but no Stack Overflow answers. The PS package ecosystem is smaller;
-new DB drivers, payment gateways, or niche APIs likely need FFI bindings.
-Hiring is hard — developers fluent in PS, `routing-duplex`, and Bun FFI are
-rare. This is a starter for a small team that values correctness over hiring
-throughput.
+repo, but no community tooling around them. The PS package ecosystem is
+smaller than TypeScript's or Rust's; new DB drivers, payment gateways, or
+niche APIs likely need FFI bindings. Hiring is hard — but no harder than
+Haskell or Rust; it's the cost of any FP-strong-safety niche, not this starter
+specifically. This is a starter for a small team that values correctness over
+hiring throughput.
 
 **If it compiles and CI is green, the PureScript domain logic doesn't crash
 from null derefs, unhandled branches, or forgotten error returns.** Everything
