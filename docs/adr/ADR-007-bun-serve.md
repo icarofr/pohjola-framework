@@ -1,6 +1,6 @@
 # ADR-007: Bun.serve migration
 
-**Status:** Accepted (supersedes the "Decided: node:http" row in IMPROVEMENTS.md)
+**Status:** Accepted
 **Date:** 2026-08
 
 ## Context

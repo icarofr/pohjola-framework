@@ -37,8 +37,7 @@ Honesty is what makes the claim worth anything:
 
 - **Logic bugs** — the type system proves shape, not intent. A function can
   return the wrong value of the right type.
-- **FFI boundary content** — when tamed FFI modules land (recipe:
-  `docs/IMPROVEMENTS.md` #10), JS returning *wrong data of the right shape*
+- **FFI boundary content** — JS returning *wrong data of the right shape*
   passes decoding and fails the business. Boundary decoders catch malformed
   data, not wrong data.
 - **Infrastructure** — OOM, disk full, kernel. No application-level guarantee
@@ -49,9 +48,7 @@ Honesty is what makes the claim worth anything:
 
 ## Keeping it true
 
-- Every future FFI module: decode at the boundary, allowlist entry, ADR
-  (`docs/IMPROVEMENTS.md` #10). One undecoded boundary voids clause 3.
+- Every future FFI module: decode at the boundary, allowlist entry, ADR.
+  One undecoded boundary voids clause 3.
 - Every new convention: promoted to compiler, gate, or ContractSpec — or
   accepted as taste. Prose without enforcement gets deleted.
-- Quarterly convention review (`docs/IMPROVEMENTS.md` #20) catches what the
-  checks don't.

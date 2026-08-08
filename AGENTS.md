@@ -47,7 +47,7 @@
 - Text copy lives in `Data.I18n.Dictionary`; `Data.Content` holds only metadata. Both languages must have entries.
 
 ### Human-only docs
-`docs/{REVIEW,IMPROVEMENTS,CHANGELOG,MIGRATION,HANDOFF,SETUP}.md` are process docs — agents skip unless asked.
+`docs/SETUP.md` is a human-facing setup guide — agents skip unless asked.
 
 ### Exemplar modules
 `docs/examples/Crypto.purs`, `Example.purs`, `Snake.purs` are teaching artifacts, not imported.

@@ -31,7 +31,6 @@ A ~200-line closed sum type (`Element | Text | Raw | Fragment | Empty`) with
 - No component model, no VDOM, no hydration: the SSR/Alpine split stays clean.
 - Accepted cost: attribute strings aren't type-checked against tag names.
 - Known perf ceiling: `escape` does sequential `replaceAll` passes.
-  Correctness is fine; optimise only if SSR throughput demands it
-  (`docs/IMPROVEMENTS.md` #28).
+  Correctness is fine; optimise only if SSR throughput demands it.
 - Do not re-propose replacing this module without a new ADR addressing the
   evaluation above.

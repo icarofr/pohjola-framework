@@ -9,46 +9,44 @@ contracts below. `docs/GUARANTEES.md` lists every guarantee and its check.
 ## Always load
 
 1. `AGENTS.md` — architecture, commands, guardrails, task→doc map
-2. `docs/IMPROVEMENTS.md` — backlog + "Decided / won't do" table. Do not
-   re-litigate decided items without a new ADR.
-3. `src/App/Html.purs` — the HTML ADT. Build HTML through this; string
+2. `src/App/Html.purs` — the HTML ADT. Build HTML through this; string
    concatenation bypasses escaping.
-4. `src/App/Error.purs` — the error ADT. Add variants here; return `Either`,
+3. `src/App/Error.purs` — the error ADT. Add variants here; return `Either`,
    never throw.
-5. `src/Data/Route.purs` — route codec. Update BOTH languages (compiler
+4. `src/Data/Route.purs` — route codec. Update BOTH languages (compiler
    enforces).
-6. `src/Data/I18n.purs` — dictionary. Update BOTH languages (compiler
+5. `src/Data/I18n.purs` — dictionary. Update BOTH languages (compiler
    enforces).
-7. `Makefile` (`gate` target) — what's banned: `unsafeCoerce`/
+6. `Makefile` (`gate` target) — what's banned: `unsafeCoerce`/
    `unsafePerformEffect`/`unsafePartial`, partial-function modules, `fromJust`,
    FFI outside `FFI_ALLOWLIST_GREP`, `raw` outside `RAW_ALLOWLIST_GREP`.
 
 ## When adding a page or feature
 
-8. `src/App/Features/Contact/` — the STATIC template (`Page.purs` + `View.purs`)
-9. `src/App/Features/Posts/` — the DATA template (`Types`/`Service`/`Page`/`View`)
-10. `src/App/Data/Fetch.purs` — all HTTP fetching goes through `fetchJson`.
+7. `src/App/Features/Contact/` — the STATIC template (`Page.purs` + `View.purs`)
+8. `src/App/Features/Posts/` — the DATA template (`Types`/`Service`/`Page`/`View`)
+9. `src/App/Data/Fetch.purs` — all HTTP fetching goes through `fetchJson`.
     Feature modules stay isolated from siblings (ContractSpec enforces).
-11. `docs/adr/` — read before proposing any architectural change.
+10. `docs/adr/` — read before proposing any architectural change.
 
 ## When adding a form
 
-12. `src/App/Form.purs` — the form contract. Extend with a new `decodeX`
+11. `src/App/Form.purs` — the form contract. Extend with a new `decodeX`
     following `decodeContact`/`decodeNewsletter`. Parse form bodies through
     `App.Form`, never inline in `Main.purs`. Honeypot = silent success,
     ALWAYS (property-tested).
 
 ## When touching auth
 
-13. `src/App/Auth.purs` — the stub. ALL auth flows go through this module.
-14. `docs/adr/ADR-002-auth-shape.md` — the implementation shape. Follow it or
+12. `src/App/Auth.purs` — the stub. ALL auth flows go through this module.
+13. `docs/adr/ADR-002-auth-shape.md` — the implementation shape. Follow it or
     amend it first.
 
 ## When adding a JS library via FFI
 
-15. `docs/ffi-taming-guide.md` — the recipe (target priority, vetting,
+14. `docs/ffi-taming-guide.md` — the recipe (target priority, vetting,
     boundary rules). Required reading before any `foreign import`.
-16. `docs/examples/Crypto.purs` + `Crypto.js` — the boundary template.
+15. `docs/examples/Crypto.purs` + `Crypto.js` — the boundary template.
 
 ## Guardrails (each enforced by a check)
 
