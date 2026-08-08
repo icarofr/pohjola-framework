@@ -1,0 +1,66 @@
+# PureScript build artifacts
+output/
+output-es/
+.spago
+.psc*
+.purs*
+.psa*
+
+# Node
+node_modules/
+
+# Build output
+dist/
+
+# Environment
+.env
+
+# Editor
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Playwright
+playwright-report/
+test-results/
+dist-server/
+
+# Book (guide manuscript — not part of the starter)
+book.txt
+
+# spec-node test output
+.spec-results
+skills/
+
+# Deepwork state (orchestrator session files)
+.slim/deepwork/
+
+# Cloned research repos (dependency source inspection — not part of the starter)
+bun/
+elysia/
+next.js/
+purescript-deku/
+
+# venom upstream source (vendored for reference — our tests live in venom/*.yml + venom/fixtures/)
+venom/.build/
+venom/.gitignore
+venom/.gitpod.yml
+venom/.golangci.yml
+venom/CONTRIBUTING.md
+venom/Dockerfile
+venom/LICENSE
+venom/LICENSES/
+venom/Makefile
+venom/README.md
+venom/*.go
+venom/assertions/
+venom/cmd/
+venom/executors/
+venom/go.mod
+venom/go.sum
+venom/interpolate/
+venom/tests/
+venom/variable_helpers.md
+venom/venom.gif
+venom/venom_output.html

@@ -1,0 +1,68 @@
+# =============================================================================
+# PS Alpine Starter — SSR server (PureScript + Bun.serve + Bun)
+# MPA architecture: Html ADT renders to String, Alpine.js for interactivity
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Build stage — Bun + PureScript toolchain (via npm)
+# ---------------------------------------------------------------------------
+FROM node:22-bookworm-slim@sha256:f32b81066cde10a75dbac96646099533316d94bac4150c55da1636e1f0ffdc46 AS build
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends git ca-certificates curl && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install PureScript compiler + Spago + Tailwind CSS v4
+RUN npm install -g purescript@0.15.16 spago@1.0.4
+
+WORKDIR /app
+
+# Copy project source
+COPY . /app/ps-alpine-starter
+
+WORKDIR /app/ps-alpine-starter
+
+# Install npm dependencies for Tailwind + esbuild (spago bundle shells out to it)
+COPY package*.json ./
+RUN npm ci
+ENV PATH=/app/ps-alpine-starter/node_modules/.bin:$PATH
+
+# Bundle server to a PRIVATE dir — dist/ is the public static root and a
+# bundle inside it would be downloadable at /server.js.
+# --pure: use the committed spago.lock without network (avoids flaky registry)
+RUN spago install --pure
+RUN spago build --pure
+RUN spago bundle --module App.Main --outfile dist-server/server.js \
+    --bundle-type app --platform node --pure
+
+# Build Tailwind CSS (needs local node_modules for @import resolution)
+RUN npx @tailwindcss/cli -i css/input.css -o dist/css/styles.css --minify
+
+# Copy static assets into dist
+RUN cp -r static/* dist/ 2>/dev/null || true
+
+# ---------------------------------------------------------------------------
+# Runner stage — distroless, minimal attack surface
+# ---------------------------------------------------------------------------
+FROM gcr.io/distroless/cc-debian13@sha256:ed7c407fd64eb0af9dddb9456b94cee188a40a7f53cf38c9836e1e9ae14fca02 AS runner
+
+ARG BASE_URL="https://example.com"
+ENV BASE_URL=$BASE_URL
+ENV STATIC_ROOT=/app/dist
+
+WORKDIR /app
+
+# Bun runtime (canary — required for Bun.serve routes; 1.3.x crashes)
+COPY --from=oven/bun:canary-debian /usr/local/bin/bun /usr/local/bin/bun
+
+# Bundled app: private server.js + public static assets under dist/
+# (FFI routes use relative paths ./dist/assets, ./dist/css, etc.)
+COPY --from=build /app/ps-alpine-starter/dist-server/server.js /app/server.js
+COPY --from=build /app/ps-alpine-starter/dist /app/dist
+
+USER 1000:1000
+EXPOSE 3001
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s CMD ["/usr/local/bin/bun","-e","fetch('http://127.0.0.1:'+(process.env.PORT||3001)+'/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+
+ENTRYPOINT ["/usr/local/bin/bun","/app/server.js"]

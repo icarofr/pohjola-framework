@@ -1,0 +1,60 @@
+name: suite
+vars: { app: http://app:3001 }
+testcases:
+- name: contact form redirects on POST
+  steps:
+  - type: http
+    method: POST
+    url: "{{.app}}/api/contact"
+    headers: { Content-Type: application/x-www-form-urlencoded }
+    body: "name=Test+User&email=test@example.com&message=Hello+World&website="
+    no_follow_redirect: true
+    assertions:
+    - result.statuscode ShouldEqual 303
+    - result.headers.Location ShouldContainSubstring "status="
+
+- name: newsletter form redirects on POST
+  steps:
+  - type: http
+    method: POST
+    url: "{{.app}}/api/newsletter"
+    headers: { Content-Type: application/x-www-form-urlencoded }
+    body: "email=subscriber@example.com&website="
+    no_follow_redirect: true
+    assertions:
+    - result.statuscode ShouldEqual 303
+    - result.headers.Location ShouldContainSubstring "status="
+
+- name: contact form with missing fields redirects to error
+  steps:
+  - type: http
+    method: POST
+    url: "{{.app}}/api/contact"
+    headers: { Content-Type: application/x-www-form-urlencoded }
+    body: "name=Test+User&website="
+    no_follow_redirect: true
+    assertions:
+    - result.statuscode ShouldEqual 303
+    - result.headers.Location ShouldContainSubstring "status=error"
+
+- name: honeypot filled redirects silently
+  steps:
+  - type: http
+    method: POST
+    url: "{{.app}}/api/contact"
+    headers: { Content-Type: application/x-www-form-urlencoded }
+    body: "name=Test&email=test@example.com&message=Hello&website=bot"
+    no_follow_redirect: true
+    assertions:
+    - result.statuscode ShouldEqual 303
+    - result.headers.Location ShouldContainSubstring "status=success"
+
+- name: contact form rejects bad Origin header
+  steps:
+  - type: http
+    method: POST
+    url: "{{.app}}/api/contact"
+    headers: { Content-Type: application/x-www-form-urlencoded, Origin: https://evil.com }
+    body: "name=Test+User&email=test@example.com&message=Hello+World&website="
+    assertions:
+    - result.statuscode ShouldEqual 404

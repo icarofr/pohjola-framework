@@ -1,0 +1,160 @@
+name: suite
+vars: { app: http://app:3001 }
+testcases:
+- name: root redirects to language
+  steps:
+  - type: http
+    method: GET
+    url: "{{.app}}/"
+    no_follow_redirect: true
+    assertions:
+    - result.statuscode ShouldEqual 302
+    - result.headers.Location ShouldMatchRegex "^/(en|fr)$"
+    - result.headers.Vary ShouldContainSubstring "Accept-Language"
+    - result.headers.X-Request-Id ShouldNotBeEmpty
+
+- name: en home returns 200
+  steps:
+  - type: http
+    method: GET
+    url: "{{.app}}/en"
+    assertions:
+    - result.statuscode ShouldEqual 200
+    - result.body ShouldContainSubstring "PS Alpine Starter"
+
+- name: fr home returns 200
+  steps:
+  - type: http
+    method: GET
+    url: "{{.app}}/fr"
+    assertions:
+    - result.statuscode ShouldEqual 200
+    - result.body ShouldContainSubstring "PS Alpine Starter"
+
+- name: en about returns 200
+  steps:
+  - type: http
+    method: GET
+    url: "{{.app}}/en/about"
+    assertions:
+    - result.statuscode ShouldEqual 200
+    - result.body ShouldContainSubstring "About"
+
+- name: fr about returns 200
+  steps:
+  - type: http
+    method: GET
+    url: "{{.app}}/fr/a-propos"
+    assertions:
+    - result.statuscode ShouldEqual 200
+    - result.body ShouldContainSubstring "À propos"
+
+- name: en contact returns 200
+  steps:
+  - type: http
+    method: GET
+    url: "{{.app}}/en/contact"
+    assertions:
+    - result.statuscode ShouldEqual 200
+    - result.body ShouldContainSubstring "Contact"
+
+- name: fr contact returns 200
+  steps:
+  - type: http
+    method: GET
+    url: "{{.app}}/fr/contact"
+    assertions:
+    - result.statuscode ShouldEqual 200
+
+- name: en legal returns 200
+  steps:
+  - type: http
+    method: GET
+    url: "{{.app}}/en/legal"
+    assertions:
+    - result.statuscode ShouldEqual 200
+
+- name: fr legal returns 200
+  steps:
+  - type: http
+    method: GET
+    url: "{{.app}}/fr/mentions-legales"
+    assertions:
+    - result.statuscode ShouldEqual 200
+
+- name: robots.txt returns 200
+  steps:
+  - type: http
+    method: GET
+    url: "{{.app}}/robots.txt"
+    assertions:
+    - result.statuscode ShouldEqual 200
+    - result.body ShouldContainSubstring "User-agent"
+
+- name: sitemap.xml returns 200
+  steps:
+  - type: http
+    method: GET
+    url: "{{.app}}/sitemap.xml"
+    assertions:
+    - result.statuscode ShouldEqual 200
+    - result.body ShouldContainSubstring "urlset"
+
+- name: css returns 200
+  steps:
+  - type: http
+    method: GET
+    url: "{{.app}}/css/styles.css"
+    assertions:
+    - result.statuscode ShouldEqual 200
+
+- name: server.js returns 404
+  steps:
+  - type: http
+    method: GET
+    url: "{{.app}}/server.js"
+    assertions:
+    - result.statuscode ShouldEqual 404
+
+- name: unknown route returns 404
+  steps:
+  - type: http
+    method: GET
+    url: "{{.app}}/en/nonexistent"
+    assertions:
+    - result.statuscode ShouldEqual 404
+
+- name: unknown language returns 404
+  steps:
+  - type: http
+    method: GET
+    url: "{{.app}}/de"
+    assertions:
+    - result.statuscode ShouldEqual 404
+
+- name: HEAD /en returns 200
+  steps:
+  - type: http
+    method: HEAD
+    url: "{{.app}}/en"
+    assertions:
+    - result.statuscode ShouldEqual 200
+
+- name: OPTIONS /en returns 405
+  steps:
+  - type: http
+    method: OPTIONS
+    url: "{{.app}}/en"
+    assertions:
+    - result.statuscode ShouldEqual 405
+
+- name: GET /en with X-Alpine-Request returns fragment
+  steps:
+  - type: http
+    method: GET
+    url: "{{.app}}/en"
+    headers: { X-Alpine-Request: "true" }
+    assertions:
+    - result.statuscode ShouldEqual 200
+    - result.body ShouldContainSubstring "data-page-title"
+    - result.body ShouldNotContainSubstring "<!DOCTYPE"

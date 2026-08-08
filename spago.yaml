@@ -1,0 +1,35 @@
+package:
+  name: ps-alpine-starter
+  dependencies:
+    - aff
+    - argonaut-codecs
+    - argonaut-core
+    - arrays
+    - console
+    - effect
+    - either
+    - foldable-traversable
+    - foreign-object
+    - form-urlencoded
+    - integers
+    - js-date
+    - maybe
+    - newtype
+    - node-fs
+    - node-process
+    - ordered-collections
+    - prelude
+    - routing-duplex
+    - spec-node
+    - strings
+
+    - tuples
+  test:
+    main: Test.Main
+    dependencies:
+      - spec
+      - spec-quickcheck
+      - quickcheck
+workspace:
+  packageSet:
+    registry: 80.1.0

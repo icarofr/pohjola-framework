@@ -1,0 +1,250 @@
+# ==================================================================================== #
+# PS ALPINE STARTER — PureScript + Alpine.js + Tailwind CSS
+# ==================================================================================== #
+
+# Paths
+#   dist/        — PUBLIC static root ONLY (css, assets, images, favicon).
+#                  The server bundle must never live here or it gets served.
+#   dist-server/ — bundled server.js (private, never under the static root)
+DIST_DIR ?= dist
+SERVER_BUNDLE_DIR ?= dist-server
+IMAGE_NAME ?= localhost/ps-alpine-starter:latest
+
+# Local-dev origin. The Origin gate (App.Main.sameOriginOk) requires POSTs
+# to match BASE_URL exactly — without this, forms 404 against the prod
+# default https://example.com. Production overrides via compose env.
+export BASE_URL ?= http://localhost:3001
+
+# spago bundle shells out to esbuild (devDependency, installed locally)
+export PATH := $(CURDIR)/node_modules/.bin:$(PATH)
+
+.PHONY: all help deps assets assets-check dev watch css css-watch bundle build sync-static run test test/integration test/integration/down test/e2e check image up down clean gate format format-check evals eval
+
+# ==================================================================================== #
+# HELPERS
+# ==================================================================================== #
+
+## all: build + test — the full local check
+.PHONY: all
+all: check
+
+## help: print this help message
+.PHONY: help
+help:
+	@echo 'Usage:'
+	@sed -n 's/^##//p' ${MAKEFILE_LIST} | column -t -s ':' | sed -e 's/^/ /'
+
+# Files allowed to use `raw`: the Html ADT itself, page shells (doctype,
+# inline head scripts), and the two SVG icon modules (icons are static
+# trusted markup, never interpolated with user data).
+RAW_ALLOWLIST_GREP := ^src/App/Html\.purs|^src/App/Layout/Page\.purs|^src/App/Layout/Head\.purs|^src/App/Layout/Header\.purs|^src/App/Ui/Social\.purs|^src/App/ServerBun\.purs
+
+# Banned anywhere in src/: unsafe functions + partial-function modules
+# (Data.Maybe.Unsafe, Data.Array.Unsafe, Data.String.CodePoint.Unsafe,
+# fromJust). Partial modules erase the compiler's totality guarantees.
+GATE_BANNED := unsafeCoerce|unsafePerformEffect|unsafePartial|unsafeCompare|unsafeIndex|Data\.Maybe\.Unsafe|Data\.Array\.Unsafe|Data\.String\.CodePoint\.Unsafe|Data\.String\.Unsafe|Data\.Unsafe|fromJust|throwException|catchException|Effect\.Unsafe|\bPartial\b
+
+# FFI modules allowed in src/. Empty by default — every `foreign import`
+# in src/ fails the gate (the `$$` is Make's escape for a literal `$`, so
+# the grep pattern is `^$` = empty lines only, i.e. nothing is excluded).
+# Tamed modules get added here with justification.
+FFI_ALLOWLIST_GREP := ^src/App/ServerBun\.purs|^src/App/FetchBun\.purs|^src/App/Bun\.purs
+
+## format: purs-tidy format-in-place (src/ + test/)
+.PHONY: format
+format:
+	npx purs-tidy format-in-place 'src/**/*.purs' 'test/**/*.purs'
+
+## format-check: verify formatting (runs in make check + CI)
+.PHONY: format-check
+format-check:
+	npx purs-tidy check 'src/**/*.purs' 'test/**/*.purs'
+
+## gate: check for banned functions, FFI, and raw usage
+.PHONY: gate
+gate:
+	@echo "Checking for banned functions..."
+	@if grep -rnE '$(GATE_BANNED)' src/; then echo "ERROR: Banned functions found in source code"; exit 1; else echo "No banned functions found"; fi
+	@echo "Checking for FFI outside allowlist..."
+	@if grep -rn 'foreign import' src/ | grep -vE '$(FFI_ALLOWLIST_GREP)'; then echo "ERROR: foreign import used outside allowlist"; exit 1; else echo "No FFI outside allowlist"; fi
+	@echo "Checking for raw usage..."
+	@if grep -rnE "\braw\b|\bRaw\b" src/ | grep -vE '$(RAW_ALLOWLIST_GREP)'; then echo "ERROR: raw/Raw used outside allowlist"; exit 1; else echo "No raw usage outside allowlist"; fi
+	@echo "Checking for env reads outside App/Env.purs..."
+	@if grep -rn 'Node.Process\|lookupEnv' src/ | grep -v '^src/App/Env.purs:'; then echo "ERROR: env read outside App/Env.purs"; exit 1; else echo "No env reads outside App/Env.purs"; fi
+
+# ==================================================================================== #
+# DEPENDENCIES
+# ==================================================================================== #
+
+## deps: install PureScript dependencies + npm packages + Alpine JS assets
+.PHONY: deps
+deps:
+	spago install
+	npm install
+	$(MAKE) assets
+
+# ==================================================================================== #
+# ALPINE.JS ASSETS — pinned, self-hosted
+# ==================================================================================== #
+
+ALPINE_VERSION := 3.15.12
+ALPINE_AJAX_VERSION := 0.12.7
+ASSETS_DIR := static/assets/js
+
+## assets: download pinned Alpine.js + Alpine AJAX into static/assets/js/
+.PHONY: assets
+assets:
+	mkdir -p $(ASSETS_DIR)
+	curl -fsSL "https://cdn.jsdelivr.net/npm/alpinejs@$(ALPINE_VERSION)/dist/cdn.min.js" -o $(ASSETS_DIR)/alpinejs.min.js
+	curl -fsSL "https://cdn.jsdelivr.net/npm/@imacrayon/alpine-ajax@$(ALPINE_AJAX_VERSION)/dist/cdn.min.js" -o $(ASSETS_DIR)/alpine-ajax.min.js
+	@echo "Alpine.js $(ALPINE_VERSION) + Alpine AJAX $(ALPINE_AJAX_VERSION) downloaded to $(ASSETS_DIR)/"
+
+## assets-check: verify assets against SHA256SUMS (no download)
+.PHONY: assets-check
+assets-check:
+	@echo "Verifying Alpine.js assets..."
+	@shasum -a 256 static/assets/js/alpinejs.min.js static/assets/js/alpine-ajax.min.js | diff -u static/assets/SHA256SUMS -
+	@echo "Asset verification OK"
+
+# ==================================================================================== #
+# DEVELOPMENT
+# ==================================================================================== #
+
+## dev: build PureScript + compile Tailwind CSS + sync static assets
+.PHONY: dev
+dev: css sync-static
+	spago build --strict
+	@echo "Build succeeded. Run 'make watch' for PS or 'make css-watch' for Tailwind."
+
+## watch: PureScript hot rebuild
+.PHONY: watch
+watch:
+	spago build --watch --strict
+
+## css: compile Tailwind CSS (minified)
+.PHONY: css
+css:
+	mkdir -p $(DIST_DIR)/css
+	npx @tailwindcss/cli -i css/input.css -o $(DIST_DIR)/css/styles.css --minify
+
+## css-watch: Tailwind CSS hot reload
+.PHONY: css-watch
+css-watch:
+	mkdir -p $(DIST_DIR)/css
+	npx @tailwindcss/cli -i css/input.css -o $(DIST_DIR)/css/styles.css --watch
+
+# ==================================================================================== #
+# BUILD
+# ==================================================================================== #
+
+## bundle: bundle PureScript server to dist-server/ (NEVER into dist/ —
+## dist is the public static root; a bundle there would be served by /server.js)
+.PHONY: bundle
+bundle:
+	mkdir -p $(SERVER_BUNDLE_DIR) $(DIST_DIR)/css $(DIST_DIR)/images
+	spago bundle --module App.Main --outfile $(SERVER_BUNDLE_DIR)/server.js --bundle-type app --platform node --pure --strict
+
+## build: production build (bundle JS + Tailwind + static assets)
+.PHONY: build
+build: css bundle
+	# Copy static assets to dist directory
+	cp -r static/assets static/images $(DIST_DIR)/ 2>/dev/null || true
+	# Ensure favicon is copied 
+	cp static/favicon.svg $(DIST_DIR)/ 2>/dev/null || true
+
+## sync-static: sync static assets to dist (for development)
+.PHONY: sync-static
+sync-static:
+	cp -r static/assets static/images $(DIST_DIR)/ 2>/dev/null || true
+	cp static/favicon.svg $(DIST_DIR)/ 2>/dev/null || true
+
+# ==================================================================================== #
+# RUN
+# ==================================================================================== #
+
+## run: full build + run server locally with Bun (assets included —
+## bundle alone produces an asset-less server)
+.PHONY: run
+run: build
+	bun $(SERVER_BUNDLE_DIR)/server.js
+
+# ==================================================================================== #
+# TESTING
+# ==================================================================================== #
+
+## test: run PureScript unit + property tests under Bun (production runtime)
+.PHONY: test
+test:
+	spago build --pure
+	bun -e "import { main } from './output/Test.Main/index.js'; main()"
+
+## test/integration: run Venom HTTP tests via Docker Compose
+.PHONY: test/integration
+test/integration:
+	docker compose -f docker-compose.test.yml up --build --abort-on-container-exit --exit-code-from venom
+
+## test/integration/down: tear down integration test containers
+.PHONY: test/integration/down
+test/integration/down:
+	docker compose -f docker-compose.test.yml down -v
+
+## test/e2e: run Playwright browser tests (requires server running)
+.PHONY: test/e2e
+test/e2e:
+	npx playwright test
+
+## check: full pre-push validation (build + test — mirrors CI)
+.PHONY: check
+check: gate build test assets-check format-check
+	@echo "All checks passed."
+
+# ==================================================================================== #
+# SCAFFOLDING
+# ==================================================================================== #
+
+## new-feature: scaffold a new feature (usage: make new-feature NAME=Team [TYPE=data] [SLUG_FR=equipe])
+.PHONY: new-feature
+new-feature:
+	@./scripts/new-feature.sh
+
+# ==================================================================================== #
+# AGENT EVALS
+# ==================================================================================== #
+
+## evals: list available agent evals
+.PHONY: evals
+evals:
+	@./evals/run-eval.sh
+
+## eval: run an agent eval (usage: make eval EVAL=01-add-page --check)
+.PHONY: eval
+eval:
+	@./evals/run-eval.sh $(EVAL) $(ARGS)
+
+# ==================================================================================== #
+# DOCKER
+# ==================================================================================== #
+
+## image: build Docker image
+.PHONY: image
+image: build
+	docker build -t $(IMAGE_NAME) .
+
+## up: start production stack via Docker Compose
+.PHONY: up
+up:
+	docker compose up -d --build
+
+## down: stop production stack
+.PHONY: down
+down:
+	docker compose down
+
+# ==================================================================================== #
+# CLEAN
+# ==================================================================================== #
+
+## clean: remove build artifacts
+.PHONY: clean
+clean:
+	rm -rf $(DIST_DIR) $(SERVER_BUNDLE_DIR) output output-es .spago

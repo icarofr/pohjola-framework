@@ -1,0 +1,45 @@
+name: Posts integration tests
+vars: { app: http://app:3001 }
+testcases:
+- name: List posts EN
+  steps:
+  - type: http
+    method: GET
+    url: "{{.app}}/en/posts"
+    assertions:
+    - result.statuscode ShouldEqual 200
+    - result.body ShouldContainSubstring "Post 1"
+
+- name: List posts FR
+  steps:
+  - type: http
+    method: GET
+    url: "{{.app}}/fr/articles"
+    assertions:
+    - result.statuscode ShouldEqual 200
+    - result.body ShouldContainSubstring "Post 1"
+
+- name: Post detail EN
+  steps:
+  - type: http
+    method: GET
+    url: "{{.app}}/en/posts/1"
+    assertions:
+    - result.statuscode ShouldEqual 200
+    - result.body ShouldContainSubstring "Post 1"
+
+- name: Post not found EN
+  steps:
+  - type: http
+    method: GET
+    url: "{{.app}}/en/posts/99999"
+    assertions:
+    - result.statuscode ShouldEqual 404
+
+- name: Post not found FR
+  steps:
+  - type: http
+    method: GET
+    url: "{{.app}}/fr/articles/99999"
+    assertions:
+    - result.statuscode ShouldEqual 404

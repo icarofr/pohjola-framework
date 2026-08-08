@@ -1,0 +1,19 @@
+{
+  "name": "ps-alpine-starter",
+  "private": true,
+  "scripts": {
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.48.0",
+    "@tailwindcss/cli": "4.3.3",
+    "esbuild": "0.25.12",
+    "purs-tidy": "0.11.1",
+    "tailwindcss": "4.3.3"
+  },
+  "dependencies": {},
+  "allowScripts": {
+    "esbuild@0.25.12": true
+  }
+}

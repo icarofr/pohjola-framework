@@ -1,0 +1,70 @@
+name: suite
+vars: { app: http://app:3001 }
+testcases:
+- name: robots.txt has no Disallow
+  steps:
+  - type: http
+    method: GET
+    url: "{{.app}}/robots.txt"
+    assertions:
+    - result.statuscode ShouldEqual 200
+    - 'result.body ShouldNotContainSubstring "Disallow: /"'
+
+- name: robots.txt has Sitemap
+  steps:
+  - type: http
+    method: GET
+    url: "{{.app}}/robots.txt"
+    assertions:
+    - result.statuscode ShouldEqual 200
+    - result.body ShouldContainSubstring "Sitemap:"
+
+- name: sitemap.xml has xmlns:xhtml
+  steps:
+  - type: http
+    method: GET
+    url: "{{.app}}/sitemap.xml"
+    assertions:
+    - result.statuscode ShouldEqual 200
+    - result.body ShouldContainSubstring "xmlns:xhtml"
+
+- name: X-Content-Type-Options header present
+  steps:
+  - type: http
+    method: GET
+    url: "{{.app}}/en"
+    assertions:
+    - result.statuscode ShouldEqual 200
+    - result.headers.X-Content-Type-Options ShouldEqual "nosniff"
+- name: healthz returns ok
+  steps:
+  - type: http
+    method: GET
+    url: "{{.app}}/healthz"
+    assertions:
+    - result.statuscode ShouldEqual 200
+    - result.body ShouldContainSubstring "ok"
+- name: CSP header contains default-src
+  steps:
+  - type: http
+    method: GET
+    url: "{{.app}}/en"
+    assertions:
+    - result.statuscode ShouldEqual 200
+    - result.headers.Content-Security-Policy ShouldContainSubstring "default-src"
+- name: unknown route returns branded 404
+  steps:
+  - type: http
+    method: GET
+    url: "{{.app}}/en/totally-unknown"
+    assertions:
+    - result.statuscode ShouldEqual 404
+    - result.body ShouldContainSubstring "Page not found"
+- name: unknown fr route returns French branded 404
+  steps:
+  - type: http
+    method: GET
+    url: "{{.app}}/fr/totalement-inconnu"
+    assertions:
+    - result.statuscode ShouldEqual 404
+    - result.body ShouldContainSubstring "Page introuvable"

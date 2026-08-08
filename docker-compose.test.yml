@@ -1,0 +1,33 @@
+services:
+  app:
+    build: .
+    environment:
+      - RESEND_API_KEY=test-key-not-real
+      - PORT=3001
+      - BASE_URL=http://app:3001
+      - POSTS_API_BASE=http://posts-fixture:4321
+      - RATE_LIMIT_MAX=5
+    # healthcheck driven by Dockerfile HEALTHCHECK
+
+  posts-fixture:
+    image: oven/bun:canary-debian
+    volumes:
+      - ./venom/fixtures/posts-server.js:/fixture/server.js:ro
+    command: ["bun", "run", "/fixture/server.js"]
+    healthcheck:
+      test: ["CMD", "bun", "-e", "fetch('http://127.0.0.1:4321/posts').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 2s
+      retries: 5
+
+  venom:
+    image: ovhcom/venom:v1.3.0@sha256:601e58940490e7f392faba39f288b773153a94b7246d4dbb60a81a3d4c816345
+    volumes:
+      - ./venom:/venom
+    entrypoint: ["sh", "-c"]
+    command: ["venom run --output-dir=/results --var=app=http://app:3001 /venom/*.yml"]
+    depends_on:
+      app:
+        condition: service_healthy
+      posts-fixture:
+        condition: service_healthy

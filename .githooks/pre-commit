@@ -1,0 +1,7 @@
+#!/bin/bash
+# Pre-commit hook: runs `make gate` before allowing a commit.
+# Enable: git config core.hooksPath .githooks
+set -e
+echo "Running make gate..."
+make gate
+echo "Gate passed."

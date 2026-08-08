@@ -1,0 +1,88 @@
+name: Rate limit tests
+# Order-decoupled burst. Compose sets RATE_LIMIT_MAX=5, window 60s.
+# Request N is denied iff prior-allowed(60s window) + (N-1) >= 5, where
+# prior-allowed comes from earlier suites (02's four POSTs) or nothing if
+# that window expired. Worst case prior=0 (fresh window): only request 6
+# onward is guaranteed 429. So: requests 1-5 loose-assert a sane shape
+# (303 allowed / 429 gated), requests 6-8 strictly 429. No sleeps, no
+# suite-alphabet dependence, no shared-slot arithmetic.
+vars:
+  base_url: http://app:3001
+  payload: "name=Bot&email=bot%40example.com&message=x&website=spam-fills-this"
+testcases:
+- name: POST contact burst exceeds limit
+  steps:
+  - type: http
+    method: POST
+    url: "{{.base_url}}/api/contact"
+    body: "{{.payload}}"
+    headers:
+      Content-Type: "application/x-www-form-urlencoded"
+    no_follow_redirect: true
+    assertions:
+    - result.statuscode ShouldBeBetweenOrEqual 303 429
+  - type: http
+    method: POST
+    url: "{{.base_url}}/api/contact"
+    body: "{{.payload}}"
+    headers:
+      Content-Type: "application/x-www-form-urlencoded"
+    no_follow_redirect: true
+    assertions:
+    - result.statuscode ShouldBeBetweenOrEqual 303 429
+  - type: http
+    method: POST
+    url: "{{.base_url}}/api/contact"
+    body: "{{.payload}}"
+    headers:
+      Content-Type: "application/x-www-form-urlencoded"
+    no_follow_redirect: true
+    assertions:
+    - result.statuscode ShouldBeBetweenOrEqual 303 429
+  - type: http
+    method: POST
+    url: "{{.base_url}}/api/contact"
+    body: "{{.payload}}"
+    headers:
+      Content-Type: "application/x-www-form-urlencoded"
+    no_follow_redirect: true
+    assertions:
+    - result.statuscode ShouldBeBetweenOrEqual 303 429
+  - type: http
+    method: POST
+    url: "{{.base_url}}/api/contact"
+    body: "{{.payload}}"
+    headers:
+      Content-Type: "application/x-www-form-urlencoded"
+    no_follow_redirect: true
+    assertions:
+    - result.statuscode ShouldBeBetweenOrEqual 303 429
+  - type: http
+    method: POST
+    url: "{{.base_url}}/api/contact"
+    body: "{{.payload}}"
+    headers:
+      Content-Type: "application/x-www-form-urlencoded"
+    no_follow_redirect: true
+    assertions:
+    - result.statuscode ShouldEqual 429
+  - type: http
+    method: POST
+    url: "{{.base_url}}/api/contact"
+    body: "{{.payload}}"
+    headers:
+      Content-Type: "application/x-www-form-urlencoded"
+    no_follow_redirect: true
+    assertions:
+    - result.statuscode ShouldEqual 429
+  - type: http
+    method: POST
+    url: "{{.base_url}}/api/contact"
+    body: "{{.payload}}"
+    headers:
+      Content-Type: "application/x-www-form-urlencoded"
+    no_follow_redirect: true
+    assertions:
+    - result.statuscode ShouldEqual 429
+    - result.headers.Retry-After ShouldNotBeEmpty
+    - result.headers.X-Request-Id ShouldNotBeEmpty

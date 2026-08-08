@@ -1,0 +1,132 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install PureScript toolchain
+        run: npm install -g purescript@0.15.16 spago@1.0.4
+
+      - name: Install npm dependencies (Tailwind, esbuild)
+        run: npm ci
+
+      - name: Install PureScript dependencies (locked, no network)
+        run: spago install --pure
+
+      - name: Format check (purs-tidy)
+        run: make format-check
+
+      - name: Gate (unsafe fns, raw allowlist) + build
+        run: make gate build assets-check
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: |
+            dist/
+            dist-server/
+
+  test:
+    name: Unit + Property Tests (Bun)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install PureScript toolchain + Bun
+        run: npm install -g purescript@0.15.16 spago@1.0.4 && curl -fsSL https://bun.sh/install | bash -s canary
+
+      - name: Add Bun to PATH
+        run: echo "$HOME/.bun/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: npm ci && spago install --pure && make assets
+
+      - name: Gate (unsafe fns, raw allowlist)
+        run: make gate
+
+      # Run the compiled suite under Bun for runtime parity with production
+      # (Bun canary — required for Bun.serve routes). `spago test`
+      # hardcodes the Node runner (no flag/env override), so compile with
+      # `spago build` (already includes test modules) and invoke the compiled
+      # Test.Main entry with Bun directly.
+      - name: Unit/property tests (Bun)
+        run: |
+          spago build --pure
+          bun -e "import { main } from './output/Test.Main/index.js'; main()"
+
+  integration:
+    name: Integration Tests (Venom)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Venom tests via Docker Compose
+        run: make test/integration
+
+      - name: Tear down
+        if: always()
+        run: make test/integration/down
+
+  e2e:
+    name: E2E Tests (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install PureScript toolchain + Bun
+        run: npm install -g purescript@0.15.16 spago@1.0.4 && curl -fsSL https://bun.sh/install | bash -s canary
+
+      - name: Add Bun to PATH
+        run: echo "$HOME/.bun/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: npm ci && spago install --pure && make assets
+
+      - name: Install Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Build assets (Playwright webServer runs `make run`)
+        run: make build
+
+      - name: Run Playwright tests
+        run: npm run test:e2e
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
