@@ -64,14 +64,20 @@ teams that need JS ecosystem access without paying TypeScript's soundness tax.
 
 ### Trade-offs
 
-Not the maximum-guarantee stack. Rust's borrow checker eliminates
-memory/concurrency bugs a GC runtime hides; Haskell's Servant publishes the
+No stack dominates on every axis — it's a Pareto frontier, not a hierarchy.
+Rust's borrow checker buys deterministic resource management and zero-cost
+abstraction (the price it pays for no GC); GC makes use-after-free and
+lifetime bugs impossible without that cost. Haskell's Servant publishes the
 API as a type-level contract (we use `routing-duplex` — type-safe round-trips
 via a Generic codec, but not a publishable type-level API). TypeScript with
 `fp-ts` or `Effect` can approximate our effect tracking, but it's opt-in — the
 TS compiler doesn't force you to use them, and `as any` / `!` / thrown
 exceptions remain available everywhere. PS's effect tracking is language-level
-and inescapable. The claim is narrower: **maximum-guarantee-per-unit-of-effort
+and inescapable.
+
+This starter is on the frontier for {effect tracking, JS ecosystem access,
+totality enforcement}. It is not on the frontier for {memory safety without
+GC, type-level API publishing}. The claim: **maximum-guarantee-per-unit-of-effort
 that keeps JS runtime access**.
 
 Costs: the gate, ContractSpec, and Html ADT are bespoke — readable in this
