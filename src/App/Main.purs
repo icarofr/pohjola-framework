@@ -18,6 +18,7 @@ import App.Features.Home.Page as Home
 import App.Features.Legal.Page as Legal
 import App.Features.Posts.Page as Posts
 import App.Html (Html)
+import App.Layout.Head (cspNoncePlaceholder)
 import App.Layout.Page (renderErrorPage, renderFragment, renderPage, renderShellClose, renderShellOpen)
 import App.Logger as Log
 import App.RateLimit (RateLimiter, checkRateLimit, mkRateLimiter)
@@ -31,8 +32,9 @@ import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe, isNothing)
 import Data.Route (Route(..), parseRoute, routeUrl, staticRoutes)
+import Data.String (replace) as S
 import Data.String.Common (split, toLower)
-import Data.String.Pattern (Pattern(..))
+import Data.String.Pattern (Pattern(..), Replacement(..))
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
@@ -61,24 +63,24 @@ rateGate cfg limiter request next =
   skyIsFallingSeconds = cfg.rateLimitWindowMs / 1000.0
 
 router :: Config -> RateLimiter -> PageCache -> Server.Request -> Aff Server.Response
-router cfg limiter cache request@{ method, path, headers, body, query } = case method of
+router cfg limiter cache request@{ method, path, headers, body, query, nonce } = case method of
   Server.POST -> case path of
     _ | path == filter (not <<< eq "") (split (Pattern "/") apiContactPath) -> rateGate cfg limiter request (handleContact cfg request.id headers body)
     _ | path == filter (not <<< eq "") (split (Pattern "/") apiNewsletterPath) -> rateGate cfg limiter request (handleNewsletter cfg request.id headers body)
     _ -> pure Server.notFound
-  Server.GET -> handleGet cfg cache headers query path
-  Server.HEAD -> handleGet cfg cache headers query path
+  Server.GET -> handleGet cfg cache nonce headers query path
+  Server.HEAD -> handleGet cfg cache nonce headers query path
   _ -> pure Server.methodNotAllowed
 
 -- | Shared handler for GET and HEAD (identical except body stripping in Server).
-handleGet :: Config -> PageCache -> Map String String -> Map String String -> Array String -> Aff Server.Response
-handleGet cfg cache headers query path = case path of
+handleGet :: Config -> PageCache -> String -> Map String String -> Map String String -> Array String -> Aff Server.Response
+handleGet cfg cache nonce headers query path = case path of
   [] -> redirectRoot headers
   [ "healthz" ] -> pure $ Server.okText "text/plain" "ok"
   [ "robots.txt" ] -> pure $ Server.okText "text/plain" (renderRobots cfg.baseUrl)
   [ "sitemap.xml" ] -> pure $ Server.okText "application/xml" (renderSitemap cfg.baseUrl)
   _ -> case parseRoute path of
-    Just { lang, route } -> handleRoute cfg cache lang route headers query
+    Just { lang, route } -> handleRoute cfg cache nonce lang route headers query
     Nothing -> pure $ Server.htmlResponse (renderErrorPage (langFromPath path) 404) [] 404
 
 -- | Best-effort language for a route-miss 404: the path's leading segment
@@ -105,13 +107,13 @@ pageRenderer cfg route lang = case route of
 -- | resolves via Bun's native fetch in the ReadableStream's async start.
 -- | PostDetail can 404, so it can't stream (status committed at shell time).
 -- | Fragment requests never stream (small, already fast).
-handleRoute :: Config -> PageCache -> Lang -> Route -> Map String String -> Map String String -> Aff Server.Response
-handleRoute cfg cache lang route headers query =
+handleRoute :: Config -> PageCache -> String -> Lang -> Route -> Map String String -> Map String String -> Aff Server.Response
+handleRoute cfg cache nonce lang route headers query =
   if isFragmentRequest headers query then
     handleFragment cfg lang route
   else
     case route of
-      PostList -> streamPostList cfg lang
+      PostList -> streamPostList cfg nonce lang
       PostDetail id -> do
         let key = "post:" <> show id <> ":" <> show lang
         mCached <- liftEffect $ lookupDynamic cache.dynamic key
@@ -183,13 +185,13 @@ handleStatic cfg cache lang route query = do
 -- | in the JS event loop (async start + native fetch), not in a forked Aff.
 -- | This avoids the Aff scheduler issue where forked fibers don't resume
 -- | reliably on Bun.
-streamPostList :: Config -> Lang -> Aff Server.Response
-streamPostList cfg lang = do
+streamPostList :: Config -> String -> Lang -> Aff Server.Response
+streamPostList cfg nonce lang = do
   stream <- liftEffect $ streamResponseImpl
     (Posts.streamListUrl cfg)
     (Posts.renderListContent lang)
-    (renderShellOpen cfg.baseUrl lang PostList)
-    (renderShellClose lang PostList)
+    (S.replace (Pattern cspNoncePlaceholder) (Replacement nonce) (renderShellOpen cfg.baseUrl lang PostList))
+    (S.replace (Pattern cspNoncePlaceholder) (Replacement nonce) (renderShellClose lang PostList))
   pure $ Server.streamResponse stream
 
 -- | A fragment request is either an Alpine AJAX navigation (x-alpine-request

@@ -56,6 +56,10 @@ type RawResponse =
 -- | function; PS runs the handler in Aff and calls respond with the result.
 foreign import serveImpl :: Int -> String -> EffectFn2 RawRequest (EffectFn1 RawResponse Unit) Unit -> Effect Unit
 
+-- | Cryptographically random base64 nonce (18 bytes → 24 chars, ≥128 bits).
+-- | Generated per-request via Web Crypto, threaded into CSP + inline scripts.
+foreign import generateNonce :: Effect String
+
 -- | Create a streaming ReadableStream for SSR. The stream is populated
 -- | entirely in the JS event loop via async start + native fetch — no
 -- | launchAff_, no makeAff, no Aff scheduler. PS provides synchronous

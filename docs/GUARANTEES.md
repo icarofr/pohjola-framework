@@ -21,7 +21,7 @@ check fails loudly — on every push, in CI.
 | 8 | Runtime exceptions (socket errors, JS failures) are contained at one boundary, logged, and answered with a 500 — never a process crash | `attempt` in `App.Server` + `makeFetch` try/catch in `App.ServerBun` | `spago test` |
 | 9 | No hung requests — `idleTimeout: 30` closes connections with unresolved handler Promises; `makeFetch` catches synchronous throws in the callback bridge; stream `controller.close()` is guaranteed via `try/finally` | `idleTimeout` + `makeFetch` guard + `try/finally` in `App.ServerBun` | runtime-verified at introduction; exercised under Venom/Playwright |
 | 10 | Security headers on every response, including errors and redirects | ContractSpec (all 10 `Response` constructors) | `spago test` |
-| 11 | CSP is exactly the pinned policy — widening it fails a test that demands a justification | ContractSpec (exact-string assertion) | `spago test` |
+| 11 | CSP is the pinned nonce-based policy — `script-src 'nonce-<random>' 'self' 'unsafe-eval' 'strict-dynamic'`; no `unsafe-inline`. Widening it fails a test that demands a justification | ContractSpec (`cspWithNonce` exact-string assertion + `securityHeaders` carries no CSP) | `spago test` |
 | 12 | Alpine seams can't silently break — the `contentTarget` id and `data-page-title` attribute are asserted in rendered output | ContractSpec | `spago test` |
 | 13 | Honeypot semantics — a filled honeypot ALWAYS means silent success (303 `status=success`) **after passing the rate gate** (429 if rate‑limited), for every possible input | Property tests (quickcheck) | `spago test` |
 | 14 | Form decoding is total — every possible input decodes to a value, never throws | Property tests (quickcheck) | `spago test` |

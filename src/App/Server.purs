@@ -7,11 +7,12 @@ module App.Server where
 
 import Prelude
 
+import App.Layout.Head (cspNoncePlaceholder)
 import App.Config (mimeType)
 import App.Logger (Level(..))
 import App.Logger as AppLog
-import App.ServerBun (RawRequest, RawResponse, ReadableStream, serveImpl)
-import Data.Array (filter, mapMaybe, tail)
+import App.ServerBun (RawRequest, RawResponse, ReadableStream, generateNonce, serveImpl)
+import Data.Array (cons, filter, mapMaybe, tail)
 import Data.Either (Either(..))
 import Data.Foldable (any, intercalate, null)
 import Data.FormURLEncoded (decode)
@@ -20,9 +21,9 @@ import Data.Int as Int
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe)
-import Data.String (split) as S
+import Data.String (replace, split) as S
 import Data.String.Common (toLower)
-import Data.String.Pattern (Pattern(..))
+import Data.String.Pattern (Pattern(..), Replacement(..))
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Aff (Aff, attempt, launchAff_)
@@ -58,6 +59,7 @@ type Request =
   , headers :: Map String String
   , body :: Aff String
   , query :: Map String String
+  , nonce :: String
   }
 
 data ResponseBody
@@ -74,17 +76,47 @@ type Response =
 -- Security headers — applied to every response
 -- ============================================================================
 
--- | unsafe-eval is required by Alpine.js' standard build, unsafe-inline by
--- | the head init scripts (dark mode, title sync). See Layout/Head.purs.
+-- | CSP is NOT here — it's per-request (nonce-based). See `cspWithNonce` and
+-- | `withCsp`. The `serve` function injects it after generating the nonce.
+-- |
+-- | Threat model: the primary XSS defense is upstream — the Html ADT escapes
+-- | all text via Bun.escapeHTML, the unsafe HTML constructor is gate-banned
+-- | outside 6 allowlisted modules, and ContractSpec property-tests that
+-- | rendered text never contains unescaped `<`/`>`. CSP is defense-in-depth
+-- | for future developer mistakes (an unsafe-HTML call passing user-influenced
+-- | data, user data flowing into an Alpine constructor argument).
+-- | `unsafe-eval` is required by Alpine's standard build (it evaluates
+-- | attribute expressions via `new Function()`); the CSP build can't call
+-- | global functions like the `fetch()` in `prefetchHover` and would force a
+-- | custom-JS seam violating ADR-000. `unsafe-inline` was dropped in favour
+-- | of per-request nonces on the two head `<script>` snippets and the JSON-LD
+-- | script. See ADR-000 addendum.
 securityHeaders :: Array (Tuple String String)
 securityHeaders =
   [ Tuple "X-Content-Type-Options" "nosniff"
   , Tuple "X-Frame-Options" "DENY"
   , Tuple "Referrer-Policy" "strict-origin-when-cross-origin"
-  , Tuple "Content-Security-Policy" "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'"
   , Tuple "Strict-Transport-Security" "max-age=31536000; includeSubDomains" -- Disable for local dev if needed
   , Tuple "Permissions-Policy" "camera=(), microphone=(), geolocation=()" -- Restrictive defaults
   ]
+
+-- | CSP with a per-request nonce. `unsafe-eval` is required by Alpine's
+-- | standard build; `strict-dynamic` lets the nonced Alpine script load its
+-- | AJAX plugin without separate allowlisting. `'self'` is a fallback for
+-- | browsers without `strict-dynamic` support.
+cspWithNonce :: String -> String
+cspWithNonce nonce =
+  "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'nonce-"
+    <> nonce
+    <> "' 'self' 'unsafe-eval' 'strict-dynamic'"
+
+-- | Inject the nonce-based CSP into a response's headers. Called by `serve`
+-- | after generating the nonce. Replaces any existing CSP header.
+withCsp :: String -> Response -> Response
+withCsp nonce response =
+  response { headers = cons (Tuple "Content-Security-Policy" (cspWithNonce nonce)) (filter (not <<< isCsp) response.headers) }
+  where
+  isCsp (Tuple k _) = k == "Content-Security-Policy"
 
 -- ============================================================================
 -- Constructors
@@ -152,6 +184,15 @@ tooManyRequests retryAfterSec =
 withRequestId :: String -> Response -> Response
 withRequestId rid response = response { headers = response.headers <> [ Tuple "x-request-id" rid ] }
 
+-- | Replace the CSP nonce placeholder in a response body with the actual
+-- | per-request nonce. Called by `serve` after generating the nonce. Only
+-- | StringBody responses need this — StreamBody shells are replaced in
+-- | App.Main before being passed to the FFI.
+replaceNonce :: String -> Response -> Response
+replaceNonce nonce response = case response.body of
+  StringBody s -> response { body = StringBody (S.replace (Pattern cspNoncePlaceholder) (Replacement nonce) s) }
+  _ -> response
+
 -- | Static file response (CSS, JS, images — never risk String mangling).
 -- | Test-only: in production, Bun's `{ dir }` routes serve static files.
 fileResponse :: String -> String -> Response
@@ -214,6 +255,7 @@ serve port staticRoot handler = do
     callback :: EffectFn2 RawRequest (EffectFn1 RawResponse Unit) Unit
     callback = mkEffectFn2 \rawReq respond -> do
       rid <- nextRequestId counter
+      nonce <- generateNonce
       let
         request =
           { id: rid
@@ -223,6 +265,7 @@ serve port staticRoot handler = do
           , headers: headersToMap rawReq.headers
           , body: pure rawReq.body
           , query: parseQuery rawReq.query
+          , nonce
           }
       AppLog.log Info "request" [ Tuple "rid" rid, Tuple "method" (show request.method), Tuple "path" rawReq.path, Tuple "ip" request.ip ]
       launchAff_ do
@@ -234,7 +277,7 @@ serve port staticRoot handler = do
           Right r -> pure r
         liftEffect $ AppLog.log Info "response" [ Tuple "rid" rid, Tuple "status" (show response.status) ]
         let
-          finalResponse = withRequestId rid response
+          finalResponse = withRequestId rid (withCsp nonce (replaceNonce nonce response))
           rawResp =
             { status: finalResponse.status
             , headers: finalResponse.headers

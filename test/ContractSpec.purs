@@ -16,7 +16,7 @@ import App.Form (contactFields, newsletterFields)
 import App.Layout.Head (renderJsonLd, escapeJson)
 import App.Layout.Page (renderPage, renderShellOpen, renderShellClose, renderPrefetch)
 import App.Main (pageRenderer)
-import App.Server (Response, fileResponse, htmlResponse, internalError, methodNotAllowed, notFound, ok, okText, okWith, redirect, redirectVary, securityHeaders, tooManyRequests)
+import App.Server (Response, cspWithNonce, fileResponse, htmlResponse, internalError, methodNotAllowed, notFound, ok, okText, okWith, redirect, redirectVary, securityHeaders, tooManyRequests)
 import App.Html (render)
 import Data.Array (concat, filter, find, length, mapMaybe, uncons)
 import Data.Char (toCharCode)
@@ -38,7 +38,7 @@ import Node.Encoding (Encoding(..))
 import Node.FS.Sync as FS
 import Node.FS.Stats as Stats
 import Test.Spec (Spec, describe, it)
-import Test.Spec.Assertions (fail, shouldEqual, shouldNotEqual, shouldSatisfy)
+import Test.Spec.Assertions (shouldEqual, shouldNotEqual, shouldSatisfy)
 import Test.Spec.Assertions.String as StrAssert
 
 -- ============================================================================
@@ -89,17 +89,29 @@ hasHeader key headers = any (\(Tuple k _) -> k == key) headers
 cspValue :: Array (Tuple String String) -> Maybe String
 cspValue headers = snd <$> find (\(Tuple k _) -> k == "Content-Security-Policy") headers
 
--- | Assert a response carries the two non-negotiable security headers.
+-- | Assert a response carries the non-negotiable security headers (excluding
+-- | CSP, which is injected per-request by `serve` via `withCsp`).
 checkSecurityHeaders :: Response -> Aff Unit
 checkSecurityHeaders response = do
-  response.headers `shouldSatisfy` hasHeader "Content-Security-Policy"
   response.headers `shouldSatisfy` hasHeader "X-Content-Type-Options"
+  response.headers `shouldSatisfy` hasHeader "Strict-Transport-Security"
 
--- | Pinned CSP. If you ever widen the CSP, update this test deliberately —
--- | and justify it in the commit message. See App.Server.securityHeaders.
-expectedCsp :: String
-expectedCsp =
-  "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'"
+-- | Pinned CSP template. The actual CSP includes a per-request nonce, so we
+-- | pin the static parts and test the nonce injection separately. If you ever
+-- | widen the CSP, update this test deliberately — and justify it in the
+-- | commit message. See App.Server.cspWithNonce.
+expectedCspPrefix :: String
+expectedCspPrefix =
+  "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'nonce-"
+
+expectedCspSuffix :: String
+expectedCspSuffix =
+  "' 'self' 'unsafe-eval' 'strict-dynamic'"
+
+-- | The JS-side 500-fallback CSP (no nonce — text/plain, no scripts execute).
+expectedFallbackCsp :: String
+expectedFallbackCsp =
+  "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-eval'"
 
 -- | Keep in sync with Makefile RAW_ALLOWLIST_GREP.
 rawAllowlist :: Array String
@@ -301,19 +313,23 @@ spec = do
       checkSecurityHeaders (fileResponse "text/css" buf)
 
   describe "CSP exact value" do
-    it "securityHeaders matches the pinned policy exactly" do
+    it "cspWithNonce produces the pinned policy with nonce" do
       -- Brittle BY DESIGN: if you widened the CSP, update this test
       -- deliberately — and justify it in the commit message.
-      case cspValue securityHeaders of
-        Just csp -> csp `shouldEqual` expectedCsp
-        Nothing -> fail "Content-Security-Policy missing from securityHeaders"
+      let csp = cspWithNonce "test-nonce-123"
+      csp `shouldEqual` (expectedCspPrefix <> "test-nonce-123" <> expectedCspSuffix)
 
-    it "FFI 500-fallback CSP matches the pinned policy" do
+    it "securityHeaders no longer carries CSP (per-request nonce injection)" do
+      -- CSP is injected by `serve` via cspWithNonce, not in securityHeaders.
+      -- securityHeaders must NOT contain a CSP entry.
+      cspValue securityHeaders `shouldEqual` Nothing
+
+    it "FFI 500-fallback CSP matches the pinned fallback policy" do
       -- The JS-side last-resort 500 carries its own CSP string (App.ServerBun.js).
-      -- It must match the PS-side policy exactly — a drift here means the
-      -- containment path serves a different CSP than normal responses.
+      -- It's the fallback policy (no nonce — text/plain, no scripts execute).
+      -- A drift here means the containment path serves a different CSP.
       jsSource <- liftEffect $ FS.readTextFile UTF8 "src/App/ServerBun.js"
-      jsSource `StrAssert.shouldContain` ("Content-Security-Policy\": \"" <> expectedCsp)
+      jsSource `StrAssert.shouldContain` ("Content-Security-Policy\": \"" <> expectedFallbackCsp)
 
   describe "Alpine seam — contentTarget" do
     it "every static page renders <main id=contentTarget> in both languages" do

@@ -41,13 +41,22 @@ function toWebResponse(psResp) {
 // Security headers mirrored from App.Server.securityHeaders — applied to
 // the JS-side last-resort 500 so every response carries them, even the
 // containment path that never reaches PS.
+//
+// CSP: no 'unsafe-inline' in script-src (nonce-based CSP is injected on the
+// PS side per-request; this fallback is text/plain so no scripts execute).
 var SECURITY_HEADERS = {
   "X-Content-Type-Options": "nosniff",
   "X-Frame-Options": "DENY",
   "Referrer-Policy": "strict-origin-when-cross-origin",
-  "Content-Security-Policy": "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+  "Content-Security-Policy": "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-eval'",
   "Content-Type": "text/plain; charset=utf-8",
 };
+
+// generateNonce :: Effect String
+// 18 random bytes → base64 = 24 chars. Meets CSP nonce requirements (≥128 bits).
+export function generateNonce() {
+  return btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(18))));
+}
 
 function makeFetch(handler) {
   return async function fetch(req, server) {

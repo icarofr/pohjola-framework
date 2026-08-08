@@ -137,10 +137,12 @@ Browser → Caddy (TLS) → PureScript server (Bun.serve)
 - **Interactivity**: Alpine.js 3.15.12 + Alpine AJAX 0.12.7 (self-hosted,
   pinned). Typed constructors in `App.Alpine` — no raw Alpine attribute strings
   (ContractSpec enforces). The standard Alpine build requires `unsafe-eval`
-  and `unsafe-inline` in CSP for script-src; the CSP build exists but can't
-  evaluate global function calls like the `fetch(...)` in `prefetchHover`, and
-  would require nonced `<script>` blocks that violate ADR-000's no-custom-JS
-  rule.
+  in CSP for script-src (attribute expressions evaluated via `new Function()`);
+  `unsafe-inline` is dropped in favour of per-request nonces on the two head
+  `<script>` snippets and the JSON-LD script. The Alpine CSP build can't call
+  global functions like the `fetch()` in `prefetchHover`, and would require
+  nonced `<script>` blocks that violate ADR-000's no-custom-JS rule. See
+  ADR-000 addendum for the full threat model.
 - **SPA navigation**: `spaLink` helper bakes in AJAX swap + hover prefetch.
   Degrades to normal `<a>` if JS fails — the href is always real.
 - **Styling**: Tailwind CSS v4 (dark mode via class).
