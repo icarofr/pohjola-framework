@@ -10,8 +10,9 @@ matches.
 Every web starter trades **safety** against **simplicity**:
 
 - **TypeScript starters** (Next.js, Remix, SvelteKit) ship fast but enforce
-  safety by convention — `as any`, `!`, thrown exceptions, missing routes are
-  eslint-banned, not compiler-enforced.
+  safety by convention — `as any`, `!`, thrown exceptions, and missing routes
+  are eslint-banned, not compiler-enforced. TypeScript's type system is
+  intentionally unsound.
 - **Haskell/Rust starters** match or exceed our compile-time safety but leave
   the JS runtime. JS library access means FFI to C (memory-unsafe) or WASM.
 - **Existing PureScript starters** wrap a JS framework (React, Halogen, Deku),
@@ -22,11 +23,11 @@ runtime, with no client build step**.
 
 ### What the type system proves
 
-`a -> b` in PureScript cannot do I/O, mutate state, or throw — side effects
-require `Effect` or `Aff` in the type. `Either AppError a` is the only failure
-mode from pure code. Rust's `fn foo() -> i32` can do anything; TypeScript's
-`function foo(): number` can throw, await, or lie with `!`. `foo :: Int -> Int`
-is a mathematical function.
+`a -> b` in PureScript cannot perform I/O, mutate state, or throw — side
+effects require `Effect` or `Aff` in the type signature. `Either AppError a`
+is the only failure mode from pure code. Rust's `fn foo() -> i32` can do
+anything; TypeScript's `function foo(): number` can throw, await, or lie with
+`!`. `foo :: Int -> Int` is a mathematical function.
 
 **Scope.** This eliminates null derefs, unhandled branches, and forgotten
 error returns in domain logic — the class that dominates real-world JS/Go
@@ -35,9 +36,9 @@ segfault, or that memory won't exhaust.
 
 ### What the FFI boundary contains
 
-Bun gives GC memory safety, native `fetch`, `Bun.escapeHTML` (SIMD),
-`Bun.XML.stringify`, `Bun.CookieMap`, and the npm ecosystem. Access goes
-through a **7-module FFI allowlist** with boundary decoders; the Makefile gate
+Bun gives GC memory safety, native `fetch`, `Bun.escapeHTML`, `Bun.XML.stringify`,
+`Bun.CookieMap`, and the npm ecosystem. Access goes through a **3-module FFI
+allowlist** (`App.ServerBun`, `App.FetchBun`, `App.Bun`); the Makefile gate
 rejects `foreign import` elsewhere, and every FFI function returns `Aff (Either
 AppError a)`. Each wrapper is defensive — `ServerBun.makeFetch` catches all
 exceptions and returns a 500 with security headers, `FetchBun` routes fetch
@@ -45,7 +46,7 @@ errors to the `Either` channel, `stringifyXML` catches and returns `Nothing`.
 
 This is a **trust boundary, not a type-proven one** — as is every FFI in every
 language (Haskell's FFI to C, Rust's `unsafe`). The compiler can't verify the
-JS we call. What's contained: the blast radius is 7 audited modules, every
+JS we call. What's contained: the blast radius is 3 audited modules, every
 entry point forces callers to handle failure, and the wrappers are tested.
 What's not: a bug in a wrapper itself, or a Bun behavioural change, could
 escape. Haskell/Rust FFI to C is memory-unsafe on top; this is the niche for
@@ -54,7 +55,8 @@ teams that need JS ecosystem access without paying TypeScript's soundness tax.
 ### What CI enforces beyond the compiler
 
 - **Makefile gate** (~2s) — grep-bans `unsafeCoerce`, `unsafePerformEffect`,
-  `fromJust`, partial functions, unallowlisted FFI, `raw` HTML.
+  `unsafePartial`, `fromJust`, partial functions, unallowlisted FFI, `raw`
+  HTML outside the allowlist.
 - **ContractSpec** — security headers on every response, CSP pinned
   byte-exact, layout shell on every page, no cross-feature imports, no raw
   Alpine attribute strings, honeypot semantics.
@@ -92,24 +94,24 @@ hiring throughput.
 from null derefs, unhandled branches, or forgotten error returns.** Everything
 outside that scope is documented in [docs/GUARANTEES.md](docs/GUARANTEES.md).
 
-### Safety floor
+## Safety floor
 
-- **Exhaustive pattern matching** — non-exhaustive `case` is a hard compile
-  error, not a warning. Adding a route variant breaks every handler at compile
-  time.
+- **Exhaustive pattern matching** — non-exhaustive `case` produces a `Partial`
+  constraint that fails compilation by default; `unsafePartial` is gate-banned,
+  so in this repo totality is enforced, not conventional. Adding a route
+  variant breaks every handler at compile time.
 - **No partial functions** — `fromJust`, `Data.Maybe.Unsafe`,
-  `Data.Array.Unsafe`, `Data.String.CodePoint.Unsafe`, and `unsafePartial` are
-  gate-banned outright. Totality is enforced, not conventional.
+  `Data.Array.Unsafe`, `Data.String.CodePoint.Unsafe` are gate-banned outright.
 - **No unsafe functions, no unapproved FFI** — `unsafeCoerce`,
   `unsafePerformEffect` are gate-banned; `foreign import` fails the build
-  unless the module is allowlisted (7 modules, ADR-007).
+  unless the module is allowlisted (3 modules, ADR-007).
 - **Errors as values** — a single `AppError` ADT wraps library errors. Every
   boundary function returns `Aff (Either AppError a)`. Runtime exceptions are
   contained at one server boundary, logged, and answered with a 500.
 - **No null, no undefined** — `Maybe a` for optional values, compiler forces
   handling.
 
-### Architecture
+## Architecture
 
 ```
 Browser → Caddy (TLS) → PureScript server (Bun.serve)
@@ -123,25 +125,28 @@ Browser → Caddy (TLS) → PureScript server (Bun.serve)
 ```
 
 - **Server**: PureScript + `Bun.serve` via tamed FFI boundary (`App.ServerBun`,
-  ADR-007) — no HTTP framework, no `node-http`
+  ADR-007) — no HTTP framework, no `node-http`.
 - **HTML**: Custom `Html` ADT — sum type with `render :: Html -> String`,
-  SIMD-accelerated escaping via `Bun.escapeHTML`
-- **Routing**: `routing-duplex` — bidirectional codec, one per language, dynamic
-  segments via `int segment`
+  escaping via `Bun.escapeHTML`.
+- **Routing**: `routing-duplex` — bidirectional codec (parse + print from one
+  declaration), one per language, dynamic segments via `int segment`. Adding a
+  `Route` constructor without updating the codec is a compile error.
 - **Data layer**: Async page rendering (`Aff (Either AppError Html)`). Posts
   feature demonstrates the full pattern: Types → Service (`App.Data.Fetch`) →
-  Page → View
+  Page → View.
 - **Interactivity**: Alpine.js 3.15.12 + Alpine AJAX 0.12.7 (self-hosted,
   pinned). Typed constructors in `App.Alpine` — no raw Alpine attribute strings
-  (ContractSpec enforces)
+  (ContractSpec enforces). The standard Alpine build requires `unsafe-eval`
+  and `unsafe-inline` in CSP for script-src; a CSP build exists but we don't
+  use it.
 - **SPA navigation**: `spaLink` helper bakes in AJAX swap + hover prefetch.
-  Degrades to normal `<a>` if JS fails — the href is always real
-- **Styling**: Tailwind CSS v4 (dark mode via class)
+  Degrades to normal `<a>` if JS fails — the href is always real.
+- **Styling**: Tailwind CSS v4 (dark mode via class).
 - **i18n**: Type-safe bilingual dictionary (EN/FR) — compiler enforces both
-  languages have identical structure
-- **JSON**: Argonaut `DecodeJson` — type-safe decoding at the boundary
+  languages have identical structure.
+- **JSON**: Argonaut `DecodeJson` — type-safe decoding at the boundary.
 
-### Testing
+## Testing
 
 | Layer | Tool | What it tests |
 |-------|------|---------------|
@@ -195,11 +200,11 @@ See `docs/conventions/adding-pages.md` for the full checklist and
 | Language | PureScript 0.15.16 |
 | Build | Spago 1.0.4 (pure registry, no git pins) |
 | Server | `Bun.serve` via tamed FFI (`App.ServerBun`, ADR-007) |
-| Routing | `routing-duplex` 0.7.0 |
+| Routing | `routing-duplex` |
 | HTML | Custom `Html` ADT |
 | Interactivity | Alpine.js 3.15.12 + Alpine AJAX 0.12.7 |
 | Styling | Tailwind CSS v4 |
-| Runtime | Bun canary (1.4.0 — pin to stable on release) |
+| Runtime | Bun canary (pin to stable 1.4.0 on release) |
 | Testing | `purescript-spec`, `purescript-quickcheck`, Venom, Playwright |
 | Container | Distroless + Bun (~25MB) |
 
