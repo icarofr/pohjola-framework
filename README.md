@@ -7,116 +7,76 @@ matches.
 
 ## Why this exists
 
-Every web starter makes a trade-off between **safety** and **simplicity**:
+Every web starter trades **safety** against **simplicity**:
 
-- **TypeScript starters** (Next.js, Remix, SvelteKit) are simple to ship but
-  their safety is conventional — `as any`, `!`, thrown exceptions, and missing
-  routes are all eslint-banned, not compiler-enforced. Every guarantee is one
-  forgotten lint rule away from a runtime crash.
-- **Haskell/Rust starters** match or exceed our compile-time safety, but they
-  lose the JS runtime and its ecosystem. When you need a JS library, you FFI
-  to C (memory-unsafe boundary) or WASM (complexity).
-- **PureScript starters that exist** tend to wrap a JS framework (React, Halogen,
-  Deku), re-introducing hydration, virtual DOM, and a client-side build pipeline.
+- **TypeScript starters** (Next.js, Remix, SvelteKit) ship fast but enforce
+  safety by convention — `as any`, `!`, thrown exceptions, missing routes are
+  eslint-banned, not compiler-enforced.
+- **Haskell/Rust starters** match or exceed our compile-time safety but leave
+  the JS runtime. JS library access means FFI to C (memory-unsafe) or WASM.
+- **Existing PureScript starters** wrap a JS framework (React, Halogen, Deku),
+  re-introducing hydration, virtual DOM, and a client build pipeline.
 
 This starter occupies the gap: **pure functional compile-time safety on a JS
-runtime, with no client build step**. Three things together make it unique:
+runtime, with no client build step**.
 
-### 1. Pure functions are compiler-isolated from effects
+### What the type system proves
 
-In PureScript, `a -> b` cannot do I/O, mutate state, or throw. Side effects
-require `Effect` or `Aff` in the type signature. Pure code can't call
-effectful code. This means:
+`a -> b` in PureScript cannot do I/O, mutate state, or throw — side effects
+require `Effect` or `Aff` in the type. `Either AppError a` is the only failure
+mode from pure code. Rust's `fn foo() -> i32` can do anything; TypeScript's
+`function foo(): number` can throw, await, or lie with `!`. `foo :: Int -> Int`
+is a mathematical function.
 
-- `render :: Html -> String` is deterministic — no hidden filesystem reads,
-  no network calls, no surprises in production.
-- Property tests work on pure functions with zero mocking infrastructure.
-- `Either AppError a` is the *only* way to fail from pure code — `throw` is
-  not available.
+**Scope.** This eliminates null derefs, unhandled branches, and forgotten
+error returns in domain logic — the class that dominates real-world JS/Go
+server incidents. It does not prove the FFI is honest, that Bun won't
+segfault, or that memory won't exhaust.
 
-Rust's `fn foo() -> i32` can do anything. TypeScript's `function foo(): number`
-can throw, await, or return `undefined` with `!`. PureScript's `foo :: Int ->
-Int` is a mathematical function. This is the guarantee neither can offer.
+### What the FFI boundary contains
 
-**Scope of the guarantee.** The effect system proves purity *inside* the
-PureScript boundary. It does not prove the FFI is honest (see below), that Bun
-won't segfault, or that memory won't exhaust. What it eliminates is the entire
-class of crashes from null derefs, unhandled branches, and forgotten error
-returns in domain logic — the class that dominates real-world JS/Go server
-incidents.
+Bun gives GC memory safety, native `fetch`, `Bun.escapeHTML` (SIMD),
+`Bun.XML.stringify`, `Bun.CookieMap`, and the npm ecosystem. Access goes
+through a **7-module FFI allowlist** with boundary decoders; the Makefile gate
+rejects `foreign import` elsewhere, and every FFI function returns `Aff (Either
+AppError a)`.
 
-### 2. Tamed FFI to a JS runtime
-
-We run on Bun — GC memory safety (no lifetimes, no borrow checker), native
-`fetch`, `Bun.escapeHTML` (SIMD), `Bun.XML.stringify`, `Bun.CookieMap`, and the
-entire npm ecosystem. Access to all of it goes through a **7-module FFI
-allowlist** with boundary decoders. The Makefile gate rejects `foreign import`
-in any module not on the list. Every FFI function is wrapped to return `Aff
-(Either AppError a)`.
-
-**This is a trust boundary, not a type-proven one.** PureScript cannot
-statically verify the JS it calls. A missed exception in a JS dependency, a
-Bun behavioural change, or a decoder gap can still crash the process. What the
-boundary buys is *containment*: the blast radius is 7 audited modules, not the
-whole codebase, and every entry point returns `Either` so callers must handle
-failure. The discipline is maintained by the gate (allowlist grep), the
-ContractSpec (boundary shape), and review — not by the compiler.
-
-Haskell and Rust have native libraries (no FFI needed for most things), but
-when they do FFI it's to C — a memory-unsafe boundary. We get JS ecosystem
-access through a contained, audited boundary. That's a niche no other safe
-stack offers.
-
-### 3. Pre-assembled enforcement apparatus
-
-The guarantees above are portable — Haskell and Rust can replicate them. What
-isn't portable is the **enforcement apparatus already wired to CI**:
-
-- **Makefile gate** — grep-bans `unsafeCoerce`, `unsafePerformEffect`,
-  `fromJust`, partial functions, unallowlisted FFI, `raw` HTML outside the
-  allowlist. Runs in ~2s.
-- **ContractSpec** — a PureScript test suite that enforces architectural rules
-  the compiler can't: security headers on every response, CSP pinned
-  byte-exact, every page flows through the layout shell, no cross-feature
-  imports, no raw Alpine attribute strings, honeypot semantics.
-- **Property tests** — quickcheck on pure seams: form decoding totality,
-  honeypot silent-success, HTML escaping, route round-trips.
-- **ADRs** — every architectural decision recorded with status, context, and
-  consequences.
-
-Rebuilding this apparatus in Haskell or Rust is weeks of work. Here it's
-already built, tested, and documented.
-
-### The honest trade-off
-
-This is not the maximum-guarantee stack. Rust's `unsafe` keyword and borrow
-checker eliminate memory and concurrency bugs a GC runtime hides; Haskell's
-Servant offers type-level routing we don't attempt. TypeScript with `fp-ts` or
-`Effect` gets close to our effect tracking without leaving the npm ecosystem.
-The claim is narrower: **maximum-guarantee-per-unit-of-effort that also keeps
-JS runtime access**, for teams who want the npm ecosystem on the server
+This is a **trust boundary, not a type-proven one**. A missed JS exception, a
+Bun behavioural change, or a decoder gap can still crash the process. The
+boundary buys containment — blast radius is 7 audited modules, every entry
+point forces callers to handle failure — not proof. Haskell/Rust FFI to C is
+memory-unsafe; this is the niche for teams that need JS ecosystem access
 without paying TypeScript's soundness tax.
 
+### What CI enforces beyond the compiler
+
+- **Makefile gate** (~2s) — grep-bans `unsafeCoerce`, `unsafePerformEffect`,
+  `fromJust`, partial functions, unallowlisted FFI, `raw` HTML.
+- **ContractSpec** — security headers on every response, CSP pinned
+  byte-exact, layout shell on every page, no cross-feature imports, no raw
+  Alpine attribute strings, honeypot semantics.
+- **Property tests** — form decoding totality, honeypot silent-success, HTML
+  escaping, route round-trips.
+- **ADRs** — every architectural decision recorded.
+
+### Trade-offs
+
+Not the maximum-guarantee stack. Rust's borrow checker eliminates
+memory/concurrency bugs a GC runtime hides; Haskell's Servant offers
+type-level routing we don't attempt; TypeScript with `fp-ts` or `Effect` gets
+close to our effect tracking without leaving npm. The claim is narrower:
+**maximum-guarantee-per-unit-of-effort that keeps JS runtime access**.
+
+Costs: the gate, ContractSpec, and Html ADT are bespoke — readable in this
+repo, but no Stack Overflow answers. The PS package ecosystem is smaller;
+new DB drivers, payment gateways, or niche APIs likely need FFI bindings.
+Hiring is hard — developers fluent in PS, `routing-duplex`, and Bun FFI are
+rare. This is a starter for a small team that values correctness over hiring
+throughput.
+
 **If it compiles and CI is green, the PureScript domain logic doesn't crash
-from null derefs, unhandled branches, or forgotten error returns.** Crashes
-outside that scope — Bun runtime faults, OOM, FFI leaks, misbehaving JS
-dependencies — remain possible and are the focus of the enforcement apparatus
-below, not the type system. See [docs/GUARANTEES.md](docs/GUARANTEES.md) for
-the precise boundary of each guarantee.
-
-### Costs worth naming
-
-- **Bespoke tooling.** The Makefile gate, ContractSpec, and Html ADT are
-  community-standard *patterns*, not community-standard *tools*. You are
-  maintaining a small framework, not consuming one. The upside is that every
-  rule is readable in this repo; the downside is no Stack Overflow answers.
-- **Ecosystem surface.** PureScript has a strong compiler and core libraries
-  but a fraction of TypeScript's or Rust's package ecosystem. New database
-  drivers, payment gateways, or niche APIs will likely require writing FFI
-  bindings — adding to the unit of effort.
-- **Hiring.** Developers fluent in PureScript, `routing-duplex`, and Bun FFI
-  boundaries are rare. This starter is optimised for a small team that values
-  correctness over hiring throughput.
+from null derefs, unhandled branches, or forgotten error returns.** Everything
+outside that scope is documented in [docs/GUARANTEES.md](docs/GUARANTEES.md).
 
 ### Safety floor
 
