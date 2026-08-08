@@ -4,11 +4,80 @@ A type-safe, server-rendered web application starter built with PureScript and
 Alpine.js. Server-rendered HTML with SPA-feel navigation — no hydration, no
 client-side framework, no runtime errors from missed pattern matches.
 
-## Why
+## Why this exists
 
-The compiler is the contract. One codebase, one compiler — no OpenAPI spec to
-keep in sync, no codegen step, no "CI validates generated code" step. The
-PureScript compiler enforces the contract between routes, types, and HTML.
+Every web starter makes a trade-off between **safety** and **simplicity**:
+
+- **TypeScript starters** (Next.js, Remix, SvelteKit) are simple to ship but
+  their safety is conventional — `as any`, `!`, thrown exceptions, and missing
+  routes are all eslint-banned, not compiler-enforced. Every guarantee is one
+  forgotten lint rule away from a runtime crash.
+- **Haskell/Rust starters** match or exceed our compile-time safety, but they
+  lose the JS runtime and its ecosystem. When you need a JS library, you FFI
+  to C (memory-unsafe boundary) or WASM (complexity).
+- **PureScript starters that exist** tend to wrap a JS framework (React, Halogen,
+  Deku), re-introducing hydration, virtual DOM, and a client-side build pipeline.
+
+This starter occupies the gap: **pure functional compile-time safety on a JS
+runtime, with no client-side framework**. Three things together make it unique:
+
+### 1. Pure functions are provably pure
+
+In PureScript, `a -> b` cannot do I/O, mutate state, or throw. Side effects
+require `Effect` or `Aff` in the type signature — the type *is* the proof.
+Pure code can't call effectful code. This means:
+
+- `render :: Html -> String` is deterministic — no hidden filesystem reads,
+  no network calls, no surprises in production.
+- Property tests work on pure functions with zero mocking infrastructure.
+- `Either AppError a` is the *only* way to fail from pure code — `throw` is
+  not available.
+
+Rust's `fn foo() -> i32` can do anything. TypeScript's `function foo(): number`
+can throw, await, or return `undefined` with `!`. PureScript's `foo :: Int ->
+Int` is a mathematical function. This is the guarantee neither can offer.
+
+### 2. Tamed FFI to a JS runtime
+
+We run on Bun — GC memory safety (no lifetimes, no borrow checker), native
+`fetch`, `Bun.escapeHTML` (SIMD), `Bun.XML.stringify`, `Bun.CookieMap`, and the
+entire npm ecosystem. Access to all of it goes through a **7-module FFI
+allowlist** with boundary decoders. The Makefile gate rejects `foreign import`
+in any module not on the list. Every FFI function returns `Aff (Either AppError
+a)` — exceptions don't cross the boundary.
+
+Haskell and Rust have native libraries (no FFI needed for most things), but
+when they do FFI it's to C — a memory-unsafe boundary. We get JS ecosystem
+access through a type-safe boundary. That's a niche no other safe stack offers.
+
+### 3. Pre-assembled enforcement apparatus
+
+The guarantees above are portable — Haskell and Rust can replicate them. What
+isn't portable is the **enforcement apparatus already wired to CI**:
+
+- **Makefile gate** — grep-bans `unsafeCoerce`, `unsafePerformEffect`,
+  `fromJust`, partial functions, unallowlisted FFI, `raw` HTML outside the
+  allowlist. Runs in ~2s.
+- **ContractSpec** — a PureScript test suite that enforces architectural rules
+  the compiler can't: security headers on every response, CSP pinned
+  byte-exact, every page flows through the layout shell, no cross-feature
+  imports, no raw Alpine attribute strings, honeypot semantics.
+- **Property tests** — quickcheck on pure seams: form decoding totality,
+  honeypot silent-success, HTML escaping, route round-trips.
+- **ADRs** — every architectural decision recorded with status, context, and
+  consequences.
+
+Rebuilding this apparatus in Haskell or Rust is weeks of work. Here it's
+already built, tested, and documented.
+
+### The honest trade-off
+
+This is not the maximum-guarantee stack — Rust's `unsafe` keyword and
+Haskell's Servant type-level routing are structurally stronger on specific
+axes. This is the **maximum-guarantee-per-unit-of-effort stack that also keeps
+JS runtime access**. If you don't need the npm ecosystem on the server,
+Haskell + Servant is the closest peer. If you do, this is the only stack that
+gives you both safety and JS.
 
 **If it compiles and CI is green, production doesn't crash.** Every guarantee
 behind that sentence is enforced by a check you can run — see
