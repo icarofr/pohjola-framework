@@ -62,10 +62,12 @@ without paying TypeScript's soundness tax.
 ### Trade-offs
 
 Not the maximum-guarantee stack. Rust's borrow checker eliminates
-memory/concurrency bugs a GC runtime hides; Haskell's Servant offers
-type-level routing we don't attempt; TypeScript with `fp-ts` or `Effect` gets
-close to our effect tracking without leaving npm. The claim is narrower:
-**maximum-guarantee-per-unit-of-effort that keeps JS runtime access**.
+memory/concurrency bugs a GC runtime hides; Haskell's Servant publishes the
+API as a type-level contract (we use `routing-duplex` — type-safe round-trips
+via a Generic codec, but not a publishable type-level API); TypeScript with
+`fp-ts` or `Effect` gets close to our effect tracking without leaving npm.
+The claim is narrower: **maximum-guarantee-per-unit-of-effort that keeps JS
+runtime access**.
 
 Costs: the gate, ContractSpec, and Html ADT are bespoke — readable in this
 repo, but no Stack Overflow answers. The PS package ecosystem is smaller;
