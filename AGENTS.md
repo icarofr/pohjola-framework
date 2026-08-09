@@ -32,6 +32,7 @@
 - Writing tests → `docs/conventions/testing-recipes.md`
 - Scaffolding a feature → `docs/conventions/generators.md`
 - FFI → `docs/ffi-taming-guide.md`
+- Idiomatic PureScript / clean code → `docs/conventions/idiomatic-purescript.md`
 - Sessions / CSRF / middleware shape → `docs/adr/ADR-004-sessions.md`, `ADR-005-csrf.md`, `ADR-006-middleware-shape.md`
 - Guarantees/claims → `docs/GUARANTEES.md`
 

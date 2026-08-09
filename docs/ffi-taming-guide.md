@@ -28,6 +28,14 @@ FFI is for capabilities PS lacks, never convenience).
 - **No app logic in JS**: no `if` about behaviour, no decisions. The PS side
   decides. If the JS file contains branching about what the app should do,
   the boundary is in the wrong place.
+- **Callback currying rule** — PS `Effect a` is runtime-represented as
+  `() -> a`. A callback passed from PS (e.g. `makeAff`'s `Either e a -> Effect Unit`)
+  returns an `Effect Unit` **thunk** that must be applied to `()` to execute.
+  In JS: `onSuccess(result)()` — double application. Single application
+  (`onSuccess(result)`) returns the thunk without running it; `makeAff` never
+  resolves and the fiber hangs silently. This bug is invisible — no error,
+  no crash, just a hang. Reference: `App.Bun.js` `readTextFileImpl`,
+  `App.Data.SQL.js` `queryImpl`/`executeImpl`/`closeImpl`.
 - Stateful shapes:
   - **Stateless function** (hash, sign): export a plain function.
   - **Configured instance** (logger, Sentry): init once with config, export

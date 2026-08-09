@@ -21,6 +21,8 @@ data AppError
   | NotFound
   | ResendError Int
 
+derive instance eqAppError :: Eq AppError
+
 instance showAppError :: Show AppError where
   show = case _ of
     DecodeError e -> "DecodeError: " <> show e

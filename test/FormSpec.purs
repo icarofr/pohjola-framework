@@ -3,7 +3,8 @@ module Test.FormSpec where
 
 import Prelude
 
-import App.Form (ContactSubmission(..), FormStatus(..), NewsletterSubmission(..), apiContactPath, decodeContact, decodeNewsletter, formStatusQuery, mkEmailAddress, parseFormStatus, unEmailAddress)
+import App.Form (ContactSubmission(..), FormStatus(..), NewsletterSubmission(..), apiContactPath, decodeContact, decodeNewsletter, formStatusQuery, parseFormStatus)
+import Data.Email (mkEmailAddress, unEmailAddress)
 import Data.Array as Array
 import Data.FormURLEncoded as FormURLEncoded
 import Data.Maybe (Maybe(..), fromMaybe, isJust)

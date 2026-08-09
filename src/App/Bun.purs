@@ -1,13 +1,17 @@
--- | FFI bindings to Bun native utilities — SIMD-accelerated escapeHTML
--- | and XML.stringify for sitemap generation.
+-- | FFI bindings to Bun native utilities — SIMD-accelerated escapeHTML,
+-- | XML.stringify for sitemap generation, and Bun-native file/hash helpers
+-- | for the migration runner (Bun.file + Glob + Bun.SHA256 — no node:fs).
 -- |
 -- | The PS side stays pure; the JS side is plumbing only (ADR-007).
 module App.Bun where
 
 import Prelude
 
+import Data.Either (Either(..))
 import Data.Maybe (Maybe)
 import Data.Nullable (Nullable, toMaybe)
+import Effect (Effect)
+import Effect.Aff (Aff, makeAff)
 import Foreign (Foreign)
 
 -- | SIMD-accelerated HTML escaping via Bun.escapeHTML.
@@ -22,6 +26,39 @@ foreign import escapeHTMLImpl :: String -> String
 -- | Returns null on failure (lifted to Maybe via Data.Nullable).
 foreign import stringifyXMLImpl :: Foreign -> Nullable String
 
+-- | Read a file as UTF-8 text via Bun.file(path).text().
+-- | Async — two-callback pattern (onSuccess/onError) so PS wraps via makeAff.
+-- | Returns Left with the error message on failure (missing file, I/O, etc.),
+-- | Right content on success. Distinguishes "missing" from "read error".
+-- | Used by the migration runner to read .sql files — no node:fs.
+foreign import readTextFileImpl
+  :: String
+  -> (String -> Effect Unit)
+  -> (String -> Effect Unit)
+  -> Effect Unit
+
+-- | List files under a directory matching a glob pattern via Bun's Glob.
+-- | Returns an Array of paths (relative to cwd). Empty if none match.
+-- | Used by the migration runner to discover migrations/*.sql — no node:fs.
+foreign import glob :: String -> Effect (Array String)
+
+-- | SHA-256 hash of a string, hex-encoded, via Bun.SHA256.hash.
+-- | Used by the migration runner to checksum migration files.
+foreign import sha256Hex :: String -> Effect String
+
+-- | Check if a file exists (sync, via Bun.file().exists()).
+foreign import exists :: String -> Effect Boolean
+
 -- | Safe wrapper: lifts the nullable FFI result to Maybe.
 stringifyXML :: Foreign -> Maybe String
 stringifyXML = toMaybe <<< stringifyXMLImpl
+
+-- | Read a file as UTF-8 text. Returns Left with the error message on
+-- | failure (file missing, permissions, I/O), Right content on success.
+readTextFile :: String -> Aff (Either String String)
+readTextFile path =
+  makeAff \callback -> do
+    readTextFileImpl path
+      (\content -> callback (pure (Right content)))
+      (\err -> callback (pure (Left err)))
+    pure mempty -- no canceler: local disk reads don't need abort

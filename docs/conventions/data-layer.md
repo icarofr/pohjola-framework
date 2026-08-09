@@ -37,3 +37,50 @@ ContractSpec.
 
 To add a data-backed feature, copy the Posts pattern. Swap JSONPlaceholder
 for your CMS — the pattern stays the same.
+
+## Database — App.Data.SQL (ADR-009)
+
+For PostgreSQL-backed features, use `App.Data.SQL` (Bun.SQL bindings)
+instead of HTTP fetching. The same `Aff (Either AppError a)` pattern
+applies — map SQL errors to `AppError` at the feature boundary.
+
+### Connection
+
+`App.Data.SQL.connect :: String -> Effect SQL` creates a pooled client
+(Bun.SQL auto-pools, lazy-connect). One handle per app lifetime; `close`
+on shutdown. Connection string from `Config.databaseUrl` (env: `DATABASE_URL`).
+
+### Querying — injection-safe
+
+```purs
+-- Parameterized (safe — Bun extended protocol binds params separately)
+query  :: SQL -> String -> Array Foreign -> Aff (Either String (Array Row))
+execute :: SQL -> String -> Array Foreign -> Aff (Either String Unit)
+```
+
+Always use `$1`, `$2` placeholders with params. Never string-interpolate
+user input into the SQL string.
+
+### Migrations — App.Migration
+
+Numbered `.sql` files in `migrations/` (e.g. `001_create_users.sql`).
+No down-migrations (YAGNI — forward-only). SHA-256 checksums detect
+tampering. Each migration runs in a transaction with the
+`schema_migrations` insert — atomic.
+
+```bash
+make migrate                      # run pending migrations
+make migrate-create NAME=foo      # scaffold migrations/NNN_foo.sql
+```
+
+`MIGRATE_ONLY=1` env var makes the server bundle run migrations and exit
+(no HTTP serve) — used by `make migrate` and CI/deploy scripts.
+
+### Safety rules (enforced by design)
+
+- `execMulti` (multi-statement, no params) is for **trusted migration
+  SQL only** — never user input. The type signature makes "no params"
+  visible at the call site.
+- `query`/`execute` are parameterized — injection-safe by construction.
+- All migration logic (ordering, checksums, transactions) lives in
+  PureScript. The JS FFI is plumbing only (ADR-003/007/009).

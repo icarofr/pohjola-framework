@@ -48,7 +48,7 @@ GATE_BANNED := unsafeCoerce|unsafePerformEffect|unsafePartial|unsafeCompare|unsa
 # in src/ fails the gate (the `$$` is Make's escape for a literal `$`, so
 # the grep pattern is `^$` = empty lines only, i.e. nothing is excluded).
 # Tamed modules get added here with justification.
-FFI_ALLOWLIST_GREP := ^src/App/ServerBun\.purs|^src/App/FetchBun\.purs|^src/App/Bun\.purs
+FFI_ALLOWLIST_GREP := ^src/App/ServerBun\.purs|^src/App/FetchBun\.purs|^src/App/Bun\.purs|^src/App/Data/SQL\.purs
 
 ## format: purs-tidy format-in-place (src/ + test/)
 .PHONY: format
@@ -167,6 +167,23 @@ sync-static:
 .PHONY: run
 run: build
 	bun $(SERVER_BUNDLE_DIR)/server.js
+
+## migrate: run pending database migrations (requires DATABASE_URL)
+## Bundles with MIGRATE_ONLY=1 so the server exits after migrating.
+.PHONY: migrate
+migrate: bundle
+	DATABASE_URL=$${DATABASE_URL:-postgres://postgres:postgres@localhost:5432/app} \
+	MIGRATE_ONLY=1 bun $(SERVER_BUNDLE_DIR)/server.js
+
+## migrate-create: create a new empty migration file (usage: make migrate-create NAME=create_users)
+.PHONY: migrate-create
+migrate-create:
+	@test -n "$(NAME)" || { echo "Usage: make migrate-create NAME=create_users"; exit 1; }
+	@next=$$(ls migrations/*.sql 2>/dev/null | wc -l | tr -d ' ') && \
+		num=$$(printf '%03d' $$((next + 1))) && \
+		file="migrations/$${num}_$(NAME).sql" && \
+		printf '-- Migration: %s\n-- Add your SQL here (multi-statement OK, no parameters)\n\n' "$$NAME" > $$file && \
+		echo "Created $$file"
 
 # ==================================================================================== #
 # TESTING

@@ -26,21 +26,14 @@ playwright-report/
 test-results/
 dist-server/
 
-# Book (guide manuscript — not part of the starter)
-book.txt
-
 # spec-node test output
 .spec-results
-skills/
 
 # Deepwork state (orchestrator session files)
 .slim/deepwork/
 
 # Cloned research repos (dependency source inspection — not part of the starter)
-bun/
-elysia/
-next.js/
-purescript-deku/
+research/
 
 # venom upstream source (vendored for reference — our tests live in venom/*.yml + venom/fixtures/)
 venom/.build/

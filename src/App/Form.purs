@@ -5,7 +5,6 @@
 module App.Form
   ( ContactForm
   , ContactSubmission(..)
-  , EmailAddress
   , FormStatus(..)
   , NewsletterSubmission(..)
   , apiContactPath
@@ -14,12 +13,10 @@ module App.Form
   , decodeContact
   , decodeNewsletter
   , formStatusQuery
-  , mkEmailAddress
   , newsletterFields
   , parseFormStatus
   , statusText
   , toMap
-  , unEmailAddress
   ) where
 
 import Prelude
@@ -31,10 +28,9 @@ import Data.I18n (Lang, dict)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
-import Data.String (split, trim)
-import Data.String.CodeUnits (length)
-import Data.String.Pattern (Pattern(..))
+import Data.String (trim)
 import Data.Tuple (Tuple(..))
+import Data.Email (EmailAddress, mkEmailAddress, unEmailAddress)
 
 -- ============================================================================
 -- Form Status
@@ -75,29 +71,6 @@ statusText lang status =
       FormSuccess -> d.common.formSuccess
       FormError -> d.common.formError
       FormSubscribed -> d.common.formSubscribed
-
--- ============================================================================
--- Email Address — smart constructor, the only way to mint one
--- ============================================================================
-
-newtype EmailAddress = EmailAddress String
-
-derive newtype instance eqEmailAddress :: Eq EmailAddress
-derive newtype instance showEmailAddress :: Show EmailAddress
-
--- | Deliberately simple: trimmed, exactly one "@", non-empty local and domain.
-mkEmailAddress :: String -> Maybe EmailAddress
-mkEmailAddress input =
-  let
-    trimmed = trim input
-  in
-    case split (Pattern "@") trimmed of
-      [ local, domain ]
-        | length local > 0 && length domain > 0 -> Just (EmailAddress trimmed)
-      _ -> Nothing
-
-unEmailAddress :: EmailAddress -> String
-unEmailAddress (EmailAddress s) = s
 
 -- ============================================================================
 -- Contact form

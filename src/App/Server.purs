@@ -269,18 +269,17 @@ serve port staticRoot handler = do
         let
           finalResponse = withRequestId rid (withCsp nonce response)
           rawResp =
-            { status: finalResponse.status
-            , headers: finalResponse.headers
-            , bodyValue: case finalResponse.body of
-                StringBody s -> s
-                StreamBody _ -> ""
-            , bodyTag: case finalResponse.body of
-                StringBody _ -> "StringBody"
-                StreamBody _ -> "StreamBody"
-            , bodyStream: case finalResponse.body of
-                StreamBody stream -> unsafeToForeign stream
-                _ -> unsafeToForeign (Nothing :: Maybe Unit)
-            }
+            let
+              bodyData = case finalResponse.body of
+                StringBody s -> { bodyValue: s, bodyTag: "StringBody", bodyStream: unsafeToForeign (Nothing :: Maybe Unit) }
+                StreamBody stream -> { bodyValue: "", bodyTag: "StreamBody", bodyStream: unsafeToForeign stream }
+            in
+              { status: finalResponse.status
+              , headers: finalResponse.headers
+              , bodyValue: bodyData.bodyValue
+              , bodyTag: bodyData.bodyTag
+              , bodyStream: bodyData.bodyStream
+              }
         liftEffect $ runEffectFn1 respond rawResp
   serveImpl port staticRoot callback
   AppLog.log Info "server-started" [ Tuple "port" (show port) ]
@@ -314,7 +313,6 @@ parsePath pathname =
 parseQuery :: String -> Map String String
 parseQuery queryString =
   case S.split (Pattern "?") queryString of
-    [] -> Map.empty
     [ _ ] -> Map.empty
     parts ->
       let

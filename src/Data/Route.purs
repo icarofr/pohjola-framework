@@ -12,7 +12,7 @@ module Data.Route where
 
 import Prelude hiding ((/))
 
-import Data.Array (head)
+import Data.Array (head, concatMap)
 import Data.Either (Either(..))
 import Data.Generic.Rep (class Generic)
 import Data.I18n (Lang(..), dict, parseLang)
@@ -23,7 +23,7 @@ import Data.String.Common (joinWith)
 import Routing.Duplex (RouteDuplex', int, parse, print, prefix, root, segment)
 import Routing.Duplex.Generic as G
 import Routing.Duplex.Generic.Syntax ((/))
-import Data.Foldable (foldl)
+import Data.Tuple (Tuple(..))
 
 -- ============================================================================
 -- Route sum type
@@ -115,7 +115,8 @@ parseRoute segments =
           Left _ -> Nothing
 
 routeTable :: Map String { lang :: Lang, route :: Route }
-routeTable = foldl (\acc l -> foldl (\acc' r -> Map.insert (routeUrl l r) { lang: l, route: r } acc') acc allRoutes) Map.empty allLangs
+routeTable = Map.fromFoldable
+  (concatMap (\l -> map (\r -> Tuple (routeUrl l r) { lang: l, route: r }) allRoutes) allLangs)
 
 -- ============================================================================
 -- Enumerations

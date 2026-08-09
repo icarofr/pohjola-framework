@@ -17,6 +17,7 @@ import Data.Map as Map
 import Foreign.Object as Object
 import Data.Maybe (Maybe)
 import Data.Tuple (Tuple(..))
+import Data.Email (EmailAddress, unEmailAddress)
 import Effect.Aff (Aff, Canceler(..), makeAff)
 import Effect.Class (liftEffect)
 
@@ -68,20 +69,20 @@ sendResend apiKey body = do
       else Left (ResendError status)
 
 -- | Resend config slice — passed as a record to avoid 6 positional args.
-type ResendConfig = { apiKey :: String, from :: String, to :: String }
+type ResendConfig = { apiKey :: String, from :: EmailAddress, to :: EmailAddress }
 
 -- | Send a contact form email via Resend.
-sendContactEmail :: ResendConfig -> { name :: String, email :: String, message :: String } -> Aff (Either AppError Unit)
+sendContactEmail :: ResendConfig -> { name :: String, email :: EmailAddress, message :: String } -> Aff (Either AppError Unit)
 sendContactEmail cfg msg =
   sendResend cfg.apiKey $ jsonFromPairs
-    [ Tuple "from" cfg.from
-    , Tuple "to" cfg.to
-    , Tuple "reply_to" msg.email
+    [ Tuple "from" (unEmailAddress cfg.from)
+    , Tuple "to" (unEmailAddress cfg.to)
+    , Tuple "reply_to" (unEmailAddress msg.email)
     , Tuple "subject" ("Contact form — " <> msg.name)
     , Tuple "text"
         ( "Name: " <> msg.name <> "\n"
             <> "Email: "
-            <> msg.email
+            <> unEmailAddress msg.email
             <> "\n"
             <> "\n"
             <> msg.message
@@ -89,11 +90,11 @@ sendContactEmail cfg msg =
     ]
 
 -- | Send a newsletter signup notification via Resend.
-sendNewsletterEmail :: ResendConfig -> String -> Aff (Either AppError Unit)
+sendNewsletterEmail :: ResendConfig -> EmailAddress -> Aff (Either AppError Unit)
 sendNewsletterEmail cfg subscriberEmail =
   sendResend cfg.apiKey $ jsonFromPairs
-    [ Tuple "from" cfg.from
-    , Tuple "to" cfg.to
+    [ Tuple "from" (unEmailAddress cfg.from)
+    , Tuple "to" (unEmailAddress cfg.to)
     , Tuple "subject" "New newsletter subscriber"
-    , Tuple "text" ("New subscriber: " <> subscriberEmail)
+    , Tuple "text" ("New subscriber: " <> unEmailAddress subscriberEmail)
     ]

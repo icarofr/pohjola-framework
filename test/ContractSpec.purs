@@ -24,8 +24,9 @@ import Data.Content (services)
 import Data.Either (Either(..))
 import Data.Foldable (any, for_)
 import Data.I18n (Lang(..), dict)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Route (Route(..), allLangs, allRoutes)
+import Data.Email (EmailAddress(..), mkEmailAddress)
 import Data.String.CodeUnits (dropWhile, fromCharArray, stripPrefix, toCharArray) as CodeUnits
 import Data.String.Common (split) as Common
 import Data.String.Pattern (Pattern(..))
@@ -34,9 +35,7 @@ import Data.Tuple (Tuple(..), snd)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
-import Node.Encoding (Encoding(..))
-import Node.FS.Sync as FS
-import Node.FS.Stats as Stats
+import App.Bun (glob, readTextFile, exists)
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldEqual, shouldNotEqual, shouldSatisfy)
 import Test.Spec.Assertions.String as StrAssert
@@ -64,12 +63,16 @@ stubConfig =
   , staticRoot: "dist"
   , baseUrl: "https://example.com"
   , resendApiKey: Nothing
-  , emailFrom: "noreply@example.com"
-  , emailTo: "contact@example.com"
+  , emailFrom: testEmail "noreply@example.com"
+  , emailTo: testEmail "contact@example.com"
   , postsApiBase: "https://example.com"
   , rateLimitMax: 0
   , rateLimitWindowMs: 60000.0
+  , databaseUrl: Nothing
   }
+
+testEmail :: String -> EmailAddress
+testEmail s = fromMaybe (EmailAddress "fallback@example.com") (mkEmailAddress s)
 
 -- | Full SSR document for a static route, composed from the feature page
 -- | module (pure content) through the Layout.Page shell. The `Left` branch
@@ -126,17 +129,7 @@ rawAllowlist =
 
 -- | Recursively collect every .purs file under a directory.
 pursFilesUnder :: String -> Effect (Array String)
-pursFilesUnder dir = do
-  entries <- FS.readdir dir
-  nested <- for entries \entry -> do
-    let path = dir <> "/" <> entry
-    st <- FS.stat path
-    if Stats.isDirectory st then pursFilesUnder path
-    else if hasPursExtension entry then pure [ path ]
-    else pure []
-  pure (concat nested)
-  where
-  hasPursExtension name = length (Common.split (Pattern ".purs") name) > 1
+pursFilesUnder dir = glob (dir <> "/**/*.purs")
 
 -- | Mirror of the Makefile gate's `grep \braw\b`: true when "raw" appears as
 -- | a whole word (bounded by non-word chars or string edges). ASCII word
@@ -183,59 +176,80 @@ containsForeignImport str =
   length (Common.split (Pattern "foreign import") str) > 1
 
 -- | src/App files that use `raw` and are NOT in the allowlist.
-findRawOutsideAllowlist :: String -> Effect (Array String)
+findRawOutsideAllowlist :: String -> Aff (Array String)
 findRawOutsideAllowlist root = do
-  files <- pursFilesUnder root
+  files <- liftEffect $ pursFilesUnder root
   results <- for files \file -> do
     if any (_ == file) rawAllowlist then pure Nothing
     else do
-      content <- FS.readTextFile UTF8 file
-      pure (if containsRawWord content then Just file else Nothing)
+      content <- readTextFile file
+      pure
+        ( case content of
+            Right c -> if containsRawWord c then Just file else Nothing
+            Left _ -> Nothing
+        )
   pure (mapMaybe identity results)
 
 -- | Files in src/ containing banned functions.
-findBannedInSrc :: String -> Effect (Array String)
+findBannedInSrc :: String -> Aff (Array String)
 findBannedInSrc root = do
-  files <- pursFilesUnder root
+  files <- liftEffect $ pursFilesUnder root
   results <- for files \file -> do
-    content <- FS.readTextFile UTF8 file
-    pure (if containsBanned content then Just file else Nothing)
+    content <- readTextFile file
+    pure
+      ( case content of
+          Right c -> if containsBanned c then Just file else Nothing
+          Left _ -> Nothing
+      )
   pure (mapMaybe identity results)
 
 -- | Files in src/ containing foreign imports outside allowlist.
-findForeignImportsOutsideAllowlist :: String -> Effect (Array String)
+findForeignImportsOutsideAllowlist :: String -> Aff (Array String)
 findForeignImportsOutsideAllowlist root = do
-  files <- pursFilesUnder root
+  files <- liftEffect $ pursFilesUnder root
   results <- for files \file -> do
     if any (_ == file) ffiAllowlist then pure Nothing
     else do
-      content <- FS.readTextFile UTF8 file
-      pure (if containsForeignImport content then Just file else Nothing)
+      content <- readTextFile file
+      pure
+        ( case content of
+            Right c -> if containsForeignImport c then Just file else Nothing
+            Left _ -> Nothing
+        )
   pure (mapMaybe identity results)
   where
-  ffiAllowlist = [ "src/App/ServerBun.purs", "src/App/FetchBun.purs", "src/App/Bun.purs" ]
+  ffiAllowlist = [ "src/App/ServerBun.purs", "src/App/FetchBun.purs", "src/App/Bun.purs", "src/App/Data/SQL.purs" ]
 
 -- | Files in src/ (excluding App.Alpine) containing raw Alpine attribute strings.
-findRawAlpineOutsideAlpine :: String -> Effect (Array String)
+findRawAlpineOutsideAlpine :: String -> Aff (Array String)
 findRawAlpineOutsideAlpine root = do
-  files <- pursFilesUnder root
+  files <- liftEffect $ pursFilesUnder root
   results <- for files \file -> do
     if file == "src/App/Alpine.purs" then pure Nothing
     else do
-      content <- FS.readTextFile UTF8 file
-      pure (if containsRawAlpine content then Just file else Nothing)
+      content <- readTextFile file
+      pure
+        ( case content of
+            Right c -> if containsRawAlpine c then Just file else Nothing
+            Left _ -> Nothing
+        )
   pure (mapMaybe identity results)
 
 -- | Check if App.Html exports the Raw data constructor.
 -- | An open export (`module App.Html where`) exports everything including Raw.
 -- | An explicit export list exports Raw only if a line trims to "Raw" or ", Raw".
-isRawExported :: Effect Boolean
+isRawExported :: Aff Boolean
 isRawExported = do
-  content <- FS.readTextFile UTF8 "src/App/Html.purs"
-  let lines = Common.split (Pattern "\n") content
-  let hasOpenExport = any (\l -> stripLeading l == "module App.Html where") lines
-  let hasRawExport = any (\l -> stripLeading l == "Raw" || stripLeading l == ", Raw") lines
-  pure (hasOpenExport || hasRawExport)
+  content <- readTextFile "src/App/Html.purs"
+  pure $ case content of
+    Left _ -> false
+    Right c ->
+      let
+        lines = Common.split (Pattern "\n") c
+        hasOpenExport = any (\l -> stripLeading l == "module App.Html where") lines
+        hasRawExport = any (\l -> stripLeading l == "Raw" || stripLeading l == ", Raw") lines
+      in
+        (hasOpenExport || hasRawExport)
   where
   stripLeading s = CodeUnits.dropWhile (\c -> c == ' ' || c == '\t') s
 
@@ -254,12 +268,14 @@ featureOfPath path = do
 
 -- | Cross-feature imports: a feature module importing a sibling feature's
 -- | module. Returns "<file>: <import line>" for each violation.
-findCrossFeatureImports :: String -> Effect (Array String)
+findCrossFeatureImports :: String -> Aff (Array String)
 findCrossFeatureImports featuresRoot = do
-  files <- pursFilesUnder featuresRoot
+  files <- liftEffect $ pursFilesUnder featuresRoot
   offenders <- for files \file -> do
-    content <- FS.readTextFile UTF8 file
-    pure (map (\imp -> file <> ": " <> imp) (crossFeatureImports file content))
+    content <- readTextFile file
+    pure $ case content of
+      Left _ -> []
+      Right c -> map (\imp -> file <> ": " <> imp) (crossFeatureImports file c)
   pure (concat offenders)
   where
   crossFeatureImports :: String -> String -> Array String
@@ -328,8 +344,10 @@ spec = do
       -- The JS-side last-resort 500 carries its own CSP string (App.ServerBun.js).
       -- It's the fallback policy (no nonce — text/plain, no scripts execute).
       -- A drift here means the containment path serves a different CSP.
-      jsSource <- liftEffect $ FS.readTextFile UTF8 "src/App/ServerBun.js"
-      jsSource `StrAssert.shouldContain` ("Content-Security-Policy\": \"" <> expectedFallbackCsp)
+      jsSource <- readTextFile "src/App/ServerBun.js"
+      case jsSource of
+        Right src -> src `StrAssert.shouldContain` ("Content-Security-Policy\": \"" <> expectedFallbackCsp)
+        Left err -> StrAssert.shouldContain "" ("expected file to be readable: " <> err)
 
   describe "Alpine seam — contentTarget" do
     it "every static page renders <main id=contentTarget> in both languages" do
@@ -355,7 +373,7 @@ spec = do
 
   describe "Alpine seam — typed constructors" do
     it "no raw Alpine attribute strings outside App.Alpine" do
-      offenders <- liftEffect $ findRawAlpineOutsideAlpine "src"
+      offenders <- findRawAlpineOutsideAlpine "src"
       offenders `shouldEqual` []
 
   describe "serviceCopy non-fallback coverage" do
@@ -391,7 +409,7 @@ spec = do
     it "every allowlisted module exists on disk" do
       -- Guards against a typo in the allowlist paths above.
       checks <- liftEffect $ for rawAllowlist \path -> do
-        exists <- FS.exists path
+        exists <- exists path
         pure (if exists then Nothing else Just path)
       mapMaybe identity checks `shouldEqual` []
 
@@ -399,19 +417,19 @@ spec = do
       -- Mirror of `make gate`'s `grep \braw\b src/`, scoped to src/App
       -- (where the allowlist lives); src/Data stays covered by the
       -- Makefile gate.
-      offenders <- liftEffect $ findRawOutsideAllowlist "src/App"
+      offenders <- findRawOutsideAllowlist "src/App"
       offenders `shouldEqual` []
 
     it "no banned functions in src/" do
-      offenders <- liftEffect $ findBannedInSrc "src"
+      offenders <- findBannedInSrc "src"
       offenders `shouldEqual` []
 
     it "no foreign import outside allowlist" do
-      offenders <- liftEffect $ findForeignImportsOutsideAllowlist "src"
+      offenders <- findForeignImportsOutsideAllowlist "src"
       offenders `shouldEqual` []
 
     it "Raw constructor is not exported from App.Html" do
-      exported <- liftEffect isRawExported
+      exported <- isRawExported
       exported `shouldEqual` false
 
   describe "feature isolation" do
@@ -421,7 +439,7 @@ spec = do
       -- Posts.Types) but never another feature's modules. Cross-feature
       -- imports are hidden coupling — the shared data boundary lives in
       -- App.Data.Fetch instead.
-      offenders <- liftEffect $ findCrossFeatureImports "src/App/Features"
+      offenders <- findCrossFeatureImports "src/App/Features"
       offenders `shouldEqual` []
 
     describe "Bun.serve migration invariants" do

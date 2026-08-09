@@ -10,8 +10,10 @@ import App.Alpine (alpineRequestHeader)
 import App.Cache (PageCache, defaultTtlMs, insertDynamic, insertStatic, lookupDynamic, lookupStatic, mkPageCache)
 import App.Config (Config, loadConfig)
 import App.Email (ResendConfig, parseForm, sendContactEmail, sendNewsletterEmail)
+import App.Env (getEnvMaybe)
 import App.Error (AppError(..))
-import App.Form (ContactSubmission(..), FormStatus(..), NewsletterSubmission(..), decodeContact, decodeNewsletter, formStatusQuery, parseFormStatus, unEmailAddress, apiContactPath, apiNewsletterPath)
+import App.Form (ContactSubmission(..), FormStatus(..), NewsletterSubmission(..), decodeContact, decodeNewsletter, formStatusQuery, parseFormStatus, apiContactPath, apiNewsletterPath)
+import App.Migration (migrate, renderMigrationError)
 import App.Features.About.Page as About
 import App.Features.Contact.Page as Contact
 import App.Features.Home.Page as Home
@@ -20,7 +22,7 @@ import App.Features.Posts.Page as Posts
 import App.Html (Html)
 import App.Layout.Page (renderErrorPage, renderFragment, renderPage, renderShellClose, renderShellOpen)
 import App.Logger as Log
-import App.RateLimit (RateLimiter, checkRateLimit, mkRateLimiter)
+import App.RateLimit (RateLimiter, RateLimitVerdict(..), checkRateLimit, mkRateLimiter)
 import App.Server as Server
 import App.ServerBun (streamResponseImpl)
 import App.Sitemap (renderRobots, renderSitemap)
@@ -35,7 +37,7 @@ import Data.String.Common (split, toLower)
 import Data.String.Pattern (Pattern(..))
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
-import Effect.Aff (Aff)
+import Effect.Aff (Aff, launchAff_)
 import Effect.Class (liftEffect)
 
 -- ============================================================================
@@ -51,14 +53,11 @@ rateGate cfg limiter request next =
   if cfg.rateLimitMax <= 0 then next
   else do
     verdict <- liftEffect $ checkRateLimit limiter cfg.rateLimitMax cfg.rateLimitWindowMs request.ip
-    if verdict.allowed then next
-    else do
-      liftEffect $ Log.logWarn "rate-limited" [ Tuple "rid" request.id, Tuple "ip" request.ip ]
-      pure $ Server.tooManyRequests (fromMaybe skyIsFallingSeconds (verdict.retryAfterMs <#> (_ / 1000.0)))
-  where
-  -- | Denial without a computed window end should not happen, but if it
-  -- | does, a whole-window value is the safe over-wait.
-  skyIsFallingSeconds = cfg.rateLimitWindowMs / 1000.0
+    case verdict of
+      Allowed -> next
+      Denied retryAfterMs -> do
+        liftEffect $ Log.logWarn "rate-limited" [ Tuple "rid" request.id, Tuple "ip" request.ip ]
+        pure $ Server.tooManyRequests (retryAfterMs / 1000.0)
 
 router :: Config -> RateLimiter -> PageCache -> Server.Request -> Aff Server.Response
 router cfg limiter cache request@{ method, path, headers, body, query, nonce } = case method of
@@ -278,7 +277,7 @@ handleContact cfg rid headers body =
           liftEffect $ Log.logWarn "email-not-configured" [ Tuple "rid" rid, Tuple "form" "contact" ]
           redirectStatus lang Contact FormError
         Just rc -> do
-          result <- sendContactEmail rc { name: contactForm.name, email: unEmailAddress contactForm.email, message: contactForm.message }
+          result <- sendContactEmail rc { name: contactForm.name, email: contactForm.email, message: contactForm.message }
           case result of
             Right _ -> redirectStatus lang Contact FormSuccess
             Left err -> liftEffect (Log.logErr "email-failed" [ Tuple "rid" rid, Tuple "form" "contact", Tuple "error" (show err) ]) *> redirectStatus lang Contact FormError
@@ -301,7 +300,7 @@ handleNewsletter cfg rid headers body =
           liftEffect $ Log.logWarn "email-not-configured" [ Tuple "rid" rid, Tuple "form" "newsletter" ]
           redirectStatus lang Home FormError
         Just rc -> do
-          result <- sendNewsletterEmail rc (unEmailAddress emailAddr)
+          result <- sendNewsletterEmail rc emailAddr
           case result of
             Right _ -> redirectStatus lang Home FormSubscribed
             Left err -> liftEffect (Log.logErr "email-failed" [ Tuple "rid" rid, Tuple "form" "newsletter", Tuple "error" (show err) ]) *> redirectStatus lang Home FormError
@@ -313,7 +312,17 @@ handleNewsletter cfg rid headers body =
 main :: Effect Unit
 main = do
   cfg <- loadConfig
-  limiter <- mkRateLimiter
-  cache <- mkPageCache
-  when (isNothing cfg.resendApiKey) $ Log.logWarn "resend-key-missing" [ Tuple "msg" "contact/newsletter forms will return status=error" ]
-  Server.serve cfg.port cfg.staticRoot (router cfg limiter cache)
+  migrateOnly <- getEnvMaybe "MIGRATE_ONLY"
+  case migrateOnly of
+    Just _ -> case cfg.databaseUrl of
+      Nothing -> Log.logErr "migrate-no-db" [ Tuple "msg" "DATABASE_URL not set" ]
+      Just url -> launchAff_ do
+        result <- migrate url
+        liftEffect $ case result of
+          Left err -> Log.logErr "migrate-failed" [ Tuple "error" (renderMigrationError err) ]
+          Right n -> Log.logInfo "migrate-ok" [ Tuple "applied" (show n) ]
+    Nothing -> do
+      limiter <- mkRateLimiter
+      cache <- mkPageCache
+      when (isNothing cfg.resendApiKey) $ Log.logWarn "resend-key-missing" [ Tuple "msg" "contact/newsletter forms will return status=error" ]
+      Server.serve cfg.port cfg.staticRoot (router cfg limiter cache)
