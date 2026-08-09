@@ -26,15 +26,13 @@ Two problems emerged:
    ad-hoc split into `View/Hero.purs`, `View/Services.purs`, `View/CTA.purs`,
    but the pattern wasn't formalised and no other feature followed it.
 
-A common SPA pattern formalises a feature-module shape:
-`features/<name>/{Page, hooks/, components/, resources}`. Its `components/`
-folder holds feature-local presentational components; shared primitives
-live in a shared `ui/` folder. The split works in SPAs because components
-are first-class units (reusable, testable, memoisable). The question was
-whether the pattern transfers to SSR-once PureScript, where `Html` values
-are constructed once and rendered with no re-render lifecycle.
-
 ## Decision
+
+Components are just functions. In React they're functions; in PureScript
+they're functions. The lack of a re-render lifecycle in SSR-once rendering
+is irrelevant — components earn their place through **reuse, testability,
+and discoverability**, not through lifecycle hooks. A `renderPostCard`
+function in its own file is a component whether it re-renders or not.
 
 Establish two seams, enforced by convention, eval, and the generator:
 
@@ -51,8 +49,14 @@ src/App/Features/<Name>/
 ```
 
 Components are pure functions: `Lang -> Data -> Html` (props in, Html out).
-Extract when a helper is reused within the feature OR when `View.purs`
-exceeds ~80 lines. Don't force-split small features.
+One component per file, PascalCase filename. Extract any distinct visual
+unit into its own file — a card, a form, a section, a sidebar. `View.purs`
+is the orchestrator that composes them, not a dumping ground for inline
+helpers.
+
+A feature with only a heading and a paragraph has nothing to extract —
+`View.purs` alone is fine. A feature with a list of cards, a form, and a
+sidebar has three components.
 
 ### 2. Shared primitives: `App/Ui/`
 
@@ -76,12 +80,6 @@ The `w-full` is load-bearing — it lives in one place, not 14.
 
 ### What was rejected
 
-- **Full SPA-style component split (every helper in its own file).** In
-  SSR-once PureScript there's no re-render, no props diff, no hook lifecycle.
-  A `renderPostCard :: Lang -> Post -> Html` function in `View.purs` is
-  already a "component." Splitting 20-line features into `Components/`
-  adds files and imports for zero behavioural gain. The extraction
-  threshold (~80 lines or reuse) prevents this.
 - **A `Box`/`Stack`/`Flex` abstraction layer.** Tailwind utilities are the
   vocabulary; wrapping them in semantic names adds indirection without
   leverage. `Container` earns its place because it fixes a real bug

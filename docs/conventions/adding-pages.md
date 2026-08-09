@@ -19,10 +19,11 @@ src/App/Features/<Name>/
 
 **Two seams, two rules:**
 
-1. **`Components/`** — feature-local presentational render functions. Extract
-   a component when it's reused within the feature OR when `View.purs` exceeds
-   ~80 lines. One component per file, named PascalCase. Components are pure:
-   `Lang -> Data -> Html` (props in, Html out).
+1. **`Components/`** — feature-local presentational render functions. One
+   component per file, named PascalCase. Extract any distinct visual unit
+   (a card, a form, a section, a sidebar) into its own file. `View.purs` is
+   the orchestrator that composes them, not a dumping ground for inline
+   helpers. Components are pure: `Lang -> Data -> Html` (props in, Html out).
 
 2. **`App/Ui/`** — shared primitives reused across features (Button, Card,
    Container, Social). A feature component promotes to `App/Ui/` when a
@@ -54,7 +55,7 @@ importing a sibling feature's modules.
 5. `src/App/Features/<Name>/Page.purs` :: `render :: Lang -> Aff (Either AppError Html)`
    (wrap pure Html in `pure (Right ...)`)
 6. `src/App/Features/<Name>/View.purs` — page-level rendering via `container`
-7. `src/App/Features/<Name>/Components/` — extract when `View.purs` exceeds ~80 lines
+7. `src/App/Features/<Name>/Components/` — extract distinct visual units (one per file)
 8. i18n keys in `Data.I18n.purs` (both languages)
 9. Add to `navItems` if it belongs in navigation
 10. Venom assertions in `venom/01_routes.yml` + unit route tests
