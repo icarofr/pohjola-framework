@@ -1,5 +1,8 @@
 # Adding a new page — checklists
 
+> See [ADR-008](../adr/ADR-008-component-architecture.md) for the rationale
+> behind the component architecture and the mandatory `Container` module.
+
 ## Component architecture (rule)
 
 Every feature follows this structure — no variations:

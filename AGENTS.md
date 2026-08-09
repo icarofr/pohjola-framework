@@ -24,7 +24,7 @@
 |`make new-feature`|Scaffold a feature (NAME=X [TYPE=data] [SLUG_FR=x]) |
 
 ### Task → doc trigger map
-- Adding a page → `docs/conventions/adding-pages.md`
+- Adding a page → `docs/conventions/adding-pages.md`, `docs/adr/ADR-008-component-architecture.md`
 - Forms → `docs/conventions/forms.md`
 - Data fetching → `docs/conventions/data-layer.md`
 - Server internals → `docs/conventions/server.md`
