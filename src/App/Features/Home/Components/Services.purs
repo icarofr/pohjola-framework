@@ -2,13 +2,14 @@
 -- |
 -- | Card metadata (price, image) comes from Data.Content; localized copy comes
 -- | from the Dictionary via serviceCopy — one source of truth per concern.
-module App.Features.Home.View.Services where
+module App.Features.Home.Components.Services where
 
 import Prelude
 
 import App.Html (Html, class_, el, text)
 import App.Ui.Button (buttonLinkExternal, Variant(..), Size(..))
 import App.Ui.Card (card, cardImage, cardBody)
+import App.Ui.Container (container)
 import Data.Content (Service, bookingUrl, formatPrice, services)
 import Data.Foldable (foldMap)
 import Data.I18n (Lang, dict, langTag)
@@ -19,8 +20,8 @@ renderServices lang =
     d = (dict lang).services
   in
     el "section" [ class_ "py-20 bg-white dark:bg-slate-950" ]
-      [ el "div" [ class_ "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" ]
-          [ el "div" [ class_ "mx-auto max-w-2xl text-center" ]
+      [ container "max-w-7xl" ""
+          [ container "max-w-2xl" "text-center"
               [ el "h2" [ class_ "font-display text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl" ]
                   [ text d.sectionTitle ]
               ]

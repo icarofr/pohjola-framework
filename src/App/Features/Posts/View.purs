@@ -4,8 +4,10 @@ module App.Features.Posts.View where
 import Prelude
 
 import App.Alpine (spaLink, xAutofocus)
+import App.Features.Posts.Components.PostCard (renderPostCard)
 import App.Features.Posts.Types (Post, postId, postTitle, postBody, postUserId)
 import App.Html (Html, attr, class_, el, text)
+import App.Ui.Container (container)
 import Data.Array (take)
 import Data.Foldable (foldMap)
 import Data.I18n (Lang, dict)
@@ -18,29 +20,11 @@ renderPostList lang posts =
   let
     d = (dict lang).posts
   in
-    el "div" [ class_ "mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8" ]
+    container "max-w-3xl" "py-16"
       [ el "h1" [ class_ "font-display text-4xl font-bold text-slate-900 dark:text-white", xAutofocus, attr "tabindex" "-1" ]
           [ text d.listTitle ]
       , el "div" [ class_ "mt-8 space-y-6" ]
           [ foldMap (renderPostCard lang) (take 10 posts) ]
-      ]
-
--- | Individual post card in the list — links to PostDetail via spaLink.
-renderPostCard :: Lang -> Post -> Html
-renderPostCard lang post =
-  let
-    d = (dict lang).posts
-  in
-    el "article" [ class_ "rounded-lg border border-slate-200 dark:border-slate-800 p-6 hover:border-blue-300 dark:hover:border-blue-700 transition-colors" ]
-      [ el "h2" [ class_ "text-xl font-semibold text-slate-900 dark:text-white" ]
-          [ spaLink lang (PostDetail (postId post))
-              [ class_ "hover:text-blue-600 dark:hover:text-blue-400 transition-colors" ]
-              [ text (postTitle post) ]
-          ]
-      , el "p" [ class_ "mt-2 text-sm text-slate-600 dark:text-slate-400 line-clamp-2" ]
-          [ text (postBody post) ]
-      , el "p" [ class_ "mt-3 text-xs text-slate-400" ]
-          [ text (d.byAuthor <> " " <> d.unknownAuthor <> " " <> show (postUserId post)) ]
       ]
 
 -- | Post detail page — shows a single post with a back link.
@@ -49,7 +33,7 @@ renderPostDetail lang post =
   let
     d = (dict lang).posts
   in
-    el "div" [ class_ "mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8" ]
+    container "max-w-3xl" "py-16"
       [ el "h1" [ class_ "font-display text-4xl font-bold text-slate-900 dark:text-white", xAutofocus, attr "tabindex" "-1" ]
           [ text (postTitle post) ]
       , el "p" [ class_ "mt-2 text-sm text-slate-400" ]
@@ -71,7 +55,7 @@ renderPostsError lang =
   let
     d = (dict lang).posts
   in
-    el "div" [ class_ "mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8" ]
+    container "max-w-3xl" "py-16"
       [ el "h1" [ class_ "font-display text-4xl font-bold text-slate-900 dark:text-white", xAutofocus, attr "tabindex" "-1" ]
           [ text d.listTitle ]
       , el "p" [ class_ "mt-4 text-lg text-red-600 dark:text-red-400" ]

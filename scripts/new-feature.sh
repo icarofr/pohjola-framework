@@ -56,11 +56,12 @@ EOF
 
 # View.purs (both types)
 cat > "$FEATURE_DIR/View.purs" <<EOF
--- | $NAME page sections
+-- | $NAME page — page-level rendering, orchestrates Components/
 module App.Features.$NAME.View where
 
 import App.Alpine (xAutofocus)
 import App.Html (Html, attr, class_, el, text)
+import App.Ui.Container (container)
 import Data.I18n (Lang, dict)
 
 render$NAME :: Lang -> Html
@@ -68,7 +69,7 @@ render$NAME lang =
   let
     d = (dict lang).$lower
   in
-    el "div" [ class_ "mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8" ]
+    container "max-w-3xl" "py-16"
       [ el "h1" [ class_ "font-display text-4xl font-bold text-slate-900 dark:text-white", xAutofocus, attr "tabindex" "-1" ]
           [ text d.heading ]
       , el "p" [ class_ "mt-6 text-lg leading-8 text-slate-600 dark:text-slate-300" ]
@@ -159,14 +160,16 @@ EOF
 
   # Overwrite View.purs for data-backed
   cat > "$FEATURE_DIR/View.purs" <<EOF
--- | $NAME view — list rendering
+-- | $NAME view — list rendering, orchestrates Components/
 module App.Features.$NAME.View where
 
 import Prelude
 
 import App.Alpine (xAutofocus)
+import App.Features.$NAME.Components.${NAME}Card (render${NAME}Card)
 import App.Features.$NAME.Types ($NAME)
 import App.Html (Html, attr, class_, el, text)
+import App.Ui.Container (container)
 import Data.Foldable (foldMap)
 import Data.I18n (Lang, dict)
 
@@ -175,31 +178,42 @@ render${NAME}List lang items =
   let
     d = (dict lang).$lower
   in
-    el "div" [ class_ "mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8" ]
+    container "max-w-3xl" "py-16"
       [ el "h1" [ class_ "font-display text-4xl font-bold text-slate-900 dark:text-white", xAutofocus, attr "tabindex" "-1" ]
           [ text d.heading ]
       , el "div" [ class_ "mt-8 space-y-6" ]
           [ foldMap (render${NAME}Card lang) items ]
       ]
 
-render${NAME}Card :: Lang -> $NAME -> Html
-render${NAME}Card lang item =
-  el "article" [ class_ "rounded-lg border border-slate-200 dark:border-slate-800 p-6" ]
-    [ el "h2" [ class_ "text-xl font-semibold text-slate-900 dark:text-white" ]
-        [ text "TODO" ]
-    ]
-
 render${NAME}Error :: Lang -> Html
 render${NAME}Error lang =
   let
     d = (dict lang).$lower
   in
-    el "div" [ class_ "mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8" ]
+    container "max-w-3xl" "py-16"
       [ el "h1" [ class_ "font-display text-4xl font-bold text-slate-900 dark:text-white", xAutofocus, attr "tabindex" "-1" ]
           [ text d.heading ]
       , el "p" [ class_ "mt-4 text-lg text-red-600 dark:text-red-400" ]
           [ text "Error loading." ]
       ]
+EOF
+
+  # Components/ — feature-local presentational components
+  mkdir -p "$FEATURE_DIR/Components"
+  cat > "$FEATURE_DIR/Components/${NAME}Card.purs" <<EOF
+-- | ${NAME} card — presentational component for a single item in a list.
+module App.Features.$NAME.Components.${NAME}Card where
+
+import App.Features.$NAME.Types ($NAME)
+import App.Html (Html, class_, el, text)
+import Data.I18n (Lang)
+
+render${NAME}Card :: Lang -> $NAME -> Html
+render${NAME}Card _ _ =
+  el "article" [ class_ "rounded-lg border border-slate-200 dark:border-slate-800 p-6" ]
+    [ el "h2" [ class_ "text-xl font-semibold text-slate-900 dark:text-white" ]
+        [ text "TODO" ]
+    ]
 EOF
 fi
 
@@ -213,7 +227,7 @@ cat <<INSTRUCTIONS
 INSTRUCTIONS
 
 if [[ "$TYPE" == "data" ]]; then
-  echo "│    Types.purs  Service.purs  Page.purs  View.purs                       │"
+  echo "│    Types.purs  Service.purs  Page.purs  View.purs  Components/            │"
 else
   echo "│    Page.purs  View.purs                                                  │"
 fi

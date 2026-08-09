@@ -15,6 +15,7 @@ import App.Html (Html, attr, class_, el, escape, flag, href, id_, name_, raw, re
 import App.Layout.Head (renderHead)
 import App.Layout.Header (render) as Header
 import App.Layout.Footer (render) as Footer
+import App.Ui.Container (container)
 import Data.Either (Either(..))
 import Data.Foldable (foldMap)
 import Data.I18n (Lang, langTag, dict)
@@ -102,7 +103,7 @@ renderErrorPage nonce lang status =
     message = case status of
       404 -> d.common.error404
       _ -> d.common.error500
-    content = el "div" [ class_ "mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8 text-center" ]
+    content = container "max-w-3xl" "py-16 text-center"
       [ el "h1" [ class_ "font-display text-4xl font-bold text-slate-900 dark:text-white" ] [ text (show status) ]
       , el "p" [ class_ "mt-4 text-lg text-slate-600 dark:text-slate-300" ] [ text message ]
       ]
