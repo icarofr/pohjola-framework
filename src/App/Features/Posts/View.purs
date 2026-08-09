@@ -5,7 +5,7 @@ import Prelude
 
 import App.Alpine (spaLink, xAutofocus)
 import App.Features.Posts.Components.PostCard (renderPostCard)
-import App.Features.Posts.Types (Post, postId, postTitle, postBody, postUserId)
+import App.Features.Posts.Types (Post, postTitle, postBody, postUserId)
 import App.Html (Html, attr, class_, el, text)
 import App.Ui.Container (container)
 import Data.Array (take)
