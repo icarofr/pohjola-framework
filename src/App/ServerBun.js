@@ -135,7 +135,7 @@ export function serveImpl(port) {
   return function (staticRoot) {
     return function (handler) {
       return function () {
-        return Bun.serve({
+        const server = Bun.serve({
           port,
           idleTimeout: 30,
           maxRequestBodySize: 64 * 1024,
@@ -147,6 +147,31 @@ export function serveImpl(port) {
           },
           fetch: makeFetch(handler),
         });
+
+        // Graceful shutdown — SIGTERM (docker stop) / SIGINT (Ctrl-C).
+        // server.stop() (graceful) closes the listener, waits for in-flight
+        // requests to finish, then resolves. A 30s backstop force-closes
+        // if a request hangs. Idempotent: a second signal force-exits.
+        var shuttingDown = false;
+        function shutdown() {
+          if (shuttingDown) {
+            server.stop(true);
+            return;
+          }
+          shuttingDown = true;
+          var force = setTimeout(function () {
+            server.stop(true);
+            process.exit(1);
+          }, 30000);
+          server.stop().then(function () {
+            clearTimeout(force);
+            process.exit(0);
+          });
+        }
+        process.on("SIGTERM", shutdown);
+        process.on("SIGINT", shutdown);
+
+        return server;
       };
     };
   };

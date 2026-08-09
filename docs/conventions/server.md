@@ -65,3 +65,20 @@ process.
 Production and CI run **Bun** (committed 100%). The server is implemented
 using `Bun.serve` via a tamed FFI boundary (`App.ServerBun`), as recorded in
 ADR-007.
+
+## Graceful shutdown
+
+`SIGTERM` (docker stop) and `SIGINT` (Ctrl-C) trigger a graceful drain in
+`App.ServerBun.js`:
+
+1. `server.stop()` (graceful) closes the listener — no new connections.
+2. In-flight requests finish; idle keep-alive connections close immediately.
+3. The Promise from `server.stop()` resolves when `pendingRequests === 0`.
+4. A 30s backstop calls `server.stop(true)` (force) if a request hangs.
+5. A second signal force-exits immediately.
+
+Verified from Bun source (`src/runtime/server/mod.rs:1674-1683`): a graceful
+stop with work in flight keeps the event-loop ref until the drain completes.
+
+**Docker**: the `Dockerfile` uses `ENTRYPOINT ["bun", "/app/server.js"]` — Bun
+is PID 1 and receives signals directly. No `--init` wrapper needed.
