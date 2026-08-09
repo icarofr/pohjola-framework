@@ -1,9 +1,8 @@
--- | Legal page — terms of service sections
+-- | Legal page — page-level rendering, orchestrates Components/
 module App.Features.Legal.View where
 
-import Prelude
-
 import App.Alpine (xAutofocus)
+import App.Features.Legal.Components.LegalSection (renderLegalSection)
 import App.Html (Html, attr, class_, el, text)
 import App.Ui.Container (container)
 import Data.Foldable (foldMap)
@@ -22,13 +21,5 @@ renderLegal lang =
       , el "p" [ class_ "mt-1 text-sm text-slate-500 dark:text-slate-400" ]
           [ text d.lastUpdated ]
       , el "div" [ class_ "mt-8 space-y-8" ]
-          [ foldMap renderSection d.sections ]
+          [ foldMap renderLegalSection d.sections ]
       ]
-
-renderSection :: { number :: String, heading :: String, paragraphs :: Array String } -> Html
-renderSection section =
-  el "section" [ class_ "space-y-3" ]
-    [ el "h2" [ class_ "text-xl font-semibold text-slate-900 dark:text-white" ]
-        [ text (section.number <> ". " <> section.heading) ]
-    , foldMap (\p -> el "p" [ class_ "text-slate-600 dark:text-slate-300 leading-7" ] [ text p ]) section.paragraphs
-    ]

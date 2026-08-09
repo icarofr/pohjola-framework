@@ -1,17 +1,13 @@
--- | Home page — entry point, orchestrates sections from View/ submodules
+-- | Home page — entry point
 module App.Features.Home.Page where
 
-import Prelude
-
-import App.Features.Home.Components.CTA (renderCTA)
-import App.Features.Home.Components.Hero (renderHero)
-import App.Features.Home.Components.Services (renderServices)
+import App.Error (AppError)
+import App.Features.Home.View (renderHome)
 import App.Html (Html)
 import App.Layout.Page (staticPage)
+import Data.Either (Either)
 import Data.I18n (Lang)
 import Effect.Aff (Aff)
-import App.Error (AppError)
-import Data.Either (Either)
 
 render :: Lang -> Aff (Either AppError Html)
-render lang = staticPage (renderHero lang <> renderServices lang <> renderCTA lang)
+render lang = staticPage (renderHome lang)
