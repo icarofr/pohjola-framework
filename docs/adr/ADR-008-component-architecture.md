@@ -26,13 +26,13 @@ Two problems emerged:
    ad-hoc split into `View/Hero.purs`, `View/Services.purs`, `View/CTA.purs`,
    but the pattern wasn't formalised and no other feature followed it.
 
-The `wordle-tracker` client (SolidJS SPA) formalises a feature-module shape:
-`features/<name>/{Page, hooks/, components/, resources.ts}`. Its
-`components/` folder holds feature-local presentational components; shared
-primitives live in `components/ui/`. The split works because SolidJS
-components are first-class units (reusable, testable, memoisable). The
-question was whether the pattern transfers to SSR-once PureScript, where
-`Html` values are constructed once and rendered with no re-render lifecycle.
+A common SPA pattern formalises a feature-module shape:
+`features/<name>/{Page, hooks/, components/, resources}`. Its `components/`
+folder holds feature-local presentational components; shared primitives
+live in a shared `ui/` folder. The split works in SPAs because components
+are first-class units (reusable, testable, memoisable). The question was
+whether the pattern transfers to SSR-once PureScript, where `Html` values
+are constructed once and rendered with no re-render lifecycle.
 
 ## Decision
 
@@ -102,6 +102,6 @@ The `w-full` is load-bearing — it lives in one place, not 14.
 - **Cross-feature imports remain forbidden** (ContractSpec). Features
   compose through `App/Ui/` and `App.Data.Fetch`, not sibling imports.
 - **Generator updated**: `make new-feature TYPE=data` scaffolds
-  `Components/<Name>Card.purs` and uses `container` in templates.
+  `Components/<Name>Card.purs` and uses `container` in `View.purs` templates.
 - **Eval 06** asserts: `container` usage, no hand-written `mx-auto max-w-*`,
   no cross-feature imports.
