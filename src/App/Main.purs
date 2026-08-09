@@ -18,7 +18,6 @@ import App.Features.Home.Page as Home
 import App.Features.Legal.Page as Legal
 import App.Features.Posts.Page as Posts
 import App.Html (Html)
-import App.Layout.Head (cspNoncePlaceholder)
 import App.Layout.Page (renderErrorPage, renderFragment, renderPage, renderShellClose, renderShellOpen)
 import App.Logger as Log
 import App.RateLimit (RateLimiter, checkRateLimit, mkRateLimiter)
@@ -32,9 +31,8 @@ import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe, isNothing)
 import Data.Route (Route(..), parseRoute, routeUrl, staticRoutes)
-import Data.String (replace) as S
 import Data.String.Common (split, toLower)
-import Data.String.Pattern (Pattern(..), Replacement(..))
+import Data.String.Pattern (Pattern(..))
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
@@ -81,7 +79,7 @@ handleGet cfg cache nonce headers query path = case path of
   [ "sitemap.xml" ] -> pure $ Server.okText "application/xml" (renderSitemap cfg.baseUrl)
   _ -> case parseRoute path of
     Just { lang, route } -> handleRoute cfg cache nonce lang route headers query
-    Nothing -> pure $ Server.htmlResponse (renderErrorPage (langFromPath path) 404) [] 404
+    Nothing -> pure $ Server.htmlResponse (renderErrorPage nonce (langFromPath path) 404) [] 404
 
 -- | Best-effort language for a route-miss 404: the path's leading segment
 -- | wins when it carries a language prefix; unknown/prefixless paths fall
@@ -110,34 +108,37 @@ pageRenderer cfg route lang = case route of
 handleRoute :: Config -> PageCache -> String -> Lang -> Route -> Map String String -> Map String String -> Aff Server.Response
 handleRoute cfg cache nonce lang route headers query =
   if isFragmentRequest headers query then
-    handleFragment cfg lang route
+    handleFragment cfg nonce lang route
   else
-    case route of
-      PostList -> streamPostList cfg nonce lang
-      PostDetail id -> do
-        let key = "post:" <> show id <> ":" <> show lang
-        mCached <- liftEffect $ lookupDynamic cache.dynamic key
-        case mCached of
-          Just body -> pure $ Server.okWith [] body
-          Nothing -> do
-            res <- handleStatic cfg cache lang route query
-            case res.body of
-              Server.StringBody b ->
-                if res.status == 200 then do
-                  liftEffect $ insertDynamic cache.dynamic key b defaultTtlMs
-                  pure res
-                else pure res
-              _ -> pure res
-      _ -> handleStatic cfg cache lang route query
+    let
+      varyHeader = Tuple "Vary" alpineRequestHeader
+    in
+      case route of
+        PostList -> streamPostList cfg nonce lang
+        PostDetail id -> do
+          let key = "post:" <> show id <> ":" <> show lang
+          mCached <- liftEffect $ lookupDynamic cache.dynamic key
+          case mCached of
+            Just html -> pure $ Server.okWith [ varyHeader ] (renderPage cfg.baseUrl nonce lang route Nothing html)
+            Nothing -> do
+              result <- pageRenderer cfg route lang
+              case result of
+                Left err -> do
+                  liftEffect $ Log.logErr "page-render-failed" [ Tuple "path" (routeUrl lang route), Tuple "error" (show err) ]
+                  pure $ Server.htmlResponse (renderErrorPage nonce lang (errorStatus err)) [] (errorStatus err)
+                Right html -> do
+                  liftEffect $ insertDynamic cache.dynamic key html defaultTtlMs
+                  let status = Map.lookup "status" query >>= parseFormStatus
+                  pure $ Server.okWith [ varyHeader ] $ renderPage cfg.baseUrl nonce lang route status html
+        _ -> handleStatic cfg cache nonce lang route query
 
--- | Fragment handler — renders the full page content and returns a fragment.
-handleFragment :: Config -> Lang -> Route -> Aff Server.Response
-handleFragment cfg lang route = do
+handleFragment :: Config -> String -> Lang -> Route -> Aff Server.Response
+handleFragment cfg nonce lang route = do
   result <- pageRenderer cfg route lang
   case result of
     Left err -> do
       liftEffect $ Log.logErr "page-render-failed" [ Tuple "path" (routeUrl lang route), Tuple "error" (show err) ]
-      pure $ Server.htmlResponse (renderErrorPage lang (errorStatus err)) [] (errorStatus err)
+      pure $ Server.htmlResponse (renderErrorPage nonce lang (errorStatus err)) [] (errorStatus err)
     Right html ->
       pure $ Server.okWith [ Tuple "Vary" alpineRequestHeader ] $ renderFragment lang route html
 
@@ -145,8 +146,8 @@ handleFragment cfg lang route = do
 -- | Sends Vary: x-alpine-request so the browser caches full pages and
 -- | fragments separately (the same URL returns different content based
 -- | on the x-alpine-request header).
-handleStatic :: Config -> PageCache -> Lang -> Route -> Map String String -> Aff Server.Response
-handleStatic cfg cache lang route query = do
+handleStatic :: Config -> PageCache -> String -> Lang -> Route -> Map String String -> Aff Server.Response
+handleStatic cfg cache nonce lang route query = do
   let isStatic = route `elem` staticRoutes
   let hasStatus = Map.member "status" query
   let varyHeader = Tuple "Vary" alpineRequestHeader
@@ -154,30 +155,30 @@ handleStatic cfg cache lang route query = do
   if isStatic && not hasStatus then do
     mCached <- liftEffect $ lookupStatic cache.static route lang
     case mCached of
-      Just body -> pure $ Server.okWith [ varyHeader ] body
+      Just html -> pure $ Server.okWith [ varyHeader ] (renderPage cfg.baseUrl nonce lang route Nothing html)
       Nothing -> do
         result <- pageRenderer cfg route lang
         case result of
           Left err -> do
             liftEffect $ Log.logErr "page-render-failed" [ Tuple "path" (routeUrl lang route), Tuple "error" (show err) ]
-            pure $ Server.htmlResponse (renderErrorPage lang (errorStatus err)) [] (errorStatus err)
+            pure $ Server.htmlResponse (renderErrorPage nonce lang (errorStatus err)) [] (errorStatus err)
           Right html -> do
             let
               status = Map.lookup "status" query >>= parseFormStatus
-              body = renderPage cfg.baseUrl lang route status html
-            liftEffect $ insertStatic cache.static route lang body
+              body = renderPage cfg.baseUrl nonce lang route status html
+            liftEffect $ insertStatic cache.static route lang html
             pure $ Server.okWith [ varyHeader ] body
   else do
     result <- pageRenderer cfg route lang
     case result of
       Left err -> do
         liftEffect $ Log.logErr "page-render-failed" [ Tuple "path" (routeUrl lang route), Tuple "error" (show err) ]
-        pure $ Server.htmlResponse (renderErrorPage lang (errorStatus err)) [] (errorStatus err)
+        pure $ Server.htmlResponse (renderErrorPage nonce lang (errorStatus err)) [] (errorStatus err)
       Right html ->
         let
           status = Map.lookup "status" query >>= parseFormStatus
         in
-          pure $ Server.okWith [ varyHeader ] $ renderPage cfg.baseUrl lang route status html
+          pure $ Server.okWith [ varyHeader ] $ renderPage cfg.baseUrl nonce lang route status html
 
 -- | Stream PostList: shell arrives immediately, content streams when the
 -- | API fetch resolves. The ReadableStream is created by the FFI's
@@ -190,8 +191,8 @@ streamPostList cfg nonce lang = do
   stream <- liftEffect $ streamResponseImpl
     (Posts.streamListUrl cfg)
     (Posts.renderListContent lang)
-    (S.replace (Pattern cspNoncePlaceholder) (Replacement nonce) (renderShellOpen cfg.baseUrl lang PostList))
-    (S.replace (Pattern cspNoncePlaceholder) (Replacement nonce) (renderShellClose lang PostList))
+    (renderShellOpen cfg.baseUrl nonce lang PostList)
+    (renderShellClose nonce lang PostList)
   pure $ Server.streamResponse stream
 
 -- | A fragment request is either an Alpine AJAX navigation (x-alpine-request

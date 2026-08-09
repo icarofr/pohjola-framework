@@ -7,7 +7,6 @@ module App.Server where
 
 import Prelude
 
-import App.Layout.Head (cspNoncePlaceholder)
 import App.Config (mimeType)
 import App.Logger (Level(..))
 import App.Logger as AppLog
@@ -21,9 +20,9 @@ import Data.Int as Int
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe)
-import Data.String (replace, split) as S
+import Data.String (split) as S
 import Data.String.Common (toLower)
-import Data.String.Pattern (Pattern(..), Replacement(..))
+import Data.String.Pattern (Pattern(..))
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Aff (Aff, attempt, launchAff_)
@@ -184,15 +183,6 @@ tooManyRequests retryAfterSec =
 withRequestId :: String -> Response -> Response
 withRequestId rid response = response { headers = response.headers <> [ Tuple "x-request-id" rid ] }
 
--- | Replace the CSP nonce placeholder in a response body with the actual
--- | per-request nonce. Called by `serve` after generating the nonce. Only
--- | StringBody responses need this — StreamBody shells are replaced in
--- | App.Main before being passed to the FFI.
-replaceNonce :: String -> Response -> Response
-replaceNonce nonce response = case response.body of
-  StringBody s -> response { body = StringBody (S.replace (Pattern cspNoncePlaceholder) (Replacement nonce) s) }
-  _ -> response
-
 -- | Static file response (CSS, JS, images — never risk String mangling).
 -- | Test-only: in production, Bun's `{ dir }` routes serve static files.
 fileResponse :: String -> String -> Response
@@ -277,7 +267,7 @@ serve port staticRoot handler = do
           Right r -> pure r
         liftEffect $ AppLog.log Info "response" [ Tuple "rid" rid, Tuple "status" (show response.status) ]
         let
-          finalResponse = withRequestId rid (withCsp nonce (replaceNonce nonce response))
+          finalResponse = withRequestId rid (withCsp nonce response)
           rawResp =
             { status: finalResponse.status
             , headers: finalResponse.headers

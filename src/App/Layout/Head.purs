@@ -16,14 +16,8 @@ import Data.Tuple (Tuple(..))
 import Foreign.Object (Object)
 import Foreign.Object as Object
 
--- | Placeholder for the per-request CSP nonce. Render functions embed this
--- | in script tags; App.Main replaces it with the actual nonce at serve time
--- | so the static page cache stays nonce-agnostic.
-cspNoncePlaceholder :: String
-cspNoncePlaceholder = "__CSP_NONCE__"
-
-renderHead :: String -> Lang -> Route -> Html
-renderHead baseUrl lang route =
+renderHead :: String -> String -> Lang -> Route -> Html
+renderHead baseUrl nonce lang route =
   -- Meta tags
   el "meta" [ attr "charset" "UTF-8" ] []
     <> el "meta" [ name_ "viewport", content_ "width=device-width, initial-scale=1.0" ] []
@@ -31,9 +25,9 @@ renderHead baseUrl lang route =
     <> el "meta" [ name_ "author", content_ siteInfo.title ] []
     <> el "meta" [ name_ "theme-color", content_ siteInfo.themeColor ] []
     -- Dark mode init (prevents FOUC — runs before paint, inline, nonced)
-    <> raw ("<script nonce=\"" <> cspNoncePlaceholder <> "\">if(localStorage.getItem('theme')==='dark'||(!localStorage.getItem('theme')&&matchMedia('(prefers-color-scheme:dark)').matches))document.documentElement.classList.add('dark')</script>")
+    <> raw ("<script nonce=\"" <> nonce <> "\">if(localStorage.getItem('theme')==='dark'||(!localStorage.getItem('theme')&&matchMedia('(prefers-color-scheme:dark)').matches))document.documentElement.classList.add('dark')</script>")
     -- Inline scripts for title sync and popstate fix (nonced)
-    <> raw ("<script nonce=\"" <> cspNoncePlaceholder <> "\">(function(){window.addEventListener(\"ajax:merged\",function(){var m=document.getElementById(\"content\");if(m&&m.dataset.pageTitle)document.title=m.dataset.pageTitle});window.addEventListener(\"popstate\",function(e){if(e.state&&e.state.__ajax)window.location.reload()})})();</script>")
+    <> raw ("<script nonce=\"" <> nonce <> "\">(function(){window.addEventListener(\"ajax:merged\",function(){var m=document.getElementById(\"content\");if(m&&m.dataset.pageTitle)document.title=m.dataset.pageTitle});window.addEventListener(\"popstate\",function(e){if(e.state&&e.state.__ajax)window.location.reload()})})();</script>")
     -- Canonical
     <> el "link" [ rel_ "canonical", href (baseUrl <> routeUrl lang route) ] []
     -- hreflang alternates
@@ -61,7 +55,7 @@ renderHead baseUrl lang route =
     -- Title
     <> el "title" [] [ text (routeTitle lang route) ]
     -- JSON-LD structured data (exhaustive on Route, XSS-escaped)
-    <> foldMap identity (renderJsonLd baseUrl lang route)
+    <> foldMap identity (renderJsonLd baseUrl nonce lang route)
 
 hreflangTag :: String -> Route -> Lang -> Html
 hreflangTag baseUrl route lang =
@@ -98,22 +92,22 @@ seoDescription Fr = case _ of
 -- | JSON-LD structured data for a route. Exhaustive on Route — each route
 -- | type has its own schema. Returns Maybe because not every route has
 -- | structured data (About, Contact, Legal don't).
-renderJsonLd :: String -> Lang -> Route -> Maybe Html
-renderJsonLd baseUrl lang route = case route of
-  Home -> Just $ jsonLdScript
+renderJsonLd :: String -> String -> Lang -> Route -> Maybe Html
+renderJsonLd baseUrl nonce lang route = case route of
+  Home -> Just $ jsonLdScript nonce
     [ Tuple "@context" "https://schema.org"
     , Tuple "@type" "WebSite"
     , Tuple "name" siteInfo.title
     , Tuple "url" baseUrl
     , Tuple "inLanguage" (langTag lang)
     ]
-  PostList -> Just $ jsonLdScript
+  PostList -> Just $ jsonLdScript nonce
     [ Tuple "@context" "https://schema.org"
     , Tuple "@type" "Blog"
     , Tuple "name" siteInfo.title
     , Tuple "url" (baseUrl <> routeUrl lang PostList)
     ]
-  PostDetail _ -> Just $ jsonLdScript
+  PostDetail _ -> Just $ jsonLdScript nonce
     [ Tuple "@context" "https://schema.org"
     , Tuple "@type" "BlogPosting"
     -- Placeholder — renderJsonLd receives Route, not the fetched Post.
@@ -124,15 +118,14 @@ renderJsonLd baseUrl lang route = case route of
 
 -- | Render a JSON-LD <script> tag with XSS-safe escaping.
 -- | Replaces < with \u003c to prevent </script> injection.
--- | Nonced via cspNoncePlaceholder (replaced at serve time).
-jsonLdScript :: Array (Tuple String String) -> Html
-jsonLdScript pairs =
+jsonLdScript :: String -> Array (Tuple String String) -> Html
+jsonLdScript nonce pairs =
   let
     obj :: Object Json
     obj = Object.fromFoldable (map (\(Tuple k v) -> Tuple k (fromString (escapeJson v))) pairs)
     json = stringify (fromObject obj)
   in
-    el "script" [ attr "type" "application/ld+json", attr "nonce" cspNoncePlaceholder ] [ raw json ]
+    el "script" [ attr "type" "application/ld+json", attr "nonce" nonce ] [ raw json ]
 
 -- | Escape < as \u003c (the JSON-LD XSS fix from Next.js's guide).
 -- | Also escapes " and \ for valid JSON strings. Order matters:

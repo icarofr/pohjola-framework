@@ -2,6 +2,7 @@ module App.Cache where
 
 import Prelude
 
+import App.Html (Html)
 import Data.I18n (Lang)
 import Data.Map (Map)
 import Data.Map as Map
@@ -15,22 +16,22 @@ import Data.JSDate (now, getTime)
 
 -- | Cache for pre-rendered static pages. Keyed by (Route, Lang).
 -- | Lazy: populated on first request, then immutable for the process lifetime.
-type StaticCache = Ref (Map (Tuple Route Lang) String)
+type StaticCache = Ref (Map (Tuple Route Lang) Html)
 
 mkStaticCache :: Effect StaticCache
 mkStaticCache = Ref.new Map.empty
 
-lookupStatic :: StaticCache -> Route -> Lang -> Effect (Maybe String)
+lookupStatic :: StaticCache -> Route -> Lang -> Effect (Maybe Html)
 lookupStatic cache route lang = do
   m <- Ref.read cache
   pure (Map.lookup (Tuple route lang) m)
 
-insertStatic :: StaticCache -> Route -> Lang -> String -> Effect Unit
-insertStatic cache route lang body =
-  Ref.modify_ (Map.insert (Tuple route lang) body) cache
+insertStatic :: StaticCache -> Route -> Lang -> Html -> Effect Unit
+insertStatic cache route lang html =
+  Ref.modify_ (Map.insert (Tuple route lang) html) cache
 
 -- | TTL cache for dynamic pages (PostDetail).
-type CacheEntry = { body :: String, expires :: Number }
+type CacheEntry = { html :: Html, expires :: Number }
 type DynamicCache = Ref (Map String CacheEntry)
 
 maxEntries :: Int
@@ -46,7 +47,7 @@ mkDynamicCache = Ref.new Map.empty
 defaultTtlMs :: Number
 defaultTtlMs = 30000.0
 
-lookupDynamic :: DynamicCache -> String -> Effect (Maybe String)
+lookupDynamic :: DynamicCache -> String -> Effect (Maybe Html)
 lookupDynamic cache key = do
   m <- Ref.read cache
   case Map.lookup key m of
@@ -54,13 +55,13 @@ lookupDynamic cache key = do
     Just entry -> do
       t <- now
       let nowMs = getTime t
-      if nowMs < entry.expires then pure (Just entry.body)
+      if nowMs < entry.expires then pure (Just entry.html)
       else do
         Ref.modify_ (Map.delete key) cache
         pure Nothing
 
-insertDynamic :: DynamicCache -> String -> String -> Number -> Effect Unit
-insertDynamic cache key body ttlMs = do
+insertDynamic :: DynamicCache -> String -> Html -> Number -> Effect Unit
+insertDynamic cache key html ttlMs = do
   t <- now
   let nowMs = getTime t
   Ref.modify_
@@ -68,7 +69,7 @@ insertDynamic cache key body ttlMs = do
         let
           m' = if Map.size m >= maxEntries then pruneExpired nowMs m else m
         in
-          Map.insert key { body, expires: nowMs + ttlMs } m'
+          Map.insert key { html, expires: nowMs + ttlMs } m'
     )
     cache
 

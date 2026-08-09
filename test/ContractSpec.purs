@@ -78,7 +78,7 @@ renderStaticPage :: Route -> Lang -> Aff String
 renderStaticPage route lang = do
   result <- pageRenderer stubConfig route lang
   pure case result of
-    Right html -> renderPage stubConfig.baseUrl lang route Nothing html
+    Right html -> renderPage stubConfig.baseUrl "test-nonce-123" lang route Nothing html
     Left _ -> ""
 
 -- | True when a headers array contains a header with the given name.
@@ -438,9 +438,9 @@ spec = do
         html `StrAssert.shouldContain` "/en/posts"
 
       it "renderJsonLd returns Just for data-backed routes" do
-        isJust (renderJsonLd "https://example.com" En PostList) `shouldEqual` true
-        isJust (renderJsonLd "https://example.com" En Home) `shouldEqual` true
-        isJust (renderJsonLd "https://example.com" En About) `shouldEqual` false
+        isJust (renderJsonLd "https://example.com" "test-nonce" En PostList) `shouldEqual` true
+        isJust (renderJsonLd "https://example.com" "test-nonce" En Home) `shouldEqual` true
+        isJust (renderJsonLd "https://example.com" "test-nonce" En About) `shouldEqual` false
 
       it "JSON-LD is XSS-safe" do
         -- The security invariant: < must be escaped as \u003c in JSON-LD
@@ -450,13 +450,13 @@ spec = do
         escapeJson "</script>" `shouldEqual` "\\u003c/script>"
 
       it "renderShellOpen produces valid HTML structure" do
-        let html = renderShellOpen "https://example.com" En Home
+        let html = renderShellOpen "https://example.com" "test-nonce-123" En Home
         html `StrAssert.shouldContain` "<!DOCTYPE html"
         html `StrAssert.shouldContain` "<main id=\"content\""
         html `StrAssert.shouldNotContain` "</main>"
 
       it "renderShellClose closes the document" do
-        let html = renderShellClose En Home
+        let html = renderShellClose "test-nonce-123" En Home
         html `StrAssert.shouldContain` "</main>"
         html `StrAssert.shouldContain` "</body></html>"
 

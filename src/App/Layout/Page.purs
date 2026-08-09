@@ -12,7 +12,7 @@ import App.Alpine (contentTarget)
 import App.Error (AppError)
 import App.Form (FormStatus(..), formStatusQuery, statusText)
 import App.Html (Html, attr, class_, el, escape, flag, href, id_, name_, raw, render, src, text)
-import App.Layout.Head (cspNoncePlaceholder, renderHead)
+import App.Layout.Head (renderHead)
 import App.Layout.Header (render) as Header
 import App.Layout.Footer (render) as Footer
 import Data.Either (Either(..))
@@ -54,15 +54,13 @@ maybeStatusBanner lang = maybe (text "") \status ->
 
 -- | Full HTML page — for normal (non-AJAX) requests.
 -- | Takes pre-rendered Html (the router has already resolved the Aff).
--- | Uses cspNoncePlaceholder in script tags; App.Main replaces it with the
--- | per-request nonce at serve time so the static page cache stays nonce-agnostic.
-renderPage :: String -> Lang -> Route -> Maybe FormStatus -> Html -> String
-renderPage baseUrl lang route maybeStatus content =
+renderPage :: String -> String -> Lang -> Route -> Maybe FormStatus -> Html -> String
+renderPage baseUrl nonce lang route maybeStatus content =
   render $
     raw "<!DOCTYPE html>"
       <> el "html" [ attr "lang" (langTag lang) ]
         [ el "head" []
-            [ renderHead baseUrl lang route
+            [ renderHead baseUrl nonce lang route
             , renderPrefetch lang (prefetchFor route)
             ]
         , el "body"
@@ -75,9 +73,8 @@ renderPage baseUrl lang route maybeStatus content =
             , Footer.render lang
             -- Alpine AJAX before Alpine core (plugin must register first)
             -- Pinned versions, self-hosted from /assets/js/ for caching
-            -- Nonced via placeholder (replaced at serve time)
-            , el "script" [ flag "defer", src "/assets/js/alpine-ajax.min.js", attr "nonce" cspNoncePlaceholder ] []
-            , el "script" [ flag "defer", src "/assets/js/alpinejs.min.js", attr "nonce" cspNoncePlaceholder ] []
+            , el "script" [ flag "defer", src "/assets/js/alpine-ajax.min.js", attr "nonce" nonce ] []
+            , el "script" [ flag "defer", src "/assets/js/alpinejs.min.js", attr "nonce" nonce ] []
             ]
         ]
 
@@ -98,9 +95,8 @@ renderFragment lang route content =
 -- | Standalone HTML document (not via renderPage) because error pages have no
 -- | real Route — no canonical URL, no hreflang. Includes <meta name="robots"
 -- | content="noindex"> since error pages must not be indexed.
--- | Uses cspNoncePlaceholder; App.Main replaces it at serve time.
-renderErrorPage :: Lang -> Int -> String
-renderErrorPage lang status =
+renderErrorPage :: String -> Lang -> Int -> String
+renderErrorPage nonce lang status =
   let
     d = dict lang
     message = case status of
@@ -121,7 +117,7 @@ renderErrorPage lang status =
               , el "title" [] [ text (show status <> " — " <> d.common.siteTitle) ]
               , el "link" [ attr "rel" "stylesheet", attr "href" "/css/styles.css" ] []
               , el "style" [] [ raw "[x-cloak]{display:none!important}" ]
-              , raw ("<script nonce=\"" <> cspNoncePlaceholder <> "\">if(localStorage.getItem('theme')==='dark'||(!localStorage.getItem('theme')&&matchMedia('(prefers-color-scheme:dark)').matches))document.documentElement.classList.add('dark')</script>")
+              , raw ("<script nonce=\"" <> nonce <> "\">if(localStorage.getItem('theme')==='dark'||(!localStorage.getItem('theme')&&matchMedia('(prefers-color-scheme:dark)').matches))document.documentElement.classList.add('dark')</script>")
               ]
           , el "body"
               [ class_ bodyClass ]
@@ -129,8 +125,8 @@ renderErrorPage lang status =
               , el "main" [ id_ contentTarget, class_ "flex-1 flex flex-col" ]
                   [ content ]
               , Footer.render lang
-              , el "script" [ flag "defer", src "/assets/js/alpine-ajax.min.js", attr "nonce" cspNoncePlaceholder ] []
-              , el "script" [ flag "defer", src "/assets/js/alpinejs.min.js", attr "nonce" cspNoncePlaceholder ] []
+              , el "script" [ flag "defer", src "/assets/js/alpine-ajax.min.js", attr "nonce" nonce ] []
+              , el "script" [ flag "defer", src "/assets/js/alpinejs.min.js", attr "nonce" nonce ] []
               ]
           ]
 
@@ -162,13 +158,13 @@ renderPrefetch lang routes =
 -- | Uses raw strings for the shell structure (html/body/main) because the
 -- | `el` ADT auto-closes tags. The head and header are rendered via the ADT
 -- | (they're complete elements) and embedded as substrings.
-renderShellOpen :: String -> Lang -> Route -> String
-renderShellOpen baseUrl lang route =
+renderShellOpen :: String -> String -> Lang -> Route -> String
+renderShellOpen baseUrl nonce lang route =
   "<!DOCTYPE html>"
     <> "<html lang=\""
     <> langTag lang
     <> "\">"
-    <> render (el "head" [] [ renderHead baseUrl lang route ])
+    <> render (el "head" [] [ renderHead baseUrl nonce lang route ])
     <> "<body class=\""
     <> bodyClass
     <> "\">"
@@ -181,13 +177,12 @@ renderShellOpen baseUrl lang route =
 
 -- | The closing of a full HTML document: </main>, footer, scripts, </body>,
 -- | </html>. Streamed after the content chunk.
--- | Uses cspNoncePlaceholder; App.Main replaces it at serve time.
-renderShellClose :: Lang -> Route -> String
-renderShellClose lang _ =
+renderShellClose :: String -> Lang -> Route -> String
+renderShellClose nonce lang _ =
   "</main>"
     <> render (Footer.render lang)
-    <> render (el "script" [ flag "defer", src "/assets/js/alpine-ajax.min.js", attr "nonce" cspNoncePlaceholder ] [])
-    <> render (el "script" [ flag "defer", src "/assets/js/alpinejs.min.js", attr "nonce" cspNoncePlaceholder ] [])
+    <> render (el "script" [ flag "defer", src "/assets/js/alpine-ajax.min.js", attr "nonce" nonce ] [])
+    <> render (el "script" [ flag "defer", src "/assets/js/alpinejs.min.js", attr "nonce" nonce ] [])
     <> "</body></html>"
 
 -- | Escape attribute values for raw HTML strings. The `el` ADT escapes
