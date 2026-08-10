@@ -1,53 +1,46 @@
 # PureScript + Bun
 
-## The compiler is the contract.
+## Functional safety without a fixed architecture.
 
-A full-stack SSR starter for teams tired of runtime surprises, contract drift,
-and JavaScript glue spread across the application. One compiler-visible model
-connects the request, domain, rendered page, and browser-facing seams.
+The compiler is the contract: a full-stack SSR starter for teams whose web
+applications are accumulating boundary drift, runtime surprises, and JavaScript
+glue. PureScript + Bun keeps the domain model visible while leaving feature
+architecture and JavaScript access open.
 
-> **Compiler-visible types for internal boundaries · one model across routes,
-> forms, data, and pages · Bun-speed runtime · direct JS/npm FFI**
+## The seam problem
 
-For one typed application boundary, the compiler-visible model carries the
-contract; OpenAPI remains a strong choice for independently owned public APIs.
+As an application grows, contracts, async work, rendering, and runtime
+integrations spread across seams. Each seam adds another place for intent to
+drift from the code that serves users.
 
-## Request to browser
+## One model, request to browser
 
 ```text
 typed route → typed service/data decode → typed HTML → Bun response
 ```
 
-The same domain model travels through server code, forms, routes, i18n, and
-rendered browser pages. Alpine.js provides progressive enhancement through
-typed constructors in `App.Alpine`; the browser receives real HTML first.
+The same compiler-visible model covers routes, forms, data, errors, i18n, and
+HTML. Feature code stays in domain modules, while `Aff` composes sequential or
+parallel async work in the shape each feature needs. Alpine.js is a typed,
+browser-facing seam for progressive enhancement; the browser receives SSR HTML
+first.
 
-## Why it holds up
+## The payoff
 
-- **Effects stay visible:** sequential and parallel I/O compose through `Effect`
-  and `Aff`.
-- **Errors are values:** boundaries return types such as
-  `Aff (Either AppError a)`.
-- **HTML is typed:** a closed `Html` ADT handles text and attributes by
-  construction.
-- **Changes are exhaustive:** compiler checks and executable contracts expose
-  stale routes, errors, and translations during change.
+- **Effects are visible:** I/O composes through `Effect` and `Aff`, with async
+  work named in the types.
+- **Errors are values:** data boundaries return `Aff (Either AppError a)`.
+- **HTML is typed:** a closed `Html` ADT constructs text and attributes safely.
+- **Bun and JavaScript stay close:** direct JS/npm access runs through a small,
+  reviewed FFI boundary.
 
-## Elm-level safety, PureScript freedom
+## A broader full-stack choice
 
-Elm and PureScript both provide compiler-checked application code and
-exhaustive changes. Elm’s focused architecture and flags, ports, and custom
-elements make a deliberate, effective boundary for its target. PureScript
-extends that discipline across full-stack code with direct FFI and general-
-purpose Bun/server access. Here, the compiler checks PureScript application code
-and signatures; small, reviewed boundary modules connect them to JavaScript,
-with decoded inputs, `Either` failures, and server containment making foreign
-work legible.
-
-PureScript lets teams choose domain modules and structured `Aff` composition
-for sequential or parallel async work. Elm’s architecture is focused and
-effective for the applications it targets; this starter chooses a broader
-full-stack shape.
+Elm and PureScript both bring compiler-checked application code and exhaustive
+changes. Elm’s focused architecture is effective for frontend applications,
+with flags, ports, and custom elements forming a deliberate boundary. PureScript
+extends the same discipline across full-stack code with direct FFI, Bun/server
+access, and the freedom to choose domain modules and async composition styles.
 
 | Stack | Primary strength | Best fit |
 | --- | --- | --- |
@@ -56,16 +49,16 @@ full-stack shape.
 | **Lustre** | Gleam’s Elm-inspired web framework | Gleam teams building web UIs |
 | **ReScript** | Typed JavaScript with excellent interop | Easier adoption into JS codebases |
 
-## Proof in the repo
+## Proof in this repo
 
 - Closed `Html` ADT for typed rendering.
 - `Aff (Either AppError a)` for typed data failures.
 - Four-module FFI allowlist: `App.ServerBun`, `App.FetchBun`, `App.Bun`, and
   `App.Data.SQL`.
-- `make gate`, strict compilation, `ContractSpec`, property tests, and CI.
+- Strict compilation, `make gate`, `ContractSpec`, property tests, and CI.
 - SSR progressive enhancement: real URLs, real HTML, and typed Alpine seams.
 
-See the repository’s detailed guarantees in
+The detailed guarantees and their enforcement live in
 [`docs/GUARANTEES.md`](docs/GUARANTEES.md).
 
 ## Start
@@ -84,6 +77,8 @@ make run
 
 Open [`/en`](http://localhost:3001/en) or [`/fr`](http://localhost:3001/fr).
 
+## Explore / verify
+
 ```bash
 make gate
 make test
@@ -92,11 +87,8 @@ make check
 
 Explore [setup](docs/SETUP.md), [adding pages](docs/conventions/adding-pages.md),
 [data layer](docs/conventions/data-layer.md), [forms](docs/conventions/forms.md),
-and [project conventions](AGENTS.md).
-
-Types define application shape; decoders, executable contracts, and tests
-extend confidence to runtime seams. Deploy the Bun server with its private
-`dist-server/` bundle and public `dist/` assets.
+and [project conventions](AGENTS.md). Types define application shape; decoders,
+executable contracts, and tests extend confidence to runtime seams.
 
 ## License
 
