@@ -1,70 +1,124 @@
-# PS Alpine Starter
+# purescript-fullstack-starter
 
-> PureScript on the server. HTML in the response. Alpine.js when the page needs it.
+> The browser gets HTML. The compiler gets the domain. The gate gets the escape hatches.
 
-PS Alpine Starter is a full-stack starting point for web applications that want
-the server to remain the source of truth. PureScript renders the document,
-handles routes and data, and makes failures explicit. Alpine.js adds focused
-browser behavior without turning the site into a second application.
+A full-stack web application starter for building server-rendered sites with
+PureScript and Bun. Alpine.js adds focused browser behavior; it does not become
+the application. Tailwind handles styling, and the Makefile turns the project's
+architectural rules into checks you can run locally and in CI.
 
-**PureScript 0.15.16** · **Bun canary** · **Alpine.js 3.15.12** · **Tailwind CSS 4.3.3**
+**PureScript 0.15.16** · **Bun canary** · **Alpine.js 3.15.12** · **Alpine AJAX 0.12.7** · **Tailwind CSS 4.3.3**
 
-## The idea
+## Why this stack
 
-Most web applications begin with a client application and make the server fit
-around it. This starter takes the opposite route:
+This starter is for applications that want strong domain guarantees without
+giving up the JavaScript runtime and its ecosystem.
+
+### Effects are visible
+
+PureScript distinguishes pure code from `Effect` and `Aff`. A normal pure
+function cannot perform I/O or quietly introduce an effectful operation. In this
+repository, network calls, server work, and other boundaries are visibly
+effectful instead of being hidden behind ordinary-looking functions.
+
+### Totality is a project rule
+
+The strict build, exhaustive pattern matching, and `make gate` work together.
+Partial and unsafe escape hatches such as `unsafePartial`, `fromJust`,
+`unsafeCoerce`, and unsafe collection modules are rejected. Add a route variant
+and the compiler leads you to the handlers, titles, codecs, and other consumers
+that need a decision.
+
+### HTML is a typed value
+
+Views construct a closed `Html` ADT, not concatenated markup. Text and attributes
+are escaped by the renderer. `doctype`, script text, and style text have
+explicit constructors and contexts. There is no general-purpose unescaped HTML
+constructor to reach for when the type gets inconvenient.
+
+### Failures travel as data
+
+Expected boundary failures use `Either AppError`, including data fetching and
+page rendering. The server has one runtime exception boundary; application code
+does not need to turn every failure into a thrown exception and hope a distant
+handler catches it.
+
+### Routes are one model, not scattered strings
+
+`Data.Route` contains the route type and bidirectional `routing-duplex` codecs
+for English and French. The same model parses incoming paths and prints URLs.
+The bilingual dictionary is also type-shaped, so both languages must provide the
+same structure.
+
+### Bun is available, but interop is contained
+
+The starter uses Bun's server, fetch, HTML escaping, cookies, and SQL support
+where they are useful. FFI is restricted to four audited modules:
+`App.ServerBun`, `App.FetchBun`, `App.Bun`, and `App.Data.SQL`. The gate rejects
+new `foreign import` declarations outside that boundary.
+
+### The browser is an enhancement layer
+
+Alpine.js is self-hosted and pinned. Browser behavior is expressed through
+typed constructors in `App.Alpine`, while links retain real `href` values and
+forms retain server endpoints. The result is an MPA with enhanced navigation,
+not a hydrated client application that must take over before the page works.
+
+### The architecture is executable
+
+`ContractSpec` checks response security headers, the exact CSP, layout seams,
+feature isolation, form behavior, and Alpine boundaries. Property tests cover
+decoding, escaping, route round-trips, and honeypot semantics. The rules are
+part of the starter rather than advice in a wiki page.
+
+## The shape of a request
 
 ```text
-request -> typed route -> page + data -> HTML document -> browser enhancement
+Bun.serve request
+  -> App.Main router
+  -> Data.Route parser
+  -> feature Page / View
+  -> Layout.Page
+  -> Html renderer
+  -> server response
 ```
 
-That choice has practical consequences:
-
-- The first response is useful HTML, not a loading shell.
-- A link has a real URL and still works when JavaScript is unavailable.
-- Routing, rendering, decoding, and error handling share one typed domain model.
-- Client-side behavior stays at the edges instead of owning the application.
-- The checks that protect these decisions ship with the template.
-
-This is not an attempt to make every part of a web system provably safe. Bun,
-FFI wrappers, external APIs, and deployment configuration are still trust
-boundaries. The goal is a small, inspectable application whose important
-invariants are hard to forget.
-
-## See the shape
-
-The demo is bilingual and intentionally ordinary: Home, About, Contact, Legal,
-and a Posts feature that fetches JSONPlaceholder data.
+Data-backed features add one explicit path:
 
 ```text
-/en                     English home
-/fr                     French home
-/en/about               static page
-/en/contact             form page
-/en/posts/1             data-backed page
-/fr/articles/1          the same page through the French route codec
+Types -> Service -> App.Data.Fetch -> Page -> View -> Html
 ```
 
-The server also provides `robots.txt`, `sitemap.xml`, and `healthz`. Alpine.js
-handles selected navigation, theme, prefetch, and form interactions; the server
-still owns the page and the response.
+`Service` decodes external data at the boundary. `Page` orchestrates the
+effectful work. `View` composes HTML. Shared layout and UI primitives stay
+outside feature modules, and sibling features cannot import each other.
 
-## Run the demo
+## What is included
 
-You need Node.js 22 for the build tools, Bun canary for the server, PureScript
-0.15.16, and Spago 1.0.4. Docker is only needed for integration tests or the
-container workflow.
+The demo is deliberately small but covers the important seams:
 
-Install the language tools if they are not already available:
+- English and French routes: `/en/*` and `/fr/*`
+- Static Home, About, Contact, and Legal pages
+- Contact and newsletter forms with same-origin checks, rate limiting, and a
+  silent-success honeypot
+- A Posts list and `/posts/:id` detail page backed by JSONPlaceholder
+- Alpine-enhanced navigation, hover prefetch, dark mode, and form states
+- Generated `robots.txt`, `sitemap.xml`, and `healthz` endpoints
+- Unit/property/contract tests, Venom HTTP tests, and Playwright tests,
+  including a no-JavaScript browser project
+
+The Posts API is demonstration data. Replace or remove that feature before
+shipping a real application.
+
+## Run it
+
+Install Node.js 22, Bun canary, PureScript 0.15.16, and Spago 1.0.4. Docker is
+needed for the Venom integration tests and the container workflow.
 
 ```bash
 npm install --global purescript@0.15.16 spago@1.0.4
 curl -fsSL https://bun.sh/install | bash -s canary
-```
 
-Then clone and start the app:
-
-```bash
 git clone https://github.com/icarofr/purescript-fullstack-starter.git
 cd purescript-fullstack-starter
 cp .env.example .env
@@ -72,45 +126,19 @@ make deps
 make run
 ```
 
-Visit [localhost:3001/en](http://localhost:3001/en) or
-[localhost:3001/fr](http://localhost:3001/fr). `make run` builds the CSS,
-bundles the server into `dist-server/`, copies public assets to `dist/`, and
-starts Bun.
+Open [http://localhost:3001/en](http://localhost:3001/en) or
+[http://localhost:3001/fr](http://localhost:3001/fr). `make deps` installs
+project dependencies and downloads the pinned Alpine assets. `make run` builds
+CSS and the private server bundle before starting Bun.
 
-The demo does not need a real email provider to start. Add `RESEND_API_KEY` to
-`.env` when you want form submissions to send through Resend. The example file
-also documents `BASE_URL`, `PORT`, `POSTS_API_BASE`, rate limiting, email
-addresses, and `DATABASE_URL`.
+The demo starts without a real email provider. Set `RESEND_API_KEY` in `.env`
+when you want submissions to send through Resend. See `.env.example` for
+`BASE_URL`, `PORT`, `POSTS_API_BASE`, rate limits, email addresses, and
+`DATABASE_URL`.
 
-## What building here looks like
+## Make the first change
 
-HTML is a value. A page composes `Html` nodes; the renderer escapes ordinary
-text and attributes. There is no general-purpose unescaped HTML constructor.
-
-Routes are a `Route` type plus one `routing-duplex` codec for each language.
-Adding a route means updating the domain model and every exhaustive consumer,
-not adding a path string to an unrelated registry.
-
-Features have two deliberate shapes:
-
-```text
-static feature:       Page -> View -> Html
-data-backed feature:  Types -> Service -> Page -> View -> Html
-```
-
-Services fetch through `App.Data.Fetch.fetchJson` and decode at the boundary.
-Pages return `Either AppError` rather than hiding expected failures in thrown
-exceptions. Shared layout lives in `App.Layout`; reusable visual primitives
-live in `App.Ui`; feature modules do not import sibling features.
-
-Browser behavior follows the same rule: use typed constructors from
-`App.Alpine`, not ad-hoc Alpine attribute strings. Alpine AJAX can swap server
-rendered fragments, but the underlying links and forms remain real HTML.
-
-## Make it yours
-
-The demo is there to show the seams, not to become your product unchanged.
-Start a static or data-backed feature with the generator:
+Scaffold a feature instead of inventing a third architecture:
 
 ```bash
 make new-feature NAME=Team
@@ -118,60 +146,51 @@ make new-feature NAME=Products TYPE=data
 make new-feature NAME=Team SLUG_FR=equipe
 ```
 
-The generator creates the feature files and tells you where the compiler cannot
-fill in application-specific decisions. A normal page change touches:
+A new page normally requires a route variant, both language codecs, a renderer,
+localized dictionary entries, and tests. The generator prints the manual edits
+because those are application decisions the compiler cannot guess.
 
-1. The `Route` type and both language codecs.
-2. The page renderer, title, navigation, and sitemap where applicable.
-3. Both sides of the `Data.I18n` dictionary.
-4. The feature's tests and the relevant HTTP/browser assertions.
+Start with the [page checklist](docs/conventions/adding-pages.md). Then use the
+[data-layer guide](docs/conventions/data-layer.md), [forms guide](docs/conventions/forms.md),
+and [setup guide](docs/SETUP.md) as needed.
 
-Read the [page checklist](docs/conventions/adding-pages.md) before adding a
-route. For the two main extension points, see the [data-layer guide](docs/conventions/data-layer.md)
-and [forms guide](docs/conventions/forms.md). The
-[setup guide](docs/SETUP.md) explains how to turn this boilerplate into a new
-application.
+## Verify the guarantees
 
-## The feedback loop
-
-The Makefile is the development interface:
+The development loop is intentionally boring:
 
 ```bash
-make dev                 # strict PureScript build + CSS + static sync
+make dev                 # strict PureScript build, CSS, and static sync
 make watch               # PureScript rebuilds
 make css-watch           # Tailwind rebuilds
+make gate                # unsafe/partial/FFI/HTML/environment checks
 make test                # unit, property, and contract tests under Bun
-make test/integration    # Venom HTTP tests through Docker Compose
-make test/e2e            # Playwright, including the no-JS project
+make test/integration    # Venom tests through Docker Compose
+make test/e2e            # Playwright, including JavaScript-disabled pages
 make check               # gate + build + tests + assets + format
 ```
 
-`make gate` rejects unsafe and partial functions, unapproved FFI, environment
-reads outside the configuration boundary, and the general-purpose HTML escape
-hatch. Contract tests pin the CSP and response security headers, and check the
-layout, Alpine, form, and feature-isolation seams.
+`make check` is the local pre-push path. It does not claim that external APIs,
+Bun itself, or deployment infrastructure are infallible; it verifies the
+invariants this repository owns.
 
-## The boundaries are visible
+## Honest trade-offs
 
-The project intentionally keeps a few boundaries easy to find:
+- **Bun is a real commitment.** The server uses `Bun.serve` and the container
+  uses Bun canary; this is not a Node-portable server starter.
+- **FFI is contained, not magically verified.** The compiler cannot prove a JS
+  wrapper honest, so the boundary is kept small, defensive, and gate-checked.
+- **Alpine's standard build still needs `unsafe-eval`.** The CSP rejects
+  `unsafe-inline` and external scripts, but Alpine's requirement remains an
+  explicit documented trade-off in [ADR-000](docs/adr/ADR-000-no-custom-browser-js.md).
+- **The safety layer is opinionated.** The `Html` ADT, contract tests, ADRs, and
+  gate are bespoke project infrastructure, not a general-purpose web framework.
+- **The demo is not a product.** Authentication, production content, email
+  credentials, and real persistence still need application-specific design.
 
-- `src/App/Html.purs` — the HTML vocabulary and renderer.
-- `src/Data/Route.purs` — bilingual route parsing and URL generation.
-- `src/App/Main.purs` — the HTTP router and page selection.
-- `src/App/Layout/Page.purs` — the document and fragment shell.
-- `src/App/Data/Fetch.purs` — the data-fetching boundary.
-- `src/App/Alpine.purs` — the typed browser seam.
-- `test/ContractSpec.purs` — executable architectural contracts.
+## Ship it
 
-Generated output has its own boundary too: `dist/` is the public static root;
-`dist-server/` is private and must never be served as static content.
-
-## Ship the container
-
-The Dockerfile builds with Node.js, packages the PureScript server, and runs it
-with Bun in a distroless image. Put TLS and the public reverse proxy in front
-of it. The included Compose file defines the app service; it does not pretend
-to be a complete production edge.
+`dist/` is the public static root. `dist-server/` contains the private bundled
+server and must never be served from `dist/`.
 
 ```bash
 make image
@@ -179,21 +198,22 @@ make up
 make down
 ```
 
+The Dockerfile builds with Node.js, packages the server, and runs it with Bun in
+a distroless non-root image. Put TLS and the public reverse proxy in front of
+the app. The container health check uses `/healthz`.
+
 For SQL-backed features, create a migration with
 `make migrate-create NAME=create_users` and run it with
-`DATABASE_URL=postgres://... make migrate`. The container health check uses
-`/healthz`.
+`DATABASE_URL=postgres://... make migrate`.
 
-## Read the decisions
-
-The README is the map; the repository's decisions live in the docs:
+## Read the source of truth
 
 - [Guarantees and limits](docs/GUARANTEES.md)
-- [No custom browser JavaScript](docs/adr/ADR-000-no-custom-browser-js.md)
-- [The HTML ADT](docs/adr/ADR-001-hand-rolled-html-adt.md)
-- [FFI boundaries](docs/adr/ADR-003-ffi-taming.md)
-- [Bun server](docs/adr/ADR-007-bun-serve.md)
 - [Contributor conventions](AGENTS.md)
+- [HTML ADT decision](docs/adr/ADR-001-hand-rolled-html-adt.md)
+- [FFI decision](docs/adr/ADR-003-ffi-taming.md)
+- [Bun server decision](docs/adr/ADR-007-bun-serve.md)
+- [Alpine contracts](docs/conventions/alpine-contracts.md)
 
 ## License
 
