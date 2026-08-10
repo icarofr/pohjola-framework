@@ -14,7 +14,7 @@ test.describe('No-JS degradation', () => {
     const href = await page.getAttribute('a[href="/en/about"]', 'href')
     // ensure link exists
     expect(href).toBe('/en/about')
-    await page.goto(href as string)
+    await page.goto(href)
     await expect(page).toHaveURL(/\/en\/about/)
     await expect(page.locator('main')).toContainText('About')
   })
@@ -35,7 +35,7 @@ test.describe('No-JS degradation', () => {
     const frLink = await page.getAttribute('a[href="/fr"]', 'href')
     expect(frLink).toBe('/fr')
     // navigate manually to French home
-    await page.goto(frLink as string)
+    await page.goto(frLink)
     await expect(page).toHaveURL(/\/fr$/)
     await expect(page.locator('html')).toHaveAttribute('lang', 'fr')
     await expect(page.locator('main')).toContainText('Votre titre ici')

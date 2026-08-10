@@ -30,7 +30,7 @@ test.describe('Forms', () => {
     await page.goto('/en/contact')
     
     // Submit the form with empty fields
-// Fill required fields
+    // Fill required fields
     await page.locator('form[action="/api/contact"] input[name="name"]').fill('John Doe')
     await page.locator('form[action="/api/contact"] input[name="email"]').fill('john@example.com')
     await page.locator('form[action="/api/contact"] textarea[name="message"]').fill('Hello')
@@ -52,7 +52,7 @@ test.describe('Forms', () => {
     await page.locator('form[action="/api/contact"] textarea[name="message"]').fill('Hello')
 
     // Fill the honeypot field (hidden — use evaluate since fill requires visibility)
-    await page.locator('form[action="/api/contact"] input[name="website"]').evaluate((el: HTMLInputElement) => { el.value = 'bot' })
+    await page.locator('form[action="/api/contact"] input[name="website"]').evaluate((el) => { el.value = 'bot' })
 
     // Submit the form
     await page.locator('form[action="/api/contact"]').getByRole('button', { name: 'Send' }).click()
@@ -111,7 +111,7 @@ test.describe('Newsletter form', () => {
     await page.locator('form[action="/api/newsletter"] input[name="email"]').fill('john@example.com')
 
     // Fill the honeypot field (hidden — use evaluate since fill requires visibility)
-    await page.locator('form[action="/api/newsletter"] input[name="website"]').evaluate((el: HTMLInputElement) => { el.value = 'bot' })
+    await page.locator('form[action="/api/newsletter"] input[name="website"]').evaluate((el) => { el.value = 'bot' })
 
     // Submit the newsletter form
     await page.locator('form[action="/api/newsletter"]').getByRole('button', { name: 'Subscribe' }).click()

@@ -29,7 +29,7 @@ ADRs are part of the deliverable — not the demo features they happen to cover.
 9. **Update `venom/*.yml` route assertions** — the routes, POST paths, and
    404/redirect expectations are demo-specific. Keep the *shapes* (security
    headers, `server.js` 404, honeypot silent success) — change the paths.
-10. **Update `e2e/*.spec.ts`** — navigation, i18n, theme, forms, no-js: every
+10. **Update `e2e/*.spec.js`** — navigation, i18n, theme, forms, no-js: every
     spec asserts demo routes and copy. Port the *behaviours* (JS-off parity,
     language toggle, dark mode) to your routes.
 11. **Run `make check`** — gate + build + test + assets-check. It MUST PASS

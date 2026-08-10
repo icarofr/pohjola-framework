@@ -9,7 +9,7 @@ test.describe('Alpine AJAX navigation', () => {
     
     // Set marker to detect if full reload occurs
     await page.evaluate(() => {
-      (window as any).__marker = 1
+      window.__marker = 1
     })
 
     // Click the About link
@@ -25,7 +25,7 @@ test.describe('Alpine AJAX navigation', () => {
     await expect(page.locator('main')).toContainText('About')
 
     // Marker should still be 1 (no reload occurred)
-    await expect(await page.evaluate(() => (window as any).__marker)).toBe(1)
+    expect(await page.evaluate(() => window.__marker)).toBe(1)
   })
 
   test('clicking logo returns to home', async ({ page }) => {
@@ -33,14 +33,14 @@ test.describe('Alpine AJAX navigation', () => {
     
     // Set marker to detect if full reload occurs
     await page.evaluate(() => {
-      (window as any).__marker = 1
+      window.__marker = 1
     })
     
-await page.click('a[href="/en"]')
-      await expect(page).toHaveURL(/\/en$/)
+    await page.click('a[href="/en"]')
+    await expect(page).toHaveURL(/\/en$/)
       
-      // Marker should still be 1 (no reload occurred)
-      await expect(await page.evaluate(() => (window as any).__marker)).toBe(1)
+    // Marker should still be 1 (no reload occurred)
+    expect(await page.evaluate(() => window.__marker)).toBe(1)
   })
 
   test('language switch works via Alpine AJAX', async ({ page }) => {
@@ -48,7 +48,7 @@ await page.click('a[href="/en"]')
     
     // Set marker to detect if full reload occurs
     await page.evaluate(() => {
-      (window as any).__marker = 1
+      window.__marker = 1
     })
 
     await page.click('button[aria-label="Switch language"]')
@@ -57,7 +57,7 @@ await page.click('a[href="/en"]')
     await expect(page.locator('main')).toContainText('Votre titre ici')
     
     // Marker should be gone (full reload occurred)
-    await expect(await page.evaluate(() => (window as any).__marker)).toBeUndefined()
+    expect(await page.evaluate(() => window.__marker)).toBeUndefined()
   })
   
   test('hero CTA button link navigation works without reload', async ({ page }) => {
@@ -65,7 +65,7 @@ await page.click('a[href="/en"]')
     
     // Set marker to detect if full reload occurs
     await page.evaluate(() => {
-      (window as any).__marker = 1
+      window.__marker = 1
     })
     
     // Click the hero CTA button link
@@ -81,7 +81,7 @@ await page.click('a[href="/en"]')
     await expect(page.locator('main')).toContainText('Contact')
     
     // Marker should still be 1 (no reload occurred)
-    await expect(await page.evaluate(() => (window as any).__marker)).toBe(1)
+    expect(await page.evaluate(() => window.__marker)).toBe(1)
   })
   
   test('two AJAX navigations then goBack works correctly', async ({ page }) => {
@@ -89,7 +89,7 @@ await page.click('a[href="/en"]')
     
     // Set marker to detect if full reload occurs
     await page.evaluate(() => {
-      (window as any).__marker = 1
+      window.__marker = 1
     })
     
     // Navigate to About
@@ -110,14 +110,14 @@ await page.click('a[href="/en"]')
     await expect(page).toHaveURL(/\/en$/)
 
     // Marker is gone — goBack caused a full reload (expected behaviour)
-    await expect(await page.evaluate(() => (window as any).__marker)).toBeUndefined()
+    expect(await page.evaluate(() => window.__marker)).toBeUndefined()
   })
 
   test('hover prefetch requests a fragment, not a full page', async ({ page }) => {
     await page.goto('/en')
 
     // Intercept the mouseenter fetch response via route interception
-    let fragmentBody: string | undefined
+    let fragmentBody
     await page.route('**/en/about', async (route) => {
       const headers = route.request().headers()
       if (headers['x-alpine-request'] === 'true') {
@@ -138,7 +138,7 @@ await page.click('a[href="/en"]')
     expect(fragmentBody).toBeTruthy()
 
     // The response should be a fragment (no <!DOCTYPE html>)
-    expect(fragmentBody!).not.toContain('<!DOCTYPE')
-    expect(fragmentBody!).toContain('<main')
+    expect(fragmentBody).not.toContain('<!DOCTYPE')
+    expect(fragmentBody).toContain('<main')
   })
 })

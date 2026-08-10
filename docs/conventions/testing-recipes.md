@@ -33,8 +33,8 @@ available — hit the network only in production.
 
 ## End-to-end tests (Playwright)
 
-Files under `e2e/*.spec.ts`. Chromium runs the `no-js` variant
-(`nojs.spec.ts` pattern in `playwright.config.ts`). The `webServer` config
+Files under `e2e/*.spec.js`. Chromium runs the `no-js` variant
+(`nojs.spec.js` pattern in `playwright.config.js`). The `webServer` config
 sets `RATE_LIMIT_MAX=0`.
 
 Assert on user-visible state: URL, banner text, `data-page-title`. Asserting

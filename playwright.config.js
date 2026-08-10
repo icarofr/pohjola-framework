@@ -18,7 +18,7 @@ export default defineConfig({
     },
     {
       name: 'no-js',
-      testMatch: '**/nojs.spec.ts',
+      testMatch: '**/nojs.spec.js',
       use: {
         ...devices['Desktop Chrome'],
         javaScriptEnabled: false,
