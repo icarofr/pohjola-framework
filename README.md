@@ -1,114 +1,144 @@
-# purescript-fullstack-starter
+# PureScript + Bun
 
-## A practical path to almost no application-level runtime surprises
+## The compiler is the contract.
 
-PureScript on Bun. Server-rendered HTML. Alpine.js when the browser needs it.
+`purescript-fullstack-starter` is a full-stack SSR starter for teams who want
+fewer runtime surprises, fewer duplicated contracts, and less JavaScript glue.
 
-This starter is for teams who want to keep the JavaScript runtime and ecosystem
-without making production correctness entirely a matter of convention. Pure
-code stays pure, effects are visible, failures are values, HTML is escaped by
-construction, and the few places where JavaScript is necessary are kept in
-plain sight.
+> Model the domain once. Let the compiler find every consumer. Ship it on a
+> fast JavaScript runtime.
 
-It does **not** promise that business logic cannot be wrong, that FFI cannot lie,
-or that Bun cannot fail. It does aim to remove or contain the ordinary failures
-that make web applications surprising: forgotten branches, unchecked external
-data, accidental markup injection, hidden effects, and unhandled handler errors.
+| Typed end to end | Bun-speed runtime | Direct JavaScript FFI | No OpenAPI ceremony* |
+| --- | --- | --- | --- |
+| Routes, forms, data, HTML, and errors are compiler-visible | SSR on Bun with native `fetch` and streaming | Use the JavaScript and npm ecosystem without leaving PureScript | The compiler is the source of truth inside one application |
 
-## Why PureScript?
+\* OpenAPI is still the right tool for independently owned public APIs. This
+starter does not make you maintain a second schema for contracts already
+represented by the types in your application.
 
-PureScript is more than typed JavaScript and less isolated from JavaScript than
-most strongly typed functional languages.
+## The web application problem
 
-### Pure by default
+Most production surprises are not difficult algorithms. They are seams:
 
-Values are immutable. Pure functions cannot perform I/O; effects must appear as
-`Effect` or `Aff` in the type. `Either` makes expected failure explicit. The
-monadic machinery is not the product pitch—the useful result is that code which
-can touch the network, filesystem, server, or runtime cannot pretend to be a
-plain calculation.
+- the frontend and backend quietly disagree about a payload;
+- a new route or error variant leaves an old branch behind;
+- I/O is hidden inside code that looked like a calculation;
+- external data is trusted before it is decoded;
+- HTML, forms, and JavaScript attributes are assembled by convention;
+- a useful JavaScript library is awkward to reach from a “safe” language.
 
-### A general-purpose type system
+This starter makes those seams visible in the code, then makes the compiler,
+tests, and small gates enforce them.
 
-Algebraic data types, exhaustive pattern matching, type classes, higher-kinded
-types, row polymorphism, and higher-rank types let the domain model stay
-expressive as the application grows. This is useful beyond a UI component tree:
-the same language models routes, HTTP, forms, data decoding, migrations, and
-rendering.
-
-### Still JavaScript
-
-PureScript compiles to JavaScript and can call JavaScript directly. Here, Bun
-provides `Bun.serve`, native `fetch`, cookies, HTML escaping, streaming, and SQL.
-If the application needs another Bun capability or an npm library, it can be
-introduced through a reviewed, allowlisted FFI module instead of turning the
-whole codebase into untyped JavaScript.
-
-## Why not Elm, Lustre, or ReScript?
-
-- **Elm** is excellent at a constrained frontend architecture with a very
-  friendly compiler. Its JavaScript boundary is deliberately narrow—flags,
-  ports, and custom elements. PureScript is the better fit here because the
-  server, Bun runtime, npm libraries, and FFI are part of the application.
-- **Lustre** is an Elm-inspired Gleam framework for frontends, Web Components,
-  and server components. It solves a neighboring UI-architecture problem. This
-  starter is a general-purpose PureScript server whose HTML happens to be
-  progressively enhanced.
-- **ReScript** is a strong choice when typed JavaScript, direct interop, and
-  adoption speed are the priority. PureScript makes purity and effect tracking
-  the default language model and offers a more expressive functional type
-  system. The trade is a smaller ecosystem and a steeper learning curve.
-
-The choice is not “which language is safest?” in the abstract. It is whether
-the team wants to spend more effort up front so that effects, domain changes,
-and boundary failures are difficult to leave implicit later.
-
-## What this repository guarantees
-
-The guarantees are scoped to this codebase and backed by checks:
-
-- **No partial-function escape hatches in `src/`.** The gate rejects
-  `unsafePartial`, `fromJust`, unsafe collection modules, `unsafeCoerce`, and
-  related shortcuts.
-- **Exhaustive domain changes.** Add a route, error, or translation field and
-  the strict compiler finds the consumers that must change.
-- **No general-purpose unescaped HTML path.** `App.Html` is a closed tree;
-  text and attributes escape at render time. Script/style raw-text contexts are
-  explicit, and JSON-LD is escaped for its script context.
-- **Typed boundary failures.** Fetching and decoding use
-  `Aff (Either AppError a)`. Unexpected handler/FFI exceptions are contained at
-  the server boundary and answered with a 500 and security headers.
-- **A small JavaScript boundary.** `foreign import` is allowlisted to
-  `App.ServerBun`, `App.FetchBun`, `App.Bun`, and `App.Data.SQL`.
-- **Security and seam contracts.** `ContractSpec` pins response headers and
-  CSP, layout flow, Alpine targets, form behavior, feature isolation, and the
-  absence of external scripts.
-- **Total form and route behavior.** Form inputs decode to values rather than
-  throwing; honeypots silently succeed; English/French route URLs round-trip.
-
-The guarantee is not “nothing can ever go wrong.” It is: **the compiler, gate,
-and tests remove a large class of ordinary application failures before
-deployment, and contain the failures they cannot remove.**
-
-## The application model
+## One model from request to browser
 
 ```text
 request
-  -> typed route
-  -> Page / Service / View
-  -> Html ADT
-  -> server response
+  → typed route
+  → typed service + boundary decode
+  → typed view
+  → Html ADT
+  → Bun response
 ```
 
-Data-backed pages fetch and decode through `App.Data.Fetch`. The Posts list
-streams its HTML shell while data resolves. Alpine/AJAX can enhance navigation,
-prefetch, theme, and forms, but links remain real URLs and pages do not require
-hydration to render.
+The same compiler-visible model covers routes, forms, i18n, data records,
+application errors, and rendered browser pages. Add a route, error, or
+translation field and PureScript finds the consumers that must change.
+
+The browser gets real HTML first. Alpine.js adds progressive enhancement for
+navigation, prefetching, themes, and forms through typed constructors in
+`App.Alpine`; links still work and pages still render without hydration.
+
+## Why this stack
+
+### The compiler is the source of truth
+
+For an application in one repository, the types are the contract. There is no
+generated client SDK, schema file, or OpenAPI document to keep synchronized
+with the code that already defines the route, payload, form, or error.
+
+PureScript gives the compiler enough vocabulary to model the real domain:
+algebraic data types, records, exhaustive pattern matching, typeclasses, and
+row polymorphism. The payoff is not type-system trivia. The payoff is a small,
+explicit change surface when the product changes.
+
+### Safe without being sealed off
+
+PureScript compiles to JavaScript and calls JavaScript directly. Bun exposes a
+fast runtime, native `fetch`, `Bun.serve`, streaming, cookies, HTML escaping,
+and access to the npm ecosystem.
+
+This repository keeps that power in four reviewed FFI modules:
+
+```text
+PureScript application → typed boundary → allowlisted Bun / JavaScript API
+```
+
+You can reach the vast JavaScript ecosystem without turning every module into
+untyped glue. The boundary is narrow, visible, and decoded on the PureScript
+side.
+
+### Effects are visible; failures are values
+
+Pure functions stay pure. Network, filesystem, and server work appears as
+`Effect` or `Aff`. Expected failure travels as a value such as
+`Aff (Either AppError a)`, so handlers cannot quietly pretend that I/O is a
+plain calculation.
+
+### HTML and security are code, not hope
+
+Pages are built through a closed `Html` ADT. Text and attributes are escaped by
+construction; general-purpose unescaped HTML is not an application escape
+hatch. Security headers, the CSP, form behavior, Alpine seams, and feature
+boundaries are pinned by executable `ContractSpec` tests.
+
+## As safe as Elm — with wider reach
+
+If the claim is **“compiled application code should not contain ordinary
+runtime exceptions,” PureScript is not less safe than Elm**.
+
+Elm’s famous guarantee applies to compiled Elm application code. PureScript
+can make the same strong application-code claim when the code is total, unsafe
+partial-function shortcuts are banned, and JavaScript/external input crosses a
+typed and decoded boundary. Neither language can prove business intent or make
+the network, infrastructure, foreign code, or a bad value of the right shape
+infallible.
+
+The difference is not safety. It is the shape of the boundary:
+
+| | Primary strength | JavaScript boundary | Best fit |
+| --- | --- | --- | --- |
+| **PureScript + Bun** | Purity, explicit effects, expressive types, full-stack reach | Direct FFI, with reviewed allowlists in this starter | One typed model across server code and browser-facing output, with the Bun/npm ecosystem |
+| **Elm** | A famously constrained and friendly frontend architecture | Flags, ports, and custom elements | A frontend that benefits from a highly curated runtime and narrow interop surface |
+| **Lustre** | Elm-inspired web architecture in Gleam | Gleam/JavaScript boundaries and web components | A web UI in the Gleam ecosystem |
+| **ReScript** | Typed JavaScript with excellent direct interop and fast adoption | JavaScript-shaped interop | Teams prioritizing a gentle path from JavaScript and maximum JS familiarity |
+
+Elm’s ports are not bad, and PureScript’s FFI is not magic. Ports provide a
+disciplined message boundary; direct FFI provides broader, deeper access to
+browser, server, Bun, and npm APIs. This starter chooses the latter while
+making the seam explicit and reviewable.
+
+## Proof in this repository
+
+This is not a README promise floating above the code. The project enforces:
+
+- a closed `Html` ADT with no general-purpose unescaped constructor;
+- typed boundary failures through `Aff (Either AppError a)`;
+- exhaustive route, error, and bilingual dictionary changes;
+- a four-module FFI allowlist: `App.ServerBun`, `App.FetchBun`, `App.Bun`, and
+  `App.Data.SQL`;
+- a gate banning partial-function and unsafe escape hatches;
+- executable contracts for headers, CSP, forms, Alpine seams, HTML escaping,
+  feature isolation, and external scripts;
+- build, unit/property, integration, and browser checks on every push.
+
+Read the full claim and its enforcement in
+[`docs/GUARANTEES.md`](docs/GUARANTEES.md).
 
 ## Start the demo
 
-Install Node.js 22, Bun canary, PureScript 0.15.16, and Spago 1.0.4. Docker is
-needed for integration tests and the container workflow.
+Requirements: Node.js 22, Bun canary, PureScript 0.15.16, Spago 1.0.4, and
+Docker for integration tests and the container workflow.
 
 ```bash
 npm install --global purescript@0.15.16 spago@1.0.4
@@ -121,11 +151,11 @@ make deps
 make run
 ```
 
-Open [http://localhost:3001/en](http://localhost:3001/en) or
-[http://localhost:3001/fr](http://localhost:3001/fr). The demo includes
+Open [`http://localhost:3001/en`](http://localhost:3001/en) or
+[`http://localhost:3001/fr`](http://localhost:3001/fr). The demo includes
 bilingual pages, contact/newsletter forms, and Posts backed by JSONPlaceholder.
 
-## Make it yours
+## Add a feature
 
 ```bash
 make new-feature NAME=Team
@@ -133,38 +163,24 @@ make new-feature NAME=Products TYPE=data
 make new-feature NAME=Team SLUG_FR=equipe
 ```
 
-The generator creates the feature shape and prints the application-specific
-edits. Start with [docs/SETUP.md](docs/SETUP.md), then read the
-[page checklist](docs/conventions/adding-pages.md),
+Then use the [setup guide](docs/SETUP.md), [page checklist](docs/conventions/adding-pages.md),
 [data-layer guide](docs/conventions/data-layer.md), and
 [forms guide](docs/conventions/forms.md).
 
-## Verify it
+## Verify the contract
 
 ```bash
-make gate
-make test
-make test/integration
-make test/e2e
-make check
+make gate             # unsafe functions, raw HTML, and unapproved FFI
+make test             # unit and property tests under Bun
+make test/integration # Venom HTTP tests via Docker
+make test/e2e         # Playwright browser tests
+make check            # full build, tests, assets, and format check
 ```
-
-CI runs the build/gate, unit, Venom, and Playwright suites on every push.
-
-## Honest limits
-
-PureScript cannot prove business intent. A JS wrapper can still return the
-wrong value of the right shape. Bun, external APIs, and infrastructure can
-still fail. Alpine's standard build requires `unsafe-eval`; the CSP uses
-per-request nonces and does not permit `unsafe-inline` scripts. Bun canary is a
-deliberate runtime commitment.
-
-These are explicit boundaries, not hidden exceptions. See
-[docs/GUARANTEES.md](docs/GUARANTEES.md) for the full scope.
 
 ## Deploy
 
-`dist/` is the public static root; `dist-server/` is the private server bundle.
+`dist/` is the public static root. `dist-server/` contains the private server
+bundle and is never served as static content.
 
 ```bash
 make image
@@ -172,16 +188,22 @@ make up
 make down
 ```
 
-The container is distroless and non-root. Put TLS and the public reverse proxy
-in front of it; `/healthz` is the health check.
+The container is distroless and non-root; put TLS and the public reverse proxy
+in front of it. `/healthz` is the health check.
 
-## Read the decisions
+## The honest boundary
 
-- [HTML ADT](docs/adr/ADR-001-hand-rolled-html-adt.md)
-- [FFI boundary](docs/adr/ADR-003-ffi-taming.md)
-- [Bun server](docs/adr/ADR-007-bun-serve.md)
-- [Alpine contracts](docs/conventions/alpine-contracts.md)
-- [Contributor conventions](AGENTS.md)
+The compiler proves shape and exhaustiveness, not business intent. Foreign code
+can still return the wrong value of the right shape. External APIs, Bun, and
+infrastructure can still fail. Those are explicit boundaries, not reasons to
+give up the contract: decode at the edge, contain unexpected failures, and
+make the remaining risk visible.
+
+See the [HTML ADT decision](docs/adr/ADR-001-hand-rolled-html-adt.md),
+[FFI decision](docs/adr/ADR-003-ffi-taming.md),
+[Bun server decision](docs/adr/ADR-007-bun-serve.md),
+[Alpine contracts](docs/conventions/alpine-contracts.md), and
+[contributor conventions](AGENTS.md).
 
 ## License
 
