@@ -1,216 +1,200 @@
-# purescript-fullstack-starter
+# PS Alpine Starter
 
-A type-safe, server-rendered web application starter built with PureScript and
-Alpine.js. Server-rendered HTML with SPA-feel navigation — no hydration, no
-virtual DOM, no client build step, no runtime errors from missed pattern
-matches.
+> PureScript on the server. HTML in the response. Alpine.js when the page needs it.
 
-## Why this exists
+PS Alpine Starter is a full-stack starting point for web applications that want
+the server to remain the source of truth. PureScript renders the document,
+handles routes and data, and makes failures explicit. Alpine.js adds focused
+browser behavior without turning the site into a second application.
 
-Every web starter trades **safety** against **simplicity**:
+**PureScript 0.15.16** · **Bun canary** · **Alpine.js 3.15.12** · **Tailwind CSS 4.3.3**
 
-- **TypeScript starters** (Next.js, Remix, SvelteKit) ship fast but enforce
-  safety by convention — `as any`, `!`, thrown exceptions, and missing routes
-  are eslint-banned, not compiler-enforced. TypeScript's type system is
-  intentionally unsound.
-- **Haskell/Rust starters** match or exceed our compile-time safety but leave
-  the JS runtime. JS library access means FFI to C (memory-unsafe) or WASM.
-- **Existing PureScript starters** wrap a JS framework (React, Halogen, Deku),
-  re-introducing hydration, virtual DOM, and a client build pipeline.
+## The idea
 
-This starter occupies the gap: **pure functional compile-time safety on a JS
-runtime, with no client build step**.
+Most web applications begin with a client application and make the server fit
+around it. This starter takes the opposite route:
 
-### What the type system proves
-
-`a -> b` in PureScript cannot perform I/O, mutate state, or throw — side
-effects require `Effect` or `Aff` in the type signature. `Either AppError a`
-is the only failure mode from pure code. Rust's `fn foo() -> i32` can do
-anything; TypeScript's `function foo(): number` can throw, await, or lie with
-`!`. `foo :: Int -> Int` is a mathematical function.
-
-**Scope.** This eliminates null derefs, unhandled branches, and forgotten
-error returns in domain logic — the class that dominates real-world JS/Go
-server incidents. It does not prove the FFI is honest, that Bun won't
-segfault, or that memory won't exhaust.
-
-### What the FFI boundary contains
-Bun gives GC memory safety, native `fetch`, `Bun.escapeHTML`, `Bun.XML.stringify`,
-`Bun.CookieMap`, and the npm ecosystem. Access goes through a **4-module FFI
-allowlist** (`App.ServerBun`, `App.FetchBun`, `App.Bun`, `App.Data.SQL`); the Makefile gate
-rejects `foreign import` elsewhere, and every FFI function returns `Aff (Either
-AppError a)`. Each wrapper is defensive — `App.ServerBun`'s `makeFetch` catches
-all exceptions and returns a 500 with security headers, `App.FetchBun` routes
-fetch errors to the `Either` channel, `App.Bun`'s `stringifyXML` catches and
-returns `Nothing`.
-
-This is a **trust boundary, not a type-proven one** — as is every FFI in every
-language (Haskell's FFI to C, Rust's `unsafe`). The compiler can't verify the
-JS we call. What's contained: the blast radius is 4 audited modules, every
-entry point forces callers to handle failure, and the wrappers are tested.
-What's not: a bug in a wrapper itself, or a Bun behavioural change, could
-escape. Haskell/Rust FFI to C is memory-unsafe on top; this is the niche for
-teams that need JS ecosystem access without paying TypeScript's soundness tax.
-### What CI enforces beyond the compiler
-
-- **Makefile gate** (~2s) — grep-bans `unsafeCoerce`, `unsafePerformEffect`,
-  `unsafePartial`, `fromJust`, partial functions, unallowlisted FFI, and the
-  general-purpose `raw`/`Raw` HTML escape hatch.
-- **ContractSpec** — security headers on every response, CSP pinned
-  byte-exact, layout shell on every page, no cross-feature imports, no raw
-  Alpine attribute strings, honeypot semantics.
-- **Property tests** — form decoding totality, honeypot silent-success, HTML
-  escaping, route round-trips.
-- **ADRs** — every architectural decision recorded.
-
-### Trade-offs
-
-No stack dominates on every axis — it's a Pareto frontier, not a hierarchy.
-Rust's borrow checker buys deterministic resource management (compile-time-known
-lifetimes, no GC pauses) at the cost of a borrow checker; GC makes
-use-after-free and lifetime bugs impossible without that cost. Haskell's
-Servant publishes the API as a type-level contract (we use `routing-duplex` —
-type-safe round-trips via a Generic codec, but not a publishable type-level
-API). TypeScript with `fp-ts` or `Effect` can approximate our effect tracking,
-but it's opt-in — the TS compiler doesn't force you to use them, and `as any`
-/ `!` / thrown exceptions remain available everywhere. PS's effect tracking is
-language-level and inescapable.
-
-This starter is on the frontier for {effect tracking, JS ecosystem access,
-totality enforcement, memory safety via GC}. It is not on the frontier for
-{deterministic resource management, type-level API publishing}. The claim:
-**maximum-guarantee-per-unit-of-effort that keeps JS runtime access**.
-
-Costs: the gate, ContractSpec, and Html ADT are bespoke — readable in this
-repo, but no community tooling around them. The PS package ecosystem is
-smaller than TypeScript's or Rust's; new DB drivers, payment gateways, or
-niche APIs likely need FFI bindings. Hiring is hard — but no harder than
-Haskell or Rust; it's the cost of any FP-strong-safety niche, not this starter
-specifically. This is a starter for a small team that values correctness over
-hiring throughput.
-
-**If it compiles and CI is green, the PureScript domain logic doesn't crash
-from null derefs, unhandled branches, or forgotten error returns.** Everything
-outside that scope is documented in [docs/GUARANTEES.md](docs/GUARANTEES.md).
-
-## Safety floor
-
-- **Exhaustive pattern matching** — non-exhaustive `case` produces a `Partial`
-  constraint that fails compilation by default; `unsafePartial` is gate-banned,
-  so in this repo totality is enforced, not conventional. Adding a route
-  variant breaks every handler at compile time.
-- **No partial functions** — `fromJust`, `Data.Maybe.Unsafe`,
-  `Data.Array.Unsafe`, `Data.String.CodePoint.Unsafe` are gate-banned outright.
-- **No unsafe functions, no unapproved FFI** — `unsafeCoerce`,
-  `unsafePerformEffect` are gate-banned; `foreign import` fails the build
-  unless the module is allowlisted (4 modules, ADR-003/007).
-- **Errors as values** — a single `AppError` ADT wraps library errors. Every
-  boundary function returns `Aff (Either AppError a)`. Runtime exceptions are
-  contained at one server boundary, logged, and answered with a 500.
-- **No null, no undefined** — `Maybe a` for optional values, compiler forces
-  handling.
-
-## Architecture
-
-```
-Browser → Caddy (TLS) → PureScript server (Bun.serve)
-                           ├── GET /en, /fr, /en/about, ... → SSR HTML
-                           ├── GET /en/posts, /fr/articles/:id → SSR HTML (data-backed)
-                           ├── POST /api/contact, /api/newsletter → redirect
-                           ├── GET /healthz → "ok" (liveness probe)
-                           ├── GET /assets/js/alpinejs.min.js → static
-                           ├── GET /robots.txt, /sitemap.xml → generated
-                           └── GET /css/styles.css → static
+```text
+request -> typed route -> page + data -> HTML document -> browser enhancement
 ```
 
-- **Server**: PureScript + `Bun.serve` via tamed FFI boundary (`App.ServerBun`,
-  ADR-007) — no HTTP framework, no `node-http`.
-- **HTML**: Custom `Html` ADT — closed sum type with `doctype` and
-  `render :: Html -> String`; normal text and attributes escape via
-  `Bun.escapeHTML` (SIMD-accelerated via Google Highway; short strings use a
-  SWAR fallback). There is no general-purpose unescaped HTML constructor.
-- **Routing**: `routing-duplex` — bidirectional codec (parse + print from one
-  declaration), one per language, dynamic segments via `int segment`. Adding a
-  `Route` constructor without updating the codec is a compile error.
-- **Data layer**: Async page rendering (`Aff (Either AppError Html)`). Posts
-  feature demonstrates the full pattern: Types → Service (`App.Data.Fetch`) →
-  Page → View.
-- **Interactivity**: Alpine.js 3.15.12 + Alpine AJAX 0.12.7 (self-hosted,
-  pinned). Typed constructors in `App.Alpine` — no raw Alpine attribute strings
-  (ContractSpec enforces). CSP uses per-request nonces (no `unsafe-inline`);
-  `unsafe-eval` remains because Alpine's standard build requires it. See
-  ADR-000 for the threat model.
-- **SPA navigation**: `spaLink` helper bakes in AJAX swap + hover prefetch.
-  Degrades to normal `<a>` if JS fails — the href is always real.
-- **Styling**: Tailwind CSS v4 (dark mode via class).
-- **i18n**: Type-safe bilingual dictionary (EN/FR) — compiler enforces both
-  languages have identical structure.
-- **JSON**: Argonaut `DecodeJson` — type-safe decoding at the boundary.
+That choice has practical consequences:
 
-## Testing
+- The first response is useful HTML, not a loading shell.
+- A link has a real URL and still works when JavaScript is unavailable.
+- Routing, rendering, decoding, and error handling share one typed domain model.
+- Client-side behavior stays at the edges instead of owning the application.
+- The checks that protect these decisions ship with the template.
 
-| Layer | Tool | What it tests |
-|-------|------|---------------|
-| Domain logic | `purescript-spec` + `purescript-quickcheck` | Pure functions, property tests (decode totality, honeypot semantics, HTML escaping) |
-| Behavioral contracts | ContractSpec (`purescript-spec`) | Security headers, pinned CSP, Alpine seams, layout shell, FFI/HTML escape invariants |
-| HTML rendering | `purescript-spec` | Html ADT escape, structure, void elements |
-| Route parsing | `purescript-spec` | `parseRoute` / `routeUrl` round-trip |
-| i18n completeness | `purescript-spec` | Both languages have all keys |
-| HTTP integration | Venom | Status codes, redirects, form POSTs, static files |
-| E2E browser | Playwright | Alpine interactions (nav, dark mode, forms, hover prefetch) |
+This is not an attempt to make every part of a web system provably safe. Bun,
+FFI wrappers, external APIs, and deployment configuration are still trust
+boundaries. The goal is a small, inspectable application whose important
+invariants are hard to forget.
 
-## Quick Start
+## See the shape
+
+The demo is bilingual and intentionally ordinary: Home, About, Contact, Legal,
+and a Posts feature that fetches JSONPlaceholder data.
+
+```text
+/en                     English home
+/fr                     French home
+/en/about               static page
+/en/contact             form page
+/en/posts/1             data-backed page
+/fr/articles/1          the same page through the French route codec
+```
+
+The server also provides `robots.txt`, `sitemap.xml`, and `healthz`. Alpine.js
+handles selected navigation, theme, prefetch, and form interactions; the server
+still owns the page and the response.
+
+## Run the demo
+
+You need Node.js 22 for the build tools, Bun canary for the server, PureScript
+0.15.16, and Spago 1.0.4. Docker is only needed for integration tests or the
+container workflow.
+
+Install the language tools if they are not already available:
 
 ```bash
-cp .env.example .env        # fill in RESEND_API_KEY if using forms
-make deps                   # install dependencies + Alpine JS assets
-make dev                    # build (PS + Tailwind)
-make run                    # start server at http://localhost:3001
+npm install --global purescript@0.15.16 spago@1.0.4
+curl -fsSL https://bun.sh/install | bash -s canary
 ```
 
-## Development
+Then clone and start the app:
 
 ```bash
-make watch                  # PS hot rebuild
-make css-watch              # Tailwind hot reload
-make test                   # unit + property tests (runs under Bun)
-make test/integration       # Venom HTTP tests (requires Docker)
-make test/e2e               # Playwright browser tests
-make check                  # full validation (gate + build + test + format)
+git clone https://github.com/icarofr/purescript-fullstack-starter.git
+cd purescript-fullstack-starter
+cp .env.example .env
+make deps
+make run
 ```
 
-## Adding a New Page
+Visit [localhost:3001/en](http://localhost:3001/en) or
+[localhost:3001/fr](http://localhost:3001/fr). `make run` builds the CSS,
+bundles the server into `dist-server/`, copies public assets to `dist/`, and
+starts Bun.
+
+The demo does not need a real email provider to start. Add `RESEND_API_KEY` to
+`.env` when you want form submissions to send through Resend. The example file
+also documents `BASE_URL`, `PORT`, `POSTS_API_BASE`, rate limiting, email
+addresses, and `DATABASE_URL`.
+
+## What building here looks like
+
+HTML is a value. A page composes `Html` nodes; the renderer escapes ordinary
+text and attributes. There is no general-purpose unescaped HTML constructor.
+
+Routes are a `Route` type plus one `routing-duplex` codec for each language.
+Adding a route means updating the domain model and every exhaustive consumer,
+not adding a path string to an unrelated registry.
+
+Features have two deliberate shapes:
+
+```text
+static feature:       Page -> View -> Html
+data-backed feature:  Types -> Service -> Page -> View -> Html
+```
+
+Services fetch through `App.Data.Fetch.fetchJson` and decode at the boundary.
+Pages return `Either AppError` rather than hiding expected failures in thrown
+exceptions. Shared layout lives in `App.Layout`; reusable visual primitives
+live in `App.Ui`; feature modules do not import sibling features.
+
+Browser behavior follows the same rule: use typed constructors from
+`App.Alpine`, not ad-hoc Alpine attribute strings. Alpine AJAX can swap server
+rendered fragments, but the underlying links and forms remain real HTML.
+
+## Make it yours
+
+The demo is there to show the seams, not to become your product unchanged.
+Start a static or data-backed feature with the generator:
 
 ```bash
-make new-feature NAME=Team                    # static page (default)
-make new-feature NAME=Products TYPE=data      # data-backed page
-make new-feature NAME=Team SLUG_FR=equipe     # custom FR slug
+make new-feature NAME=Team
+make new-feature NAME=Products TYPE=data
+make new-feature NAME=Team SLUG_FR=equipe
 ```
 
-Scaffolds the feature files and prints the manual edits needed for
-`Route.purs`, `Main.purs`, and `I18n/Dictionary.purs` — the compiler guides
-you to every missing site.
+The generator creates the feature files and tells you where the compiler cannot
+fill in application-specific decisions. A normal page change touches:
 
-See `docs/conventions/adding-pages.md` for the full checklist and
-`docs/conventions/data-layer.md` for the data-backed pattern.
+1. The `Route` type and both language codecs.
+2. The page renderer, title, navigation, and sitemap where applicable.
+3. Both sides of the `Data.I18n` dictionary.
+4. The feature's tests and the relevant HTTP/browser assertions.
 
-## Tech Stack
+Read the [page checklist](docs/conventions/adding-pages.md) before adding a
+route. For the two main extension points, see the [data-layer guide](docs/conventions/data-layer.md)
+and [forms guide](docs/conventions/forms.md). The
+[setup guide](docs/SETUP.md) explains how to turn this boilerplate into a new
+application.
 
-| Layer | Technology |
-|-------|-----------|
-| Language | PureScript 0.15.16 |
-| Build | Spago 1.0.4 (pure registry, no git pins) |
-| Server | `Bun.serve` via tamed FFI (`App.ServerBun`, ADR-007) |
-| Routing | `routing-duplex` |
-| HTML | Custom `Html` ADT |
-| Interactivity | Alpine.js 3.15.12 + Alpine AJAX 0.12.7 |
-| Styling | Tailwind CSS v4 |
-| Runtime | Bun canary (pin to stable 1.4.0 on release) |
-| Testing | `purescript-spec`, `purescript-quickcheck`, Venom, Playwright |
-| Container | Distroless + Bun (~25MB) |
+## The feedback loop
 
-See `AGENTS.md` for agent conventions, `docs/` for full documentation.
+The Makefile is the development interface:
 
-## Licence
+```bash
+make dev                 # strict PureScript build + CSS + static sync
+make watch               # PureScript rebuilds
+make css-watch           # Tailwind rebuilds
+make test                # unit, property, and contract tests under Bun
+make test/integration    # Venom HTTP tests through Docker Compose
+make test/e2e            # Playwright, including the no-JS project
+make check               # gate + build + tests + assets + format
+```
+
+`make gate` rejects unsafe and partial functions, unapproved FFI, environment
+reads outside the configuration boundary, and the general-purpose HTML escape
+hatch. Contract tests pin the CSP and response security headers, and check the
+layout, Alpine, form, and feature-isolation seams.
+
+## The boundaries are visible
+
+The project intentionally keeps a few boundaries easy to find:
+
+- `src/App/Html.purs` — the HTML vocabulary and renderer.
+- `src/Data/Route.purs` — bilingual route parsing and URL generation.
+- `src/App/Main.purs` — the HTTP router and page selection.
+- `src/App/Layout/Page.purs` — the document and fragment shell.
+- `src/App/Data/Fetch.purs` — the data-fetching boundary.
+- `src/App/Alpine.purs` — the typed browser seam.
+- `test/ContractSpec.purs` — executable architectural contracts.
+
+Generated output has its own boundary too: `dist/` is the public static root;
+`dist-server/` is private and must never be served as static content.
+
+## Ship the container
+
+The Dockerfile builds with Node.js, packages the PureScript server, and runs it
+with Bun in a distroless image. Put TLS and the public reverse proxy in front
+of it. The included Compose file defines the app service; it does not pretend
+to be a complete production edge.
+
+```bash
+make image
+make up
+make down
+```
+
+For SQL-backed features, create a migration with
+`make migrate-create NAME=create_users` and run it with
+`DATABASE_URL=postgres://... make migrate`. The container health check uses
+`/healthz`.
+
+## Read the decisions
+
+The README is the map; the repository's decisions live in the docs:
+
+- [Guarantees and limits](docs/GUARANTEES.md)
+- [No custom browser JavaScript](docs/adr/ADR-000-no-custom-browser-js.md)
+- [The HTML ADT](docs/adr/ADR-001-hand-rolled-html-adt.md)
+- [FFI boundaries](docs/adr/ADR-003-ffi-taming.md)
+- [Bun server](docs/adr/ADR-007-bun-serve.md)
+- [Contributor conventions](AGENTS.md)
+
+## License
 
 [LICENCE.md](LICENCE.md)
