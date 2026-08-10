@@ -5,8 +5,8 @@
 ### Safety floor
 - `dist/` → public static root; `dist-server/` → private server bundle (never serve from `dist/`).
 - Interactivity via Alpine typed constructors in `App.Alpine` only — no custom JavaScript (ADR-000).
-- Server FFI is restricted to 7 allowlisted modules (ADR-007). See `Makefile` `FFI_ALLOWLIST_GREP`.
-- `make gate` enforces exhaustive pattern matching, no unsafe imports, FFI & `raw` only via allow-list.
+- Server FFI is restricted to 4 allowlisted modules (ADR-003/007). See `Makefile` `FFI_ALLOWLIST_GREP`.
+- `make gate` enforces exhaustive pattern matching, no unsafe imports, allowlisted FFI, and no general-purpose HTML escape hatch.
 - CSP is pinned byte-exact in `test/ContractSpec.purs`. Widening demands justification.
 
 ### Commands (daily use)
@@ -19,7 +19,7 @@
 |`make test`|Unit + property + ContractSpec (runs under Bun) |
 |`make test/integration`|Venom integration tests |
 |`make test/e2e`|Playwright end-to-end |
-|`make gate`|Banned-fn / FFI / `raw` checks |
+|`make gate`|Banned-fn / FFI / HTML-escape checks |
 |`make check`|gate + build + test + format-check |
 |`make new-feature`|Scaffold a feature (NAME=X [TYPE=data] [SLUG_FR=x]) |
 
@@ -75,5 +75,5 @@
 - Build HTML through the `Html` ADT — string-concatenated HTML bypasses escaping (ADR-001, `make gate`).
 - Output bundles to `dist-server/` — `dist/` is the public static root only.
 - Keep CSP at the pinned policy — widenings need an ADR (ContractSpec exact-string assertion).
-- Keep `raw` and FFI inside the Makefile allow-list — additions need an ADR (`make gate`).
+- The `Html` ADT has no general-purpose unescaped constructor; script/style contexts and `doctype` are explicit (`make gate`).
 - Express interactivity through `App.Alpine` constructors — raw Alpine strings fail ContractSpec.

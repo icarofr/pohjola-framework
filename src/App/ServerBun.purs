@@ -29,8 +29,8 @@ type StreamContent =
   { html :: String
   }
 
--- | Raw JS request object produced by the FFI from the Web Request.
-type RawRequest =
+-- | JS request object produced by the FFI from the Web Request.
+type JsRequest =
   { method :: String
   , url :: String
   , path :: String
@@ -41,10 +41,10 @@ type RawRequest =
   , body :: String
   }
 
--- | Raw JS response object PS returns to the FFI.
+-- | JS response object PS returns to the FFI.
 -- | bodyTag is "StringBody" or "StreamBody"; bodyStream is the ReadableStream
 -- | (only meaningful when bodyTag === "StreamBody").
-type RawResponse =
+type JsResponse =
   { status :: Int
   , headers :: Array (Tuple String String)
   , bodyValue :: String
@@ -54,7 +54,7 @@ type RawResponse =
 
 -- | Start Bun.serve. The callback receives the untyped request and a respond
 -- | function; PS runs the handler in Aff and calls respond with the result.
-foreign import serveImpl :: Int -> String -> EffectFn2 RawRequest (EffectFn1 RawResponse Unit) Unit -> Effect Unit
+foreign import serveImpl :: Int -> String -> EffectFn2 JsRequest (EffectFn1 JsResponse Unit) Unit -> Effect Unit
 
 -- | Cryptographically random base64 nonce (18 bytes → 24 chars, ≥128 bits).
 -- | Generated per-request via Web Crypto, threaded into CSP + inline scripts.

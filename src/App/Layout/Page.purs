@@ -11,7 +11,7 @@ import Prelude
 import App.Alpine (contentTarget)
 import App.Error (AppError)
 import App.Form (FormStatus(..), formStatusQuery, statusText)
-import App.Html (Html, attr, class_, el, escape, flag, href, id_, name_, raw, render, src, text)
+import App.Html (Html, attr, class_, doctype, el, escape, flag, href, id_, name_, render, src, text)
 import App.Layout.Head (renderHead)
 import App.Layout.Header (render) as Header
 import App.Layout.Footer (render) as Footer
@@ -58,7 +58,7 @@ maybeStatusBanner lang = maybe (text "") \status ->
 renderPage :: String -> String -> Lang -> Route -> Maybe FormStatus -> Html -> String
 renderPage baseUrl nonce lang route maybeStatus content =
   render $
-    raw "<!DOCTYPE html>"
+    doctype
       <> el "html" [ attr "lang" (langTag lang) ]
         [ el "head" []
             [ renderHead baseUrl nonce lang route
@@ -109,7 +109,7 @@ renderErrorPage nonce lang status =
       ]
   in
     render $
-      raw "<!DOCTYPE html>"
+      doctype
         <> el "html" [ attr "lang" (langTag lang) ]
           [ el "head" []
               [ el "meta" [ attr "charset" "UTF-8" ] []
@@ -117,8 +117,8 @@ renderErrorPage nonce lang status =
               , el "meta" [ name_ "robots", attr "content" "noindex" ] []
               , el "title" [] [ text (show status <> " — " <> d.common.siteTitle) ]
               , el "link" [ attr "rel" "stylesheet", attr "href" "/css/styles.css" ] []
-              , el "style" [] [ raw "[x-cloak]{display:none!important}" ]
-              , raw ("<script nonce=\"" <> nonce <> "\">if(localStorage.getItem('theme')==='dark'||(!localStorage.getItem('theme')&&matchMedia('(prefers-color-scheme:dark)').matches))document.documentElement.classList.add('dark')</script>")
+              , el "style" [] [ text "[x-cloak]{display:none!important}" ]
+              , el "script" [ attr "nonce" nonce ] [ text "if(localStorage.getItem('theme')==='dark'||(!localStorage.getItem('theme')&&matchMedia('(prefers-color-scheme:dark)').matches))document.documentElement.classList.add('dark')" ]
               ]
           , el "body"
               [ class_ bodyClass ]
@@ -156,9 +156,9 @@ renderPrefetch lang routes =
 -- | header, and <main id="content"> — but NOT their closing tags. Streamed
 -- | immediately so the browser can parse CSS and show nav while data is in
 -- | flight. The content area is empty — it fills when the data resolves.
--- | Uses raw strings for the shell structure (html/body/main) because the
--- | `el` ADT auto-closes tags. The head and header are rendered via the ADT
--- | (they're complete elements) and embedded as substrings.
+-- | Uses string concatenation for the shell structure (html/body/main)
+-- | because the `el` ADT auto-closes tags. The head and header are rendered
+-- | via the ADT (they're complete elements) and embedded as substrings.
 renderShellOpen :: String -> String -> Lang -> Route -> String
 renderShellOpen baseUrl nonce lang route =
   "<!DOCTYPE html>"
@@ -186,6 +186,7 @@ renderShellClose nonce lang _ =
     <> render (el "script" [ flag "defer", src "/assets/js/alpinejs.min.js", attr "nonce" nonce ] [])
     <> "</body></html>"
 
--- | Escape attribute values for raw HTML strings. The `el` ADT escapes
--- | automatically; raw strings (renderShellOpen) need manual escaping.
+-- | Escape attribute values for string-concatenated HTML. The `el` ADT
+-- | escapes automatically; string-concatenated shells (renderShellOpen)
+-- | need manual escaping.
 

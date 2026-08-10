@@ -19,7 +19,8 @@ contracts below. `docs/GUARANTEES.md` lists every guarantee and its check.
    enforces).
 6. `Makefile` (`gate` target) — what's banned: `unsafeCoerce`/
    `unsafePerformEffect`/`unsafePartial`, partial-function modules, `fromJust`,
-   FFI outside `FFI_ALLOWLIST_GREP`, `raw` outside `RAW_ALLOWLIST_GREP`.
+   FFI outside `FFI_ALLOWLIST_GREP`, and any general-purpose HTML escape
+   constructor.
 
 ## When adding a page or feature
 
@@ -55,8 +56,8 @@ contracts below. `docs/GUARANTEES.md` lists every guarantee and its check.
 - Output bundles to `dist-server/` — `dist/` is the public static root only.
 - Keep CSP at the pinned policy — widenings need an ADR (ContractSpec
   exact-string assertion).
-- Keep `raw` and FFI inside the Makefile allow-list — additions need an ADR
-  (`make gate`).
+- The `Html` ADT has no general-purpose unescaped constructor; script/style
+  contexts and `doctype` are explicit (`make gate`).
 - Express interactivity through `App.Alpine` constructors — raw Alpine
   strings fail ContractSpec.
 - Route HTTP through `App.Data.Fetch` — feature modules fetch via

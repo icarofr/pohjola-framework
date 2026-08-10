@@ -9,7 +9,7 @@ module App.Layout.Header where
 import Prelude
 
 import App.Alpine (bindAriaExpanded, onClick, onClickOutside, onKeydownEscapeWindow, spaLink, xCloak, xData, xShow, xSync)
-import App.Html (Attr, Html, ariaLabel, attr, class_, el, href, id_, raw, text)
+import App.Html (Attr, Html, ariaLabel, attr, class_, el, href, id_, text)
 import Data.Foldable (foldMap)
 import Data.I18n (Lang(..), dict, langTag)
 import Data.Route (Route(..), navItems, routeUrl)
@@ -48,8 +48,8 @@ render lang currentRoute =
                   , class_ "md:hidden inline-flex items-center justify-center p-2 rounded-md text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                   , ariaLabel d.common.menuLabel
                   ]
-                  [ raw hamburgerSvg
-                  , raw closeSvg
+                  [ hamburgerIcon
+                  , closeIcon
                   ]
               ]
           -- Mobile nav
@@ -79,17 +79,93 @@ render lang currentRoute =
           ]
       ]
 
-hamburgerSvg :: String
-hamburgerSvg =
-  "<svg x-show=\"!menuOpen\" class=\"h-6 w-6\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"1.5\" stroke=\"currentColor\">"
-    <> "<path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5\" />"
-    <> "</svg>"
+hamburgerIcon :: Html
+hamburgerIcon =
+  el "svg"
+    [ xShow "!menuOpen"
+    , class_ "h-6 w-6"
+    , attr "fill" "none"
+    , attr "viewBox" "0 0 24 24"
+    , attr "stroke-width" "1.5"
+    , attr "stroke" "currentColor"
+    ]
+    [ el "path"
+        [ attr "stroke-linecap" "round"
+        , attr "stroke-linejoin" "round"
+        , attr "d" "M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+        ]
+        []
+    ]
 
-closeSvg :: String
-closeSvg =
-  "<svg x-show=\"menuOpen\" x-cloak class=\"h-6 w-6\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"1.5\" stroke=\"currentColor\">"
-    <> "<path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M6 18L18 6M6 6l12 12\" />"
-    <> "</svg>"
+closeIcon :: Html
+closeIcon =
+  el "svg"
+    [ xShow "menuOpen"
+    , xCloak
+    , class_ "h-6 w-6"
+    , attr "fill" "none"
+    , attr "viewBox" "0 0 24 24"
+    , attr "stroke-width" "1.5"
+    , attr "stroke" "currentColor"
+    ]
+    [ el "path"
+        [ attr "stroke-linecap" "round"
+        , attr "stroke-linejoin" "round"
+        , attr "d" "M6 18L18 6M6 6l12 12"
+        ]
+        []
+    ]
+
+chevronDownIcon :: Html
+chevronDownIcon =
+  el "svg"
+    [ class_ "h-4 w-4"
+    , attr "fill" "none"
+    , attr "viewBox" "0 0 24 24"
+    , attr "stroke-width" "1.5"
+    , attr "stroke" "currentColor"
+    ]
+    [ el "path"
+        [ attr "stroke-linecap" "round"
+        , attr "stroke-linejoin" "round"
+        , attr "d" "M19.5 8.25l-7.5 7.5-7.5-7.5"
+        ]
+        []
+    ]
+
+sunIcon :: Html
+sunIcon =
+  el "svg"
+    [ class_ "h-5 w-5 dark:hidden"
+    , attr "fill" "none"
+    , attr "viewBox" "0 0 24 24"
+    , attr "stroke-width" "1.5"
+    , attr "stroke" "currentColor"
+    ]
+    [ el "path"
+        [ attr "stroke-linecap" "round"
+        , attr "stroke-linejoin" "round"
+        , attr "d" "M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"
+        ]
+        []
+    ]
+
+moonIcon :: Html
+moonIcon =
+  el "svg"
+    [ class_ "h-5 w-5 hidden dark:block"
+    , attr "fill" "none"
+    , attr "viewBox" "0 0 24 24"
+    , attr "stroke-width" "1.5"
+    , attr "stroke" "currentColor"
+    ]
+    [ el "path"
+        [ attr "stroke-linecap" "round"
+        , attr "stroke-linejoin" "round"
+        , attr "d" "M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
+        ]
+        []
+    ]
 
 renderNavItem :: Lang -> Route -> { label :: String, route :: Route } -> Html
 renderNavItem lang currentRoute item =
@@ -128,7 +204,7 @@ renderLangToggle lang currentRoute =
           , ariaLabel d.common.langToggleLabel
           ]
           [ el "span" [] [ text (toUpper (langTag lang)) ]
-          , raw "<svg class=\"h-4 w-4\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"1.5\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M19.5 8.25l-7.5 7.5-7.5-7.5\" /></svg>"
+          , chevronDownIcon
           ]
       , el "div"
           [ xShow "open"
@@ -153,8 +229,8 @@ renderDarkToggle lang =
     , class_ "p-1.5 rounded-md text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
     , ariaLabel (dict lang).common.darkModeToggle
     ]
-    [ raw "<svg class=\"h-5 w-5 dark:hidden\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"1.5\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z\" /></svg>"
-    , raw "<svg class=\"h-5 w-5 hidden dark:block\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"1.5\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z\" /></svg>"
+    [ sunIcon
+    , moonIcon
     ]
 
 -- | Language switch link — a PLAIN anchor (real href, full reload), NOT

@@ -34,10 +34,10 @@ help:
 	@echo 'Usage:'
 	@sed -n 's/^##//p' ${MAKEFILE_LIST} | column -t -s ':' | sed -e 's/^/ /'
 
-# Files allowed to use `raw`: the Html ADT itself, page shells (doctype,
-# inline head scripts), and the two SVG icon modules (icons are static
-# trusted markup, never interpolated with user data).
-RAW_ALLOWLIST_GREP := ^src/App/Html\.purs|^src/App/Layout/Page\.purs|^src/App/Layout/Head\.purs|^src/App/Layout/Header\.purs|^src/App/Ui/Social\.purs|^src/App/ServerBun\.purs
+# `raw` is banned entirely — the Html ADT has no Raw constructor. Script and
+# style content is handled by context-aware rendering (unescaped text elements
+# per the HTML spec). DOCTYPE has its own Doctype constructor.
+# The gate catches any `raw`/`Raw` word in src/ (including comments).
 
 # Banned anywhere in src/: unsafe functions + partial-function modules
 # (Data.Maybe.Unsafe, Data.Array.Unsafe, Data.String.CodePoint.Unsafe,
@@ -68,7 +68,7 @@ gate:
 	@echo "Checking for FFI outside allowlist..."
 	@if grep -rn 'foreign import' src/ | grep -vE '$(FFI_ALLOWLIST_GREP)'; then echo "ERROR: foreign import used outside allowlist"; exit 1; else echo "No FFI outside allowlist"; fi
 	@echo "Checking for raw usage..."
-	@if grep -rnE "\braw\b|\bRaw\b" src/ | grep -vE '$(RAW_ALLOWLIST_GREP)'; then echo "ERROR: raw/Raw used outside allowlist"; exit 1; else echo "No raw usage outside allowlist"; fi
+	@if grep -rnE "\braw\b|\bRaw\b" src/; then echo "ERROR: raw/Raw found in source — the Html ADT has no Raw constructor"; exit 1; else echo "No raw usage"; fi
 	@echo "Checking for env reads outside App/Env.purs..."
 	@if grep -rn 'Node.Process\|lookupEnv' src/ | grep -v '^src/App/Env.purs:'; then echo "ERROR: env read outside App/Env.purs"; exit 1; else echo "No env reads outside App/Env.purs"; fi
 

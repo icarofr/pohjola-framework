@@ -1,8 +1,9 @@
 -- | Html ADT — a plain rose-tree representation of HTML with a String renderer.
 -- |
 -- | Book-aligned: a sum type with an exhaustive pattern-matching interpreter.
--- | Text is escaped by construction; Raw is an explicit opt-out for inline
--- | SVG / JSON-LD / pre-rendered content.
+-- | Text is escaped by construction. The only unescaped output paths are
+-- | `<script>` and `<style>` content (unescaped text elements per the HTML
+-- | spec), which is correct — escaping JS or CSS breaks it.
 -- |
 -- | This is intentionally NOT a framework — no component model, no virtual DOM,
 -- | no event system. It produces a String. Interactivity is handled by Alpine.js
@@ -11,9 +12,9 @@ module App.Html
   ( Html
   , Tag
   , Attr
+  , doctype
   , el
   , text
-  , raw
   , empty
   , attr
   , flag
@@ -57,9 +58,9 @@ import Data.Maybe (Maybe(..))
 
 -- | HTML node — a rose tree.
 data Html
-  = Element Tag (Array Attr) (Array Html)
-  | Text String -- escaped on render
-  | Raw String -- not escaped (inline SVG, JSON-LD)
+  = Doctype
+  | Element Tag (Array Attr) (Array Html)
+  | Text String -- escaped on render (except inside script/style)
   | Fragment (Array Html) -- transparent wrapper for concatenation
   | Empty
 
@@ -83,6 +84,11 @@ instance monoidHtml :: Monoid Html where
 -- Constructors
 -- ============================================================================
 
+-- | Document type declaration — `<!DOCTYPE html>`. Takes no arguments;
+-- | cannot carry user data.
+doctype :: Html
+doctype = Doctype
+
 -- | Create an element with attributes and children.
 el :: Tag -> Array Attr -> Array Html -> Html
 el = Element
@@ -90,10 +96,6 @@ el = Element
 -- | Escaped text node.
 text :: String -> Html
 text = Text
-
--- | Raw HTML — not escaped. Use for inline SVG, JSON-LD, or pre-rendered content.
-raw :: String -> Html
-raw = Raw
 
 -- | Empty node — renders to "".
 empty :: Html
@@ -199,15 +201,28 @@ escape = escapeHTMLImpl
 -- | Render Html to a String.
 render :: Html -> String
 render = case _ of
+  Doctype -> "<!DOCTYPE html>"
   Element tag attrs children ->
     if isVoid tag then
       "<" <> tag <> renderAttrs attrs <> " />"
+    else if isScriptOrStyle tag then
+      "<" <> tag <> renderAttrs attrs <> ">" <> foldMap renderUnescaped children <> "</" <> tag <> ">"
     else
       "<" <> tag <> renderAttrs attrs <> ">" <> foldMap render children <> "</" <> tag <> ">"
   Text s -> escape s
-  Raw s -> s
   Fragment children -> foldMap render children
   Empty -> ""
+
+-- | Render children without escaping — for <script> and <style> content.
+-- | These are unescaped text elements in the HTML spec: their content is
+-- | not parsed as HTML, so escaping would break the JS/CSS.
+renderUnescaped :: Html -> String
+renderUnescaped = case _ of
+  Text s -> s
+  Fragment children -> foldMap renderUnescaped children
+  Empty -> ""
+  Element tag attrs children -> render (Element tag attrs children)
+  Doctype -> "<!DOCTYPE html>"
 
 renderAttrs :: Array Attr -> String
 renderAttrs = foldMap renderAttr
@@ -226,3 +241,10 @@ voidElements = [ "area", "base", "br", "col", "embed", "hr", "img", "input", "li
 
 isVoid :: Tag -> Boolean
 isVoid tag = elem tag voidElements
+
+-- ============================================================================
+-- Unescaped text elements — content is not HTML-escaped (HTML spec)
+-- ============================================================================
+
+isScriptOrStyle :: Tag -> Boolean
+isScriptOrStyle tag = tag == "script" || tag == "style"

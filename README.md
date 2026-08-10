@@ -36,8 +36,8 @@ segfault, or that memory won't exhaust.
 
 ### What the FFI boundary contains
 Bun gives GC memory safety, native `fetch`, `Bun.escapeHTML`, `Bun.XML.stringify`,
-`Bun.CookieMap`, and the npm ecosystem. Access goes through a **3-module FFI
-allowlist** (`App.ServerBun`, `App.FetchBun`, `App.Bun`); the Makefile gate
+`Bun.CookieMap`, and the npm ecosystem. Access goes through a **4-module FFI
+allowlist** (`App.ServerBun`, `App.FetchBun`, `App.Bun`, `App.Data.SQL`); the Makefile gate
 rejects `foreign import` elsewhere, and every FFI function returns `Aff (Either
 AppError a)`. Each wrapper is defensive — `App.ServerBun`'s `makeFetch` catches
 all exceptions and returns a 500 with security headers, `App.FetchBun` routes
@@ -46,7 +46,7 @@ returns `Nothing`.
 
 This is a **trust boundary, not a type-proven one** — as is every FFI in every
 language (Haskell's FFI to C, Rust's `unsafe`). The compiler can't verify the
-JS we call. What's contained: the blast radius is 3 audited modules, every
+JS we call. What's contained: the blast radius is 4 audited modules, every
 entry point forces callers to handle failure, and the wrappers are tested.
 What's not: a bug in a wrapper itself, or a Bun behavioural change, could
 escape. Haskell/Rust FFI to C is memory-unsafe on top; this is the niche for
@@ -54,8 +54,8 @@ teams that need JS ecosystem access without paying TypeScript's soundness tax.
 ### What CI enforces beyond the compiler
 
 - **Makefile gate** (~2s) — grep-bans `unsafeCoerce`, `unsafePerformEffect`,
-  `unsafePartial`, `fromJust`, partial functions, unallowlisted FFI, `raw`
-  HTML outside the allowlist.
+  `unsafePartial`, `fromJust`, partial functions, unallowlisted FFI, and the
+  general-purpose `raw`/`Raw` HTML escape hatch.
 - **ContractSpec** — security headers on every response, CSP pinned
   byte-exact, layout shell on every page, no cross-feature imports, no raw
   Alpine attribute strings, honeypot semantics.
@@ -103,7 +103,7 @@ outside that scope is documented in [docs/GUARANTEES.md](docs/GUARANTEES.md).
   `Data.Array.Unsafe`, `Data.String.CodePoint.Unsafe` are gate-banned outright.
 - **No unsafe functions, no unapproved FFI** — `unsafeCoerce`,
   `unsafePerformEffect` are gate-banned; `foreign import` fails the build
-  unless the module is allowlisted (3 modules, ADR-007).
+  unless the module is allowlisted (4 modules, ADR-003/007).
 - **Errors as values** — a single `AppError` ADT wraps library errors. Every
   boundary function returns `Aff (Either AppError a)`. Runtime exceptions are
   contained at one server boundary, logged, and answered with a 500.
@@ -125,9 +125,10 @@ Browser → Caddy (TLS) → PureScript server (Bun.serve)
 
 - **Server**: PureScript + `Bun.serve` via tamed FFI boundary (`App.ServerBun`,
   ADR-007) — no HTTP framework, no `node-http`.
-- **HTML**: Custom `Html` ADT — sum type with `render :: Html -> String`,
-  escaping via `Bun.escapeHTML` (SIMD-accelerated via Google Highway; short
-  strings use a SWAR fallback).
+- **HTML**: Custom `Html` ADT — closed sum type with `doctype` and
+  `render :: Html -> String`; normal text and attributes escape via
+  `Bun.escapeHTML` (SIMD-accelerated via Google Highway; short strings use a
+  SWAR fallback). There is no general-purpose unescaped HTML constructor.
 - **Routing**: `routing-duplex` — bidirectional codec (parse + print from one
   declaration), one per language, dynamic segments via `int segment`. Adding a
   `Route` constructor without updating the codec is a compile error.
@@ -151,7 +152,7 @@ Browser → Caddy (TLS) → PureScript server (Bun.serve)
 | Layer | Tool | What it tests |
 |-------|------|---------------|
 | Domain logic | `purescript-spec` + `purescript-quickcheck` | Pure functions, property tests (decode totality, honeypot semantics, HTML escaping) |
-| Behavioral contracts | ContractSpec (`purescript-spec`) | Security headers, pinned CSP, Alpine seams, layout shell, allowlists |
+| Behavioral contracts | ContractSpec (`purescript-spec`) | Security headers, pinned CSP, Alpine seams, layout shell, FFI/HTML escape invariants |
 | HTML rendering | `purescript-spec` | Html ADT escape, structure, void elements |
 | Route parsing | `purescript-spec` | `parseRoute` / `routeUrl` round-trip |
 | i18n completeness | `purescript-spec` | Both languages have all keys |

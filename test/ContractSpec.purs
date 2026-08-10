@@ -3,7 +3,7 @@
 -- | The type system can't see the stringly-typed seams this suite pins:
 -- | security header tuples on every Response, the Alpine contentTarget /
 -- | data-page-title contract, i18n wildcard fallbacks, the layout shell,
--- | and the Makefile `raw` allowlist. If a future refactor breaks one of
+-- | and the total `raw` ban. If a future refactor breaks one of
 -- | these contracts, this suite fails loudly instead of misbehaving in
 -- | production.
 module Test.ContractSpec where
@@ -27,7 +27,7 @@ import Data.I18n (Lang(..), dict)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Route (Route(..), allLangs, allRoutes)
 import Data.Email (EmailAddress(..), mkEmailAddress)
-import Data.String.CodeUnits (dropWhile, fromCharArray, stripPrefix, toCharArray) as CodeUnits
+import Data.String.CodeUnits (fromCharArray, stripPrefix, toCharArray) as CodeUnits
 import Data.String.Common (split) as Common
 import Data.String.Pattern (Pattern(..))
 import Data.Traversable (for)
@@ -35,7 +35,7 @@ import Data.Tuple (Tuple(..), snd)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
-import App.Bun (glob, readTextFile, exists)
+import App.Bun (glob, readTextFile)
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldEqual, shouldNotEqual, shouldSatisfy)
 import Test.Spec.Assertions.String as StrAssert
@@ -116,17 +116,6 @@ expectedFallbackCsp :: String
 expectedFallbackCsp =
   "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-eval'"
 
--- | Keep in sync with Makefile RAW_ALLOWLIST_GREP.
-rawAllowlist :: Array String
-rawAllowlist =
-  [ "src/App/Html.purs"
-  , "src/App/Layout/Page.purs"
-  , "src/App/Layout/Head.purs"
-  , "src/App/Layout/Header.purs"
-  , "src/App/Ui/Social.purs"
-  , "src/App/ServerBun.purs"
-  ]
-
 -- | Recursively collect every .purs file under a directory.
 pursFilesUnder :: String -> Effect (Array String)
 pursFilesUnder dir = glob (dir <> "/**/*.purs")
@@ -175,19 +164,17 @@ containsForeignImport :: String -> Boolean
 containsForeignImport str =
   length (Common.split (Pattern "foreign import") str) > 1
 
--- | src/App files that use `raw` and are NOT in the allowlist.
-findRawOutsideAllowlist :: String -> Aff (Array String)
-findRawOutsideAllowlist root = do
+-- | Files in src/ containing a forbidden raw/Raw word.
+findRawInSrc :: String -> Aff (Array String)
+findRawInSrc root = do
   files <- liftEffect $ pursFilesUnder root
   results <- for files \file -> do
-    if any (_ == file) rawAllowlist then pure Nothing
-    else do
-      content <- readTextFile file
-      pure
-        ( case content of
-            Right c -> if containsRawWord c then Just file else Nothing
-            Left _ -> Nothing
-        )
+    content <- readTextFile file
+    pure
+      ( case content of
+          Right c -> if containsRawWord c then Just file else Nothing
+          Left _ -> Nothing
+      )
   pure (mapMaybe identity results)
 
 -- | Files in src/ containing banned functions.
@@ -234,24 +221,6 @@ findRawAlpineOutsideAlpine root = do
             Left _ -> Nothing
         )
   pure (mapMaybe identity results)
-
--- | Check if App.Html exports the Raw data constructor.
--- | An open export (`module App.Html where`) exports everything including Raw.
--- | An explicit export list exports Raw only if a line trims to "Raw" or ", Raw".
-isRawExported :: Aff Boolean
-isRawExported = do
-  content <- readTextFile "src/App/Html.purs"
-  pure $ case content of
-    Left _ -> false
-    Right c ->
-      let
-        lines = Common.split (Pattern "\n") c
-        hasOpenExport = any (\l -> stripLeading l == "module App.Html where") lines
-        hasRawExport = any (\l -> stripLeading l == "Raw" || stripLeading l == ", Raw") lines
-      in
-        (hasOpenExport || hasRawExport)
-  where
-  stripLeading s = CodeUnits.dropWhile (\c -> c == ' ' || c == '\t') s
 
 -- | Feature name from a module path, e.g. "App.Features.Posts.Types" → "Posts".
 featureOfModule :: String -> Maybe String
@@ -406,18 +375,9 @@ spec = do
           html `StrAssert.shouldContain` "<!DOCTYPE html"
           html `StrAssert.shouldContain` "<footer"
 
-    it "every allowlisted module exists on disk" do
-      -- Guards against a typo in the allowlist paths above.
-      checks <- liftEffect $ for rawAllowlist \path -> do
-        exists <- exists path
-        pure (if exists then Nothing else Just path)
-      mapMaybe identity checks `shouldEqual` []
-
-    it "raw appears only in allowlisted files under src/App" do
-      -- Mirror of `make gate`'s `grep \braw\b src/`, scoped to src/App
-      -- (where the allowlist lives); src/Data stays covered by the
-      -- Makefile gate.
-      offenders <- findRawOutsideAllowlist "src/App"
+    it "no raw/Raw words appear in src/" do
+      -- Mirror of the Makefile's total source ban.
+      offenders <- findRawInSrc "src"
       offenders `shouldEqual` []
 
     it "no banned functions in src/" do
@@ -427,10 +387,6 @@ spec = do
     it "no foreign import outside allowlist" do
       offenders <- findForeignImportsOutsideAllowlist "src"
       offenders `shouldEqual` []
-
-    it "Raw constructor is not exported from App.Html" do
-      exported <- isRawExported
-      exported `shouldEqual` false
 
   describe "feature isolation" do
     it "no feature module imports a sibling feature" do
@@ -486,4 +442,3 @@ spec = do
 isJust :: forall a. Maybe a -> Boolean
 isJust (Just _) = true
 isJust Nothing = false
-

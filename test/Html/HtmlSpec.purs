@@ -3,7 +3,7 @@ module Test.Html.HtmlSpec where
 
 import Prelude
 
-import App.Html (attr, class_, el, empty, flag, raw, render, text)
+import App.Html (attr, class_, doctype, el, empty, flag, render, text)
 import Data.String.CodeUnits (contains) as SCU
 import Data.String.Pattern (Pattern(..))
 import Effect.Class (liftEffect)
@@ -26,11 +26,17 @@ spec = do
       it "preserves plain text" do
         render (text "Hello World") `shouldEqual` "Hello World"
 
-    describe "raw" do
-      it "does not escape" do
-        render (raw "<svg></svg>") `shouldEqual` "<svg></svg>"
-      it "preserves HTML entities" do
-        render (raw "&amp;") `shouldEqual` "&amp;"
+    describe "doctype" do
+      it "renders <!DOCTYPE html>" do
+        render doctype `shouldEqual` "<!DOCTYPE html>"
+
+    describe "script/style content (unescaped text elements)" do
+      it "does not escape text inside <script>" do
+        render (el "script" [] [ text "if(a<b)" ]) `shouldEqual` "<script>if(a<b)</script>"
+      it "does not escape text inside <style>" do
+        render (el "style" [] [ text "a>b{color:red}" ]) `shouldEqual` "<style>a>b{color:red}</style>"
+      it "escapes text inside <div> (normal element)" do
+        render (el "div" [] [ text "a<b" ]) `shouldEqual` "<div>a&lt;b</div>"
 
     describe "element rendering" do
       it "renders a div with children" do

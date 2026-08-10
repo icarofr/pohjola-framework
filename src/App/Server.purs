@@ -10,7 +10,7 @@ import Prelude
 import App.Config (mimeType)
 import App.Logger (Level(..))
 import App.Logger as AppLog
-import App.ServerBun (RawRequest, RawResponse, ReadableStream, generateNonce, serveImpl)
+import App.ServerBun (JsRequest, JsResponse, ReadableStream, generateNonce, serveImpl)
 import Data.Array (cons, filter, mapMaybe, tail)
 import Data.Either (Either(..))
 import Data.Foldable (any, intercalate, null)
@@ -242,7 +242,7 @@ serve :: Int -> String -> (Request -> Aff Response) -> Effect Unit
 serve port staticRoot handler = do
   counter <- Ref.new 0
   let
-    callback :: EffectFn2 RawRequest (EffectFn1 RawResponse Unit) Unit
+    callback :: EffectFn2 JsRequest (EffectFn1 JsResponse Unit) Unit
     callback = mkEffectFn2 \rawReq respond -> do
       rid <- nextRequestId counter
       nonce <- generateNonce

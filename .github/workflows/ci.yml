@@ -35,7 +35,7 @@ jobs:
       - name: Format check (purs-tidy)
         run: make format-check
 
-      - name: Gate (unsafe fns, raw allowlist) + build
+      - name: Gate (unsafe fns, FFI, HTML escape hatch) + build
         run: make gate build assets-check
 
       - name: Upload build artifacts
@@ -67,7 +67,7 @@ jobs:
       - name: Install dependencies
         run: npm ci && spago install --pure && make assets
 
-      - name: Gate (unsafe fns, raw allowlist)
+      - name: Gate (unsafe fns, FFI, HTML escape hatch)
         run: make gate
 
       # Run the compiled suite under Bun for runtime parity with production
