@@ -34,20 +34,49 @@ first.
 - **Bun and JavaScript stay close:** direct JS/npm access runs through a small,
   reviewed FFI boundary.
 
-## A broader full-stack choice
+## What this choice trades
 
-Elm and PureScript both bring compiler-checked application code and exhaustive
-changes. Elm’s focused architecture is effective for frontend applications,
-with flags, ports, and custom elements forming a deliberate boundary. PureScript
-extends the same discipline across full-stack code with direct FFI, Bun/server
-access, and the freedom to choose domain modules and async composition styles.
+This starter makes a specific trade: the server renders the first HTML, feature
+code owns its own architecture, and PureScript keeps routes, data decoding,
+errors, forms, and rendering in one typed codebase. Alpine adds small browser
+interactions without turning the whole application into a client-side runtime.
 
-| Stack | Primary strength | Best fit |
-| --- | --- | --- |
-| **PureScript + Bun** | Pure, effect-aware full-stack reach | Typed apps with direct JS access |
-| **Elm** | Focused compiler-led frontend architecture | Highly constrained web UIs |
-| **Lustre** | Gleam’s Elm-inspired web framework | Gleam teams building web UIs |
-| **ReScript** | Typed JavaScript with excellent interop | Easier adoption into JS codebases |
+That is a good fit for request/response applications that need fast first
+renders, real URLs, explicit failure handling, and a small JavaScript surface.
+It is a worse fit for an offline-first client, a highly interactive editor, or
+a team that primarily wants a large catalogue of ready-made JavaScript
+components and integrations.
+
+The important alternatives make different trade-offs:
+
+- **An opinionated server framework such as Django, Rails, or Laravel** usually
+  gives you conventional routing, controllers, views, persistence, migrations,
+  validation, jobs, and mail. Django also includes forms, authentication, and
+  an admin; Rails and Laravel provide strong first-party conventions and
+  commonly used authentication and admin components around their cores. This
+  starter gives you more control over the domain model and effect boundaries,
+  but you must design and maintain those pieces yourself.
+- **Elm** gives a deliberately constrained frontend architecture: the browser
+  owns a long-lived model and update loop, while the server is a separate
+  concern. This starter keeps the request lifecycle on the server and lets
+  each feature choose its own `Aff` orchestration; the cost is less uniformity
+  and a smaller ecosystem.
+- **A TypeScript meta-framework such as Next.js, SvelteKit, Nuxt, or
+  Remix/React Router** combines a browser UI framework with routing, bundling,
+  server rendering, client navigation, and server handlers or actions. It
+  offers a large hiring pool, library ecosystem, and deployment catalogue, but
+  persistence, domain validation, and many security decisions still come from
+  separate packages and application code. Its types are convenient at compile
+  time but generally do not survive runtime boundaries, whereas this starter
+  makes decoding, errors, escaping, and server/browser boundaries explicit.
+- **A Gleam/BEAM web stack** is compelling when lightweight processes,
+  supervision, and BEAM deployment are central requirements. This starter is
+  aimed at teams that want PureScript’s type system while staying close to Bun,
+  npm packages, and the JavaScript runtime.
+
+The choice is therefore not “which language has the best types?” It is where the
+application should place its state, effects, rendering, and operational
+responsibilities—and how much of that structure the framework should decide.
 
 ## Proof in this repo
 
