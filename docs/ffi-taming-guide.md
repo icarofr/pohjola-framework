@@ -57,6 +57,28 @@ FFI is for capabilities PS lacks, never convenience).
   the compiler will enumerate every handler.
 - Template: `docs/examples/Crypto.purs` + `Crypto.js`.
 
+**The template shows the Node-built-in path (priority 2), not the Bun-native
+path (priority 3).** `Crypto.js` imports `node:crypto` and therefore has no
+runtime dispatch. For a Bun-native target — `Bun.password`, `Bun.sql`,
+`bun:sqlite` — probe first, so the binding fails as a value rather than a
+`ReferenceError`:
+
+```js
+export function hashImpl(password) {
+  return function () {
+    if (typeof Bun === "undefined" || !Bun.password) {
+      return { ok: false, error: "Bun.password unavailable" };
+    }
+    return { ok: true, value: Bun.password.hashSync(password) };
+  };
+}
+```
+
+The probe is the only branching the `.js` side may contain — it is about
+capability, not app behavior. Everything else stays in PureScript. `eval 04`
+asserts this probe exists; an agent that copies `Crypto.js` verbatim for a
+Bun-native task will fail it.
+
 ## Step 4 — Register
 
 - Add the module to `FFI_ALLOWLIST_GREP` in the Makefile.
@@ -74,8 +96,14 @@ FFI is for capabilities PS lacks, never convenience).
 - Keep app logic on the PS side. The `.js` file calls library functions and
   returns primitives or plain objects — branching about app behaviour means
   the boundary is in the wrong place.
-- Decode at the boundary, always. TS types do not exist at runtime; a typed
+- Decode at the boundary, with one named exception. TS types do not exist at runtime; a typed
   TS library still returns untyped JS to PureScript. Decode anyway.
+
+  The exception is primitives and primitive maps produced by the *runtime
+  itself* (`Bun.serve`'s request record), where a decoder would restate the
+  runtime's own guarantee and reject nothing. That exemption is named and
+  bounded in `docs/GUARANTEES.md` § "FFI marshalling" — it does not extend to
+  library output, upstream JSON, form bodies, or DB rows, all of which decode.
 - Use Promise/Aff boundaries for async. Passing callbacks into JS couples
   lifecycle to the JS side — return a Promise and bridge with `Aff`.
 - One interface, one module. Dispatch inside the binding or pick one runtime

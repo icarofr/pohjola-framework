@@ -25,8 +25,12 @@ invisible to the PureScript type system and to the gate.
 
 ## Consequences
 
-- CSP `script-src 'self' 'unsafe-inline' 'unsafe-eval'` is pinned by
-  ContractSpec; widening it fails a test that demands justification.
+- CSP `script-src 'nonce-<random>' 'self' 'unsafe-eval' 'strict-dynamic'` is
+  pinned by ContractSpec; widening it fails a test that demands justification.
+  (Originally `script-src 'self' 'unsafe-inline' 'unsafe-eval'` — `unsafe-inline`
+  was dropped in favour of per-request nonces; see the addendum below for the
+  reasoning. This line previously still described the pre-nonce policy and
+  contradicted the addendum.)
 - ContractSpec asserts rendered pages never reference external `src="http…"`.
 - The gate bans `foreign import` outside `FFI_ALLOWLIST_GREP`.
 - If a behaviour can't be expressed in Alpine attributes, it moves to the
@@ -39,7 +43,10 @@ invisible to the PureScript type system and to the gate.
 The primary XSS defense is **upstream**, not CSP:
 
 1. The `Html` ADT escapes all text via `Bun.escapeHTML` (SIMD, 5 metacharacters).
-2. The unsafe HTML constructor is gate-banned outside 6 allowlisted modules.
+2. There is no unescaped-HTML constructor at all. The ADT's only unescaped
+   output paths are `<script>`/`<style>` content (unescaped text elements per
+   the HTML spec) and the argument-less `Doctype`; the gate rejects the word
+   itself anywhere in `src/`.
 3. ContractSpec property-tests that rendered text never contains unescaped
    `<`/`>` (guarantee #16).
 4. No user-generated HTML content. No `x-html` usage.
@@ -47,10 +54,36 @@ The primary XSS defense is **upstream**, not CSP:
 CSP is **defense-in-depth** for future developer mistakes, not the load-bearing
 wall. The residual vectors CSP mitigates:
 
-- **Vector A:** an unsafe-HTML call inside an allowlisted module passing
-  user-influenced data (currently all static, but not structurally prevented).
-- **Vector B:** user data flowing into an Alpine constructor argument
-  (currently doesn't happen, but `xData :: String -> Attr` accepts anything).
+- **Vector A — closed by construction.** This originally read "an unsafe-HTML
+  call inside an allowlisted module passing user-influenced data (currently all
+  static, but not structurally prevented)". That constructor was removed
+  entirely in `ae78c5b8`, so the vector is no longer merely unexercised — it is
+  unrepresentable. Recorded rather than deleted so the analysis is not lost, and
+  because it is a stronger claim than the one this ADR originally made.
+- **Vector B — closed by construction (amended).** This originally read "user
+  data flowing into an Alpine constructor argument (currently doesn't happen,
+  but `xData :: String -> Attr` accepts anything)" — i.e. closed by convention,
+  which is what made it a residual vector at all.
+
+  It is now closed by the type system, at both levels it needed to be:
+
+  - `App.Alpine.Expr` is abstract — the type is exported, its constructor is
+    not — so an expression can only come from a builder in that module. A
+    string literal where an `Expr` is expected is a type error.
+  - `App.Alpine.Flag` is a **closed sum type**, so the identifier inside a
+    generated expression cannot carry expression syntax either. Leaving the
+    flag name an open `String` would have reopened this vector through the one
+    slot the `Expr` wrapper does not cover: `setFlag "x; evil()" true` would
+    have rendered `x; evil() = true`.
+
+  Both halves are load-bearing; neither alone closes the vector.
+
+  **This does not change the `unsafe-eval` decision below.** Alpine's standard
+  build evaluates every attribute expression through `new Function()`
+  regardless of how that expression was constructed, and the CSP build still
+  cannot call `fetch`. What changes is the basis of the argument: the residual
+  risk `unsafe-eval` amplifies is now absent by construction rather than by
+  the convention of nobody passing user data in.
 
 ### Why `unsafe-eval` remains
 

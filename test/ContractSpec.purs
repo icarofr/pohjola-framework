@@ -10,26 +10,27 @@ module Test.ContractSpec where
 
 import Prelude
 
-import App.Alpine (contentTarget, spaLink)
+import App.Alpine (Flag(..), contentTarget, flagName, navLink, renderExpr, setFlag, spaLink, themeToggle, toggleFlag)
 import App.Config (Config)
 import App.Form (contactFields, newsletterFields)
 import App.Layout.Head (renderJsonLd, escapeJson)
-import App.Layout.Page (renderPage, renderShellOpen, renderShellClose, renderPrefetch)
+import App.Layout.Page (renderErrorFragment, renderErrorPage, renderFragment, renderPage, renderShellOpen, renderShellClose, renderPrefetch)
 import App.Main (pageRenderer)
-import App.Server (Response, cspWithNonce, fileResponse, htmlResponse, internalError, methodNotAllowed, notFound, ok, okText, okWith, redirect, redirectVary, securityHeaders, tooManyRequests)
-import App.Html (render)
-import Data.Array (concat, filter, find, length, mapMaybe, uncons)
+import App.Server (RedirectKind(..), Response, cspWithNonce, errorStatusCode, fileResponse, htmlErrorResponse, internalError, methodNotAllowed, notFound, ok, okText, okWith, redirect, redirectVary, securityHeaders, tooManyRequests)
+import App.Cache (insertDynamic, lookupDynamic, mkDynamicCache)
+import App.Html (render, text)
+import Data.Array (concat, filter, find, last, length, mapMaybe, nub, uncons)
 import Data.Char (toCharCode)
 import Data.Content (services)
 import Data.Either (Either(..))
 import Data.Foldable (any, for_)
 import Data.I18n (Lang(..), dict)
 import Data.Maybe (Maybe(..), fromMaybe)
-import Data.Route (Route(..), allLangs, allRoutes)
+import Data.Route (Route(..), allLangs, allRoutes, routeUrl)
 import Data.Email (EmailAddress(..), mkEmailAddress)
 import Data.String.CodeUnits (fromCharArray, stripPrefix, toCharArray) as CodeUnits
-import Data.String.Common (split) as Common
-import Data.String.Pattern (Pattern(..))
+import Data.String.Common (split, replaceAll) as Common
+import Data.String.Pattern (Pattern(..), Replacement(..))
 import Data.Traversable (for)
 import Data.Tuple (Tuple(..), snd)
 import Effect (Effect)
@@ -91,6 +92,16 @@ hasHeader key headers = any (\(Tuple k _) -> k == key) headers
 -- | Extract the CSP value from a headers array.
 cspValue :: Array (Tuple String String) -> Maybe String
 cspValue headers = snd <$> find (\(Tuple k _) -> k == "Content-Security-Policy") headers
+
+-- | The LAST value for a header key — mirrors the Bun bridge, which applies
+-- | headers with `Headers.set` in iteration order, so a later duplicate wins.
+lastHeaderValue :: String -> Response -> Maybe String
+lastHeaderValue key response =
+  last (mapMaybe (\(Tuple k v) -> if k == key then Just v else Nothing) response.headers)
+
+-- | Extract the Cache-Control value from a response.
+cacheControl :: Response -> Maybe String
+cacheControl response = snd <$> find (\(Tuple k _) -> k == "Cache-Control") response.headers
 
 -- | Assert a response carries the non-negotiable security headers (excluding
 -- | CSP, which is injected per-request by `serve` via `withCsp`).
@@ -204,8 +215,20 @@ findForeignImportsOutsideAllowlist root = do
             Left _ -> Nothing
         )
   pure (mapMaybe identity results)
-  where
-  ffiAllowlist = [ "src/App/ServerBun.purs", "src/App/FetchBun.purs", "src/App/Bun.purs", "src/App/Data/SQL.purs" ]
+
+-- | Modules permitted to carry `foreign import`.
+-- |
+-- | This list is duplicated in the Makefile's `FFI_ALLOWLIST_GREP`, because the
+-- | gate runs as grep before the compiler exists. Two sources of truth is a
+-- | drift risk, so "the FFI allowlist matches the Makefile gate" below asserts
+-- | they agree — adding a module to one and not the other fails the suite.
+ffiAllowlist :: Array String
+ffiAllowlist = [ "src/App/ServerBun.purs", "src/App/FetchBun.purs", "src/App/Bun.purs", "src/App/Data/SQL.purs" ]
+
+-- | The Makefile's allowlist pattern, escaped the way Make writes it:
+-- | `src/App/Bun.purs` → `^src/App/Bun\.purs`
+makefilePattern :: String -> String
+makefilePattern path = "^" <> Common.replaceAll (Pattern ".") (Replacement "\\.") path
 
 -- | Files in src/ (excluding App.Alpine) containing raw Alpine attribute strings.
 findRawAlpineOutsideAlpine :: String -> Aff (Array String)
@@ -286,12 +309,12 @@ spec = do
     it "ok" $ checkSecurityHeaders (ok "body")
     it "okWith" $ checkSecurityHeaders (okWith [] "body")
     it "okText" $ checkSecurityHeaders (okText "text/plain; charset=utf-8" "body")
-    it "htmlResponse" $ checkSecurityHeaders (htmlResponse "body" [] 200)
+    it "htmlErrorResponse" $ checkSecurityHeaders (htmlErrorResponse "body" [] (errorStatusCode 500))
     it "notFound" $ checkSecurityHeaders notFound
     it "methodNotAllowed" $ checkSecurityHeaders methodNotAllowed
     it "internalError" $ checkSecurityHeaders internalError
-    it "redirect" $ checkSecurityHeaders (redirect 302 "/en")
-    it "redirectVary" $ checkSecurityHeaders (redirectVary 302 "/en" [])
+    it "redirect" $ checkSecurityHeaders (redirect Found "/en")
+    it "redirectVary" $ checkSecurityHeaders (redirectVary Found "/en" [])
     it "tooManyRequests" $ checkSecurityHeaders (tooManyRequests 60.0)
     it "fileResponse" do
       let buf = ""
@@ -339,6 +362,273 @@ spec = do
     it "nav links carry x-target.push pointing at contentTarget" do
       html <- renderStaticPage Home En
       html `StrAssert.shouldContain` "x-target.push=\"content\""
+
+  describe "FFI allowlist has one meaning" do
+    -- The gate greps the Makefile pattern; this spec scans with its own list.
+    -- Two representations of one contract drift silently unless something
+    -- compares them, and a module allowlisted in only one place is either an
+    -- unchecked foreign import or a false gate failure.
+    it "every allowlisted module appears in the Makefile gate pattern" do
+      mk <- readTextFile "Makefile"
+      case mk of
+        Left err -> StrAssert.shouldContain "" ("expected Makefile to be readable: " <> err)
+        Right content -> for_ ffiAllowlist \path ->
+          content `StrAssert.shouldContain` makefilePattern path
+    it "the Makefile gate pattern allows nothing beyond this list" do
+      mk <- readTextFile "Makefile"
+      case mk of
+        Left err -> StrAssert.shouldContain "" ("expected Makefile to be readable: " <> err)
+        Right content -> do
+          let
+            gateLine = fromMaybe "" $ find (\l -> length (Common.split (Pattern "FFI_ALLOWLIST_GREP :=") l) > 1)
+              (Common.split (Pattern "\n") content)
+            entries = length (Common.split (Pattern "^src/") gateLine) - 1
+          entries `shouldEqual` length ffiAllowlist
+
+  describe "the success cache policy rests on a checked premise" do
+    -- The policy is documented as `private` because a full page embeds a
+    -- per-request CSP nonce. That premise is true for pages and FALSE for AJAX
+    -- fragments, which carry no nonce at all — they take `private` as a
+    -- conservative default, not a requirement. Both facts are pinned here so
+    -- the justification cannot quietly stop matching the code.
+    it "a full page carries a nonce" do
+      for_ staticRoutes \route ->
+        for_ allLangs \lang -> do
+          html <- renderStaticPage route lang
+          html `StrAssert.shouldContain` "nonce=\"test-nonce-123\""
+    it "a fragment carries NO nonce" do
+      -- renderFragment emits no <script> tags, so there is nothing to nonce.
+      -- If a nonce ever appears here, the fragment cache policy needs
+      -- rethinking and this test forces that conversation.
+      for_ allLangs \lang -> do
+        let frag = renderFragment lang Home (text "content")
+        frag `StrAssert.shouldNotContain` "nonce="
+
+  describe "fragment responses are fragment-shaped" do
+    -- A fragment response is swapped into #content by Alpine AJAX. If an error
+    -- path answers with a full document, the client nests a complete
+    -- <!DOCTYPE> document inside the page body. ADR-007 states this principle
+    -- for the streaming path; it was never applied to the AJAX error path.
+    it "the error fragment is not a full document" do
+      for_ allLangs \lang -> do
+        let frag = renderErrorFragment lang Home 500
+        frag `StrAssert.shouldNotContain` "<!DOCTYPE"
+        frag `StrAssert.shouldNotContain` "<html"
+        frag `StrAssert.shouldNotContain` "<body"
+    it "the error fragment carries the swap target so Alpine can replace it" do
+      let frag = renderErrorFragment En Home 404
+      frag `StrAssert.shouldContain` ("id=\"" <> contentTarget <> "\"")
+    it "the error fragment shows the status and localized message" do
+      let frag = renderErrorFragment En Home 404
+      frag `StrAssert.shouldContain` "404"
+      frag `StrAssert.shouldContain` (dict En).common.error404
+    it "the full error page remains a complete document" do
+      -- The non-fragment path must NOT be changed by the above.
+      let full = renderErrorPage "nonce123" En 500
+      full `StrAssert.shouldContain` "<!DOCTYPE"
+      full `StrAssert.shouldContain` "<html"
+
+  describe "error responses are never stored" do
+    -- htmlCacheControl's max-age exists so a hover prefetch can be reused by
+    -- the click. On an error that is exactly wrong: a transient 502 would stick
+    -- in the browser for ten seconds, so a retry after the upstream recovered
+    -- would still be answered from cache. Errors are the one class where
+    -- staleness is never acceptable — retrying exists to get a different answer.
+    it "every HTML error response is no-store" do
+      for_ [ 404, 500, 502 ] \status ->
+        cacheControl (htmlErrorResponse "<p>x</p>" [] (errorStatusCode status)) `shouldEqual` Just "no-store"
+    it "the plain-text error constructors are no-store too" do
+      -- These previously carried no cache policy at all, so error caching was
+      -- inconsistent three ways. tooManyRequests was missed on the first pass
+      -- because the list was enumerated by hand rather than taken from the
+      -- constructors that actually exist — it is included explicitly here.
+      for_ [ notFound, methodNotAllowed, internalError, tooManyRequests 30.0 ] \r ->
+        cacheControl r `shouldEqual` Just "no-store"
+    it "the enumerated non-2xx constructors are all no-store" do
+      -- NOTE ON SCOPE: this list is hand-maintained. It cannot detect a NEW
+      -- response constructor added without a policy — an earlier version of
+      -- this comment claimed it could, which was false. It pins the
+      -- constructors named here and nothing more. The redirects are included
+      -- because their policy is now a decision (see App.Server.redirectVary),
+      -- not an omission.
+      let
+        nonSuccessResponses =
+          [ notFound
+          , methodNotAllowed
+          , internalError
+          , tooManyRequests 30.0
+          , redirect SeeOther "/en"
+          , redirectVary Found "/en" [ Tuple "Vary" "Accept-Language" ]
+          , htmlErrorResponse "x" [] (errorStatusCode 404)
+          , htmlErrorResponse "x" [] (errorStatusCode 500)
+          , htmlErrorResponse "x" [] (errorStatusCode 502)
+          ]
+      for_ nonSuccessResponses \r -> do
+        (r.status >= 300) `shouldEqual` true
+        cacheControl r `shouldEqual` Just "no-store"
+    it "a caller cannot override the SUCCESS cache policy either" do
+      -- okWith previously emitted htmlCacheControl before caller headers, so a
+      -- caller-supplied Cache-Control won. That was the same override defect
+      -- fixed for the error and redirect constructors and left behind here.
+      lastHeaderValue "Cache-Control" (okWith [ Tuple "Cache-Control" "public, max-age=3600" ] "<p>x</p>")
+        `shouldEqual` Just "private, max-age=10"
+      lastHeaderValue "Cache-Control" (ok "<p>x</p>")
+        `shouldEqual` Just "private, max-age=10"
+
+    it "redirect status and cache policy are derived together, per kind" do
+      -- The previous design took a policy AND a bare Int status, so a public
+      -- policy was pairable with a request-dependent 302, and a non-3xx status
+      -- was expressible. Deriving both from the
+      -- kind makes those combinations unrepresentable rather than merely
+      -- undocumented — HTTP already fixes the pairing.
+      let
+        check kind status policy = do
+          (redirect kind "/en").status `shouldEqual` status
+          lastHeaderValue "Cache-Control" (redirect kind "/en") `shouldEqual` Just policy
+      check MovedPermanently 301 "public, max-age=3600"
+      check PermanentRedirect 308 "public, max-age=3600"
+      check Found 302 "no-store"
+      check SeeOther 303 "no-store"
+      check TemporaryRedirect 307 "no-store"
+    it "every redirect kind emits a 3xx status" do
+      -- The status is no longer a caller-supplied Int, so a non-redirect
+      -- status cannot reach a redirect response at all.
+      for_ [ MovedPermanently, PermanentRedirect, Found, SeeOther, TemporaryRedirect ] \k -> do
+        ((redirect k "/en").status >= 300) `shouldEqual` true
+        ((redirect k "/en").status < 400) `shouldEqual` true
+    it "a caller cannot override the error cache policy" do
+      -- SCOPE: this asserts TUPLE ORDERING on the PureScript response — it
+      -- models the Bun bridge (which applies headers with Headers.set in
+      -- iteration order, so the last duplicate wins) rather than exercising it.
+      -- A bridge change could break the runtime policy while this stays green.
+      -- The emitted header is asserted end-to-end in
+      -- e2e/prefetch-cache.spec.js; this test covers the ordering that bridge
+      -- consumes.
+      let hostile = htmlErrorResponse "x" [ Tuple "Cache-Control" "public, max-age=3600" ] (errorStatusCode 500)
+      lastHeaderValue "Cache-Control" hostile `shouldEqual` Just "no-store"
+      lastHeaderValue "Cache-Control" (redirectVary Found "/en" [ Tuple "Cache-Control" "public" ])
+        `shouldEqual` Just "no-store"
+    it "errorStatusCode clamps anything outside 400..599" do
+      -- Clamps, does not reject — the signature is total, so there is no
+      -- failure channel. Boundaries matter: an earlier version bounded only the
+      -- lower end, so 600 and 999 passed straight through to
+      -- `new Response(…, { status })` at the Bun boundary.
+      --
+      -- Asserted through the RESPONSE status rather than an unwrapping
+      -- accessor. `unErrorStatus` existed only for this test and leaked the
+      -- representation the opacity claim is about; the status a client
+      -- actually receives is the observable that matters.
+      let statusOf n = (htmlErrorResponse "x" [] (errorStatusCode n)).status
+      for_ [ 200, 302, 399, 600, 999, -1 ] \n -> statusOf n `shouldEqual` 500
+      for_ [ 400, 404, 500, 502, 599 ] \n -> statusOf n `shouldEqual` n
+    it "successful pages keep the reusable policy" do
+      -- The error rule must not leak into the success path, which is what makes
+      -- the click cache hit possible at all.
+      cacheControl (okWith [] "<p>x</p>") `shouldEqual` Just "private, max-age=10"
+
+  describe "dynamic cache keys cannot collide" do
+    -- The key was a rendered string resting on Show Route being injective — a
+    -- hand-written instance with nothing enforcing it. It is now the (Route,
+    -- Lang) pair, so Ord Route (derived) makes distinct routes distinct keys.
+    -- Note allRoutes deliberately EXCLUDES PostDetail, which is the only route
+    -- that reaches the dynamic cache — so a test over allRoutes alone would
+    -- exercise none of the keys this cache actually stores.
+    it "distinct (route, lang) pairs are distinct keys, including PostDetail" do
+      let
+        detailRoutes = [ PostDetail 1, PostDetail 2, PostDetail 42 ]
+        pairs = do
+          route <- allRoutes <> detailRoutes
+          lang <- allLangs
+          pure (Tuple route lang)
+      length (nub pairs) `shouldEqual` length pairs
+    it "PostDetail ids do not alias each other" do
+      (Tuple (PostDetail 1) En == Tuple (PostDetail 2) En) `shouldEqual` false
+    it "two entries in the real cache cannot be retrieved through each other" do
+      -- Tuple inequality is an argument; this is evidence. Inserts two entries
+      -- and proves a lookup of one cannot return the other, across both the
+      -- id axis and the lang axis.
+      cache <- liftEffect mkDynamicCache
+      liftEffect $ insertDynamic cache (Tuple (PostDetail 1) En) (text "one") 60000.0
+      liftEffect $ insertDynamic cache (Tuple (PostDetail 2) En) (text "two") 60000.0
+      liftEffect $ insertDynamic cache (Tuple (PostDetail 1) Fr) (text "un") 60000.0
+      got1 <- liftEffect $ lookupDynamic cache (Tuple (PostDetail 1) En)
+      got2 <- liftEffect $ lookupDynamic cache (Tuple (PostDetail 2) En)
+      gotFr <- liftEffect $ lookupDynamic cache (Tuple (PostDetail 1) Fr)
+      missing <- liftEffect $ lookupDynamic cache (Tuple (PostDetail 9) En)
+      map render got1 `shouldEqual` Just "one"
+      map render got2 `shouldEqual` Just "two"
+      map render gotFr `shouldEqual` Just "un"
+      map render missing `shouldEqual` Nothing
+
+  describe "nonce-bearing HTML is never shared-cached (W6)" do
+    -- Every HTML response embeds a per-request CSP nonce. A shared cache
+    -- storing one would replay a single visitor's nonce to everyone else,
+    -- leaving CSP structurally intact but hollow. `private` is the guard.
+    it "okWith carries Cache-Control: private" do
+      cacheControl (okWith [] "<p>x</p>") `shouldEqual` Just "private, max-age=10"
+    it "no successful HTML response is publicly cacheable" do
+      -- The exact string is pinned above; this guards the property that matters
+      -- even if the max-age is later tuned. htmlErrorResponse is excluded because
+      -- every one of its callers is an error — see "error responses are never
+      -- stored", which pins no-store for those.
+      for_ [ ok "<p>x</p>", okWith [] "<p>x</p>" ] \r ->
+        (cacheControl r >>= CodeUnits.stripPrefix (Pattern "private")) `shouldNotEqual` Nothing
+    it "robots.txt and sitemap.xml are NOT marked private" do
+      -- okText serves nonce-free public documents; marking them private would
+      -- stop shared caches serving them for no benefit.
+      cacheControl (okText "text/plain" "User-agent: *") `shouldEqual` Nothing
+
+  describe "nav links never prefetch the page already shown" do
+    -- After an AJAX swap the header re-renders, and the link for the current
+    -- route lands under the user's stationary cursor. Without this, mouseenter
+    -- fires again and prefetches the page already on screen — one wholly
+    -- redundant request per navigation, measured in e2e/prefetch-cache.spec.js.
+    it "the active nav link carries no hover prefetch" do
+      let
+        active = render (navLink { lang: En, current: About, target: About } [] [])
+        other = render (navLink { lang: En, current: About, target: Contact } [] [])
+      active `StrAssert.shouldNotContain` "@mouseenter"
+      other `StrAssert.shouldContain` "@mouseenter"
+    it "the active nav link still navigates and still swaps" do
+      -- Dropping the prefetch must not turn it into a dead link.
+      let active = render (navLink { lang: En, current: About, target: About } [] [])
+      active `StrAssert.shouldContain` "href=\"/en/about\""
+      active `StrAssert.shouldContain` ("x-target.push=\"" <> contentTarget <> "\"")
+    it "the rendered page does not prefetch its own route" do
+      for_ staticRoutes \route ->
+        for_ allLangs \lang -> do
+          html <- renderStaticPage route lang
+          let selfPrefetch = "@mouseenter=\"fetch($el.href" -- any link with prefetch
+          -- The page must not contain a prefetching link whose href is its own URL.
+          html `StrAssert.shouldNotContain`
+            ("href=\"" <> routeUrl lang route <> "\" x-target.push=\"" <> contentTarget <> "\" " <> selfPrefetch)
+
+  describe "Alpine seam — generated expressions (ADR-000 Vector B)" do
+    -- These are the JavaScript strings that reach the browser. Nothing else in
+    -- the stack can check them: a typo here compiles and fails at runtime.
+    -- The expressions are generated in one place precisely so they can be
+    -- pinned here.
+    it "setFlag renders a boolean assignment" do
+      renderExpr (setFlag MenuOpen false) `shouldEqual` "menuOpen = false"
+      renderExpr (setFlag MenuOpen true) `shouldEqual` "menuOpen = true"
+    it "toggleFlag inverts the same flag it assigns" do
+      renderExpr (toggleFlag LangMenuOpen) `shouldEqual` "open = !open"
+    it "flagName is injective — two flags cannot share an identifier" do
+      -- A collision would silently wire two unrelated controls to one piece of
+      -- state, which renders and tests fine until a user opens both.
+      flagName MenuOpen `shouldNotEqual` flagName LangMenuOpen
+    it "themeToggle persists the resolved class, not the pre-toggle state" do
+      -- Reading classList back AFTER toggling is what keeps localStorage and
+      -- the DOM in agreement; deriving it from the prior state would invert
+      -- the theme on reload.
+      renderExpr themeToggle `StrAssert.shouldContain` "classList.toggle('dark'); "
+      renderExpr themeToggle `StrAssert.shouldContain` "classList.contains('dark') ? 'dark' : 'light'"
+    it "aria-expanded is bound to the same flag x-show reads" do
+      -- Drift between these renders fine but reports a collapsed menu to
+      -- screen readers while it is visibly open.
+      html <- renderStaticPage Home En
+      html `StrAssert.shouldContain` "x-show=\"menuOpen\""
+      html `StrAssert.shouldContain` ":aria-expanded=\"menuOpen.toString()\""
 
   describe "Alpine seam — typed constructors" do
     it "no raw Alpine attribute strings outside App.Alpine" do

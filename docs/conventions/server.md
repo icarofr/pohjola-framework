@@ -29,9 +29,58 @@ safety via `isUnsafePath` (exact `..` / `\` segments rejected).
 ## Security headers
 
 All Response constructors carry security headers, asserted by ContractSpec.
-CSP allows `'unsafe-inline'` + `'unsafe-eval'` only for script-src (Alpine's
-build needs eval; inline head scripts need inline). ContractSpec pins the
-exact CSP string — widening it fails a test that demands justification.
+`script-src` is **nonce-based**: `'nonce-<random>' 'self' 'unsafe-eval'
+'strict-dynamic'`. There is no `unsafe-inline` in `script-src` — the two inline
+head scripts and the JSON-LD block carry a per-request nonce instead (`style-src`
+does still allow `'unsafe-inline'`). `'unsafe-eval'` remains because Alpine's
+standard build evaluates attribute expressions via `new Function()`; see ADR-000
+for why the CSP build is not used. ContractSpec pins the exact CSP string —
+widening it fails a test that demands justification.
+
+There are **two** HTML cache policies, not one. An earlier version of this
+section claimed a single policy covering every nonce-bearing response, which
+stopped being true once errors split off — and error pages are nonce-bearing
+HTML, so the claim was false in exactly the case it was broadest about.
+
+| Responses | Policy | Constructor |
+|---|---|---|
+| Successful full pages, incl. streamed | `private, max-age=10` | `okWith`, `ok`, `streamResponse` (`htmlCacheControl`) |
+| AJAX fragments | `private, max-age=10` — same policy, **different reason** | `okWith` |
+| Errors (4xx/5xx) | `no-store` | `htmlErrorResponse`, `notFound`, `methodNotAllowed`, `internalError`, `tooManyRequests` (`errorCacheControl`) |
+| Redirects | `RedirectKind` derives `public, max-age=3600` for 301/308 and `no-store` for 302/303/307 | `redirect`, `redirectVary` |
+| robots.txt, sitemap.xml, healthz | none — no nonce, genuinely public | `okText` |
+| Static files (test-only path) | `public, max-age=3600` | `fileResponse` |
+
+The `RedirectKind` type enforces the status/policy pairing. For 301/308,
+callers must still supply a request-independent location; that semantic property
+is not representable by an arbitrary `String`.
+
+`private` on full pages because each embeds a per-request CSP nonce and a
+shared cache would replay one visitor's nonce to everyone else; `max-age`
+because without a freshness lifetime the response is never reusable, which makes
+hover prefetch pure overhead. Both halves were established by measurement — see
+`RECONCILIATION.md` "W6 outcome" and `e2e/prefetch-cache.spec.js`.
+
+**Fragments share the policy for a different reason.** `renderFragment` emits no
+`<script>` tags and therefore carries no nonce at all — verified, a fragment
+response contains zero `nonce=` attributes. `private` there is a conservative
+default, not a requirement. The earlier wording ("every nonce-bearing HTML
+response") implied one justification covering both, which was false for half of
+`okWith`'s callers. ContractSpec now pins both facts — pages carry a nonce,
+fragments do not — so the justification cannot quietly stop matching the code.
+
+The policy header is emitted **last** in `okWith` too. It previously came first
+and was overridable by a caller-supplied `Cache-Control`, which was the same
+defect fixed for the error and redirect constructors and left behind on the
+success path.
+
+`no-store` on errors because a transient 5xx must never answer a retry from
+cache. Redirects require an explicit choice at the call site, so a future
+permanently-cacheable 301 cannot silently inherit the transient policy.
+
+The policy header is emitted **last** in every constructor: the Bun bridge
+applies headers with `Headers.set` in iteration order, so a caller-supplied
+`Cache-Control` in `extraHeaders` cannot replace it.
 
 ## Streaming & fragments
 
@@ -39,8 +88,12 @@ exact CSP string — widening it fails a test that demands justification.
   (a `ReadableStream`). Page content streams as it resolves.
   `controller.close()` is guaranteed via `try/finally` even on enqueue
   failure. Status is always 200 (committed at shell time).
-- **Fragments**: The server detects fragment requests via `?_frag=1` query
-  parameter AND the `x-alpine-request` header. Fragment responses carry
+- **Fragments**: The server detects fragment requests via **either** signal —
+  the `?_frag=1` query parameter **or** the `x-alpine-request` header
+  (`isFragmentRequest` is a boolean OR). Both are supported deliberately per
+  ADR-007: Alpine AJAX sends the header, while `?_frag=1` gives a header-free
+  way to request a fragment (curl, integration tests, non-header clients) and a
+  cache key that does not depend on `Vary`. Fragment responses carry
   `Vary: x-alpine-request`. Fragments never stream (small, already fast).
 - **Static routes** (`Home`, `About`, `Contact`, `Legal`) and `PostDetail`
   (can 404) use `StringBody` — no streaming.
@@ -51,7 +104,8 @@ The data layer uses Bun's native `fetch` (`App.FetchBun`) — `Affjax.Node`'s
 ## Error pages
 
 `renderErrorPage` (in `App.Layout.Page`) — branded 404/500 with full layout,
-not plain text. `htmlResponse` — HTML response with custom status.
+not plain text. `htmlErrorResponse` — HTML error response with a bounded
+4xx/5xx status and `no-store` policy.
 
 ## Logging
 

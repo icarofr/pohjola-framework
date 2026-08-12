@@ -58,8 +58,11 @@ contracts below. `docs/GUARANTEES.md` lists every guarantee and its check.
   exact-string assertion).
 - The `Html` ADT has no general-purpose unescaped constructor; script/style
   contexts and `doctype` are explicit (`make gate`).
-- Express interactivity through `App.Alpine` constructors — raw Alpine
-  strings fail ContractSpec.
+- Express interactivity through `App.Alpine` constructors. Attribute NAMES are
+  enforced by ContractSpec (a scan of `src/`); expression PAYLOADS and flag
+  identifiers are enforced by the compiler — handlers take `Expr` and builders
+  take `Flag`, both closed, so hand-written JavaScript is a type error. Closes
+  ADR-000 Vector B.
 - Route HTTP through `App.Data.Fetch` — feature modules fetch via
   `fetchJson` only (ContractSpec).
 - Keep features isolated — import only from shared modules, never from a

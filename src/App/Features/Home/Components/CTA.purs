@@ -5,7 +5,7 @@ import App.Html (Html, class_, el, text)
 import App.Ui.Button (buttonLink, Variant(..), Size(..))
 import App.Ui.Container (container)
 import Data.I18n (Lang, dict)
-import Data.Route (Route(..), routeUrl)
+import Data.Route (Route(..))
 
 renderCTA :: Lang -> Html
 renderCTA lang =
@@ -19,6 +19,6 @@ renderCTA lang =
           , el "p" [ class_ "mt-4 text-lg leading-8 text-slate-600 dark:text-slate-300" ]
               [ text d.body ]
           , el "div" [ class_ "mt-6" ]
-              [ buttonLink { variant: Primary, size: Lg, href: routeUrl lang Contact, extraClass: "shadow-lg" } d.ctaLabel ]
+              [ buttonLink { variant: Primary, size: Lg, lang, route: Contact, extraClass: "shadow-lg" } d.ctaLabel ]
           ]
       ]
