@@ -3,8 +3,10 @@ module App.Ui.Button where
 
 import Prelude
 
-import App.Alpine (contentTarget, prefetchHover, xTargetPush)
+import App.Alpine (spaLink)
 import App.Html (Html, class_, el, href, rel_, target_, text)
+import Data.I18n (Lang)
+import Data.Route (Route)
 
 data Variant = Primary | Secondary | Outline | Ghost
 data Size = Sm | Md | Lg
@@ -25,15 +27,25 @@ renderSize = case _ of
 baseClass :: String
 baseClass = "inline-flex items-center justify-center rounded-md font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
 
--- | Render a link styled as a button
-buttonLink :: { variant :: Variant, size :: Size, href :: String, extraClass :: String } -> String -> Html
+-- | Internal link styled as a button.
+-- |
+-- | Takes a `Route`, not a `String` href, and delegates to `spaLink` — so the
+-- | Alpine navigation attributes are decided in exactly one place
+-- | (`App.Alpine`) rather than being duplicated here.
+-- |
+-- | This previously emitted `xTargetPush` + `prefetchHover` directly, which
+-- | made it a second, independent navigation path. Any future change to how
+-- | internal navigation works — a route that must use full-document
+-- | navigation because it owns browser state with a mount/dispose lifecycle
+-- | (ADR-010), say — would have been applied to `spaLink` and silently missed
+-- | here. A styled button is still a link; it must not be a different one.
+-- |
+-- | External links keep their own constructor (`buttonLinkExternal`), which
+-- | correctly takes a `String` href and never carries Alpine attributes.
+buttonLink :: { variant :: Variant, size :: Size, lang :: Lang, route :: Route, extraClass :: String } -> String -> Html
 buttonLink props label =
-  el "a"
-    [ href props.href
-    , xTargetPush contentTarget
-    , prefetchHover
-    , class_ (baseClass <> " " <> renderVariant props.variant <> " " <> renderSize props.size <> " " <> props.extraClass)
-    ]
+  spaLink props.lang props.route
+    [ class_ (baseClass <> " " <> renderVariant props.variant <> " " <> renderSize props.size <> " " <> props.extraClass) ]
     [ text label ]
 
 -- | Render an external link styled as a button

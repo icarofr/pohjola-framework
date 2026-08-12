@@ -1,11 +1,12 @@
 -- | Footer — brand, navigation, newsletter form, copyright
 -- |
--- | Footer nav links use `spaLink` for SPA-feel navigation.
+-- | Footer nav links use `navLink` — SPA-feel navigation, minus the hover
+-- | prefetch when a link points at the route already shown.
 -- | Newsletter form includes a hidden `lang` field so the POST handler
 -- | can redirect back to the correct language.
 module App.Layout.Footer where
 
-import App.Alpine (spaLink)
+import App.Alpine (navLink)
 import App.Form (apiNewsletterPath)
 import App.Html (Html, action_, ariaLabel, attr, class_, el, flag, for_, id_, method_, name_, placeholder_, text, type_)
 import App.Ui.Social (renderSocial)
@@ -14,8 +15,8 @@ import Data.Foldable (foldMap)
 import Data.I18n (Lang, dict, langTag)
 import Data.Route (Route, navItems)
 
-render :: Lang -> Html
-render lang =
+render :: Lang -> Route -> Html
+render lang currentRoute =
   let
     d = (dict lang).footer
   in
@@ -35,7 +36,7 @@ render lang =
               , el "div" []
                   [ el "h4" [ class_ "text-sm font-semibold uppercase tracking-wider text-slate-400" ] [ text d.explore ]
                   , el "ul" [ class_ "mt-4 space-y-2" ]
-                      [ foldMap (renderFooterNav lang) (navItems lang) ]
+                      [ foldMap (renderFooterNav lang currentRoute) (navItems lang) ]
                   ]
               -- Newsletter
               , el "div" []
@@ -89,10 +90,10 @@ render lang =
           ]
       ]
 
-renderFooterNav :: Lang -> { label :: String, route :: Route } -> Html
-renderFooterNav lang item =
+renderFooterNav :: Lang -> Route -> { label :: String, route :: Route } -> Html
+renderFooterNav lang currentRoute item =
   el "li" []
-    [ spaLink lang item.route
+    [ navLink { lang, current: currentRoute, target: item.route }
         [ class_ "text-sm text-slate-400 hover:text-white transition-colors" ]
         [ text item.label ]
     ]

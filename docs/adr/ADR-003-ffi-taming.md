@@ -24,7 +24,10 @@ All FFI follows `docs/ffi-taming-guide.md`:
    callbacks, because the Bun `ReadableStream` API requires the producer logic
    to run inside the JS `start` callback).
 3. Decode at the boundary (`Foreign` / `open-foreign-generic`); return
-   `Aff (Either AppError a)`. Never throw across the boundary.
+   `Aff (Either AppError a)`. Never throw across the boundary. One named
+   exception exists — primitives produced by `Bun.serve` itself — bounded in
+   `docs/GUARANTEES.md` § "FFI marshalling". It does not extend to library
+   output or any third-party data.
 4. `FFI_ALLOWLIST_GREP` entry (gate-enforced) + an ADR per tamed library.
 
 ## Consequences

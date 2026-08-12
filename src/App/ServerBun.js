@@ -20,6 +20,12 @@ function toPsRequest(req, server, body) {
     headers: Object.fromEntries(req.headers),
     // Parsed for future auth (ADR-002); not yet consumed on the PS side.
     // Uses Bun's native CookieMap for spec-compliant cookie parsing.
+    //
+    // NOTE for whoever implements sessions: ADR-004 pins that App.Session owns
+    // ALL cookie encode/decode/verify logic. This parsing predates that module,
+    // so it must be routed through App.Session rather than read directly from
+    // the request record — otherwise ADR-004 is violated on day one by
+    // pre-existing plumbing.
     cookies: typeof Bun !== "undefined" && Bun.CookieMap
       ? Object.fromEntries(new Bun.CookieMap(req))
       : {},

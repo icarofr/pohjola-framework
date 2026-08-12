@@ -84,8 +84,11 @@ routeUrl lang = print (routeCodec lang)
 
 -- | Which routes should be prefetched when rendering a given route.
 -- | Exhaustive on Route — adding a constructor forces a prefetch decision here.
--- | The browser prefetches fragment URLs for likely-next navigations via
--- | <link rel="prefetch"> in the <head>. No client JS needed.
+-- | `renderPrefetch` emits `<link rel="prefetch">` for these routes, using the
+-- | FULL page URL — not a fragment URL. A fragment entry could never be hit,
+-- | because an Alpine click fetches the plain href with the `x-alpine-request`
+-- | header. See `App.Layout.Page.renderPrefetch`, which previously said the
+-- | opposite of this comment.
 prefetchFor :: Route -> Array Route
 prefetchFor Home = [ PostList, About, Contact ]
 prefetchFor PostList = [ PostDetail 1, PostDetail 2 ] -- Demo IDs matching JSONPlaceholder API; update for real CMS

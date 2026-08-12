@@ -31,13 +31,21 @@ insertStatic cache route lang html =
   Ref.modify_ (Map.insert (Tuple route lang) html) cache
 
 -- | TTL cache for dynamic pages (PostDetail).
+-- |
+-- | Keyed by `(Route, Lang)` rather than a rendered string. A string key would
+-- | rest on `Show Route` being injective — a hand-written instance with nothing
+-- | enforcing it, so a future edit could silently make two routes share a cache
+-- | entry and serve one route's HTML for another. The tuple removes the claim
+-- | instead of testing it: `Ord Route` is derived, so distinct routes are
+-- | distinct keys by construction.
 type CacheEntry = { html :: Html, expires :: Number }
-type DynamicCache = Ref (Map String CacheEntry)
+type DynamicKey = Tuple Route Lang
+type DynamicCache = Ref (Map DynamicKey CacheEntry)
 
 maxEntries :: Int
 maxEntries = 10000
 
-pruneExpired :: Number -> Map String CacheEntry -> Map String CacheEntry
+pruneExpired :: Number -> Map DynamicKey CacheEntry -> Map DynamicKey CacheEntry
 pruneExpired nowMs = Map.filter (\entry -> entry.expires > nowMs)
 
 mkDynamicCache :: Effect DynamicCache
@@ -47,7 +55,7 @@ mkDynamicCache = Ref.new Map.empty
 defaultTtlMs :: Number
 defaultTtlMs = 30000.0
 
-lookupDynamic :: DynamicCache -> String -> Effect (Maybe Html)
+lookupDynamic :: DynamicCache -> DynamicKey -> Effect (Maybe Html)
 lookupDynamic cache key = do
   m <- Ref.read cache
   case Map.lookup key m of
@@ -60,7 +68,7 @@ lookupDynamic cache key = do
         Ref.modify_ (Map.delete key) cache
         pure Nothing
 
-insertDynamic :: DynamicCache -> String -> Html -> Number -> Effect Unit
+insertDynamic :: DynamicCache -> DynamicKey -> Html -> Number -> Effect Unit
 insertDynamic cache key html ttlMs = do
   t <- now
   let nowMs = getTime t

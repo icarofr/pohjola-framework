@@ -71,7 +71,7 @@ renderPage baseUrl nonce lang route maybeStatus content =
                 [ maybeStatusBanner lang maybeStatus
                 , content
                 ]
-            , Footer.render lang
+            , Footer.render lang route
             -- Alpine AJAX before Alpine core (plugin must register first)
             -- Pinned versions, self-hosted from /assets/js/ for caching
             , el "script" [ flag "defer", src "/assets/js/alpine-ajax.min.js", attr "nonce" nonce ] []
@@ -96,17 +96,40 @@ renderFragment lang route content =
 -- | Standalone HTML document (not via renderPage) because error pages have no
 -- | real Route — no canonical URL, no hreflang. Includes <meta name="robots"
 -- | content="noindex"> since error pages must not be indexed.
-renderErrorPage :: String -> Lang -> Int -> String
-renderErrorPage nonce lang status =
+-- | The error body itself — shared by the full error document and the error
+-- | fragment so the two cannot drift apart.
+errorContent :: Lang -> Int -> Html
+errorContent lang status =
   let
     d = dict lang
     message = case status of
       404 -> d.common.error404
       _ -> d.common.error500
-    content = container "max-w-3xl" "py-16 text-center"
+  in
+    container "max-w-3xl" "py-16 text-center"
       [ el "h1" [ class_ "font-display text-4xl font-bold text-slate-900 dark:text-white" ] [ text (show status) ]
       , el "p" [ class_ "mt-4 text-lg text-slate-600 dark:text-slate-300" ] [ text message ]
       ]
+
+-- | Error response for an Alpine AJAX fragment request.
+-- |
+-- | A fragment request must be answered with a fragment. Answering it with
+-- | `renderErrorPage` returns a complete `<!DOCTYPE>` document, which the client
+-- | then swaps into `#content` — a whole document nested inside the page body.
+-- |
+-- | This is the mitigation ADR-007 describes for the streaming path, applied to
+-- | the path that actually lacked it. The streaming path already renders a
+-- | fragment-shaped error via the feature's own error view
+-- | (`renderListContent` → `renderPostsError`); this covers the AJAX path.
+renderErrorFragment :: Lang -> Route -> Int -> String
+renderErrorFragment lang route status =
+  renderFragment lang route (errorContent lang status)
+
+renderErrorPage :: String -> Lang -> Int -> String
+renderErrorPage nonce lang status =
+  let
+    d = dict lang
+    content = errorContent lang status
   in
     render $
       doctype
@@ -125,7 +148,7 @@ renderErrorPage nonce lang status =
               [ Header.render lang Home
               , el "main" [ id_ contentTarget, class_ "flex-1 flex flex-col" ]
                   [ content ]
-              , Footer.render lang
+              , Footer.render lang Home
               , el "script" [ flag "defer", src "/assets/js/alpine-ajax.min.js", attr "nonce" nonce ] []
               , el "script" [ flag "defer", src "/assets/js/alpinejs.min.js", attr "nonce" nonce ] []
               ]
@@ -179,9 +202,9 @@ renderShellOpen baseUrl nonce lang route =
 -- | The closing of a full HTML document: </main>, footer, scripts, </body>,
 -- | </html>. Streamed after the content chunk.
 renderShellClose :: String -> Lang -> Route -> String
-renderShellClose nonce lang _ =
+renderShellClose nonce lang route =
   "</main>"
-    <> render (Footer.render lang)
+    <> render (Footer.render lang route)
     <> render (el "script" [ flag "defer", src "/assets/js/alpine-ajax.min.js", attr "nonce" nonce ] [])
     <> render (el "script" [ flag "defer", src "/assets/js/alpinejs.min.js", attr "nonce" nonce ] [])
     <> "</body></html>"
