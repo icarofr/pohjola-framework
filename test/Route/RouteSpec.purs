@@ -88,7 +88,7 @@ spec = do
             lang <- allLangs
             route <- allRoutes
             pure { lang, route }
-        length allPairs `shouldEqual` 10
+        length allPairs `shouldEqual` (length allLangs * length allRoutes)
 
 -- | Split a URL path like "/en/about" into segments ["en", "about"]
 splitPath :: String -> Array String

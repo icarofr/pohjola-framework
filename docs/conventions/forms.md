@@ -20,11 +20,19 @@ Views import these; handlers decode them. Keep field names and paths in
 - **Status banners** — `?status=success|error|subscribed` rendered via
   `maybeStatusBanner` with `data-form-status` + localized `statusText`.
 
+## Form UI helpers (`App.Ui.Form`)
+
+Use `src/App/Ui/Form.purs` for rendering form containers and inputs:
+- `formContainer` — wraps form with automatic `lang` hidden field and honeypot field.
+- `textField`, `emailField`, `textareaField` — styled inputs with dark mode, labels, and required flags.
+- `submitButton` — accessible Tailwind button with hover/focus states.
+- `renderStatusBanner` — accessible feedback banners for `FormSuccess`/`FormError`.
+
 ## Adding a form
 
 Extend `App.Form` with a new `decodeX` following `decodeContact`/
 `decodeNewsletter` (new Submission sum + decoder + field-name record + API
-path constant), then add the handler in `Main.purs` following the existing
+path constant), render via `App.Ui.Form`, then add the handler in `Main.purs` following the existing
 ones. Parse form bodies through `App.Form` — inline parsing in handlers
 fails ContractSpec / property tests.
 
