@@ -4,6 +4,7 @@ module App.Layout.Head where
 import Prelude
 
 import App.Html (Html, attr, content_, el, href, name_, property_, rel_, text)
+import App.Layout.Scripts (HeadScript(..), renderHeadScript, renderJsonLdScript)
 import Data.Argonaut.Core (Json, fromObject, fromString, stringify)
 import Data.Content (siteInfo)
 import Data.Foldable (foldMap)
@@ -25,10 +26,9 @@ renderHead baseUrl nonce lang route =
     <> el "meta" [ name_ "description", content_ (seoDescription lang route) ] []
     <> el "meta" [ name_ "author", content_ siteInfo.title ] []
     <> el "meta" [ name_ "theme-color", content_ siteInfo.themeColor ] []
-    -- Dark mode init (prevents FOUC — runs before paint, inline, nonced)
-    <> el "script" [ attr "nonce" nonce ] [ text "if(localStorage.getItem('theme')==='dark'||((!localStorage.getItem('theme')||localStorage.getItem('theme')==='system')&&matchMedia('(prefers-color-scheme:dark)').matches))document.documentElement.classList.add('dark')" ]
-    -- Inline scripts for title sync and popstate fix (nonced)
-    <> el "script" [ attr "nonce" nonce ] [ text "(function(){window.addEventListener(\"ajax:merged\",function(){var m=document.getElementById(\"content\");if(m&&m.dataset.pageTitle)document.title=m.dataset.pageTitle});window.addEventListener(\"popstate\",function(e){if(e.state&&e.state.__ajax)window.location.reload()})})();" ]
+    -- Pinned inline head scripts (closed HeadScript ADT per ADR-000)
+    <> renderHeadScript nonce DarkModeInit
+    <> renderHeadScript nonce TitleSyncPopstateBridge
     -- Canonical
     <> el "link" [ rel_ "canonical", href (baseUrl <> routeUrl lang route) ] []
     -- hreflang alternates
@@ -124,7 +124,7 @@ jsonLdScript nonce pairs =
     obj = Object.fromFoldable (map (\(Tuple k v) -> Tuple k (fromString (escapeJson v))) pairs)
     json = stringify (fromObject obj)
   in
-    el "script" [ attr "type" "application/ld+json", attr "nonce" nonce ] [ text json ]
+    renderJsonLdScript nonce json
 
 -- | Escape < as \u003c (the JSON-LD XSS fix from Next.js's guide).
 -- | Also escapes " and \ for valid JSON strings. Order matters:
