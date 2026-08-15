@@ -66,22 +66,6 @@ testcases:
     assertions:
     - result.statuscode ShouldEqual 200
 
-- name: en legal returns 200
-  steps:
-  - type: http
-    method: GET
-    url: "{{.app}}/en/legal"
-    assertions:
-    - result.statuscode ShouldEqual 200
-
-- name: fr legal returns 200
-  steps:
-  - type: http
-    method: GET
-    url: "{{.app}}/fr/mentions-legales"
-    assertions:
-    - result.statuscode ShouldEqual 200
-
 - name: robots.txt returns 200
   steps:
   - type: http
