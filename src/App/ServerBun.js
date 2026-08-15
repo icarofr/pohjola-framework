@@ -109,19 +109,25 @@ export function streamResponseImpl(url) {
                 // 1. Shell immediately — browser parses CSS + shows nav
                 controller.enqueue(shellOpen);
 
-                try {
-                  // 2. Fetch via Bun's native fetch
-                  const resp = await fetch(url, {
-                    headers: { Accept: "application/json" },
-                  });
-                  const text = await resp.text();
-                  // 3. PS decodes JSON + renders HTML synchronously
-                  const rendered = onContent({ status: resp.status, body: text });
+                if (!url || url === "") {
+                  // Local content — PS renders curated posts synchronously
+                  const rendered = onContent({ status: 200, body: "" });
                   controller.enqueue(rendered.html);
-                } catch (err) {
-                  // Network error — PS renders the error fragment
-                  const rendered = onContent({ status: 0, body: String(err) });
-                  controller.enqueue(rendered.html);
+                } else {
+                  try {
+                    // 2. Fetch via Bun's native fetch
+                    const resp = await fetch(url, {
+                      headers: { Accept: "application/json" },
+                    });
+                    const text = await resp.text();
+                    // 3. PS decodes JSON + renders HTML synchronously
+                    const rendered = onContent({ status: resp.status, body: text });
+                    controller.enqueue(rendered.html);
+                  } catch (err) {
+                    // Network error — PS renders the error fragment
+                    const rendered = onContent({ status: 0, body: String(err) });
+                    controller.enqueue(rendered.html);
+                  }
                 }
 
                 // 4. Closing shell
