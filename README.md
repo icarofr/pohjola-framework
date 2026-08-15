@@ -2,7 +2,7 @@
 
 > A North for your apps.
 
-The compiler is the contract: a hardened full-stack SSR foundation in PureScript, Bun, and Alpine.js. Built for applications that demand immovable compile-time safety, lightweight runtime performance, and zero architectural drift.
+The compiler is the contract: an opinionated, hardened full-stack SSR foundation in PureScript, Bun, and Alpine.js. Built for applications that demand immovable compile-time safety, lightweight runtime performance, and zero architectural drift.
 
 ## The seam problem
 
