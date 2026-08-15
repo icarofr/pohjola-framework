@@ -23,8 +23,10 @@ renderServiceCard lang service =
               , el "p" [ class_ "mt-2 text-sm/6 text-gray-600 dark:text-gray-400" ] [ text copy.description ]
               ]
               <> el "div" [ class_ "mt-6 flex items-center justify-between pt-4 border-t border-gray-100 dark:border-white/5" ]
-                [ el "span" [ class_ "inline-flex items-center rounded-md bg-emerald-50 px-2.5 py-1 text-sm font-semibold text-emerald-800 ring-1 ring-inset ring-emerald-800/15 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-400/30" ]
-                    [ text (formatPrice (langTag lang) service.price) ]
+                [ el "span" [ class_ "inline-flex items-center gap-1.5 rounded-md bg-gray-100 dark:bg-white/5 px-2.5 py-1 text-xs font-mono font-medium text-gray-800 dark:text-gray-200 ring-1 ring-inset ring-gray-200 dark:ring-white/10" ]
+                    [ el "span" [ class_ "size-1.5 rounded-full bg-emerald-500" ] []
+                    , text (formatPrice (langTag lang) service.price)
+                    ]
                 , buttonLinkExternal { variant: Primary, size: Sm, href: bookingUrl, extraClass: "" } d.bookButton
                 ]
           )

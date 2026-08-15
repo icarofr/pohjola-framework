@@ -28,9 +28,11 @@ renderHero lang =
       , container "max-w-4xl" "text-center"
           [ -- Eyebrow pill
             el "div" [ class_ "mb-6 flex justify-center" ]
-              [ el "span"
-                  [ class_ "inline-flex items-center gap-x-2 rounded-full bg-emerald-50 px-3.5 py-1 text-xs font-semibold text-emerald-800 ring-1 ring-inset ring-emerald-800/15 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-400/30" ]
-                  [ text "PureScript • Bun • Alpine.js" ]
+              [ el "div"
+                  [ class_ "inline-flex items-center gap-x-2 rounded-full bg-gray-100/90 dark:bg-white/5 px-3.5 py-1 text-xs font-mono font-medium text-gray-800 dark:text-gray-200 ring-1 ring-inset ring-gray-300/60 dark:ring-white/10 shadow-2xs backdrop-blur-xs" ]
+                  [ el "span" [ class_ "size-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]" ] []
+                  , text "PureScript • Bun • Alpine.js"
+                  ]
               ]
           , el "h1" [ class_ "font-display text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl dark:text-white sm:leading-[1.1]", xAutofocus, attr "tabindex" "-1" ]
               [ text d.hero.headline ]

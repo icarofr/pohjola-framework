@@ -14,7 +14,7 @@ renderContact lang =
   in
     container "max-w-7xl" "py-16 sm:py-24"
       [ container "max-w-2xl" "text-center"
-          [ el "p" [ class_ "text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400" ]
+          [ el "p" [ class_ "text-xs font-mono font-semibold uppercase tracking-widest text-emerald-700 dark:text-emerald-400" ]
               [ text navDict.contact ]
           , el "h1" [ class_ "mt-2 font-display text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl dark:text-white", xAutofocus, attr "tabindex" "-1" ]
               [ text d.title ]
