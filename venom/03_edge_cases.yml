@@ -1,14 +1,14 @@
 name: suite
 vars: { app: http://app:3000 }
 testcases:
-- name: robots.txt has no Disallow
+- name: robots.txt has Disallow
   steps:
   - type: http
     method: GET
     url: "{{.app}}/robots.txt"
     assertions:
     - result.statuscode ShouldEqual 200
-    - 'result.body ShouldNotContainSubstring "Disallow: /"'
+    - 'result.body ShouldContainSubstring "Disallow: /"'
 
 - name: robots.txt has Sitemap
   steps:

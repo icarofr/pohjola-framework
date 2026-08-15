@@ -97,8 +97,7 @@ xhtmlLinkDefault baseUrl route =
 renderRobots :: String -> String
 renderRobots baseUrl =
   "User-agent: *\n"
-    <> "Allow: /\n"
-    <> "Disallow:\n"
+    <> "Disallow: /\n"
     <> "\nSitemap: "
     <> baseUrl
     <> "/sitemap.xml\n"
