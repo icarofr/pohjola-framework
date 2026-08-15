@@ -39,7 +39,7 @@
   <g transform="translate(258, 43)">
     <rect width="88" height="18" rx="9" fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.3)" stroke-width="1"/>
     <circle cx="10" cy="9" r="3" fill="#10B981"/>
-    <text x="48" y="10" fill="#6EE7B7" font-family="sans-serif" font-weight="bold" font-size="9" text-anchor="middle" dominant-baseline="middle">Typechecked ✓</text>
+    <text x="48" y="10" fill="#6EE7B7" font-family="sans-serif" font-weight="bold" font-size="9" text-anchor="middle" dominant-baseline="middle">Typechecked</text>
   </g>
 
   <!-- Code Editor Body -->

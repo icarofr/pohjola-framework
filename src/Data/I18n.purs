@@ -195,7 +195,7 @@ en =
       , darkModeToggle: "Toggle dark mode"
       , newsletterEmailLabel: "Email address"
       , formSuccess: "Thanks! Your message has been received."
-      , formError: "Something went wrong — please try again."
+      , formError: "Something went wrong, please try again."
       , formSubscribed: "You're subscribed to Pohjola updates!"
       , error404: "Page not found"
       , error500: "Something went wrong"

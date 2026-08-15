@@ -151,7 +151,7 @@ routeTitle lang route =
   in
     case route of
       Home -> siteTitle
-      About -> d.nav.about <> " — " <> siteTitle
-      Contact -> d.nav.contact <> " — " <> siteTitle
-      PostList -> d.nav.posts <> " — " <> siteTitle
-      PostDetail _ -> d.posts.detailTitle <> " — " <> siteTitle
+      About -> d.nav.about <> " | " <> siteTitle
+      Contact -> d.nav.contact <> " | " <> siteTitle
+      PostList -> d.nav.posts <> " | " <> siteTitle
+      PostDetail _ -> d.posts.detailTitle <> " | " <> siteTitle

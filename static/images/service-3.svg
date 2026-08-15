@@ -29,7 +29,7 @@
 
   <!-- Component Header -->
   <rect x="70" y="65" width="120" height="24" rx="12" fill="rgba(119,193,210,0.15)" stroke="rgba(119,193,210,0.3)" stroke-width="1"/>
-  <text x="130" y="80" fill="#77C1D2" font-family="sans-serif" font-weight="bold" font-size="11" text-anchor="middle" dominant-baseline="middle">⚡ Typed Alpine.js</text>
+  <text x="130" y="80" fill="#77C1D2" font-family="sans-serif" font-weight="bold" font-size="11" text-anchor="middle" dominant-baseline="middle">Typed Alpine.js</text>
 
   <!-- Reactive Switch Mockup -->
   <g transform="translate(70, 110)">
