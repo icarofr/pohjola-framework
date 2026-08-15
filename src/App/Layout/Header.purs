@@ -9,7 +9,7 @@ module App.Layout.Header where
 
 import Prelude
 
-import App.Alpine (Flag(..), ariaExpandedFlag, onClick, onClickOutside, onKeydownEscapeWindow, setFlag, themeToggle, toggleFlag, xCloak, xDataFlag, xShowFlag, xShowNotFlag, xSync, navLink)
+import App.Alpine (Flag(..), ThemeMode(..), ariaExpandedFlag, navLink, onClick, onClickOutside, onKeydownEscapeWindow, setFlag, setTheme, toggleFlag, xCloak, xDataFlag, xShowFlag, xShowNotFlag, xSync)
 import App.Html (Attr, Html, ariaLabel, attr, class_, el, href, id_, text)
 import Data.Foldable (foldMap)
 import Data.I18n (Lang(..), dict, langTag)
@@ -30,34 +30,38 @@ render lang currentRoute =
           , ariaLabel d.common.navAriaLabel
           ]
           [ el "div" [ class_ "flex items-center justify-between h-16" ]
-              [ -- Logo
-                navLink { lang, current: currentRoute, target: Home }
-                  [ class_ "flex items-center gap-x-2.5 font-display text-lg font-bold text-gray-900 dark:text-white tracking-tight group" ]
-                  [ brandIcon
-                  , el "span" [ class_ "transition-colors group-hover:text-emerald-600 dark:group-hover:text-emerald-400" ] [ text d.common.siteTitle ]
-                  ]
-              -- Desktop nav
-              , el "div" [ class_ "hidden md:flex items-center space-x-8" ]
-                  [ el "div" [ class_ "flex items-center space-x-6" ]
-                      [ foldMap (renderNavItem lang currentRoute) (navItems lang) ]
-                  , el "div" [ class_ "flex items-center space-x-3 border-l border-gray-200 dark:border-white/10 pl-6" ]
-                      [ renderDarkToggle lang
-                      , renderLangToggle lang currentRoute
+              [ -- Brand Logo
+                el "div" [ class_ "flex lg:flex-1" ]
+                  [ navLink { lang, current: currentRoute, target: Home }
+                      [ class_ "flex items-center gap-x-2.5 font-display text-lg font-bold text-gray-900 dark:text-white tracking-tight group focus-visible:outline-2 focus-visible:outline-emerald-600 rounded-lg p-1 -m-1" ]
+                      [ brandIcon
+                      , el "span" [ class_ "transition-colors group-hover:text-emerald-700 dark:group-hover:text-emerald-400" ] [ text d.common.siteTitle ]
                       ]
                   ]
-              -- Mobile menu button
-              , el "button"
-                  [ onClick (toggleFlag MenuOpen)
-                  , attr "aria-controls" "mobile-menu"
-                  , ariaExpandedFlag MenuOpen
-                  , class_ "md:hidden inline-flex items-center justify-center p-2 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/10 transition-colors focus-visible:outline-2 focus-visible:outline-emerald-600"
-                  , ariaLabel d.common.menuLabel
+              -- Desktop nav
+              , el "div" [ class_ "hidden md:flex md:gap-x-8" ]
+                  [ foldMap (renderNavItem lang currentRoute) (navItems lang) ]
+              -- Desktop utilities (Theme & Language)
+              , el "div" [ class_ "hidden md:flex md:flex-1 md:justify-end md:items-center md:gap-x-3 border-l border-gray-200 dark:border-white/10 pl-6" ]
+                  [ renderThemeDropdown lang
+                  , renderLangToggle lang currentRoute
                   ]
-                  [ hamburgerIcon
-                  , closeIcon
+              -- Mobile menu button
+              , el "div" [ class_ "flex md:hidden" ]
+                  [ el "button"
+                      [ onClick (toggleFlag MenuOpen)
+                      , attr "type" "button"
+                      , attr "aria-controls" "mobile-menu"
+                      , ariaExpandedFlag MenuOpen
+                      , class_ "-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-white/10 transition-colors focus-visible:outline-2 focus-visible:outline-emerald-600 cursor-pointer"
+                      , ariaLabel d.common.menuLabel
+                      ]
+                      [ hamburgerIcon
+                      , closeIcon
+                      ]
                   ]
               ]
-          -- Mobile nav
+          -- Mobile nav panel
           , el "div"
               [ xShowFlag MenuOpen
               , xCloak
@@ -68,17 +72,17 @@ render lang currentRoute =
               , id_ "mobile-menu"
               ]
               [ foldMap (renderMobileNavItem lang currentRoute) (navItems lang)
-              , el "div" [ class_ "flex items-center justify-between px-3 pt-3 mt-2 border-t border-gray-100 dark:border-white/5" ]
-                  [ el "div" [ class_ "flex items-center space-x-2" ]
+              , el "div" [ class_ "flex items-center justify-between px-3 pt-3 mt-2 border-t border-gray-100 dark:border-white/10" ]
+                  [ el "div" [ class_ "flex items-center gap-x-2" ]
                       [ langLink En currentRoute
                           [ class_ (langLinkClass lang En) ]
                           [ text (toUpper (langTag En)) ]
-                      , el "span" [ class_ "text-gray-300 dark:text-gray-600" ] [ text "/" ]
+                      , el "span" [ class_ "text-gray-300 dark:text-gray-600 text-xs select-none" ] [ text "/" ]
                       , langLink Fr currentRoute
                           [ class_ (langLinkClass lang Fr) ]
                           [ text (toUpper (langTag Fr)) ]
                       ]
-                  , renderDarkToggle lang
+                  , renderMobileThemeSwitcher lang
                   ]
               ]
           ]
@@ -87,7 +91,7 @@ render lang currentRoute =
 brandIcon :: Html
 brandIcon =
   el "div"
-    [ class_ "size-8 rounded-lg bg-emerald-600 flex items-center justify-center text-white shadow-xs font-bold text-sm tracking-wider" ]
+    [ class_ "size-8 rounded-lg bg-emerald-700 flex items-center justify-center text-white shadow-xs font-bold text-sm tracking-wider" ]
     [ el "svg"
         [ class_ "size-5"
         , attr "viewBox" "0 0 24 24"
@@ -192,26 +196,81 @@ moonIcon =
         []
     ]
 
+sunSmallIcon :: Html
+sunSmallIcon =
+  el "svg"
+    [ class_ "size-4 shrink-0"
+    , attr "fill" "none"
+    , attr "viewBox" "0 0 24 24"
+    , attr "stroke-width" "1.5"
+    , attr "stroke" "currentColor"
+    ]
+    [ el "path"
+        [ attr "stroke-linecap" "round"
+        , attr "stroke-linejoin" "round"
+        , attr "d" "M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
+        ]
+        []
+    ]
+
+moonSmallIcon :: Html
+moonSmallIcon =
+  el "svg"
+    [ class_ "size-4 shrink-0"
+    , attr "fill" "none"
+    , attr "viewBox" "0 0 24 24"
+    , attr "stroke-width" "1.5"
+    , attr "stroke" "currentColor"
+    ]
+    [ el "path"
+        [ attr "stroke-linecap" "round"
+        , attr "stroke-linejoin" "round"
+        , attr "d" "M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"
+        ]
+        []
+    ]
+
+monitorIcon :: Html
+monitorIcon =
+  el "svg"
+    [ class_ "size-4 shrink-0"
+    , attr "fill" "none"
+    , attr "viewBox" "0 0 24 24"
+    , attr "stroke-width" "1.5"
+    , attr "stroke" "currentColor"
+    ]
+    [ el "path"
+        [ attr "stroke-linecap" "round"
+        , attr "stroke-linejoin" "round"
+        , attr "d" "M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0H3"
+        ]
+        []
+    ]
+
 renderNavItem :: Lang -> Route -> { label :: String, route :: Route } -> Html
 renderNavItem lang currentRoute item =
   let
+    isActive = item.route == currentRoute
     activeClass =
-      if item.route == currentRoute then "text-emerald-600 dark:text-emerald-400 font-semibold"
-      else "text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 font-medium"
+      if isActive then "text-emerald-700 dark:text-emerald-400 font-semibold"
+      else "text-gray-700 hover:text-emerald-700 dark:text-gray-300 dark:hover:text-emerald-400 font-medium"
+    ariaCurrent = if isActive then [ attr "aria-current" "page" ] else []
   in
     navLink { lang, current: currentRoute, target: item.route }
-      [ class_ ("text-sm transition-colors " <> activeClass) ]
+      ([ class_ ("text-sm transition-colors focus-visible:outline-2 focus-visible:outline-emerald-600 rounded-md px-1.5 py-0.5 " <> activeClass) ] <> ariaCurrent)
       [ text item.label ]
 
 renderMobileNavItem :: Lang -> Route -> { label :: String, route :: Route } -> Html
 renderMobileNavItem lang currentRoute item =
   let
+    isActive = item.route == currentRoute
     activeClass =
-      if item.route == currentRoute then "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"
-      else "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+      if isActive then "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 font-semibold"
+      else "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 font-medium"
+    ariaCurrent = if isActive then [ attr "aria-current" "page" ] else []
   in
     navLink { lang, current: currentRoute, target: item.route }
-      [ class_ ("block px-3 py-2 text-base font-medium rounded-lg transition-colors " <> activeClass) ]
+      ([ class_ ("block px-3 py-2 text-base rounded-lg transition-colors " <> activeClass) ] <> ariaCurrent)
       [ text item.label ]
 
 renderLangToggle :: Lang -> Route -> Html
@@ -222,10 +281,11 @@ renderLangToggle lang currentRoute =
     el "div" [ xDataFlag LangMenuOpen false, class_ "relative", onKeydownEscapeWindow (setFlag LangMenuOpen false) ]
       [ el "button"
           [ onClick (toggleFlag LangMenuOpen)
+          , attr "type" "button"
           , ariaExpandedFlag LangMenuOpen
           , attr "aria-haspopup" "true"
           , attr "aria-controls" "lang-menu"
-          , class_ "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors focus-visible:outline-2 focus-visible:outline-emerald-600 cursor-pointer"
+          , class_ "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-mono font-semibold text-gray-700 dark:text-gray-300 hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors focus-visible:outline-2 focus-visible:outline-emerald-600 cursor-pointer"
           , ariaLabel d.common.langToggleLabel
           ]
           [ el "span" [] [ text (toUpper (langTag lang)) ]
@@ -236,27 +296,94 @@ renderLangToggle lang currentRoute =
           , xCloak
           , onClickOutside (setFlag LangMenuOpen false)
           , id_ "lang-menu"
-          , class_ "absolute right-0 mt-2 w-36 origin-top-right rounded-lg bg-white dark:bg-gray-800 p-1 shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-hidden"
+          , class_ "absolute right-0 mt-2 w-36 origin-top-right rounded-lg bg-white dark:bg-gray-900 p-1 shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-hidden z-50"
           ]
           [ langLink En currentRoute
-              [ class_ "block rounded-md px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors" ]
+              [ class_ "block rounded-md px-3 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors" ]
               [ text "English" ]
           , langLink Fr currentRoute
-              [ class_ "block rounded-md px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors" ]
+              [ class_ "block rounded-md px-3 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors" ]
               [ text "Français" ]
           ]
       ]
 
-renderDarkToggle :: Lang -> Html
-renderDarkToggle lang =
-  el "button"
-    [ onClick themeToggle
-    , class_ "rounded-lg p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/10 transition-colors focus-visible:outline-2 focus-visible:outline-emerald-600 cursor-pointer"
-    , ariaLabel (dict lang).common.darkModeToggle
-    ]
-    [ sunIcon
-    , moonIcon
-    ]
+renderThemeDropdown :: Lang -> Html
+renderThemeDropdown lang =
+  let
+    d = dict lang
+  in
+    el "div" [ xDataFlag ThemeMenuOpen false, class_ "relative", onKeydownEscapeWindow (setFlag ThemeMenuOpen false) ]
+      [ el "button"
+          [ onClick (toggleFlag ThemeMenuOpen)
+          , attr "type" "button"
+          , ariaExpandedFlag ThemeMenuOpen
+          , attr "aria-haspopup" "true"
+          , attr "aria-controls" "theme-menu"
+          , class_ "rounded-lg p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/10 transition-colors focus-visible:outline-2 focus-visible:outline-emerald-600 cursor-pointer"
+          , ariaLabel d.common.darkModeToggle
+          ]
+          [ sunIcon
+          , moonIcon
+          ]
+      , el "div"
+          [ xShowFlag ThemeMenuOpen
+          , xCloak
+          , onClickOutside (setFlag ThemeMenuOpen false)
+          , id_ "theme-menu"
+          , class_ "absolute right-0 mt-2 w-36 origin-top-right rounded-lg bg-white dark:bg-gray-900 p-1 shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-hidden z-50"
+          ]
+          [ themeOptionButton ThemeLight d.common.themeLight sunSmallIcon
+          , themeOptionButton ThemeDark d.common.themeDark moonSmallIcon
+          , themeOptionButton ThemeSystem d.common.themeSystem monitorIcon
+          ]
+      ]
+
+themeOptionButton :: ThemeMode -> String -> Html -> Html
+themeOptionButton mode label icon =
+  let
+    modeStr = case mode of
+      ThemeLight -> "light"
+      ThemeDark -> "dark"
+      ThemeSystem -> "system"
+  in
+    el "button"
+      [ onClick (setTheme mode <> setFlag ThemeMenuOpen false)
+      , attr "type" "button"
+      , attr "data-theme" modeStr
+      , class_ "flex w-full items-center gap-x-2.5 rounded-md px-3 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer select-none"
+      ]
+      [ icon
+      , el "span" [] [ text label ]
+      ]
+
+renderMobileThemeSwitcher :: Lang -> Html
+renderMobileThemeSwitcher lang =
+  let
+    d = dict lang
+  in
+    el "div" [ class_ "flex items-center gap-1 rounded-lg bg-gray-100 dark:bg-white/5 p-1 ring-1 ring-gray-200/80 dark:ring-white/10" ]
+      [ el "button"
+          [ onClick (setTheme ThemeLight)
+          , attr "type" "button"
+          , ariaLabel d.common.themeLight
+          , class_ "flex items-center justify-center p-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer"
+          ]
+          [ sunSmallIcon ]
+      , el "button"
+          [ onClick (setTheme ThemeDark)
+          , attr "type" "button"
+          , ariaLabel d.common.themeDark
+          , class_ "flex items-center justify-center p-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer"
+          ]
+          [ moonSmallIcon ]
+      , el "button"
+          [ onClick (setTheme ThemeSystem)
+          , attr "type" "button"
+          , ariaLabel d.common.themeSystem
+          , class_ "flex items-center justify-center p-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer"
+          ]
+          [ monitorIcon ]
+      ]
 
 -- | Language switch link — a PLAIN anchor (real href, full reload), NOT
 -- | navLink. See module header for why AJAX must not swap across languages.
@@ -268,5 +395,5 @@ langLink target currentRoute extraAttrs children =
 
 langLinkClass :: Lang -> Lang -> String
 langLinkClass current target
-  | current == target = "text-emerald-600 dark:text-emerald-400 font-semibold"
-  | otherwise = "text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 font-medium transition-colors"
+  | current == target = "text-emerald-700 dark:text-emerald-400 font-mono font-semibold text-xs"
+  | otherwise = "text-gray-500 hover:text-emerald-700 dark:text-gray-400 dark:hover:text-emerald-400 font-mono font-medium text-xs transition-colors"

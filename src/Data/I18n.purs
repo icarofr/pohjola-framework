@@ -116,6 +116,10 @@ type Dictionary =
   , common ::
       { siteTitle :: String
       , darkModeToggle :: String
+      , themeLight :: String
+      , themeDark :: String
+      , themeSystem :: String
+      , themeLabel :: String
       , newsletterEmailLabel :: String
       , formSuccess :: String
       , formError :: String
@@ -209,6 +213,10 @@ en =
   , common:
       { siteTitle: "Pohjola"
       , darkModeToggle: "Toggle dark mode"
+      , themeLight: "Light"
+      , themeDark: "Dark"
+      , themeSystem: "System"
+      , themeLabel: "Select theme"
       , newsletterEmailLabel: "Email address"
       , formSuccess: "Thanks! Your message has been received."
       , formError: "Something went wrong, please try again."
@@ -298,6 +306,10 @@ fr =
   , common:
       { siteTitle: "Pohjola"
       , darkModeToggle: "Activer le mode sombre"
+      , themeLight: "Clair"
+      , themeDark: "Sombre"
+      , themeSystem: "Système"
+      , themeLabel: "Sélectionner le thème"
       , newsletterEmailLabel: "Adresse e-mail"
       , formSuccess: "Merci ! Votre message a bien été reçu."
       , formError: "Une erreur est survenue, veuillez réessayer."

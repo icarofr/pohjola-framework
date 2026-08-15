@@ -40,6 +40,8 @@ module App.Alpine
   , navLink
   , Flag(..)
   , flagName
+  , ThemeMode(..)
+  , setTheme
   , Expr
   , renderExpr
   , xDataFlag
@@ -101,6 +103,7 @@ alpineRequestHeader = "x-alpine-request"
 data Flag
   = MenuOpen
   | LangMenuOpen
+  | ThemeMenuOpen
 
 derive instance eqFlag :: Eq Flag
 
@@ -108,12 +111,31 @@ instance showFlag :: Show Flag where
   show = case _ of
     MenuOpen -> "MenuOpen"
     LangMenuOpen -> "LangMenuOpen"
+    ThemeMenuOpen -> "ThemeMenuOpen"
 
 -- | The JavaScript identifier for a flag. Total.
 flagName :: Flag -> String
 flagName = case _ of
   MenuOpen -> "menuOpen"
   LangMenuOpen -> "open"
+  ThemeMenuOpen -> "themeOpen"
+
+-- ============================================================================
+-- Theme modes
+-- ============================================================================
+
+data ThemeMode
+  = ThemeLight
+  | ThemeDark
+  | ThemeSystem
+
+derive instance eqThemeMode :: Eq ThemeMode
+
+instance showThemeMode :: Show ThemeMode where
+  show = case _ of
+    ThemeLight -> "ThemeLight"
+    ThemeDark -> "ThemeDark"
+    ThemeSystem -> "ThemeSystem"
 
 -- ============================================================================
 -- Expr — a generated Alpine/JS expression
@@ -122,6 +144,14 @@ flagName = case _ of
 -- | An Alpine expression. Abstract by design: the constructor is not exported,
 -- | so values come only from the builders below.
 newtype Expr = Expr String
+
+instance semigroupExpr :: Semigroup Expr where
+  append (Expr "") b = b
+  append a (Expr "") = a
+  append (Expr a) (Expr b) = Expr (a <> "; " <> b)
+
+instance monoidExpr :: Monoid Expr where
+  mempty = Expr ""
 
 -- | The rendered expression text. Exported so tests can assert on the
 -- | generated JavaScript; not needed in order to build attributes.
@@ -156,6 +186,16 @@ themeToggle = Expr
   ( "document.documentElement.classList.toggle('dark'); "
       <> "localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light')"
   )
+
+-- | Set explicit theme mode (Light, Dark, or System).
+setTheme :: ThemeMode -> Expr
+setTheme = case _ of
+  ThemeLight ->
+    Expr "localStorage.setItem('theme', 'light'); document.documentElement.classList.remove('dark')"
+  ThemeDark ->
+    Expr "localStorage.setItem('theme', 'dark'); document.documentElement.classList.add('dark')"
+  ThemeSystem ->
+    Expr "localStorage.setItem('theme', 'system'); (matchMedia('(prefers-color-scheme: dark)').matches ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark'))"
 
 -- | Fetch this link's fragment on hover, sending the AJAX header so the server
 -- | answers with a fragment.

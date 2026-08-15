@@ -10,7 +10,7 @@ module Test.ContractSpec where
 
 import Prelude
 
-import App.Alpine (Flag(..), contentTarget, flagName, navLink, renderExpr, setFlag, spaLink, themeToggle, toggleFlag)
+import App.Alpine (Flag(..), ThemeMode(..), contentTarget, flagName, navLink, renderExpr, setFlag, setTheme, spaLink, themeToggle, toggleFlag)
 import App.Config (Config)
 import App.Form (contactFields, newsletterFields)
 import App.Layout.Head (renderJsonLd, escapeJson)
@@ -615,12 +615,18 @@ spec = do
       -- A collision would silently wire two unrelated controls to one piece of
       -- state, which renders and tests fine until a user opens both.
       flagName MenuOpen `shouldNotEqual` flagName LangMenuOpen
+      flagName MenuOpen `shouldNotEqual` flagName ThemeMenuOpen
+      flagName LangMenuOpen `shouldNotEqual` flagName ThemeMenuOpen
     it "themeToggle persists the resolved class, not the pre-toggle state" do
       -- Reading classList back AFTER toggling is what keeps localStorage and
       -- the DOM in agreement; deriving it from the prior state would invert
       -- the theme on reload.
       renderExpr themeToggle `StrAssert.shouldContain` "classList.toggle('dark'); "
       renderExpr themeToggle `StrAssert.shouldContain` "classList.contains('dark') ? 'dark' : 'light'"
+    it "setTheme generates explicit theme mutation expressions" do
+      renderExpr (setTheme ThemeLight) `StrAssert.shouldContain` "classList.remove('dark')"
+      renderExpr (setTheme ThemeDark) `StrAssert.shouldContain` "classList.add('dark')"
+      renderExpr (setTheme ThemeSystem) `StrAssert.shouldContain` "prefers-color-scheme: dark"
     it "aria-expanded is bound to the same flag x-show reads" do
       -- Drift between these renders fine but reports a collapsed menu to
       -- screen readers while it is visibly open.
