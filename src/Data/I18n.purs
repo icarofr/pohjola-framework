@@ -1,17 +1,27 @@
--- | Type-safe internationalization (i18n).
+-- | Internationalization dictionary for Pohjola.
 -- |
--- | `Lang` is a sum type (exhaustive pattern matching).
+-- | Single source of truth for all localized user-facing text.
 -- | `Dictionary` is a nested record — the `en` instance defines the shape,
--- | `fr` must match it. The compiler enforces both languages have identical structure.
--- | When you add a key, both `en` and `fr` break at compile time.
-module Data.I18n where
+-- | and the compiler enforces that `fr` has the exact same structure.
+module Data.I18n
+  ( Dictionary
+  , Lang(..)
+  , ServiceCopy
+  , allLangs
+  , defaultLang
+  , dict
+  , fr
+  , langTag
+  , parseLang
+  ) where
 
 import Prelude
+
 import Data.Content (ServiceId(..))
 import Data.Maybe (Maybe(..))
 
 -- ============================================================================
--- Language sum type
+-- Language type
 -- ============================================================================
 
 data Lang = En | Fr
@@ -23,19 +33,18 @@ instance showLang :: Show Lang where
   show En = "en"
   show Fr = "fr"
 
--- | String tag for HTML lang attribute / URL prefix
 langTag :: Lang -> String
-langTag = case _ of
-  En -> "en"
-  Fr -> "fr"
+langTag En = "en"
+langTag Fr = "fr"
 
--- | Parse a string tag into Lang
 parseLang :: String -> Maybe Lang
 parseLang "en" = Just En
 parseLang "fr" = Just Fr
 parseLang _ = Nothing
 
--- | Default language
+allLangs :: Array Lang
+allLangs = [ En, Fr ]
+
 defaultLang :: Lang
 defaultLang = En
 
@@ -43,7 +52,6 @@ defaultLang = En
 -- Dictionary type — `en` defines the shape, `fr` must match
 -- ============================================================================
 
--- | Localized text for one service card.
 type ServiceCopy =
   { title :: String
   , description :: String
@@ -64,8 +72,6 @@ type Dictionary =
       { sectionTitle :: String
       , bookButton :: String
       -- | Localized card copy by service id — pairs with Data.Content.services
-      -- | metadata. Adding a service id there without a case here renders the
-      -- | fallback below; keep both in sync when adding services.
       , serviceCopy :: ServiceId -> ServiceCopy
       }
   , cta ::
@@ -79,10 +85,13 @@ type Dictionary =
       }
   , contact ::
       { title :: String
+      , subtitle :: String
+      , bugReportTitle :: String
+      , bugReportText :: String
+      , bugReportButton :: String
       , emailLabel :: String
       , messageLabel :: String
       , sendLabel :: String
-      , socialLabel :: String
       , formName :: String
       }
   , posts ::
@@ -97,10 +106,9 @@ type Dictionary =
       }
   , footer ::
       { explore :: String
-      , newsletter :: String
-      , newsletterText :: String
-      , newsletterPlaceholder :: String
-      , newsletterButton :: String
+      , resources :: String
+      , github :: String
+      , issues :: String
       , copyright :: String
       }
   , common ::
@@ -166,11 +174,14 @@ en =
           ]
       }
   , contact:
-      { title: "Feedback & Bug Reports"
+      { title: "Get in Touch"
+      , subtitle: "Questions, feedback, or discussions? Send a direct note below."
+      , bugReportTitle: "Bug Reports & Issues"
+      , bugReportText: "Found a bug, want to request a feature, or inspect source code? Please open an issue on GitHub."
+      , bugReportButton: "Open GitHub Issue"
       , emailLabel: "Email"
       , messageLabel: "Message"
       , sendLabel: "Send Message"
-      , socialLabel: "Project Links"
       , formName: "Name"
       }
   , posts:
@@ -184,11 +195,10 @@ en =
       , unknownAuthor: "Pohjola"
       }
   , footer:
-      { explore: "Explore"
-      , newsletter: "Updates"
-      , newsletterText: "Subscribe for release notes and framework updates."
-      , newsletterPlaceholder: "Email address"
-      , newsletterButton: "Subscribe"
+      { explore: "Navigation"
+      , resources: "Resources"
+      , github: "Source Code"
+      , issues: "Bug Tracker"
       , copyright: "© 2026 Pohjola Framework. Open source under MIT License."
       }
   , common:
@@ -250,11 +260,14 @@ fr =
           ]
       }
   , contact:
-      { title: "Retours & signalement de bugs"
+      { title: "Contact & Échanges"
+      , subtitle: "Une question, un retour d'expérience ou une idée ? Envoyez un message ci-dessous."
+      , bugReportTitle: "Bugs & Problèmes techniques"
+      , bugReportText: "Un bug à signaler ou une proposition de fonctionnalité ? Ouvrez une issue directement sur GitHub."
+      , bugReportButton: "Ouvrir une issue GitHub"
       , emailLabel: "E-mail"
       , messageLabel: "Message"
       , sendLabel: "Envoyer le message"
-      , socialLabel: "Liens du projet"
       , formName: "Nom"
       }
   , posts:
@@ -268,11 +281,10 @@ fr =
       , unknownAuthor: "Pohjola"
       }
   , footer:
-      { explore: "Explorer"
-      , newsletter: "Actualités"
-      , newsletterText: "Abonnez-vous pour recevoir les notes de version et les actualités du framework."
-      , newsletterPlaceholder: "Adresse e-mail"
-      , newsletterButton: "S'inscrire"
+      { explore: "Navigation"
+      , resources: "Ressources"
+      , github: "Code source"
+      , issues: "Suivi des bugs"
       , copyright: "© 2026 Pohjola Framework. Open source sous licence MIT."
       }
   , common:
@@ -280,7 +292,7 @@ fr =
       , darkModeToggle: "Activer le mode sombre"
       , newsletterEmailLabel: "Adresse e-mail"
       , formSuccess: "Merci ! Votre message a bien été reçu."
-      , formError: "Une erreur est survenue. Veuillez réessayer."
+      , formError: "Une erreur est survenue, veuillez réessayer."
       , formSubscribed: "Vous êtes bien inscrit aux actualités Pohjola !"
       , error404: "Page introuvable"
       , error500: "Une erreur est survenue"

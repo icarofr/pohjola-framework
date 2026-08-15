@@ -18,13 +18,6 @@ test.describe('Forms', () => {
     await page.goto('/en/contact')
     await expect(page.locator('form[action="/api/contact"] button[type="submit"]')).toBeVisible()
   })
-
-  test('newsletter form exists in footer', async ({ page }) => {
-    await page.goto('/en')
-    const form = page.locator('form[action="/api/newsletter"]')
-    await expect(form).toBeVisible()
-    await expect(page.locator('form[action="/api/newsletter"] input[name="email"][required]')).toBeVisible()
-  })
   
   test('empty contact form submission shows error', async ({ page }) => {
     await page.goto('/en/contact')
@@ -34,13 +27,13 @@ test.describe('Forms', () => {
     await page.locator('form[action="/api/contact"] input[name="name"]').fill('John Doe')
     await page.locator('form[action="/api/contact"] input[name="email"]').fill('john@example.com')
     await page.locator('form[action="/api/contact"] textarea[name="message"]').fill('Hello')
-      // Submit
-      await page.locator('form[action="/api/contact"]').getByRole('button', { name: 'Send' }).click()
-      
-      // Should redirect with error status (no RESEND_API_KEY)
-      await expect(page).toHaveURL(/status=error/)
-      // Error banner visible
-      await expect(page.locator('[role="status"][data-form-status="error"]')).toBeVisible()
+    // Submit
+    await page.locator('form[action="/api/contact"]').getByRole('button', { name: 'Send' }).click()
+    
+    // Should redirect with error status (no RESEND_API_KEY)
+    await expect(page).toHaveURL(/status=error/)
+    // Error banner visible
+    await expect(page.locator('[role="status"][data-form-status="error"]')).toBeVisible()
   })
   
   test('honeypot filled submits silently', async ({ page }) => {
@@ -100,23 +93,5 @@ test.describe('Mobile menu', () => {
     // Close with Escape
     await page.keyboard.press('Escape')
     await expect(mobileNav).toBeHidden()
-  })
-})
-
-test.describe('Newsletter form', () => {
-  test('newsletter honeypot filled submits silently', async ({ page }) => {
-    await page.goto('/en')
-
-    // Fill required email field (browser validation blocks submission otherwise)
-    await page.locator('form[action="/api/newsletter"] input[name="email"]').fill('john@example.com')
-
-    // Fill the honeypot field (hidden — use evaluate since fill requires visibility)
-    await page.locator('form[action="/api/newsletter"] input[name="website"]').evaluate((el) => { el.value = 'bot' })
-
-    // Submit the newsletter form
-    await page.locator('form[action="/api/newsletter"]').getByRole('button', { name: 'Subscribe' }).click()
-
-    // Silent honeypot success shows the normal "subscribed" state
-    await expect(page).toHaveURL(/status=subscribed/)
   })
 })
