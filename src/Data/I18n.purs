@@ -145,7 +145,7 @@ en =
       }
   , hero:
       { headline: "The Type-Safe Functional Web Framework for Bun"
-      , body: "Build blazingly fast MPAs in PureScript with Bun runtime speed, Alpine.js micro-interactivity, and zero runtime exceptions."
+      , body: "MPA simplicity with a seamless SPA experience. Built in PureScript with Bun runtime speed, Alpine.js micro-interactivity, and zero runtime exceptions."
       , ctaLabel: "About Pohjola"
       }
   , services:
@@ -237,7 +237,7 @@ fr =
       }
   , hero:
       { headline: "Le framework web fonctionnel et typé pour Bun"
-      , body: "Développez des applications web ultra-rapides en PureScript avec la puissance de Bun, la réactivité d'Alpine.js et zéro exception à l'exécution."
+      , body: "La simplicité d'une MPA avec la fluidité d'une SPA. Conçu en PureScript avec la vitesse de Bun, la réactivité d'Alpine.js et zéro exception à l'exécution."
       , ctaLabel: "En savoir plus"
       }
   , services:
