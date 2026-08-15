@@ -26,7 +26,7 @@ import Effect.Aff (Aff)
 -- | Shared body class — used by renderPage, renderShellOpen, and renderErrorPage.
 -- | Extracted to prevent drift between streamed and non-streamed pages.
 bodyClass :: String
-bodyClass = "bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 antialiased min-h-screen flex flex-col transition-colors selection:bg-indigo-500 selection:text-white"
+bodyClass = "bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 antialiased min-h-screen flex flex-col transition-colors selection:bg-emerald-500 selection:text-white"
 
 -- | Pages provide their own render function.
 -- | Static pages use `staticPage` to wrap pure Html. Data-backed pages fetch
@@ -109,7 +109,7 @@ errorContent lang status =
       _ -> d.common.error500
   in
     container "max-w-3xl" "py-24 sm:py-32 text-center"
-      [ el "p" [ class_ "text-base font-semibold text-indigo-600 dark:text-indigo-400" ] [ text (show status) ]
+      [ el "p" [ class_ "text-base font-semibold text-emerald-600 dark:text-emerald-400" ] [ text (show status) ]
       , el "h1" [ class_ "mt-2 font-display text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl dark:text-white" ] [ text (show status) ]
       , el "p" [ class_ "mt-4 text-base/7 text-gray-600 dark:text-gray-300" ] [ text message ]
       ]

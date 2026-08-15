@@ -19,7 +19,7 @@ renderServices lang =
     el "section" [ class_ "py-20 sm:py-28 bg-white dark:bg-gray-900/50 transition-colors" ]
       [ container "max-w-7xl" ""
           [ container "max-w-2xl" "text-center"
-              [ el "p" [ class_ "text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400" ] [ text "Features" ]
+              [ el "p" [ class_ "text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400" ] [ text "Features" ]
               , el "h2" [ class_ "mt-2 font-display text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl" ]
                   [ text d.sectionTitle ]
               ]

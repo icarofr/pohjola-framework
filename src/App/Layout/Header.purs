@@ -1,29 +1,27 @@
--- | Header — navigation, language toggle, dark mode toggle, mobile menu
+-- | Header / Top Navigation component
 -- |
--- | SPA navigation links use `navLink` from App.Alpine — `x-target.push` plus
--- | hover prefetch, except when the link points at the route already shown
--- | (prefetching the current page is a redundant request; see App.Alpine).
--- | Language toggle links are PLAIN anchors — never a nav link: switching
--- | language changes <html lang> and all head metadata, which the AJAX
--- | fragment swap cannot do. The browser must full-reload.
+-- | Uses `navLink` for internal routes — swaps #content on click, prefetches
+-- | on hover, unless pointing to current route.
+-- | Language switch links intentionally do NOT use `navLink` — switching language
+-- | changes the HTML `lang` attribute on <html>, which is outside #content, so it
+-- | requires a full document load.
 module App.Layout.Header where
 
 import Prelude
 
-import App.Alpine (Flag(..), ariaExpandedFlag, navLink, onClick, onClickOutside, onKeydownEscapeWindow, setFlag, themeToggle, toggleFlag, xCloak, xDataFlag, xShowFlag, xShowNotFlag, xSync)
+import App.Alpine (Flag(..), ariaExpandedFlag, onClick, onClickOutside, onKeydownEscapeWindow, setFlag, themeToggle, toggleFlag, xCloak, xDataFlag, xShowFlag, xShowNotFlag, xSync, navLink)
 import App.Html (Attr, Html, ariaLabel, attr, class_, el, href, id_, text)
 import Data.Foldable (foldMap)
 import Data.I18n (Lang(..), dict, langTag)
 import Data.Route (Route(..), navItems, routeUrl)
-import Data.String.Common (toUpper)
+import Data.String (toUpper)
 
 render :: Lang -> Route -> Html
 render lang currentRoute =
   let
     d = dict lang
   in
-    el "header"
-      [ class_ "sticky top-0 z-50 bg-white/85 dark:bg-gray-900/85 backdrop-blur-md border-b border-gray-200/80 dark:border-white/10 shadow-xs transition-colors" ]
+    el "header" [ class_ "sticky top-0 z-40 w-full backdrop-blur-md bg-white/80 dark:bg-gray-950/80 border-b border-gray-200/80 dark:border-white/10 transition-colors" ]
       [ el "nav"
           [ id_ "nav"
           , xDataFlag MenuOpen false
@@ -36,7 +34,7 @@ render lang currentRoute =
                 navLink { lang, current: currentRoute, target: Home }
                   [ class_ "flex items-center gap-x-2.5 font-display text-lg font-bold text-gray-900 dark:text-white tracking-tight group" ]
                   [ brandIcon
-                  , el "span" [ class_ "transition-colors group-hover:text-indigo-600 dark:group-hover:text-indigo-400" ] [ text d.common.siteTitle ]
+                  , el "span" [ class_ "transition-colors group-hover:text-emerald-600 dark:group-hover:text-emerald-400" ] [ text d.common.siteTitle ]
                   ]
               -- Desktop nav
               , el "div" [ class_ "hidden md:flex items-center space-x-8" ]
@@ -52,7 +50,7 @@ render lang currentRoute =
                   [ onClick (toggleFlag MenuOpen)
                   , attr "aria-controls" "mobile-menu"
                   , ariaExpandedFlag MenuOpen
-                  , class_ "md:hidden inline-flex items-center justify-center p-2 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/10 transition-colors focus-visible:outline-2 focus-visible:outline-indigo-600"
+                  , class_ "md:hidden inline-flex items-center justify-center p-2 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/10 transition-colors focus-visible:outline-2 focus-visible:outline-emerald-600"
                   , ariaLabel d.common.menuLabel
                   ]
                   [ hamburgerIcon
@@ -89,7 +87,7 @@ render lang currentRoute =
 brandIcon :: Html
 brandIcon =
   el "div"
-    [ class_ "size-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-xs font-bold text-sm tracking-wider" ]
+    [ class_ "size-8 rounded-lg bg-emerald-600 flex items-center justify-center text-white shadow-xs font-bold text-sm tracking-wider" ]
     [ el "svg"
         [ class_ "size-5"
         , attr "viewBox" "0 0 24 24"
@@ -198,8 +196,8 @@ renderNavItem :: Lang -> Route -> { label :: String, route :: Route } -> Html
 renderNavItem lang currentRoute item =
   let
     activeClass =
-      if item.route == currentRoute then "text-indigo-600 dark:text-indigo-400 font-semibold"
-      else "text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium"
+      if item.route == currentRoute then "text-emerald-600 dark:text-emerald-400 font-semibold"
+      else "text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 font-medium"
   in
     navLink { lang, current: currentRoute, target: item.route }
       [ class_ ("text-sm transition-colors " <> activeClass) ]
@@ -209,7 +207,7 @@ renderMobileNavItem :: Lang -> Route -> { label :: String, route :: Route } -> H
 renderMobileNavItem lang currentRoute item =
   let
     activeClass =
-      if item.route == currentRoute then "bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
+      if item.route == currentRoute then "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"
       else "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50"
   in
     navLink { lang, current: currentRoute, target: item.route }
@@ -227,7 +225,7 @@ renderLangToggle lang currentRoute =
           , ariaExpandedFlag LangMenuOpen
           , attr "aria-haspopup" "true"
           , attr "aria-controls" "lang-menu"
-          , class_ "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors focus-visible:outline-2 focus-visible:outline-indigo-600 cursor-pointer"
+          , class_ "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors focus-visible:outline-2 focus-visible:outline-emerald-600 cursor-pointer"
           , ariaLabel d.common.langToggleLabel
           ]
           [ el "span" [] [ text (toUpper (langTag lang)) ]
@@ -253,7 +251,7 @@ renderDarkToggle :: Lang -> Html
 renderDarkToggle lang =
   el "button"
     [ onClick themeToggle
-    , class_ "rounded-lg p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/10 transition-colors focus-visible:outline-2 focus-visible:outline-indigo-600 cursor-pointer"
+    , class_ "rounded-lg p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/10 transition-colors focus-visible:outline-2 focus-visible:outline-emerald-600 cursor-pointer"
     , ariaLabel (dict lang).common.darkModeToggle
     ]
     [ sunIcon
@@ -270,5 +268,5 @@ langLink target currentRoute extraAttrs children =
 
 langLinkClass :: Lang -> Lang -> String
 langLinkClass current target
-  | current == target = "text-indigo-600 dark:text-indigo-400 font-semibold"
-  | otherwise = "text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-colors"
+  | current == target = "text-emerald-600 dark:text-emerald-400 font-semibold"
+  | otherwise = "text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 font-medium transition-colors"
