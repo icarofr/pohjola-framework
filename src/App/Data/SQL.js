@@ -97,3 +97,11 @@ export function readStringFieldImpl(row) {
     return typeof v === "string" ? v : null;
   };
 }
+
+// readIntFieldImpl :: Row -> String -> Nullable Int
+export function readIntFieldImpl(row) {
+  return function (field) {
+    var v = row[field];
+    return typeof v === "number" && Number.isInteger(v) ? v : null;
+  };
+}

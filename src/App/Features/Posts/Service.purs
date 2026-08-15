@@ -17,12 +17,24 @@ import Prelude
 
 import App.Config (Config)
 import App.Data.Fetch (fetchJson)
+import App.Data.SQL as SQL
 import App.Error (AppError(..))
 import App.Features.Posts.Types (Post(..))
+import Data.Argonaut.Decode.Error (JsonDecodeError(..))
 import Data.Array as Array
 import Data.Either (Either(..))
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), fromMaybe)
 import Effect.Aff (Aff)
+import Effect.Class (liftEffect)
+
+-- | Decode a database row into a Post domain value.
+decodePostRow :: SQL.DbRow -> Maybe Post
+decodePostRow row = do
+  id <- SQL.readIntField row "id"
+  title <- SQL.readStringField row "title"
+  body <- SQL.readStringField row "body"
+  let userId = fromMaybe 1 (SQL.readIntField row "user_id")
+  pure $ Post { id, userId, title, body }
 
 -- | Real engineering articles explaining Pohjola's architecture and design.
 curatedPosts :: Array Post
@@ -65,20 +77,42 @@ curatedPosts =
       }
   ]
 
--- | Fetch all posts. Uses external API if configured; otherwise serves curated posts.
+-- | Fetch all posts. Queries PostgreSQL when DATABASE_URL is configured;
+-- | otherwise fetches from external API or serves local curated posts.
 fetchPosts :: Config -> Aff (Either AppError (Array Post))
-fetchPosts cfg =
-  if cfg.postsApiBase /= "https://jsonplaceholder.typicode.com" && cfg.postsApiBase /= "" then
-    fetchJson (cfg.postsApiBase <> "/posts")
-  else
-    pure (Right curatedPosts)
+fetchPosts cfg = case cfg.databaseUrl of
+  Just dbUrl -> do
+    sql <- liftEffect $ SQL.connect dbUrl
+    result <- SQL.query sql "SELECT id, user_id, title, body FROM posts ORDER BY id ASC" []
+    case result of
+      Left err -> pure (Left (DecodeError (TypeMismatch (show err))))
+      Right rows -> do
+        let posts = Array.mapMaybe decodePostRow rows
+        if Array.null posts then
+          pure (Right curatedPosts)
+        else
+          pure (Right posts)
+  Nothing ->
+    if cfg.postsApiBase /= "https://jsonplaceholder.typicode.com" && cfg.postsApiBase /= "" then
+      fetchJson (cfg.postsApiBase <> "/posts")
+    else
+      pure (Right curatedPosts)
 
 -- | Fetch a single post by ID.
 fetchPost :: Config -> Int -> Aff (Either AppError Post)
-fetchPost cfg id =
-  if cfg.postsApiBase /= "https://jsonplaceholder.typicode.com" && cfg.postsApiBase /= "" then
-    fetchJson (cfg.postsApiBase <> "/posts/" <> show id)
-  else
-    case Array.find (\(Post p) -> p.id == id) curatedPosts of
-      Just post -> pure (Right post)
-      Nothing -> pure (Left NotFound)
+fetchPost cfg id = case cfg.databaseUrl of
+  Just dbUrl -> do
+    sql <- liftEffect $ SQL.connect dbUrl
+    result <- SQL.query sql "SELECT id, user_id, title, body FROM posts WHERE id = $1 LIMIT 1" [ SQL.SqlInt id ]
+    case result of
+      Left _ -> pure (Left NotFound)
+      Right rows -> case Array.head (Array.mapMaybe decodePostRow rows) of
+        Just post -> pure (Right post)
+        Nothing -> pure (Left NotFound)
+  Nothing ->
+    if cfg.postsApiBase /= "https://jsonplaceholder.typicode.com" && cfg.postsApiBase /= "" then
+      fetchJson (cfg.postsApiBase <> "/posts/" <> show id)
+    else
+      case Array.find (\(Post p) -> p.id == id) curatedPosts of
+        Just post -> pure (Right post)
+        Nothing -> pure (Left NotFound)
