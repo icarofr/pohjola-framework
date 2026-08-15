@@ -39,15 +39,15 @@ render lang currentRoute =
                       ]
                   ]
               -- Desktop nav
-              , el "div" [ class_ "hidden md:flex md:gap-x-8" ]
+              , el "div" [ class_ "hidden lg:flex lg:gap-x-8" ]
                   [ foldMap (renderNavItem lang currentRoute) (navItems lang) ]
               -- Desktop utilities (Theme & Language)
-              , el "div" [ class_ "hidden md:flex md:flex-1 md:justify-end md:items-center md:gap-x-3 border-l border-gray-200 dark:border-white/10 pl-6" ]
+              , el "div" [ class_ "hidden lg:flex lg:flex-1 lg:justify-end lg:items-center lg:gap-x-3" ]
                   [ renderThemeCycleButton lang
                   , renderLangToggle lang currentRoute
                   ]
               -- Mobile menu button
-              , el "div" [ class_ "flex md:hidden" ]
+              , el "div" [ class_ "flex lg:hidden" ]
                   [ el "button"
                       [ onClick (toggleFlag MenuOpen)
                       , attr "type" "button"
@@ -68,7 +68,7 @@ render lang currentRoute =
               , onClickOutside (setFlag MenuOpen false)
               , onClick (setFlag MenuOpen false)
               , onKeydownEscapeWindow (setFlag MenuOpen false)
-              , class_ "md:hidden px-2 pb-4 pt-2 space-y-1 border-t border-gray-200 dark:border-white/10"
+              , class_ "lg:hidden px-2 pb-4 pt-2 space-y-1 border-t border-gray-200 dark:border-white/10"
               , id_ "mobile-menu"
               ]
               [ foldMap (renderMobileNavItem lang currentRoute) (navItems lang)
