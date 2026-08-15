@@ -1,5 +1,6 @@
 {
   "name": "pohjola-framework",
+  "homepage": "https://pohjola.icaro.fr",
   "private": true,
   "scripts": {
     "test:e2e": "playwright test",

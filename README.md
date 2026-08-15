@@ -2,6 +2,8 @@
 
 > A North for your web applications.
 
+**Live Deployment:** [https://pohjola.icaro.fr](https://pohjola.icaro.fr)
+
 **Pohjola is an opinionated full-stack SSR framework where routes, data decoding, errors, translations, and HTML share a single, unbroken compile-time model.**
 
 The compiler is your contract. Pohjola turns brittle architectural conventions into mechanically enforced invariants. Built on **PureScript**, **Bun**, and **Alpine.js**, it delivers sub-millisecond server rendering, zero runtime exceptions, instant client fragment transitions, and an immutable safety floor for both humans and AI agents.
@@ -131,7 +133,7 @@ make deps
 make dev
 ```
 
-Visit [`http://localhost:3000/en`](http://localhost:3000/en) or [`http://localhost:3000/fr`](http://localhost:3000/fr).
+Visit [`http://localhost:3000/en`](http://localhost:3000/en) locally, or view the live deployment at [`https://pohjola.icaro.fr`](https://pohjola.icaro.fr).
 
 ---
 
