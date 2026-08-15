@@ -289,7 +289,7 @@ renderThemeCycleButton lang =
       ]
       [ el "span" [ xShowTheme ThemeLight, xCloak, class_ "inline-flex items-center justify-center" ] [ sunSmallIcon ]
       , el "span" [ xShowTheme ThemeDark, xCloak, class_ "inline-flex items-center justify-center" ] [ moonSmallIcon ]
-      , el "span" [ xShowTheme ThemeSystem, xCloak, class_ "inline-flex items-center justify-center" ] [ monitorIcon ]
+      , el "span" [ xShowTheme ThemeSystem, class_ "inline-flex items-center justify-center" ] [ monitorIcon ]
       ]
 
 -- | Language switch link — a PLAIN anchor (real href, full reload), NOT

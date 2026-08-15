@@ -204,10 +204,10 @@ setTheme = case _ of
   ThemeSystem ->
     Expr "localStorage.setItem('theme', 'system'); (matchMedia('(prefers-color-scheme: dark)').matches ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark'))"
 
--- | Cycle theme through system -> dark -> light -> system.
+-- | Cycle theme through system -> light -> dark -> system.
 cycleTheme :: Expr
 cycleTheme = Expr
-  ( "theme = (theme === 'system' ? 'dark' : theme === 'dark' ? 'light' : 'system'); "
+  ( "theme = (theme === 'system' ? 'light' : theme === 'light' ? 'dark' : 'system'); "
       <> "localStorage.setItem('theme', theme); "
       <> "if (theme === 'dark') { document.documentElement.classList.add('dark'); } "
       <> "else if (theme === 'light') { document.documentElement.classList.remove('dark'); } "
