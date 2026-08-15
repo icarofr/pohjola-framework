@@ -1,26 +1,38 @@
 import { test, expect } from '@playwright/test'
 
-test.describe('Theme switcher (Light / Dark / System)', () => {
-  test('selecting Dark theme adds dark class', async ({ page }) => {
+test.describe('Theme switcher (Light / Dark / System cycle)', () => {
+  test('clicking theme button cycles system -> dark -> light -> system', async ({ page }) => {
     await page.goto('/en')
 
-    // Initially no dark class
+    // Initial state: default system (no dark class in standard light mode test env)
     await expect(page.locator('html')).not.toHaveClass(/dark/)
 
-    // Open theme menu and select Dark
-    await page.click('[aria-label="Toggle dark mode"]')
-    await page.click('[data-theme="dark"]')
+    const themeToggle = page.locator('button[data-testid="theme-toggle"]').first()
 
-    // Dark class should be present
+    // 1st click: switches from system to dark
+    await themeToggle.click()
     await expect(page.locator('html')).toHaveClass(/dark/)
+    let stored = await page.evaluate(() => localStorage.getItem('theme'))
+    expect(stored).toBe('dark')
+
+    // 2nd click: switches from dark to light
+    await themeToggle.click()
+    await expect(page.locator('html')).not.toHaveClass(/dark/)
+    stored = await page.evaluate(() => localStorage.getItem('theme'))
+    expect(stored).toBe('light')
+
+    // 3rd click: switches from light to system
+    await themeToggle.click()
+    stored = await page.evaluate(() => localStorage.getItem('theme'))
+    expect(stored).toBe('system')
   })
 
   test('dark mode persists on reload', async ({ page }) => {
     await page.goto('/en')
 
-    // Enable dark mode
-    await page.click('[aria-label="Toggle dark mode"]')
-    await page.click('[data-theme="dark"]')
+    const themeToggle = page.locator('button[data-testid="theme-toggle"]').first()
+    // Click once to go to dark mode
+    await themeToggle.click()
     await expect(page.locator('html')).toHaveClass(/dark/)
 
     // Reload — dark mode should persist via localStorage
@@ -28,38 +40,12 @@ test.describe('Theme switcher (Light / Dark / System)', () => {
     await expect(page.locator('html')).toHaveClass(/dark/)
   })
 
-  test('selecting Light theme removes dark class', async ({ page }) => {
-    await page.goto('/en')
-
-    // Enable dark mode first
-    await page.click('[aria-label="Toggle dark mode"]')
-    await page.click('[data-theme="dark"]')
-    await expect(page.locator('html')).toHaveClass(/dark/)
-
-    // Open theme menu and select Light
-    await page.click('[aria-label="Toggle dark mode"]')
-    await page.click('[data-theme="light"]')
-    await expect(page.locator('html')).not.toHaveClass(/dark/)
-  })
-
-  test('selecting System theme sets system preference', async ({ page }) => {
-    await page.goto('/en')
-
-    // Open theme menu and select System
-    await page.click('[aria-label="Toggle dark mode"]')
-    await page.click('[data-theme="system"]')
-
-    // localStorage should store 'system'
-    const storedTheme = await page.evaluate(() => localStorage.getItem('theme'))
-    expect(storedTheme).toBe('system')
-  })
-
   test('dark mode survives AJAX nav', async ({ page }) => {
     await page.goto('/en')
 
-    // Enable dark mode
-    await page.click('[aria-label="Toggle dark mode"]')
-    await page.click('[data-theme="dark"]')
+    const themeToggle = page.locator('button[data-testid="theme-toggle"]').first()
+    // Click once to go to dark mode
+    await themeToggle.click()
     await expect(page.locator('html')).toHaveClass(/dark/)
 
     // Navigate via AJAX
