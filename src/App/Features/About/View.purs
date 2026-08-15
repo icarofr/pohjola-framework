@@ -13,8 +13,8 @@ renderAbout lang =
     d = (dict lang).about
     navDict = (dict lang).nav
   in
-    container "max-w-7xl" "py-12 sm:py-16 lg:py-20"
-      [ el "div" [ class_ "max-w-3xl mx-auto space-y-12" ]
+    container "max-w-7xl" "py-8 sm:py-12 lg:py-14"
+      [ el "div" [ class_ "max-w-3xl mx-auto space-y-8 sm:space-y-10" ]
           [ el "div" [ class_ "text-center max-w-2xl mx-auto" ]
               [ el "p" [ class_ "text-xs font-mono font-semibold uppercase tracking-widest text-emerald-700 dark:text-emerald-400" ]
                   [ text navDict.about ]
