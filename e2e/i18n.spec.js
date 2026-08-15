@@ -12,7 +12,7 @@ test.describe('Internationalization', () => {
     await expect(page).toHaveURL(/\/fr$/)
 
     // Should have French content in main
-    await expect(page.locator('main')).toContainText('Votre titre ici')
+    await expect(page.locator('main')).toContainText('Le framework web fonctionnel')
 
     // HTML lang attribute should be French
     await expect(page.locator('html')).toHaveAttribute('lang', 'fr')

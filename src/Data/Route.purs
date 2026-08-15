@@ -12,7 +12,7 @@ module Data.Route where
 
 import Prelude hiding ((/))
 
-import Data.Array (head, concatMap)
+import Data.Array (concatMap, head)
 import Data.Either (Either(..))
 import Data.Generic.Rep (class Generic)
 import Data.I18n (Lang(..), dict, parseLang)
@@ -20,10 +20,10 @@ import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.String.Common (joinWith)
-import Routing.Duplex (RouteDuplex', int, parse, print, prefix, root, segment)
+import Data.Tuple (Tuple(..))
+import Routing.Duplex (RouteDuplex', int, parse, prefix, print, root, segment)
 import Routing.Duplex.Generic as G
 import Routing.Duplex.Generic.Syntax ((/))
-import Data.Tuple (Tuple(..))
 
 -- ============================================================================
 -- Route sum type
@@ -33,7 +33,6 @@ data Route
   = Home
   | About
   | Contact
-  | Legal
   | PostList
   | PostDetail Int
 
@@ -46,7 +45,6 @@ instance showRoute :: Show Route where
     Home -> "Home"
     About -> "About"
     Contact -> "Contact"
-    Legal -> "Legal"
     PostList -> "PostList"
     PostDetail n -> "PostDetail " <> show n
 
@@ -61,7 +59,6 @@ routeCodec En = root $ prefix "en" $ G.sum
   { "Home": G.noArgs
   , "About": "about" / G.noArgs
   , "Contact": "contact" / G.noArgs
-  , "Legal": "legal" / G.noArgs
   , "PostList": "posts" / G.noArgs
   , "PostDetail": "posts" / int segment
   }
@@ -69,7 +66,6 @@ routeCodec Fr = root $ prefix "fr" $ G.sum
   { "Home": G.noArgs
   , "About": "a-propos" / G.noArgs
   , "Contact": "contact" / G.noArgs
-  , "Legal": "mentions-legales" / G.noArgs
   , "PostList": "articles" / G.noArgs
   , "PostDetail": "articles" / int segment
   }
@@ -95,7 +91,6 @@ prefetchFor PostList = [ PostDetail 1, PostDetail 2 ] -- Demo IDs matching JSONP
 prefetchFor (PostDetail _) = [ PostList ]
 prefetchFor About = [ Home, Contact ]
 prefetchFor Contact = [ Home, About ]
-prefetchFor Legal = [ Home ]
 
 -- ============================================================================
 -- Parsing (derived from codec)
@@ -127,10 +122,10 @@ routeTable = Map.fromFoldable
 
 -- | All routes (for sitemap generation). Static routes are enumerated here; dynamic routes like PostDetail are intentionally NOT included because they cannot be enumerated statically.
 allRoutes :: Array Route
-allRoutes = [ Home, About, Contact, Legal, PostList ]
+allRoutes = [ Home, About, Contact, PostList ]
 
 staticRoutes :: Array Route
-staticRoutes = [ Home, About, Contact, Legal ]
+staticRoutes = [ Home, About, Contact ]
 
 -- | All languages
 allLangs :: Array Lang
@@ -145,7 +140,6 @@ navItems lang =
     [ { label: d.nav.about, route: About }
     , { label: d.nav.contact, route: Contact }
     , { label: d.nav.posts, route: PostList }
-    , { label: d.nav.legal, route: Legal }
     ]
 
 -- | Page title for a route + language (for <title> tag)
@@ -159,6 +153,5 @@ routeTitle lang route =
       Home -> siteTitle
       About -> d.nav.about <> " — " <> siteTitle
       Contact -> d.nav.contact <> " — " <> siteTitle
-      Legal -> d.nav.legal <> " — " <> siteTitle
       PostList -> d.nav.posts <> " — " <> siteTitle
       PostDetail _ -> d.posts.detailTitle <> " — " <> siteTitle

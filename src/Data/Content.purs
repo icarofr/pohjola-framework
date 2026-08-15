@@ -20,8 +20,11 @@ derive newtype instance eqPrice :: Eq Price
 derive newtype instance ordPrice :: Ord Price
 
 formatPrice :: String -> Price -> String
+formatPrice "en" (Price 0) = "Open Source"
 formatPrice "en" (Price n) = "€" <> show n <> ".00"
+formatPrice "fr" (Price 0) = "Open Source"
 formatPrice "fr" (Price n) = show n <> ",00 €"
+formatPrice _ (Price 0) = "Open Source"
 formatPrice _ (Price n) = show n <> ",00 €"
 
 newtype ServiceId = ServiceId String
@@ -34,9 +37,9 @@ derive newtype instance eqServiceId :: Eq ServiceId
 -- Constants — replace with your site's values
 -- ============================================================================
 
--- | Booking/external action URL
+-- | GitHub repository URL
 bookingUrl :: String
-bookingUrl = "https://example.com/book"
+bookingUrl = "https://github.com/icarofr/pohjola-framework"
 
 -- ============================================================================
 -- Domain types
@@ -75,11 +78,11 @@ type Image =
 siteInfo :: SiteInfo
 siteInfo =
   { title: "Pohjola"
-  , description: "An opinionated full-stack functional framework in PureScript, Bun, and Alpine.js"
-  , themeColor: "#2563eb"
-  , email: "contact@example.com"
-  , facebookUrl: "https://facebook.com/example"
-  , instagramUrl: "https://instagram.com/example"
+  , description: "The Type-Safe Functional Web Framework for Bun, PureScript, and Alpine.js"
+  , themeColor: "#4f46e5"
+  , email: "pohjola@icaro.fr"
+  , facebookUrl: "https://github.com/icarofr/pohjola-framework"
+  , instagramUrl: "https://github.com/icarofr/pohjola-framework"
   }
 
 -- | Service ids referenced by the Dictionary — add a service here AND a
@@ -87,19 +90,19 @@ siteInfo =
 services :: Array Service
 services =
   [ { id: ServiceId "service-1"
-    , price: Price 100
+    , price: Price 0
     , imageUrl: "/images/service-1.svg"
     , imageWidth: 400
     , imageHeight: 300
     }
   , { id: ServiceId "service-2"
-    , price: Price 50
+    , price: Price 0
     , imageUrl: "/images/service-2.svg"
     , imageWidth: 400
     , imageHeight: 300
     }
   , { id: ServiceId "service-3"
-    , price: Price 75
+    , price: Price 0
     , imageUrl: "/images/service-3.svg"
     , imageWidth: 400
     , imageHeight: 300

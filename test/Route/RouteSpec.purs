@@ -28,10 +28,6 @@ spec = do
         parseRoute [ "en", "contact" ] `shouldEqual` Just { lang: En, route: Contact }
       it "parses /fr/contact" do
         parseRoute [ "fr", "contact" ] `shouldEqual` Just { lang: Fr, route: Contact }
-      it "parses /en/legal" do
-        parseRoute [ "en", "legal" ] `shouldEqual` Just { lang: En, route: Legal }
-      it "parses /fr/mentions-legales" do
-        parseRoute [ "fr", "mentions-legales" ] `shouldEqual` Just { lang: Fr, route: Legal }
       it "parses /en/posts as PostList" do
         parseRoute [ "en", "posts" ] `shouldEqual` Just { lang: En, route: PostList }
       it "parses /fr/articles as PostList" do
@@ -58,8 +54,8 @@ spec = do
         routeUrl Fr About `shouldEqual` "/fr/a-propos"
       it "generates /en/contact" do
         routeUrl En Contact `shouldEqual` "/en/contact"
-      it "generates /fr/mentions-legales" do
-        routeUrl Fr Legal `shouldEqual` "/fr/mentions-legales"
+      it "generates /fr/contact" do
+        routeUrl Fr Contact `shouldEqual` "/fr/contact"
       it "generates /en/posts for PostList" do
         routeUrl En PostList `shouldEqual` "/en/posts"
       it "generates /fr/articles for PostList" do
@@ -76,20 +72,12 @@ spec = do
             lang <- allLangs
             route <- allRoutes
             pure { lang, route }
-          results = map
-            ( \{ lang, route } ->
-                parseRoute (splitPath (routeUrl lang route))
-            )
-            allPairs
+          results = map (\p -> parseRoute (splitPath (routeUrl p.lang p.route))) allPairs
         all isJust results `shouldEqual` true
-      it "covers all lang × route combinations" do
-        let
-          allPairs = do
-            lang <- allLangs
-            route <- allRoutes
-            pure { lang, route }
-        length allPairs `shouldEqual` (length allLangs * length allRoutes)
 
--- | Split a URL path like "/en/about" into segments ["en", "about"]
+      it "covers all lang × route combinations" do
+        let total = length allLangs * length allRoutes
+        total `shouldEqual` 8 -- 2 langs * 4 routes
+
 splitPath :: String -> Array String
-splitPath s = filter (not <<< eq "") (S.split (Pattern "/") s)
+splitPath p = filter (_ /= "") (S.split (Pattern "/") p)

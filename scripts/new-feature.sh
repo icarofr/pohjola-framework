@@ -258,7 +258,7 @@ cat <<INSTRUCTIONS
 
   Add to allRoutes (if it should appear in the sitemap):
 
-      allRoutes = [ Home, About, Contact, Legal, PostList, $NAME ]
+      allRoutes = [ Home, About, Contact, PostList, $NAME ]
 
   Add to navItems (if it should appear in navigation):
 

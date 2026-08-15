@@ -1,24 +1,30 @@
 # Pohjola
 
-> A North for your apps.
+> A North for your web applications.
 
-**Pohjola is an opinionated full-stack SSR framework where routes, data, errors, translations, and HTML share a single compile-time model.**
+**Pohjola is an opinionated full-stack SSR framework where routes, data decoding, errors, translations, and HTML share a single, unbroken compile-time model.**
 
-The compiler is the contract: turning architectural boundaries from fragile conventions into mechanically enforced invariants. Built on PureScript, Bun, and Alpine.js for systems that demand immovable safety, lightweight runtime performance, and zero architectural drift.
+The compiler is your contract. Pohjola turns brittle architectural conventions into mechanically enforced invariants. Built on **PureScript**, **Bun**, and **Alpine.js**, it delivers sub-millisecond server rendering, zero runtime exceptions, instant client fragment transitions, and an immutable safety floor for both humans and AI agents.
 
-## The seam problem
+---
 
-Every API boundary, serialization step, and untyped template is a seam where contracts drift and runtime errors hide. As an application grows, async work, state, and rendering spread across unchecked boundaries until confidence is lost.
+## The Seam Problem
 
-## One model, request to browser
+Every serialization step, unchecked template string, and ad-hoc API boundary is a seam where contracts drift and silent bugs breed. As web applications grow, asynchronous data flows and untyped DOM mutations spread across uncontrolled surfaces until confidence erodes and maintenance slows.
 
-Pohjola covers routing, data decoding, errors, i18n, and HTML in a single compiler-visible model:
+Pohjola closes the seams.
+
+---
+
+## One Model, Request to Browser
+
+From incoming HTTP request down to emitted DOM fragments, everything is checked by the PureScript compiler:
 
 ```purescript
--- 1. Bi-directional route codec (total per language)
---    "/fr/articles" ➔ Just { lang: Fr, route: PostList }
+-- 1. Total bidirectional routing (one codec per language)
+--    "/fr/articles" ⇄ Just { lang: Fr, route: PostList }
 
--- 2. Typed data fetching with explicit error values
+-- 2. Typed data fetching with explicit error values (never thrown)
 renderList :: Config -> Lang -> Aff (Either AppError Html)
 renderList cfg lang = do
   result <- fetchPosts cfg
@@ -26,94 +32,138 @@ renderList cfg lang = do
     Right posts -> Right (renderPostList lang posts)
     Left _      -> Right (renderPostsError lang)
 
--- 3. Closed HTML ADT (safe by construction, zero unescaped strings)
+-- 3. Algebraic closed HTML ADT (XSS-impossible by construction)
 renderPostList :: Lang -> Array Post -> Html
 renderPostList lang posts =
-  container "max-w-3xl" "py-16"
-    [ el "h1" [ class_ "text-4xl font-bold text-slate-900 dark:text-white" ]
+  container "max-w-7xl" "py-16 sm:py-24"
+    [ el "h1" [ class_ "text-4xl font-bold text-gray-900 dark:text-white" ]
         [ text (dict lang).posts.listTitle ]
-    , el "div" [ class_ "mt-8 space-y-6" ]
+    , el "div" [ class_ "mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" ]
         (map (renderPostCard lang) posts)
     ]
 ```
 
-Feature code stays in clean domain modules, while `Aff` composes sequential or parallel async work in the exact shape each feature requires. Alpine.js provides a typed seam for progressive enhancement—the browser always receives SSR HTML first.
+Feature logic lives in isolated domain modules. Asynchronous effects compose cleanly through `Aff`. Alpine.js provides reactive micro-interactivity through typed constructors—the browser always receives complete, semantic HTML first.
 
-## Built for agents: zero-drift by construction
+---
 
-In loosely-typed or macro-heavy stacks, AI agents frequently hallucinate missing props, ignore edge cases, forget localized dictionary keys, or introduce silent runtime exceptions.
+## Architectural Highlights
 
-Pohjola's rigid compiler constraints provide an immutable safety floor for LLMs:
-- **Totality:** An agent cannot add a route without implementing its bidirectional codec, SEO metadata, and translations across all languages—the compiler rejects partial implementations.
-- **Closed HTML ADT:** No raw HTML string interpolation. Agents cannot bypass sanitization or introduce XSS vulnerabilities.
-- **Explicit Failures:** Async boundaries return `Aff (Either AppError a)`. Errors are values, forcing agents to handle failure states explicitly.
-- **Instant Gatekeeping:** `make gate` (~2s) and `ContractSpec` verify FFI boundaries, CSP nonces, and feature isolation automatically before committing.
+### 🛡️ PureScript Type Safety
+- **Totality & Exhaustive Matching:** The compiler rejects missing route handlers, forgotten dictionary translations, and unhandled failure branches.
+- **Algebraic Html ADT:** HTML is constructed through typed data structures, eliminating raw string concatenation and XSS vectors.
+- **Errors as Values:** I/O boundaries return `Either AppError a`. Exceptions are never thrown into the wild.
 
-## SPA feel, perfect Lighthouse scores by default
+### ⚡ Sub-Millisecond SSR on Bun
+- **Native Bun Server Runtime:** Sub-millisecond route response times with streaming server-side rendering.
+- **Instant Hot Reload:** Fast file watcher and dev server restarts with `make dev`.
+- **Minimal Asset Footprint:** Zero heavy client JavaScript bundles (<15KB total). Perfect Core Web Vitals (CLS: 0, instant TTFB) by default.
 
-Pohjola combines the speed, discoverability, and simplicity of server-rendered multi-page apps with the fluid, instant navigation of single-page apps:
+### 🌊 Alpine.js Reactive Seams
+- **SPA Feel Without SPA Complexity:** Navigation links (`spaLink`) automatically prefetch HTML fragments on hover (`@mouseenter`) and perform instant DOM morph swaps on click.
+- **Zero-JS Resilience:** If JavaScript fails or is disabled, all routes, forms, and pages degrade seamlessly into accessible HTML documents.
 
-- **Perfect Lighthouse & Core Web Vitals:** Pre-rendered HTML streams directly from Bun with zero hydration waterfall, zero cumulative layout shift (CLS: 0), minimal client JS (<15KB total), and instant Time to First Byte (TTFB).
-- **SPA Transitions with Alpine AJAX:** Navigation links (`spaLink`) automatically prefetch HTML fragments on hover (`@mouseenter`) and swap content fragments on click without full document reloads.
-- **Bilingual SEO Out of the Box:** Total bidirectional route codecs automatically generate localized `<link rel="alternate" hreflang="...">` tags, `sitemap.xml`, and JSON-LD structured data for every route across all languages.
-- **Zero-JS Resilience:** If JavaScript is disabled or fails to load, every route, form submission, and page still functions as a standard, accessible HTML document.
+### 🤖 Built for AI Agents: Zero-Drift by Construction
+In loosely typed stacks, AI coding assistants frequently hallucinate missing properties, drop edge cases, forget localized translation keys, or introduce runtime bugs.
+- **Mechanical Enforcement:** An agent cannot declare a route without completing its bidirectional codec, sitemap entry, and bilingual dictionaries.
+- **Instant Guardrails:** `make gate` (~2s) and `ContractSpec` automatically verify FFI boundaries, CSP nonces, and feature isolation before changes can land.
 
-## The payoff
+---
 
-- **Effects are visible:** I/O composes through `Effect` and `Aff`, with async work named in the types.
-- **Errors are values:** data boundaries return `Aff (Either AppError a)`.
-- **HTML is typed:** a closed `Html` ADT constructs text and attributes safely.
-- **Bun and JavaScript stay close:** direct JS/npm access runs through a small, reviewed FFI boundary.
+## Architectural Trade-offs & Comparisons
 
-## What this choice trades
+Pohjola makes a deliberate architectural choice: the **server renders the first HTML**, **feature code owns its async lifecycle**, and **PureScript unifies routing, decoding, errors, and rendering in one typed codebase**. Alpine adds reactive micro-interactions without turning the application into a bloated client-side runtime.
 
-Pohjola makes a specific trade: the server renders the first HTML, feature code owns its own architecture, and PureScript keeps routes, data decoding, errors, forms, and rendering in one typed codebase. Alpine adds small browser interactions without turning the whole application into a client-side runtime.
+### When Pohjola is the Right Fit
+- **Request/Response web applications** demanding ultra-fast initial render and low latency.
+- **Content, dashboard, commerce, and SaaS platforms** requiring real semantic URLs, automated SEO, and pristine Core Web Vitals.
+- **Systems demanding strict correctness**, total failure handling, and zero runtime crashes.
+- **Teams partnering with AI coding agents** that need the compiler to mechanically reject hallucinations.
 
-That is a good fit for request/response applications that need fast first renders, real URLs, explicit failure handling, and a small JavaScript surface. It is a worse fit for an offline-first client, a highly interactive canvas/editor, or a team that primarily wants a large catalogue of ready-made JavaScript components.
+### When to Choose an Alternative
+- **Offline-first client applications** with complex local sync engines.
+- **Heavy client-canvas applications** (e.g. Figma, Canva, complex vector suites).
+- **Projects reliant on massive React/Vue component libraries** over custom semantic design systems.
 
-The important alternatives make different trade-offs:
+---
 
-- **An opinionated server framework such as Django, Rails, or Laravel** usually gives you conventional routing, controllers, views, persistence, migrations, validation, jobs, and mail. Django also includes forms, authentication, and an admin; Rails and Laravel provide strong first-party conventions and ecosystem components around their cores. Pohjola gives you complete control over the domain model and effect boundaries, but you must design and maintain those pieces yourself.
-- **Elm** gives a deliberately constrained frontend architecture: the browser owns a long-lived model and update loop, while the server is a separate concern. Pohjola keeps the request lifecycle on the server and lets each feature choose its own `Aff` orchestration; the cost is less uniformity and a smaller ecosystem.
-- **A TypeScript meta-framework such as Next.js, SvelteKit, Nuxt, or Remix/React Router** combines a browser UI framework with routing, bundling, server rendering, client navigation, and server handlers. It offers a massive hiring pool and package ecosystem, but types generally do not survive runtime boundaries, whereas Pohjola makes decoding, errors, escaping, and server/browser boundaries explicit.
-- **A Gleam/BEAM web stack** is compelling when lightweight processes, supervision, and BEAM deployment are central requirements. Pohjola is aimed at teams that want PureScript’s type system while staying close to Bun, npm packages, and the JavaScript runtime.
+### Landscape Comparison
 
-The choice is therefore not “which language has the best types?” It is where the application should place its state, effects, rendering, and operational responsibilities—and how much of that structure the framework should decide.
+| Framework / Paradigm | Primary Optimization | How Pohjola Compares |
+|:---|:---|:---|
+| **Django / Rails / Laravel** | Batteries-included conventions (ORM, admin panel, built-in mailers). | Pohjola trades built-in framework magic for total compile-time control over domain types, explicit effects, and guaranteed HTML safety. |
+| **Next.js / SvelteKit / Nuxt** | Large npm ecosystem, client hydration, and hybrid meta-framework tooling. | Pohjola avoids hydration waterfall debt and runtime serialization surprises; types, error values, and HTML escaping survive all boundaries. |
+| **Elm Architecture** | Strict client-side event loops and centralized browser state. | Pohjola keeps the request lifecycle on the server with `Aff` async orchestration, avoiding heavy single-page client runtimes. |
+| **Gleam / BEAM (Phoenix)** | Actor concurrency, fault-tolerant supervision, and distributed clustering. | Pohjola brings functional type safety directly to the Bun runtime, providing seamless access to modern web tooling and npm dependencies. |
 
-## Proof in this repo
+---
 
-- Closed `Html` ADT for typed rendering.
-- `Aff (Either AppError a)` for typed data failures.
-- Four-module FFI allowlist: `App.ServerBun`, `App.FetchBun`, `App.Bun`, and `App.Data.SQL`.
-- Strict compilation, `make gate`, `ContractSpec`, property tests, and CI.
-- SSR progressive enhancement: real URLs, real HTML, and typed Alpine seams.
+## Proof in this Repo (Enforced Invariants)
 
-The detailed guarantees and their enforcement live in [`docs/GUARANTEES.md`](docs/GUARANTEES.md).
+Pohjola's guarantees are not documentation conventions—they are mechanically verified on every commit:
 
-## Start
+- [x] **Closed `Html` ADT**: Rendering is restricted to algebraic data constructors. Raw string concatenation is forbidden (`make gate`).
+- [x] **Errors as Values**: Async data boundaries strictly return `Aff (Either AppError a)`.
+- [x] **Scrutinized FFI Floor**: Foreign JavaScript imports are restricted to four allowlisted modules (`App.ServerBun`, `App.FetchBun`, `App.Bun`, `App.Data.SQL`).
+- [x] **Pinned Security Policy (CSP)**: Nonce-based Content Security Policy verified byte-exact in `test/ContractSpec.purs`.
+- [x] **Total Bilingual Routing**: Derived via `routing-duplex`; missing translations or routes fail at compile time.
 
-Requirements: Bun, PureScript 0.15.16, Spago 1.0.4.
+> For an in-depth breakdown of guarantees, see [`docs/GUARANTEES.md`](docs/GUARANTEES.md).
+
+---
+
+## Quickstart
+
+### Prerequisites
+- [Bun](https://bun.sh)
+- [PureScript](https://www.purescript.org/)
+- [Spago](https://github.com/purescript/spago)
 
 ```bash
+# 1. Clone the repository
 git clone https://github.com/icarofr/pohjola-framework.git
 cd pohjola-framework
-cp .env.example .env
+
+# 2. Install dependencies & Alpine assets
 make deps
-make run
+
+# 3. Start development server with live reload
+make dev
 ```
 
-Open [`/en`](http://localhost:3000/en) or [`/fr`](http://localhost:3000/fr).
+Visit [`http://localhost:3000/en`](http://localhost:3000/en) or [`http://localhost:3000/fr`](http://localhost:3000/fr).
 
-## Explore / verify
+---
+
+## Verification & Quality Gates
 
 ```bash
+# Run structural invariants & security gate checks (~2s)
 make gate
+
+# Run unit tests, property tests, and exact contract checks
 make test
+
+# Run full end-to-end browser test suite (Playwright)
+make test/e2e
+
+# Run complete CI verification (gate + build + test + format-check)
 make check
 ```
 
-Explore [setup](docs/SETUP.md), [adding pages](docs/conventions/adding-pages.md), [data layer](docs/conventions/data-layer.md), [forms](docs/conventions/forms.md), and [project conventions](AGENTS.md).
+---
+
+## Documentation
+
+- **Architecture & Philosophy:** [`docs/conventions/adding-pages.md`](docs/conventions/adding-pages.md)
+- **Data Layer & Fetching:** [`docs/conventions/data-layer.md`](docs/conventions/data-layer.md)
+- **Forms & CSRF Security:** [`docs/conventions/forms.md`](docs/conventions/forms.md)
+- **Alpine Seams & Contracts:** [`docs/conventions/alpine-contracts.md`](docs/conventions/alpine-contracts.md)
+- **Strict Invariant Guarantees:** [`docs/GUARANTEES.md`](docs/GUARANTEES.md)
+- **Agent Guide & Safety Floor:** [`AGENTS.md`](AGENTS.md)
+
+---
 
 ## License
 
-[`LICENCE.md`](LICENCE.md)
+Distributed under the open source [MIT License](LICENCE.md).

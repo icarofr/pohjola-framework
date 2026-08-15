@@ -26,7 +26,7 @@ import Effect.Aff (Aff)
 -- | Shared body class — used by renderPage, renderShellOpen, and renderErrorPage.
 -- | Extracted to prevent drift between streamed and non-streamed pages.
 bodyClass :: String
-bodyClass = "bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased min-h-screen flex flex-col transition-colors"
+bodyClass = "bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 antialiased min-h-screen flex flex-col transition-colors selection:bg-indigo-500 selection:text-white"
 
 -- | Pages provide their own render function.
 -- | Static pages use `staticPage` to wrap pure Html. Data-backed pages fetch
@@ -42,16 +42,18 @@ maybeStatusBanner :: Lang -> Maybe FormStatus -> Html
 maybeStatusBanner lang = maybe (text "") \status ->
   let
     statusClass = case status of
-      FormSuccess -> "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-      FormError -> "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-      FormSubscribed -> "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+      FormSuccess -> "rounded-xl bg-green-50 p-4 border border-green-200 dark:bg-green-500/10 dark:border-green-500/20 text-green-800 dark:text-green-200 shadow-xs"
+      FormError -> "rounded-xl bg-red-50 p-4 border border-red-200 dark:bg-red-500/10 dark:border-red-500/20 text-red-800 dark:text-red-200 shadow-xs"
+      FormSubscribed -> "rounded-xl bg-green-50 p-4 border border-green-200 dark:bg-green-500/10 dark:border-green-500/20 text-green-800 dark:text-green-200 shadow-xs"
   in
-    el "div"
-      [ attr "role" "status"
-      , attr "data-form-status" (formStatusQuery status)
-      , class_ ("p-4 mb-6 rounded-lg " <> statusClass)
+    container "max-w-7xl" "pt-6"
+      [ el "div"
+          [ attr "role" "status"
+          , attr "data-form-status" (formStatusQuery status)
+          , class_ statusClass
+          ]
+          [ text (statusText lang status) ]
       ]
-      [ text (statusText lang status) ]
 
 -- | Full HTML page — for normal (non-AJAX) requests.
 -- | Takes pre-rendered Html (the router has already resolved the Aff).
@@ -106,9 +108,10 @@ errorContent lang status =
       404 -> d.common.error404
       _ -> d.common.error500
   in
-    container "max-w-3xl" "py-16 text-center"
-      [ el "h1" [ class_ "font-display text-4xl font-bold text-slate-900 dark:text-white" ] [ text (show status) ]
-      , el "p" [ class_ "mt-4 text-lg text-slate-600 dark:text-slate-300" ] [ text message ]
+    container "max-w-3xl" "py-24 sm:py-32 text-center"
+      [ el "p" [ class_ "text-base font-semibold text-indigo-600 dark:text-indigo-400" ] [ text (show status) ]
+      , el "h1" [ class_ "mt-2 font-display text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl dark:text-white" ] [ text (show status) ]
+      , el "p" [ class_ "mt-4 text-base/7 text-gray-600 dark:text-gray-300" ] [ text message ]
       ]
 
 -- | Error response for an Alpine AJAX fragment request.
@@ -208,8 +211,3 @@ renderShellClose nonce lang route =
     <> render (el "script" [ flag "defer", src "/assets/js/alpine-ajax.min.js", attr "nonce" nonce ] [])
     <> render (el "script" [ flag "defer", src "/assets/js/alpinejs.min.js", attr "nonce" nonce ] [])
     <> "</body></html>"
-
--- | Escape attribute values for string-concatenated HTML. The `el` ADT
--- | escapes automatically; string-concatenated shells (renderShellOpen)
--- | need manual escaping.
-

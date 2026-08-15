@@ -6,7 +6,7 @@ test.describe('No-JS degradation', () => {
   test('home page renders hero headline', async ({ page }) => {
     await page.goto('/en')
     // hero headline is server rendered
-    await expect(page.locator('main')).toContainText('Your headline here')
+    await expect(page.locator('main')).toContainText('The Type-Safe Functional Web Framework')
   })
 
   test('navigation link performs full page load', async ({ page }) => {
@@ -38,6 +38,6 @@ test.describe('No-JS degradation', () => {
     await page.goto(frLink)
     await expect(page).toHaveURL(/\/fr$/)
     await expect(page.locator('html')).toHaveAttribute('lang', 'fr')
-    await expect(page.locator('main')).toContainText('Votre titre ici')
+    await expect(page.locator('main')).toContainText('Le framework web fonctionnel')
   })
 })

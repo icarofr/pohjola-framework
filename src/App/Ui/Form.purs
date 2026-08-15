@@ -1,6 +1,6 @@
 -- | Reusable form UI components with built-in accessibility, styling, and honeypot protection.
 -- |
--- | Provides high-level form-building blocks (inspired by fullstack DX conventions):
+-- | Provides high-level form-building blocks (inspired by Tailwind UI):
 -- | automatic honeypot injection, language threading, Tailwind styling, and status banners.
 module App.Ui.Form
   ( FormConfig
@@ -23,15 +23,15 @@ import App.Html (Html, action_, attr, class_, el, empty, flag, for_, id_, method
 import Data.I18n (Lang, langTag)
 import Data.Maybe (Maybe(..))
 
--- | Standard Tailwind styles for consistent form appearance across dark/light modes.
+-- | Standard Tailwind styles matching Tailwind UI v4 form controls.
 inputClass :: String
-inputClass = "mt-1 block w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-slate-900 dark:text-white shadow-sm focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
+inputClass = "mt-1.5 block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500 transition-all"
 
 labelClass :: String
-labelClass = "block text-sm font-medium text-slate-700 dark:text-slate-300"
+labelClass = "block text-sm/6 font-medium text-gray-900 dark:text-white"
 
 buttonClass :: String
-buttonClass = "inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-colors"
+buttonClass = "inline-flex items-center justify-center rounded-md bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500 transition-all cursor-pointer select-none"
 
 type FormConfig =
   { action :: String
@@ -150,10 +150,10 @@ submitButton label =
 renderStatusBanner :: Maybe FormStatus -> String -> String -> Html
 renderStatusBanner status successMsg errorMsg = case status of
   Just FormSuccess ->
-    el "div" [ class_ "rounded-md bg-emerald-50 dark:bg-emerald-950/40 p-4 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 mb-6" ]
+    el "div" [ class_ "rounded-lg bg-green-50 p-4 border border-green-200 dark:bg-green-500/10 dark:border-green-500/20 text-green-800 dark:text-green-200 text-sm font-medium mb-6 shadow-xs flex items-center gap-2" ]
       [ text successMsg ]
   Just FormError ->
-    el "div" [ class_ "rounded-md bg-red-50 dark:bg-red-950/40 p-4 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 mb-6" ]
+    el "div" [ class_ "rounded-lg bg-red-50 p-4 border border-red-200 dark:bg-red-500/10 dark:border-red-500/20 text-red-800 dark:text-red-200 text-sm font-medium mb-6 shadow-xs flex items-center gap-2" ]
       [ text errorMsg ]
   _ -> empty
 
