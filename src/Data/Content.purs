@@ -79,7 +79,7 @@ siteInfo :: SiteInfo
 siteInfo =
   { title: "Pohjola"
   , description: "The Type-Safe Functional Web Framework for Bun, PureScript, and Alpine.js"
-  , themeColor: "#4f46e5"
+  , themeColor: "#059669"
   , email: "pohjola@icaro.fr"
   , facebookUrl: "https://github.com/icarofr/pohjola-framework"
   , instagramUrl: "https://github.com/icarofr/pohjola-framework"

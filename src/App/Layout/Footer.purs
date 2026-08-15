@@ -26,7 +26,7 @@ render lang currentRoute =
               [ -- Brand
                 el "div" [ class_ "lg:col-span-2 space-y-4" ]
                   [ el "div" [ class_ "flex items-center gap-x-2.5" ]
-                      [ el "div" [ class_ "size-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-xs shadow-xs" ]
+                      [ el "div" [ class_ "size-7 rounded-lg bg-emerald-600 flex items-center justify-center text-white font-bold text-xs shadow-xs" ]
                           [ el "svg"
                               [ class_ "size-4"
                               , attr "viewBox" "0 0 24 24"
@@ -89,12 +89,12 @@ render lang currentRoute =
                           , flag "required"
                           , placeholder_ d.newsletterPlaceholder
                           , ariaLabel (dict lang).common.newsletterEmailLabel
-                          , class_ "min-w-0 flex-auto rounded-md bg-white dark:bg-white/5 px-3.5 py-2 text-base text-gray-900 dark:text-white outline-1 -outline-offset-1 outline-gray-300 dark:outline-white/10 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+                          , class_ "min-w-0 flex-auto rounded-md bg-white dark:bg-white/5 px-3.5 py-2 text-base text-gray-900 dark:text-white outline-1 -outline-offset-1 outline-gray-300 dark:outline-white/10 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-emerald-600 sm:text-sm/6"
                           ]
                           []
                       , el "button"
                           [ type_ "submit"
-                          , class_ "flex-none rounded-md bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-colors cursor-pointer select-none"
+                          , class_ "flex-none rounded-md bg-emerald-600 px-3.5 py-2 text-sm font-semibold text-white shadow-xs hover:bg-emerald-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 transition-colors cursor-pointer select-none"
                           ]
                           [ text d.newsletterButton ]
                       ]
@@ -109,6 +109,6 @@ renderFooterNav :: Lang -> Route -> { label :: String, route :: Route } -> Html
 renderFooterNav lang currentRoute item =
   el "li" []
     [ navLink { lang, target: item.route, current: currentRoute }
-        [ class_ "text-sm text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-white transition-colors" ]
+        [ class_ "text-sm text-gray-600 hover:text-emerald-600 dark:text-gray-400 dark:hover:text-white transition-colors" ]
         [ text item.label ]
     ]

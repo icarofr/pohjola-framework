@@ -21,7 +21,7 @@ renderHero lang =
           , attr "aria-hidden" "true"
           ]
           [ el "div"
-              [ class_ "relative left-[calc(50%-11rem)] aspect-1155/678 w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-indigo-500 to-indigo-300 opacity-15 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem] dark:opacity-15"
+              [ class_ "relative left-[calc(50%-11rem)] aspect-1155/678 w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-emerald-500 to-teal-300 opacity-15 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem] dark:opacity-15"
               ]
               []
           ]
@@ -29,7 +29,7 @@ renderHero lang =
           [ -- Eyebrow pill
             el "div" [ class_ "mb-6 flex justify-center" ]
               [ el "span"
-                  [ class_ "inline-flex items-center gap-x-2 rounded-full bg-indigo-50 px-3.5 py-1 text-xs font-semibold text-indigo-700 ring-1 ring-inset ring-indigo-700/10 dark:bg-indigo-500/10 dark:text-indigo-400 dark:ring-indigo-400/20" ]
+                  [ class_ "inline-flex items-center gap-x-2 rounded-full bg-emerald-50 px-3.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-700/10 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-400/20" ]
                   [ text "PureScript • Bun • Alpine.js" ]
               ]
           , el "h1" [ class_ "font-display text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl dark:text-white sm:leading-[1.1]", xAutofocus, attr "tabindex" "-1" ]
@@ -42,7 +42,7 @@ renderHero lang =
               ]
           , el "div" [ class_ "mt-8 flex justify-center" ]
               [ el "div" [ class_ "inline-flex items-center gap-x-3 rounded-lg bg-gray-900 px-4 py-2 text-xs sm:text-sm font-mono text-gray-200 shadow-md ring-1 ring-gray-900/10 dark:bg-gray-800 dark:ring-white/10" ]
-                  [ el "span" [ class_ "text-indigo-400 select-none font-bold" ] [ text "$" ]
+                  [ el "span" [ class_ "text-emerald-400 select-none font-bold" ] [ text "$" ]
                   , el "span" [] [ text "git clone & make dev" ]
                   ]
               ]

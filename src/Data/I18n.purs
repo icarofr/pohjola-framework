@@ -158,9 +158,10 @@ en =
       , ctaLabel: "About Pohjola"
       }
   , about:
-      { heading: "Architecture & Philosophy"
+      { heading: "Architecture & Origin"
       , paragraphs:
-          [ "Pohjola is an opinionated functional web framework built on PureScript, Bun, and Alpine.js. It combines the performance, SEO, and simplicity of Server-Side Rendered Multi-Page Applications (MPAs) with the fluid micro-interactivity of Single-Page Applications (SPAs) without complex client-side state bundles."
+          [ "Pohjola is an opinionated functional web framework built on PureScript, Bun, and Alpine.js. It combines the performance, SEO, and simplicity of Server-Side Rendered Multi-Page Applications (MPAs) with the fluid micro-interactivity of Single-Page Applications (SPAs) without client-side bundle debt."
+          , "The name draws inspiration from Finnish folklore and the atmospheric weight of Swallow the Sun's monumental album Songs from the North. In mythology, Pohjola is the northern realm: a domain of stark clarity, endurance, and unyielding foundations. In that spirit, this framework was created to serve as an uncompromising true North for web engineering: total compile-time safety, zero runtime exceptions, and instant native performance."
           , "Every layer is designed with strict invariants: total pattern matching, XSS prevention via an algebraic Html data type, byte-exact Content Security Policy (CSP) headers, honeypot form security, and typed bidirectional routing."
           ]
       }
@@ -241,9 +242,10 @@ fr =
       , ctaLabel: "En savoir plus"
       }
   , about:
-      { heading: "Architecture et philosophie"
+      { heading: "Architecture et origine"
       , paragraphs:
           [ "Pohjola est un framework web fonctionnel basé sur PureScript, Bun et Alpine.js. Il associe les performances et le SEO des applications multi-pages (MPA) avec la fluidité interactive des SPAs sans bundle JavaScript client."
+          , "Le nom s'inspire de la mythologie finlandaise et de la force atmosphérique du triple album Songs from the North de Swallow the Sun. Dans les légendes, Pohjola est le royaume du Grand Nord : un monde de clarté brute, de résilience et de fondations inébranlables. C'est dans cet esprit que le framework a été conçu comme un véritable cap pour l'ingénierie web : sécurité totale à la compilation, zéro exception à l'exécution et vitesse native."
           , "Chaque composant applique des garanties strictes : filtrage exhaustif par motif, prévention XSS par ADT Html typé, politique de sécurité CSP stricte, protection antispam honeypot et routage bidirectionnel typé."
           ]
       }

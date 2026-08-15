@@ -13,7 +13,7 @@ data Size = Sm | Md | Lg
 
 renderVariant :: Variant -> String
 renderVariant = case _ of
-  Primary -> "bg-indigo-600 text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500"
+  Primary -> "bg-emerald-600 text-white shadow-xs hover:bg-emerald-500 focus-visible:outline-emerald-600 dark:bg-emerald-500 dark:shadow-none dark:hover:bg-emerald-400 dark:focus-visible:outline-emerald-500"
   Secondary -> "bg-white text-gray-900 shadow-xs inset-ring inset-ring-gray-300 hover:bg-gray-50 dark:bg-white/10 dark:text-white dark:shadow-none dark:inset-ring-white/10 dark:hover:bg-white/20"
   Outline -> "bg-transparent text-gray-900 inset-ring inset-ring-gray-300 hover:bg-gray-50 dark:text-white dark:inset-ring-white/20 dark:hover:bg-white/10"
   Ghost -> "text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white"

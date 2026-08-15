@@ -20,7 +20,7 @@ renderCTA lang =
                   [ class_ "absolute -top-24 left-1/2 -z-10 -translate-x-1/2 transform-gpu blur-3xl pointer-events-none"
                   , attr "aria-hidden" "true"
                   ]
-                  [ el "div" [ class_ "aspect-577/310 w-[36.0625rem] bg-gradient-to-r from-indigo-500 to-indigo-700 opacity-30" ] [] ]
+                  [ el "div" [ class_ "aspect-577/310 w-[36.0625rem] bg-gradient-to-r from-emerald-500 to-teal-700 opacity-30" ] [] ]
               , el "h2" [ class_ "font-display text-3xl font-bold tracking-tight text-white sm:text-4xl" ]
                   [ text d.heading ]
               , el "p" [ class_ "mx-auto mt-4 max-w-xl text-lg/8 text-gray-300 font-normal" ]
