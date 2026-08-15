@@ -1,5 +1,5 @@
 # ==================================================================================== #
-# PS ALPINE STARTER — PureScript + Alpine.js + Tailwind CSS
+# POHJOLA FRAMEWORK — PureScript + Alpine.js + Tailwind CSS
 # ==================================================================================== #
 
 # Paths
@@ -8,17 +8,17 @@
 #   dist-server/ — bundled server.js (private, never under the static root)
 DIST_DIR ?= dist
 SERVER_BUNDLE_DIR ?= dist-server
-IMAGE_NAME ?= localhost/ps-alpine-starter:latest
+IMAGE_NAME ?= localhost/pohjola-framework:latest
 
 # Local-dev origin. The Origin gate (App.Main.sameOriginOk) requires POSTs
 # to match BASE_URL exactly — without this, forms 404 against the prod
 # default https://example.com. Production overrides via compose env.
-export BASE_URL ?= http://localhost:3001
+export BASE_URL ?= http://localhost:3000
 
 # spago bundle shells out to esbuild (devDependency, installed locally)
 export PATH := $(CURDIR)/node_modules/.bin:$(PATH)
 
-.PHONY: all help deps assets assets-check dev watch css css-watch bundle build sync-static run test test/integration test/integration/down test/e2e check image up down clean gate format format-check evals eval
+.PHONY: all help deps assets assets-check dev dev-server watch css css-watch bundle build sync-static run test test/integration test/integration/down test/e2e check image up down clean gate format format-check evals eval
 
 # ==================================================================================== #
 # HELPERS
@@ -110,11 +110,20 @@ assets-check:
 # DEVELOPMENT
 # ==================================================================================== #
 
-## dev: build PureScript + compile Tailwind CSS + sync static assets
+## dev: run Tailwind watcher, Spago watcher, and Bun server with hot reload
 .PHONY: dev
 dev: css sync-static
-	spago build --strict
-	@echo "Build succeeded. Run 'make watch' for PS or 'make css-watch' for Tailwind."
+	@spago build --strict
+	@echo "Starting hot-reload dev environment (Tailwind + Spago + Bun)..."
+	@trap 'kill 0' INT TERM EXIT; \
+	npx @tailwindcss/cli -i css/input.css -o $(DIST_DIR)/css/styles.css --watch & \
+	spago build --watch --strict & \
+	bun --watch --eval "import('./output/App.Main/index.js').then(m => m.main())"
+
+## dev-server: run Bun server with hot reload on PureScript output changes
+.PHONY: dev-server
+dev-server:
+	bun --watch --eval "import('./output/App.Main/index.js').then(m => m.main())"
 
 ## watch: PureScript hot rebuild
 .PHONY: watch

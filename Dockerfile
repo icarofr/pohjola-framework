@@ -18,14 +18,14 @@ RUN npm install -g purescript@0.15.16 spago@1.0.4
 WORKDIR /app
 
 # Copy project source
-COPY . /app/ps-alpine-starter
+COPY . /app/pohjola-framework
 
-WORKDIR /app/ps-alpine-starter
+WORKDIR /app/pohjola-framework
 
 # Install npm dependencies for Tailwind + esbuild (spago bundle shells out to it)
 COPY package*.json ./
 RUN npm ci
-ENV PATH=/app/ps-alpine-starter/node_modules/.bin:$PATH
+ENV PATH=/app/pohjola-framework/node_modules/.bin:$PATH
 
 # Bundle server to a PRIVATE dir — dist/ is the public static root and a
 # bundle inside it would be downloadable at /server.js.
@@ -57,12 +57,12 @@ COPY --from=oven/bun:canary-debian /usr/local/bin/bun /usr/local/bin/bun
 
 # Bundled app: private server.js + public static assets under dist/
 # (FFI routes use relative paths ./dist/assets, ./dist/css, etc.)
-COPY --from=build /app/ps-alpine-starter/dist-server/server.js /app/server.js
-COPY --from=build /app/ps-alpine-starter/dist /app/dist
+COPY --from=build /app/pohjola-framework/dist-server/server.js /app/server.js
+COPY --from=build /app/pohjola-framework/dist /app/dist
 
 USER 1000:1000
-EXPOSE 3001
+EXPOSE 3000
 
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s CMD ["/usr/local/bin/bun","-e","fetch('http://127.0.0.1:'+(process.env.PORT||3001)+'/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s CMD ["/usr/local/bin/bun","-e","fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
 
 ENTRYPOINT ["/usr/local/bin/bun","/app/server.js"]

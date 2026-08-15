@@ -8,7 +8,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
   use: {
-    baseURL: 'http://localhost:3001',
+    baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
   },
   projects: [
@@ -26,9 +26,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    env: { PORT: '3001', BASE_URL: 'http://localhost:3001', RATE_LIMIT_MAX: '0' },
+    env: { PORT: '3000', BASE_URL: 'http://localhost:3000', RATE_LIMIT_MAX: '0' },
     command: 'make run',
-    url: 'http://localhost:3001/en',
+    url: 'http://localhost:3000/en',
     reuseExistingServer: !process.env.CI,
     timeout: 180_000
   }

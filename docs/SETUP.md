@@ -11,7 +11,7 @@ ADRs are part of the deliverable — not the demo features they happen to cover.
 
 1. **Clone, start fresh**: `git clone` (or copy), then
    `rm -rf .git && git init`. The boilerplate's history is not your app's.
-2. **Update `spago.yaml`**: `package.name` → your app's name (`ps-alpine-starter` → yours).
+2. **Update `spago.yaml`**: `package.name` → your app's name (`pohjola-framework` → yours).
 3. **Update `Data.Content.siteInfo`** — title, description, email, socials.
    This is metadata only; no copy (see `Data.Content` module header).
 4. **Update `Data.I18n`** — rewrite `en` and `fr`. The compiler enforces both
@@ -24,8 +24,8 @@ ADRs are part of the deliverable — not the demo features they happen to cover.
    ship it.
 7. **Delete unneeded demo features** — About/Contact/Home/Legal are starter
    copy. Keep Contact if you ship forms (it's the static template).
-8. **Update the Makefile** — `BASE_URL` (default `http://localhost:3001`) and
-   `IMAGE_NAME` (default `localhost/ps-alpine-starter:latest`).
+8. **Update the Makefile** — `BASE_URL` (default `http://localhost:3000`) and
+   `IMAGE_NAME` (default `localhost/pohjola-framework:latest`).
 9. **Update `venom/*.yml` route assertions** — the routes, POST paths, and
    404/redirect expectations are demo-specific. Keep the *shapes* (security
    headers, `server.js` 404, honeypot silent success) — change the paths.
