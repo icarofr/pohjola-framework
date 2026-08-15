@@ -49,6 +49,15 @@ Pohjola's rigid compiler constraints provide an immutable safety floor for LLMs:
 - **Explicit Failures:** Async boundaries return `Aff (Either AppError a)`. Errors are values, forcing agents to handle failure states explicitly.
 - **Instant Gatekeeping:** `make gate` (~2s) and `ContractSpec` verify FFI boundaries, CSP nonces, and feature isolation automatically before committing.
 
+## SPA feel, 100/100/100/100 Lighthouse by default
+
+Pohjola combines the speed, discoverability, and simplicity of server-rendered multi-page apps with the fluid, instant navigation of single-page apps:
+
+- **100/100/100/100 Lighthouse & Core Web Vitals:** Pre-rendered HTML streams directly from Bun with zero hydration waterfall, zero cumulative layout shift (CLS: 0), minimal client JS (<15KB total), and instant Time to First Byte (TTFB).
+- **SPA Transitions with Alpine AJAX:** Navigation links (`spaLink`) automatically prefetch HTML fragments on hover (`@mouseenter`) and swap content fragments on click without full document reloads.
+- **Bilingual SEO Out of the Box:** Total bidirectional route codecs automatically generate localized `<link rel="alternate" hreflang="...">` tags, `sitemap.xml`, and JSON-LD structured data for every route across all languages.
+- **Zero-JS Resilience:** If JavaScript is disabled or fails to load, every route, form submission, and page still functions as a standard, accessible HTML document.
+
 ## The payoff
 
 - **Effects are visible:** I/O composes through `Effect` and `Aff`, with async work named in the types.
