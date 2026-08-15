@@ -14,9 +14,9 @@ spec = do
   describe "I18n" do
     describe "dictionary access" do
       it "returns English dictionary for En" do
-        (dict En).common.siteTitle `shouldEqual` "PS Alpine Starter"
+        (dict En).common.siteTitle `shouldEqual` "Pohjola"
       it "returns French dictionary for Fr" do
-        (dict Fr).common.siteTitle `shouldEqual` "PS Alpine Starter"
+        (dict Fr).common.siteTitle `shouldEqual` "Pohjola"
       it "both languages have same site title" do
         (dict En).common.siteTitle `shouldEqual` (dict Fr).common.siteTitle
 

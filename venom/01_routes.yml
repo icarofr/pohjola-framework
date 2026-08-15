@@ -20,7 +20,7 @@ testcases:
     url: "{{.app}}/en"
     assertions:
     - result.statuscode ShouldEqual 200
-    - result.body ShouldContainSubstring "PS Alpine Starter"
+    - result.body ShouldContainSubstring "Pohjola"
 
 - name: fr home returns 200
   steps:
@@ -29,7 +29,7 @@ testcases:
     url: "{{.app}}/fr"
     assertions:
     - result.statuscode ShouldEqual 200
-    - result.body ShouldContainSubstring "PS Alpine Starter"
+    - result.body ShouldContainSubstring "Pohjola"
 
 - name: en about returns 200
   steps:

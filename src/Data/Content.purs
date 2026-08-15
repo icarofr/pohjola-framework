@@ -74,8 +74,8 @@ type Image =
 
 siteInfo :: SiteInfo
 siteInfo =
-  { title: "PS Alpine Starter"
-  , description: "A starter website built with PureScript + Alpine.js"
+  { title: "Pohjola"
+  , description: "An opinionated full-stack functional framework in PureScript, Bun, and Alpine.js"
   , themeColor: "#2563eb"
   , email: "contact@example.com"
   , facebookUrl: "https://facebook.com/example"
