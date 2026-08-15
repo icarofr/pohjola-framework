@@ -21,7 +21,8 @@
 |`make test/e2e`|Playwright end-to-end |
 |`make gate`|Banned-fn / FFI / HTML-escape checks |
 |`make check`|gate + build + test + format-check |
-|`make new-feature`|Scaffold a feature (NAME=X [TYPE=data] [SLUG_FR=x]) |
+|`make new-feature`|Scaffold a feature (NAME=X [TYPE=data] [SLUG_FR=x] [WIRE=1]) |
+|`make gen-sql`|Generate PureScript types & codecs from SQL Schema |
 
 ### Task → doc trigger map
 - Adding a page → `docs/conventions/adding-pages.md`, `docs/adr/ADR-008-component-architecture.md`

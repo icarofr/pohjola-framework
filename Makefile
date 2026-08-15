@@ -18,7 +18,7 @@ export BASE_URL ?= http://localhost:3000
 # spago bundle shells out to esbuild (devDependency, installed locally)
 export PATH := $(CURDIR)/node_modules/.bin:$(PATH)
 
-.PHONY: all help deps assets assets-check dev dev-server watch css css-watch bundle build sync-static run test test/integration test/integration/down test/e2e check image up down clean gate format format-check evals eval
+.PHONY: all help deps assets assets-check dev dev-server watch css css-watch bundle build sync-static run test test/integration test/integration/down test/e2e check image up down clean gate format format-check gen-sql new-feature evals eval
 
 # ==================================================================================== #
 # HELPERS
@@ -228,10 +228,15 @@ check: gate build test assets-check format-check
 # SCAFFOLDING
 # ==================================================================================== #
 
-## new-feature: scaffold a new feature (usage: make new-feature NAME=Team [TYPE=data] [SLUG_FR=equipe])
+## new-feature: scaffold a feature (usage: make new-feature NAME=Team [TYPE=data] [SLUG_FR=equipe] [WIRE=1])
 .PHONY: new-feature
 new-feature:
-	@./scripts/new-feature.sh
+	@bun scripts/auto-scaffold.js --name="$(NAME)" $${TYPE:+--type="$(TYPE)"} $${SLUG_EN:+--slug-en="$(SLUG_EN)"} $${SLUG_FR:+--slug-fr="$(SLUG_FR)"} $${WIRE:+--wire}
+
+## gen-sql: generate PureScript types & codecs from SQL migrations (usage: make gen-sql [FILE=migrations/001.sql] [TABLE=comments] [OUT=path])
+.PHONY: gen-sql
+gen-sql:
+	@bun scripts/gen-sql.js $${FILE:+"--file=$(FILE)"} $${TABLE:+"--table=$(TABLE)"} $${OUT:+"--out=$(OUT)"}
 
 # ==================================================================================== #
 # AGENT EVALS
