@@ -228,15 +228,15 @@ check: gate build test assets-check format-check
 # SCAFFOLDING
 # ==================================================================================== #
 
-## new-feature: scaffold a feature (usage: make new-feature NAME=Team [TYPE=data] [SLUG_FR=equipe] [WIRE=1])
+## new-feature: scaffold a feature (usage: make new-feature NAME=Team [TYPE=data] [SLUG_FR=equipe])
 .PHONY: new-feature
 new-feature:
-	@bun scripts/auto-scaffold.js --name="$(NAME)" $${TYPE:+--type="$(TYPE)"} $${SLUG_EN:+--slug-en="$(SLUG_EN)"} $${SLUG_FR:+--slug-fr="$(SLUG_FR)"} $${WIRE:+--wire}
+	@./scripts/new-feature.sh
 
 ## gen-sql: generate PureScript types & codecs from SQL migrations (usage: make gen-sql [FILE=migrations/001.sql] [TABLE=comments] [OUT=path])
 .PHONY: gen-sql
 gen-sql:
-	@bun scripts/gen-sql.js $${FILE:+"--file=$(FILE)"} $${TABLE:+"--table=$(TABLE)"} $${OUT:+"--out=$(OUT)"}
+	@spago build --quiet && bun --eval "import('./output/App.Cli.GenSql/index.js').then(m => m.main())" -- $${FILE:+"--file=$(FILE)"} $${TABLE:+"--table=$(TABLE)"} $${OUT:+"--out=$(OUT)"}
 
 # ==================================================================================== #
 # AGENT EVALS
