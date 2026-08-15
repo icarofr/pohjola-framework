@@ -77,7 +77,7 @@ seoDescription En = case _ of
   PostList -> "Read the latest posts on " <> siteInfo.title <> "."
   PostDetail _ -> "A post on " <> siteInfo.title <> "."
 seoDescription Fr = case _ of
-  Home -> "Site vitrine de démonstration PureScript + Alpine.js — SSR bilingue, formulaires, SEO."
+  Home -> "Site vitrine de demonstration PureScript + Alpine.js (SSR bilingue, formulaires, SEO)."
   About -> "En savoir plus sur " <> siteInfo.title <> "."
   Contact -> "Contactez " <> siteInfo.title <> "."
   PostList -> "Lire les derniers articles sur " <> siteInfo.title <> "."

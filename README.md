@@ -22,7 +22,7 @@ From incoming HTTP request down to emitted DOM fragments, everything is checked 
 
 ```purescript
 -- 1. Total bidirectional routing (one codec per language)
---    "/fr/articles" ⇄ Just { lang: Fr, route: PostList }
+--    "/fr/articles" <-> Just { lang: Fr, route: PostList }
 
 -- 2. Typed data fetching with explicit error values (never thrown)
 renderList :: Config -> Lang -> Aff (Either AppError Html)
@@ -43,47 +43,47 @@ renderPostList lang posts =
     ]
 ```
 
-Feature logic lives in isolated domain modules. Asynchronous effects compose cleanly through `Aff`. Alpine.js provides reactive micro-interactivity through typed constructors—the browser always receives complete, semantic HTML first.
+Feature logic lives in isolated domain modules. Asynchronous effects compose cleanly through `Aff`. Alpine.js provides reactive micro-interactivity through typed constructors: the browser always receives complete, semantic HTML first.
 
 ---
 
 ## Architectural Highlights
 
-### 🛡️ PureScript Type Safety
-- **Totality & Exhaustive Matching:** The compiler rejects missing route handlers, forgotten dictionary translations, and unhandled failure branches.
+### PureScript Type Safety
+- **Totality and Exhaustive Matching:** The compiler rejects missing route handlers, forgotten dictionary translations, and unhandled failure branches.
 - **Algebraic Html ADT:** HTML is constructed through typed data structures, eliminating raw string concatenation and XSS vectors.
 - **Errors as Values:** I/O boundaries return `Either AppError a`. Exceptions are never thrown into the wild.
 
-### ⚡ Sub-Millisecond SSR on Bun
+### Sub-Millisecond SSR on Bun
 - **Native Bun Server Runtime:** Sub-millisecond route response times with streaming server-side rendering.
 - **Instant Hot Reload:** Fast file watcher and dev server restarts with `make dev`.
 - **Minimal Asset Footprint:** Zero heavy client JavaScript bundles (<15KB total). Perfect Core Web Vitals (CLS: 0, instant TTFB) by default.
 
-### 🌊 Alpine.js Reactive Seams
+### Alpine.js Reactive Seams
 - **SPA Feel Without SPA Complexity:** Navigation links (`spaLink`) automatically prefetch HTML fragments on hover (`@mouseenter`) and perform instant DOM morph swaps on click.
 - **Zero-JS Resilience:** If JavaScript fails or is disabled, all routes, forms, and pages degrade seamlessly into accessible HTML documents.
 
-### 🤖 Built for AI Agents: Zero-Drift by Construction
+### Built for AI Agents: Zero-Drift by Construction
 In loosely typed stacks, AI coding assistants frequently hallucinate missing properties, drop edge cases, forget localized translation keys, or introduce runtime bugs.
 - **Mechanical Enforcement:** An agent cannot declare a route without completing its bidirectional codec, sitemap entry, and bilingual dictionaries.
 - **Instant Guardrails:** `make gate` (~2s) and `ContractSpec` automatically verify FFI boundaries, CSP nonces, and feature isolation before changes can land.
 
 ---
 
-## Architectural Trade-offs & Comparisons
+## Architectural Trade-offs and Comparisons
 
 Pohjola makes a deliberate architectural choice: the **server renders the first HTML**, **feature code owns its async lifecycle**, and **PureScript unifies routing, decoding, errors, and rendering in one typed codebase**. Alpine adds reactive micro-interactions without turning the application into a bloated client-side runtime.
 
 ### When Pohjola is the Right Fit
-- **Request/Response web applications** demanding ultra-fast initial render and low latency.
+- **Request and response web applications** demanding ultra-fast initial render and low latency.
 - **Content, dashboard, commerce, and SaaS platforms** requiring real semantic URLs, automated SEO, and pristine Core Web Vitals.
 - **Systems demanding strict correctness**, total failure handling, and zero runtime crashes.
 - **Teams partnering with AI coding agents** that need the compiler to mechanically reject hallucinations.
 
 ### When to Choose an Alternative
 - **Offline-first client applications** with complex local sync engines.
-- **Heavy client-canvas applications** (e.g. Figma, Canva, complex vector suites).
-- **Projects reliant on massive React/Vue component libraries** over custom semantic design systems.
+- **Heavy client-canvas applications** (for example Figma, Canva, or complex vector suites).
+- **Projects reliant on massive React or Vue component libraries** over custom semantic design systems.
 
 ---
 
@@ -100,7 +100,7 @@ Pohjola makes a deliberate architectural choice: the **server renders the first 
 
 ## Proof in this Repo (Enforced Invariants)
 
-Pohjola's guarantees are not documentation conventions—they are mechanically verified on every commit:
+Pohjola's guarantees are not documentation conventions. They are mechanically verified on every commit:
 
 - [x] **Closed `Html` ADT**: Rendering is restricted to algebraic data constructors. Raw string concatenation is forbidden (`make gate`).
 - [x] **Errors as Values**: Async data boundaries strictly return `Aff (Either AppError a)`.
@@ -135,7 +135,7 @@ Visit [`http://localhost:3000/en`](http://localhost:3000/en) or [`http://localho
 
 ---
 
-## Verification & Quality Gates
+## Verification and Quality Gates
 
 ```bash
 # Run structural invariants & security gate checks (~2s)
@@ -155,12 +155,12 @@ make check
 
 ## Documentation
 
-- **Architecture & Philosophy:** [`docs/conventions/adding-pages.md`](docs/conventions/adding-pages.md)
-- **Data Layer & Fetching:** [`docs/conventions/data-layer.md`](docs/conventions/data-layer.md)
-- **Forms & CSRF Security:** [`docs/conventions/forms.md`](docs/conventions/forms.md)
-- **Alpine Seams & Contracts:** [`docs/conventions/alpine-contracts.md`](docs/conventions/alpine-contracts.md)
+- **Architecture and Philosophy:** [`docs/conventions/adding-pages.md`](docs/conventions/adding-pages.md)
+- **Data Layer and Fetching:** [`docs/conventions/data-layer.md`](docs/conventions/data-layer.md)
+- **Forms and CSRF Security:** [`docs/conventions/forms.md`](docs/conventions/forms.md)
+- **Alpine Seams and Contracts:** [`docs/conventions/alpine-contracts.md`](docs/conventions/alpine-contracts.md)
 - **Strict Invariant Guarantees:** [`docs/GUARANTEES.md`](docs/GUARANTEES.md)
-- **Agent Guide & Safety Floor:** [`AGENTS.md`](AGENTS.md)
+- **Agent Guide and Safety Floor:** [`AGENTS.md`](AGENTS.md)
 
 ---
 
