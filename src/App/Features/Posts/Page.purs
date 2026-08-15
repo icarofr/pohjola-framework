@@ -15,7 +15,7 @@ import Prelude
 import App.Config (Config)
 import App.Error (AppError)
 import App.FetchBun (FetchResult)
-import App.Features.Posts.Service (fetchPost, fetchPosts)
+import App.Features.Posts.Service (curatedPosts, fetchPost, fetchPosts)
 import App.Features.Posts.Types (decodePosts)
 import App.Features.Posts.View (renderPostDetail, renderPostList, renderPostsError)
 import App.Html (Html, render)
@@ -46,14 +46,19 @@ renderDetail cfg lang id = do
     Right post -> Right (renderPostDetail lang post)
     Left err -> Left err
 
--- | URL for streaming the post list. The FFI fetches this via Bun's native
--- | fetch and passes the result to `renderListContent`.
+-- | URL for streaming the post list. Returns empty string when serving local
+-- | curated posts, or the external API URL when configured.
 streamListUrl :: Config -> String
-streamListUrl cfg = cfg.postsApiBase <> "/posts"
+streamListUrl cfg =
+  if cfg.postsApiBase == "" || cfg.postsApiBase == "https://jsonplaceholder.typicode.com" then
+    ""
+  else
+    cfg.postsApiBase <> "/posts"
 
 -- | Pure content renderer for the streaming path. Decodes the fetch result
 -- | and returns pre-rendered HTML. Called synchronously by the FFI's
 -- | ReadableStream async start — no Aff, no fiber scheduling.
+-- | When body is empty (local curated mode), returns curatedPosts.
 -- | On any error (network, decode, HTTP status), returns the error fragment.
 renderListContent :: Lang -> FetchResult -> StreamContent
 renderListContent lang { status, body } =
@@ -61,7 +66,9 @@ renderListContent lang { status, body } =
   where
   content :: Html
   content =
-    if status >= 200 && status < 300 then
+    if body == "" then
+      renderPostList lang curatedPosts
+    else if status >= 200 && status < 300 then
       case decodePosts body of
         Left _ -> renderPostsError lang
         Right posts -> renderPostList lang posts

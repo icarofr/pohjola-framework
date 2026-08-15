@@ -58,7 +58,7 @@ loadConfig = do
   emailToStr <- getEnvDefault "EMAIL_TO" "contact@example.com"
   emailTo <- parseEmailConfig "EMAIL_TO" emailToStr "contact@example.com"
 
-  postsApiBase <- getEnvDefault "POSTS_API_BASE" "https://jsonplaceholder.typicode.com"
+  postsApiBase <- getEnvDefault "POSTS_API_BASE" ""
   rateLimitMaxStr <- getEnvDefault "RATE_LIMIT_MAX" "20"
   rateLimitWindowStr <- getEnvDefault "RATE_LIMIT_WINDOW_MS" "60000"
   databaseUrl <- getEnvMaybe "DATABASE_URL"
