@@ -172,12 +172,11 @@ en =
       , ctaLabel: "About Pohjola"
       }
   , about:
-      { heading: "Why Pohjola"
+      { heading: "About Pohjola"
       , paragraphs:
-          [ "Pohjola was born out of a desire to build web applications without the usual trade-offs: no bloated client bundles, no brittle string templates, and no surprise runtime exceptions in production. It pairs PureScript's uncompromising type system with the native speed of Bun and the lightweight interactivity of Alpine.js."
-          , "The name comes from Finnish mythology and the atmosphere of Swallow the Sun's triple album Songs from the North. In Nordic lore, Pohjola is a harsh northern realm where things are forged to endure. That mindset shaped the framework: write explicit code, let the compiler enforce the contracts, and serve fast, semantic HTML to the browser."
-          , "Instead of chasing framework churn or hydrating entire component trees in client memory, Pohjola keeps the architecture straightforward: pure functions transform typed data into HTML, routes are checked in both directions at compile time, and client interactivity is scoped to small, explicit Alpine expressions."
-          , "At its core, Pohjola treats hypermedia as the engine of application state (HATEOAS). Instead of duplicating state machines in client JavaScript over fragile JSON endpoints, the server emits semantic HTML where available actions, links, and forms directly reflect resource state. PureScript gives this hypermedia architecture absolute mechanical safety: routes, forms, and views are checked at compile time, eliminating the broken links and XSS flaws of traditional templating."
+          [ "The name comes from Swallow the Sun's song Songs from the North: \"Niin laulut Pohjolan kun sammuu, hiipuu hiljaa...\" In Finnish folklore, Pohjola is the rugged North, where things are built to withstand the cold and endure."
+          , "Pohjola is a functional web framework built on a straightforward idea: server-rendered HTML backed by strict compile-time types. PureScript validates routes, forms, and views at build time, while Bun serves responses in sub-milliseconds."
+          , "Client-side interactivity is handled through small, typed Alpine.js expressions. No bloated single-page app frameworks, no fragile state synchronization, and no runtime surprises in production."
           ]
       }
   , contact:
@@ -267,10 +266,9 @@ fr =
   , about:
       { heading: "À propos de Pohjola"
       , paragraphs:
-          [ "Pohjola est né d'une envie simple : concevoir des applications web sans compromis inutiles, loin des bundles JavaScript boursouflés, des templates non typés et des exceptions imprévues en production. Le framework combine la rigueur du système de types de PureScript, la rapidité d'exécution de Bun et la légèreté d'Alpine.js."
-          , "Le nom s'inspire de la mythologie finlandaise et de l'atmosphère du triple album Songs from the North de Swallow the Sun. Dans les légendes nordiques, Pohjola est une terre rude où tout ce qui est forgé doit résister à l'épreuve du temps. C'est cette philosophie qui guide le projet : du code explicite, un compilateur qui valide chaque contrat et du HTML propre servi instantanément au navigateur."
-          , "Plutôt que d'hydrater de lourdes architectures côté client, Pohjola privilégie la simplicité : des fonctions pures transforment les données typées en HTML, les routes sont vérifiées dans les deux sens à la compilation, et l'interactivité client reste confinée à des expressions Alpine ciblées."
-          , "Au cœur de Pohjola se trouve le principe de l'hypermédia comme moteur d'état applicatif (HATEOAS). Plutôt que de dupliquer des machines d'état en JavaScript au-dessus de points d'API JSON fragiles, le serveur délivre directement du HTML sémantique où les actions, liens et formulaires disponibles reflètent fidèlement l'état des ressources. PureScript confère à cette architecture hypermédia une sécurité mécanique totale : routes, formulaires et vues sont validés à la compilation, éliminant les liens brisés et les failles XSS des moteurs de templates classiques."
+          [ "Le nom vient du morceau Songs from the North de Swallow the Sun : « Niin laulut Pohjolan kun sammuu, hiipuu hiljaa... » Dans la mythologie finlandaise, Pohjola désigne ce Nord rude où les choses sont forgées pour endurer le froid et durer."
+          , "Pohjola est un framework web conçu pour offrir du HTML rendu côté serveur et garanti par un typage strict à la compilation. PureScript valide les routes, les formulaires et les vues au moment du build, tandis que Bun sert les réponses en moins d'une milliseconde."
+          , "L'interactivité côté client repose sur de petites expressions Alpine.js typées. Pas de frameworks SPA démesurés, pas de synchronisation d'état fragile, et aucune surprise à l'exécution en production."
           ]
       }
   , contact:
