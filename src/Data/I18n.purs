@@ -53,7 +53,6 @@ type Dictionary =
   { nav ::
       { about :: String
       , contact :: String
-      , legal :: String
       , posts :: String
       }
   , hero ::
@@ -104,12 +103,6 @@ type Dictionary =
       , newsletterButton :: String
       , copyright :: String
       }
-  , legal ::
-      { title :: String
-      , subtitle :: String
-      , lastUpdated :: String
-      , sections :: Array { number :: String, heading :: String, paragraphs :: Array String }
-      }
   , common ::
       { siteTitle :: String
       , darkModeToggle :: String
@@ -134,102 +127,76 @@ en =
   { nav:
       { about: "About"
       , contact: "Contact"
-      , legal: "Legal"
       , posts: "Posts"
       }
   , hero:
-      { headline: "Your headline here"
-      , body: "Your compelling value proposition goes here. Explain what you do and why it matters."
-      , ctaLabel: "Learn more"
+      { headline: "The Type-Safe Functional Web Framework for Bun"
+      , body: "Build blazingly fast MPAs in PureScript with Bun runtime speed, Alpine.js micro-interactivity, and zero runtime exceptions."
+      , ctaLabel: "About Pohjola"
       }
   , services:
-      { sectionTitle: "Our services"
-      , bookButton: "Get started"
+      { sectionTitle: "Architectural Highlights"
+      , bookButton: "GitHub"
       , serviceCopy: \sid -> case sid of
           ServiceId "service-1" ->
-            { title: "Service One"
-            , description: "Description of your first service. What does it include? What problem does it solve?"
+            { title: "PureScript Type Safety"
+            , description: "Total pattern matching, no nulls, and an XSS-safe Html ADT that guarantees correctness at compile time."
             }
           ServiceId "service-2" ->
-            { title: "Service Two"
-            , description: "Description of your second service. Highlight the key benefit."
+            { title: "Sub-Millisecond SSR on Bun"
+            , description: "Native Bun server runtime delivering sub-millisecond route responses, lightweight streaming SSR, and instant dev server restarts."
             }
           ServiceId "service-3" ->
-            { title: "Service Three"
-            , description: "Description of your third service. Keep it concise and clear."
+            { title: "Alpine.js Reactive Seams"
+            , description: "Client-side micro-interactivity with typed Alpine constructors. Zero ad-hoc JavaScript scripts, seamless AJAX fragment swaps."
             }
           _ -> { title: "", description: "" }
       }
   , cta:
-      { heading: "Get started today"
-      , body: "Ready to take the next step? It only takes a few clicks."
-      , ctaLabel: "Contact us"
+      { heading: "Start building with `make dev`"
+      , body: "Clone the repository, run `make dev`, and experience full-stack functional web development with instant hot reload."
+      , ctaLabel: "About Pohjola"
       }
   , about:
-      { heading: "About us"
+      { heading: "Architecture & Philosophy"
       , paragraphs:
-          [ "Tell your story here. Who are you? What experience do you bring? Why should people trust you?"
-          , "Add a second paragraph with more detail about your background, credentials, or approach."
+          [ "Pohjola is an opinionated functional web framework built on PureScript, Bun, and Alpine.js. It combines the performance, SEO, and simplicity of Server-Side Rendered Multi-Page Applications (MPAs) with the fluid micro-interactivity of Single-Page Applications (SPAs) without complex client-side state bundles."
+          , "Every layer is designed with strict invariants: total pattern matching, XSS prevention via an algebraic Html data type, byte-exact Content Security Policy (CSP) headers, honeypot form security, and typed bidirectional routing."
           ]
       }
   , contact:
-      { title: "Contact"
+      { title: "Feedback & Bug Reports"
       , emailLabel: "Email"
       , messageLabel: "Message"
-      , sendLabel: "Send"
-      , socialLabel: "Follow us"
+      , sendLabel: "Send Message"
+      , socialLabel: "Project Links"
       , formName: "Name"
       }
   , posts:
-      { listTitle: "Posts"
-      , detailTitle: "Post"
-      , readMore: "Read more"
-      , backToList: "Back to posts"
-      , loadingError: "Failed to load posts. Please try again later."
-      , notFound: "Post not found."
+      { listTitle: "Engineering Notes & Architecture"
+      , detailTitle: "Article"
+      , readMore: "Read article"
+      , backToList: "Back to articles"
+      , loadingError: "Failed to load articles. Please check your connection."
+      , notFound: "Article not found."
       , byAuthor: "By"
-      , unknownAuthor: "User"
+      , unknownAuthor: "Pohjola"
       }
   , footer:
       { explore: "Explore"
-      , newsletter: "Newsletter"
-      , newsletterText: "Subscribe to receive news and updates."
+      , newsletter: "Updates"
+      , newsletterText: "Subscribe for release notes and framework updates."
       , newsletterPlaceholder: "Email address"
       , newsletterButton: "Subscribe"
-      , copyright: "© 2026 Your Site. All rights reserved."
-      }
-  , legal:
-      { title: "Legal Notice"
-      , subtitle: "Terms of Service"
-      , lastUpdated: "January 2026"
-      , sections:
-          [ { number: "1"
-            , heading: "Purpose"
-            , paragraphs:
-                [ "These Terms of Service define the terms under which the service is offered."
-                ]
-            }
-          , { number: "2"
-            , heading: "Provider Information"
-            , paragraphs:
-                [ "Replace with your legal entity information."
-                ]
-            }
-          , { number: "3"
-            , heading: "Applicable Law"
-            , paragraphs:
-                [ "These terms are governed by applicable law. Replace with your jurisdiction."
-                ]
-            }
-          ]
+      , copyright: "© 2026 Pohjola Framework. Open source under MIT License."
       }
   , common:
       { siteTitle: "Pohjola"
       , darkModeToggle: "Toggle dark mode"
       , newsletterEmailLabel: "Email address"
-      , formSuccess: "Thanks! Your message has been sent."
+      , formSuccess: "Thanks! Your message has been received."
       , formError: "Something went wrong — please try again."
-      , formSubscribed: "You're subscribed!"
+      , formSubscribed: "You're subscribed to Pohjola updates!"
       , error404: "Page not found"
       , error500: "Something went wrong"
       , navAriaLabel: "Main navigation"
@@ -243,102 +210,76 @@ fr =
   { nav:
       { about: "À propos"
       , contact: "Contact"
-      , legal: "Mentions légales"
       , posts: "Articles"
       }
   , hero:
-      { headline: "Votre titre ici"
-      , body: "Votre proposition de valeur va ici. Expliquez ce que vous faites et pourquoi c'est important."
+      { headline: "Le framework web fonctionnel et typé pour Bun"
+      , body: "Développez des applications web ultra-rapides en PureScript avec la puissance de Bun, la réactivité d'Alpine.js et zéro exception à l'exécution."
       , ctaLabel: "En savoir plus"
       }
   , services:
-      { sectionTitle: "Nos services"
-      , bookButton: "Commencer"
+      { sectionTitle: "Points clés de l'architecture"
+      , bookButton: "GitHub"
       , serviceCopy: \sid -> case sid of
           ServiceId "service-1" ->
-            { title: "Service Un"
-            , description: "Description de votre premier service. Qu'est-ce qu'il inclut ? Quel problème résout-il ?"
+            { title: "Sécurité de typage PureScript"
+            , description: "Filtrage total par motif, aucun null, et un ADT Html typé sans faille XSS qui garantit la correction à la compilation."
             }
           ServiceId "service-2" ->
-            { title: "Service Deux"
-            , description: "Description de votre deuxième service. Soulignez l'avantage principal."
+            { title: "SSR instantané sous Bun"
+            , description: "Moteur d'exécution Bun natif offrant des temps de réponse sous la milliseconde, du streaming SSR et un rechargement instantané."
             }
           ServiceId "service-3" ->
-            { title: "Service Trois"
-            , description: "Description de votre troisième service. Restez concis et clair."
+            { title: "Interactivité Alpine.js typée"
+            , description: "Micro-interactivité côté client avec des constructeurs Alpine typés. Zéro JavaScript ad-hoc et transitions AJAX fluides."
             }
           _ -> { title: "", description: "" }
       }
   , cta:
-      { heading: "Commencez aujourd'hui"
-      , body: "Prêt à faire le prochain pas ? Cela ne prend que quelques clics."
-      , ctaLabel: "Nous contacter"
+      { heading: "Commencez avec `make dev`"
+      , body: "Clonez le dépôt, lancez `make dev` et découvrez le développement web full-stack fonctionnel avec rechargement instantané."
+      , ctaLabel: "En savoir plus"
       }
   , about:
-      { heading: "À propos"
+      { heading: "Architecture et philosophie"
       , paragraphs:
-          [ "Racontez votre histoire ici. Qui êtes-vous ? Quelle expérience apportez-vous ?"
-          , "Ajoutez un deuxième paragraphe avec plus de détails sur votre parcours."
+          [ "Pohjola est un framework web fonctionnel basé sur PureScript, Bun et Alpine.js. Il associe les performances et le SEO des applications multi-pages (MPA) avec la fluidité interactive des SPAs sans bundle JavaScript client."
+          , "Chaque composant applique des garanties strictes : filtrage exhaustif par motif, prévention XSS par ADT Html typé, politique de sécurité CSP stricte, protection antispam honeypot et routage bidirectionnel typé."
           ]
       }
   , contact:
-      { title: "Contact"
+      { title: "Retours & signalement de bugs"
       , emailLabel: "E-mail"
       , messageLabel: "Message"
-      , sendLabel: "Envoyer"
-      , socialLabel: "Suivez-nous"
+      , sendLabel: "Envoyer le message"
+      , socialLabel: "Liens du projet"
       , formName: "Nom"
       }
   , posts:
-      { listTitle: "Articles"
+      { listTitle: "Notes d'ingénierie et architecture"
       , detailTitle: "Article"
-      , readMore: "Lire la suite"
+      , readMore: "Lire l'article"
       , backToList: "Retour aux articles"
-      , loadingError: "Impossible de charger les articles. Veuillez réessayer plus tard."
+      , loadingError: "Impossible de charger les articles. Veuillez vérifier votre connexion."
       , notFound: "Article introuvable."
       , byAuthor: "Par"
-      , unknownAuthor: "Utilisateur"
+      , unknownAuthor: "Pohjola"
       }
   , footer:
       { explore: "Explorer"
-      , newsletter: "Newsletter"
-      , newsletterText: "Inscrivez-vous pour recevoir les actualités."
+      , newsletter: "Actualités"
+      , newsletterText: "Abonnez-vous pour recevoir les notes de version et les actualités du framework."
       , newsletterPlaceholder: "Adresse e-mail"
       , newsletterButton: "S'inscrire"
-      , copyright: "© 2026 Votre Site. Tous droits réservés."
-      }
-  , legal:
-      { title: "Mentions légales"
-      , subtitle: "Conditions générales"
-      , lastUpdated: "Janvier 2026"
-      , sections:
-          [ { number: "1"
-            , heading: "Objet"
-            , paragraphs:
-                [ "Les présentes conditions définissent les modalités d'utilisation du service."
-                ]
-            }
-          , { number: "2"
-            , heading: "Informations sur le prestataire"
-            , paragraphs:
-                [ "Remplacez par les informations légales de votre entité."
-                ]
-            }
-          , { number: "3"
-            , heading: "Droit applicable"
-            , paragraphs:
-                [ "Les présentes conditions sont régies par le droit applicable. Remplacez par votre juridiction."
-                ]
-            }
-          ]
+      , copyright: "© 2026 Pohjola Framework. Open source sous licence MIT."
       }
   , common:
       { siteTitle: "Pohjola"
       , darkModeToggle: "Activer le mode sombre"
       , newsletterEmailLabel: "Adresse e-mail"
-      , formSuccess: "Merci ! Votre message a bien été envoyé."
+      , formSuccess: "Merci ! Votre message a bien été reçu."
       , formError: "Une erreur est survenue. Veuillez réessayer."
-      , formSubscribed: "Vous êtes bien inscrit !"
+      , formSubscribed: "Vous êtes bien inscrit aux actualités Pohjola !"
       , error404: "Page introuvable"
       , error500: "Une erreur est survenue"
       , navAriaLabel: "Navigation principale"

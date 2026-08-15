@@ -74,14 +74,12 @@ seoDescription En = case _ of
   Home -> siteInfo.description
   About -> "Learn more about " <> siteInfo.title <> "."
   Contact -> "Get in touch with " <> siteInfo.title <> "."
-  Legal -> "Legal notice and terms of service for " <> siteInfo.title <> "."
   PostList -> "Read the latest posts on " <> siteInfo.title <> "."
   PostDetail _ -> "A post on " <> siteInfo.title <> "."
 seoDescription Fr = case _ of
   Home -> "Site vitrine de démonstration PureScript + Alpine.js — SSR bilingue, formulaires, SEO."
   About -> "En savoir plus sur " <> siteInfo.title <> "."
   Contact -> "Contactez " <> siteInfo.title <> "."
-  Legal -> "Mentions légales et conditions générales de " <> siteInfo.title <> "."
   PostList -> "Lire les derniers articles sur " <> siteInfo.title <> "."
   PostDetail _ -> "Un article sur " <> siteInfo.title <> "."
 

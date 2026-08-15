@@ -16,7 +16,7 @@ renderContactForm lang =
       , method: "POST"
       , lang: lang
       , honeypotName: "website"
-      , classNames: Just "mt-8 space-y-6"
+      , classNames: Just "space-y-6"
       }
       [ textField
           { id: "name"

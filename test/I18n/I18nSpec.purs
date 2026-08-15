@@ -3,7 +3,6 @@ module Test.I18n.I18nSpec where
 
 import Prelude
 
-import Data.Array (length)
 import Data.Content (ServiceId(..))
 import Data.I18n (Lang(..), dict)
 import Test.Spec (Spec, describe, it)
@@ -32,9 +31,9 @@ spec = do
 
     describe "hero content" do
       it "English has headline" do
-        (dict En).hero.headline `shouldEqual` "Your headline here"
+        (dict En).hero.headline `shouldEqual` "The Type-Safe Functional Web Framework for Bun"
       it "French has headline" do
-        (dict Fr).hero.headline `shouldEqual` "Votre titre ici"
+        (dict Fr).hero.headline `shouldEqual` "Le framework web fonctionnel et typé pour Bun"
 
     describe "services" do
       let svc1 = ServiceId "service-1"
@@ -45,9 +44,3 @@ spec = do
       it "copy localizes between languages" do
         ((dict En).services.serviceCopy svc1).description
           `shouldNotEqual` ((dict Fr).services.serviceCopy svc1).description
-
-    describe "legal sections" do
-      it "English has 3 legal sections" do
-        length (dict En).legal.sections `shouldEqual` 3
-      it "French has 3 legal sections" do
-        length (dict Fr).legal.sections `shouldEqual` 3

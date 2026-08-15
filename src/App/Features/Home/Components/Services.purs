@@ -16,13 +16,14 @@ renderServices lang =
   let
     d = (dict lang).services
   in
-    el "section" [ class_ "py-20 bg-white dark:bg-slate-950" ]
+    el "section" [ class_ "py-20 sm:py-28 bg-white dark:bg-gray-900/50 transition-colors" ]
       [ container "max-w-7xl" ""
           [ container "max-w-2xl" "text-center"
-              [ el "h2" [ class_ "font-display text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl" ]
+              [ el "p" [ class_ "text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400" ] [ text "Features" ]
+              , el "h2" [ class_ "mt-2 font-display text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl" ]
                   [ text d.sectionTitle ]
               ]
-          , el "div" [ class_ "mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 sm:mt-20 lg:mx-0 lg:max-w-none lg:grid-cols-3" ]
+          , el "div" [ class_ "mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3" ]
               [ foldMap (renderServiceCard lang) services ]
           ]
       ]

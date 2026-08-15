@@ -17,7 +17,6 @@ import App.Migration (migrate, renderMigrationError)
 import App.Features.About.Page as About
 import App.Features.Contact.Page as Contact
 import App.Features.Home.Page as Home
-import App.Features.Legal.Page as Legal
 import App.Features.Posts.Page as Posts
 import App.Html (Html)
 import App.Layout.Page (renderErrorFragment, renderErrorPage, renderFragment, renderPage, renderShellClose, renderShellOpen)
@@ -113,7 +112,6 @@ pageRenderer cfg route lang = case route of
   Home -> Home.render lang
   About -> About.render lang
   Contact -> Contact.render lang
-  Legal -> Legal.render lang
   PostList -> Posts.renderList cfg lang
   PostDetail id -> Posts.renderDetail cfg lang id
 
@@ -197,7 +195,6 @@ handleRoute ctx =
     Home -> cachedStaticPage ctx
     About -> cachedStaticPage ctx
     Contact -> cachedStaticPage ctx
-    Legal -> cachedStaticPage ctx
     PostList -> streamPostList ctx
     PostDetail _ -> cachedDynamicPage ctx
 

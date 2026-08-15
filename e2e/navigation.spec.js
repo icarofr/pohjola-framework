@@ -5,7 +5,7 @@ test.describe('Alpine AJAX navigation', () => {
     await page.goto('/en')
 
     // Verify initial state
-    await expect(page.locator('main')).toContainText('Your headline here')
+    await expect(page.locator('main')).toContainText('The Type-Safe Functional Web Framework')
     
     // Set marker to detect if full reload occurs
     await page.evaluate(() => {
@@ -54,7 +54,7 @@ test.describe('Alpine AJAX navigation', () => {
     await page.click('button[aria-label="Switch language"]')
     await page.click('#lang-menu a[href="/fr"]')
     await expect(page).toHaveURL(/\/fr$/)
-    await expect(page.locator('main')).toContainText('Votre titre ici')
+    await expect(page.locator('main')).toContainText('Le framework web fonctionnel')
     
     // Marker should be gone (full reload occurred)
     expect(await page.evaluate(() => window.__marker)).toBeUndefined()
