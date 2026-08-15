@@ -1,6 +1,6 @@
 # pohjola-framework
 
-> The True North of my web apps — A full-stack functional framework based on PureScript, Bun, and Alpine.js.
+> A full-stack functional framework based on PureScript, Bun, and Alpine.js.
 
 The compiler is the contract: a hardened full-stack SSR foundation in PureScript, Bun, and Alpine.js. Built for applications that demand immovable compile-time safety and lightweight runtime performance. PureScript + Bun keeps the domain model visible while leaving feature architecture and JavaScript access open.
 
