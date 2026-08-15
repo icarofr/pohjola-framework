@@ -19,15 +19,10 @@ test.describe('No-JS degradation', () => {
     await expect(page.locator('main')).toContainText('About')
   })
 
-  test('contact form submission without JS follows redirect and shows error banner', async ({ page }) => {
+  test('community page renders correctly without JS', async ({ page }) => {
     await page.goto('/en/contact')
-    await page.locator('form[action="/api/contact"] input[name="name"]').fill('John Doe')
-    await page.locator('form[action="/api/contact"] input[name="email"]').fill('john@example.com')
-    await page.locator('form[action="/api/contact"] textarea[name="message"]').fill('Hello')
-    await page.locator('form[action="/api/contact"]').getByRole('button', { name: 'Send' }).click()
-    // server redirects with error status due to missing RESEND_API_KEY
-    await expect(page).toHaveURL(/status=error/)
-    await expect(page.locator('[role="status"][data-form-status="error"]')).toBeVisible()
+    await expect(page.locator('main')).toContainText('Community & Contributing')
+    await expect(page.locator('main a[href="https://github.com/icarofr/pohjola-framework/issues"]')).toBeVisible()
   })
 
   test('language toggle links are present in markup', async ({ page }) => {

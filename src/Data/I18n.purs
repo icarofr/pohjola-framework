@@ -86,13 +86,15 @@ type Dictionary =
   , contact ::
       { title :: String
       , subtitle :: String
-      , bugReportTitle :: String
-      , bugReportText :: String
-      , bugReportButton :: String
-      , emailLabel :: String
-      , messageLabel :: String
-      , sendLabel :: String
-      , formName :: String
+      , issuesTitle :: String
+      , issuesText :: String
+      , issuesButton :: String
+      , discussionsTitle :: String
+      , discussionsText :: String
+      , discussionsButton :: String
+      , sourceTitle :: String
+      , sourceText :: String
+      , sourceButton :: String
       }
   , posts ::
       { listTitle :: String
@@ -174,15 +176,17 @@ en =
           ]
       }
   , contact:
-      { title: "Get in Touch"
-      , subtitle: "Questions, feedback, or discussions? Send a direct note below."
-      , bugReportTitle: "Bug Reports & Issues"
-      , bugReportText: "Found a bug, want to request a feature, or inspect source code? Please open an issue on GitHub."
-      , bugReportButton: "Open GitHub Issue"
-      , emailLabel: "Email"
-      , messageLabel: "Message"
-      , sendLabel: "Send Message"
-      , formName: "Name"
+      { title: "Community & Contributing"
+      , subtitle: "Pohjola is open source under the MIT License. Report issues, join discussions, or inspect the codebase directly on GitHub."
+      , issuesTitle: "Bug Reports & Issues"
+      , issuesText: "Found a bug, edge case, or unexpected behavior? Open an issue on GitHub with reproduction steps."
+      , issuesButton: "Open an Issue"
+      , discussionsTitle: "Discussions & Q&A"
+      , discussionsText: "Have architectural questions, design proposals, or want to discuss PureScript and Bun?"
+      , discussionsButton: "Join Discussions"
+      , sourceTitle: "Source Code & Invariants"
+      , sourceText: "Explore the codebase, inspect verified safety invariants, or submit a pull request on GitHub."
+      , sourceButton: "View Repository"
       }
   , posts:
       { listTitle: "Engineering Notes & Architecture"
@@ -260,15 +264,17 @@ fr =
           ]
       }
   , contact:
-      { title: "Contact & Échanges"
-      , subtitle: "Une question, un retour d'expérience ou une idée ? Envoyez un message ci-dessous."
-      , bugReportTitle: "Bugs & Problèmes techniques"
-      , bugReportText: "Un bug à signaler ou une proposition de fonctionnalité ? Ouvrez une issue directement sur GitHub."
-      , bugReportButton: "Ouvrir une issue GitHub"
-      , emailLabel: "E-mail"
-      , messageLabel: "Message"
-      , sendLabel: "Envoyer le message"
-      , formName: "Nom"
+      { title: "Communauté & Contribution"
+      , subtitle: "Pohjola est un projet open source sous licence MIT. Signalez des bugs, échangez ou explorez le code directement sur GitHub."
+      , issuesTitle: "Bugs & Problèmes techniques"
+      , issuesText: "Un problème, un bug ou un comportement inattendu ? Ouvrez une issue avec les étapes de reproduction."
+      , issuesButton: "Ouvrir une issue"
+      , discussionsTitle: "Discussions & Échanges"
+      , discussionsText: "Des questions d'architecture, des propositions ou envie d'échanger autour de PureScript et Bun ?"
+      , discussionsButton: "Rejoindre les discussions"
+      , sourceTitle: "Code source & Invariants"
+      , sourceText: "Explorez le dépôt, inspectez les garanties mécaniques ou proposez une contribution sur GitHub."
+      , sourceButton: "Voir le dépôt"
       }
   , posts:
       { listTitle: "Notes d'ingénierie et architecture"

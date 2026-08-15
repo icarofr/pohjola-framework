@@ -80,7 +80,7 @@ siteInfo =
   { title: "Pohjola"
   , description: "The Type-Safe Functional Web Framework for Bun, PureScript, and Alpine.js"
   , themeColor: "#059669"
-  , email: "pohjola@icaro.fr"
+  , email: ""
   , facebookUrl: "https://github.com/icarofr/pohjola-framework"
   , instagramUrl: "https://github.com/icarofr/pohjola-framework"
   }
