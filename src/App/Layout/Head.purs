@@ -27,8 +27,8 @@ renderHead baseUrl nonce lang route =
     <> el "meta" [ name_ "theme-color", content_ siteInfo.themeColor ] []
     -- Dark mode init (prevents FOUC — runs before paint, inline, nonced)
     <> el "script" [ attr "nonce" nonce ] [ text "if(localStorage.getItem('theme')==='dark'||((!localStorage.getItem('theme')||localStorage.getItem('theme')==='system')&&matchMedia('(prefers-color-scheme:dark)').matches))document.documentElement.classList.add('dark')" ]
-    -- Inline scripts for title sync, popstate fix, and nonced Cloudflare email decoding
-    <> el "script" [ attr "nonce" nonce ] [ text "(function(){function d(){var m=document.getElementById(\"content\");if(m&&m.dataset.pageTitle)document.title=m.dataset.pageTitle;var es=document.querySelectorAll(\".__cf_email__\");for(var i=0;i<es.length;i++){var e=es[i],h=e.getAttribute(\"data-cfemail\");if(h){var k=parseInt(h.substr(0,2),16),s=\"\";for(var n=2;n<h.length;n+=2)s+=String.fromCharCode(parseInt(h.substr(n,2),16)^k);var p=e.parentNode;if(p&&p.tagName===\"A\"&&p.href.indexOf(\"/cdn-cgi/l/email-protection\")!==-1)p.href=\"mailto:\"+s;if(e.tagName===\"A\")e.href=\"mailto:\"+s;e.textContent=s;}}}if(document.readyState!==\"loading\"){d()}else{document.addEventListener(\"DOMContentLoaded\",d)}window.addEventListener(\"ajax:merged\",d);window.addEventListener(\"popstate\",function(e){if(e.state&&e.state.__ajax)window.location.reload()})})();" ]
+    -- Inline scripts for title sync and popstate fix (nonced)
+    <> el "script" [ attr "nonce" nonce ] [ text "(function(){window.addEventListener(\"ajax:merged\",function(){var m=document.getElementById(\"content\");if(m&&m.dataset.pageTitle)document.title=m.dataset.pageTitle});window.addEventListener(\"popstate\",function(e){if(e.state&&e.state.__ajax)window.location.reload()})})();" ]
     -- Canonical
     <> el "link" [ rel_ "canonical", href (baseUrl <> routeUrl lang route) ] []
     -- hreflang alternates

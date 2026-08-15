@@ -216,6 +216,24 @@ findForeignImportsOutsideAllowlist root = do
         )
   pure (mapMaybe identity results)
 
+scriptAllowlist :: Array String
+scriptAllowlist = [ "src/App/Layout/Head.purs", "src/App/Layout/Page.purs" ]
+
+-- | Files in src/ containing `el "script"` outside Layout allowlist.
+findScriptsOutsideAllowlist :: String -> Aff (Array String)
+findScriptsOutsideAllowlist root = do
+  files <- liftEffect $ pursFilesUnder root
+  results <- for files \file -> do
+    if any (_ == file) scriptAllowlist then pure Nothing
+    else do
+      content <- readTextFile file
+      pure
+        ( case content of
+            Right c -> if length (Common.split (Pattern "el \"script\"") c) > 1 then Just file else Nothing
+            Left _ -> Nothing
+        )
+  pure (mapMaybe identity results)
+
 -- | Modules permitted to carry `foreign import`.
 -- |
 -- | This list is duplicated in the Makefile's `FFI_ALLOWLIST_GREP`, because the
@@ -664,6 +682,13 @@ spec = do
           html <- renderStaticPage route lang
           html `StrAssert.shouldNotContain` "src=\"http"
 
+    it "static pages contain only the two pinned inline scripts (ADR-000)" do
+      for_ staticRoutes \route ->
+        for_ allLangs \lang -> do
+          html <- renderStaticPage route lang
+          html `StrAssert.shouldContain` "if(localStorage.getItem('theme')==='dark'"
+          html `StrAssert.shouldContain` "(function(){window.addEventListener(\"ajax:merged\",function(){var m=document.getElementById(\"content\");if(m&&m.dataset.pageTitle)document.title=m.dataset.pageTitle});window.addEventListener(\"popstate\",function(e){if(e.state&&e.state.__ajax)window.location.reload()})})();"
+
   describe "pages flow through the layout shell" do
     it "every static page is a full document with a footer" do
       for_ staticRoutes \route ->
@@ -683,6 +708,10 @@ spec = do
 
     it "no foreign import outside allowlist" do
       offenders <- findForeignImportsOutsideAllowlist "src"
+      offenders `shouldEqual` []
+
+    it "no script elements outside App.Layout.Head and App.Layout.Page" do
+      offenders <- findScriptsOutsideAllowlist "src"
       offenders `shouldEqual` []
 
   describe "feature isolation" do
