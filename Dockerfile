@@ -1,5 +1,5 @@
 # =============================================================================
-# PS Alpine Starter — SSR server (PureScript + Bun.serve + Bun)
+# Pohjola — SSR server (PureScript + Bun.serve + Bun)
 # MPA architecture: Html ADT renders to String, Alpine.js for interactivity
 # =============================================================================
 

@@ -1,6 +1,6 @@
 # Agent Evals
 
-Agent evals for the PS Alpine Starter. Each eval is a prompt + assertion pair: a
+Agent evals for Pohjola. Each eval is a prompt + assertion pair: a
 user-shaped task in `PROMPT.md`, and grep-based checks in `check.sh` that verify
 the agent followed our conventions.
 

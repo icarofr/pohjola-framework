@@ -224,7 +224,7 @@ en =
           ]
       }
   , common:
-      { siteTitle: "PS Alpine Starter"
+      { siteTitle: "Pohjola"
       , darkModeToggle: "Toggle dark mode"
       , newsletterEmailLabel: "Email address"
       , formSuccess: "Thanks! Your message has been sent."
@@ -333,7 +333,7 @@ fr =
           ]
       }
   , common:
-      { siteTitle: "PS Alpine Starter"
+      { siteTitle: "Pohjola"
       , darkModeToggle: "Activer le mode sombre"
       , newsletterEmailLabel: "Adresse e-mail"
       , formSuccess: "Merci ! Votre message a bien été envoyé."

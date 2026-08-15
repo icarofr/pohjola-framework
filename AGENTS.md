@@ -1,6 +1,6 @@
-# PS Alpine Starter — Agent Guide
+# Pohjola — Agent Guide
 
-**Starter template**: PureScript 0.15.16 + Bun runtime, SSR MPA with Alpine.js interactivity.
+**Framework**: PureScript 0.15.16 + Bun runtime, SSR MPA with Alpine.js interactivity.
 
 ### Safety floor
 - `dist/` → public static root; `dist-server/` → private server bundle (never serve from `dist/`).
