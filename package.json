@@ -1,5 +1,5 @@
 {
-  "name": "ps-alpine-starter",
+  "name": "pohjola-framework",
   "private": true,
   "scripts": {
     "test:e2e": "playwright test",

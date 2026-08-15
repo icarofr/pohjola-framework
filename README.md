@@ -1,11 +1,8 @@
-# PureScript + Bun
+# pohjola-framework
 
-## Functional safety without a fixed architecture.
+> The True North of my web apps.
 
-The compiler is the contract: a full-stack SSR starter for teams whose web
-applications are accumulating boundary drift, runtime surprises, and JavaScript
-glue. PureScript + Bun keeps the domain model visible while leaving feature
-architecture and JavaScript access open.
+The compiler is the contract: a hardened full-stack SSR template and foundation in PureScript, Bun, and Alpine.js. Built for applications that demand immovable compile-time safety and lightweight runtime performance. PureScript + Bun keeps the domain model visible while leaving feature architecture and JavaScript access open.
 
 ## The seam problem
 
@@ -97,14 +94,14 @@ Requirements: Node.js 22, Bun canary, PureScript 0.15.16, Spago 1.0.4.
 ```bash
 npm install --global purescript@0.15.16 spago@1.0.4
 curl -fsSL https://bun.sh/install | bash -s canary
-git clone https://github.com/icarofr/purescript-fullstack-starter.git
-cd purescript-fullstack-starter
+git clone https://github.com/icarofr/pohjola-framework.git
+cd pohjola-framework
 cp .env.example .env
 make deps
 make run
 ```
 
-Open [`/en`](http://localhost:3001/en) or [`/fr`](http://localhost:3001/fr).
+Open [`/en`](http://localhost:3000/en) or [`/fr`](http://localhost:3000/fr).
 
 ## Explore / verify
 

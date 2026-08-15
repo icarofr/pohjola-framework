@@ -1,5 +1,5 @@
 package:
-  name: ps-alpine-starter
+  name: pohjola-framework
   dependencies:
     - aff
     - argonaut-codecs

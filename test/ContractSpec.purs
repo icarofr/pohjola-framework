@@ -60,7 +60,7 @@ staticRoutes = filter (not <<< isDataBacked) allRoutes
 -- | is never hit. Kept inline so the spec needs no env at all.
 stubConfig :: Config
 stubConfig =
-  { port: 3001
+  { port: 3000
   , staticRoot: "dist"
   , baseUrl: "https://example.com"
   , resendApiKey: Nothing

@@ -1,5 +1,5 @@
 name: suite
-vars: { app: http://app:3001 }
+vars: { app: http://app:3000 }
 testcases:
 - name: contact form redirects on POST
   steps:

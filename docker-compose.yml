@@ -1,15 +1,15 @@
 services:
   app:
-    # Build locally with: docker build -t localhost/ps-alpine-starter:latest .
+    # Build locally with: docker build -t localhost/pohjola-framework:latest .
     # Local `make up` falls back to building from source.
-    image: ${COMPOSE_IMAGE:-localhost/ps-alpine-starter:latest}
+    image: ${COMPOSE_IMAGE:-localhost/pohjola-framework:latest}
     build: .
     environment:
       - RESEND_API_KEY=${RESEND_API_KEY:-}
-      - PORT=3001
+      - PORT=3000
       # POSTs are Origin-gated against BASE_URL exactly — if you change the
       # published port here, BASE_URL must follow or forms 404.
-      - BASE_URL=http://localhost:3001
+      - BASE_URL=http://localhost:3000
     restart: unless-stopped
     mem_limit: 256m
     cpus: 0.5

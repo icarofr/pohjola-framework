@@ -3,8 +3,8 @@ services:
     build: .
     environment:
       - RESEND_API_KEY=test-key-not-real
-      - PORT=3001
-      - BASE_URL=http://app:3001
+      - PORT=3000
+      - BASE_URL=http://app:3000
       - POSTS_API_BASE=http://posts-fixture:4321
       - RATE_LIMIT_MAX=5
     # healthcheck driven by Dockerfile HEALTHCHECK
@@ -25,7 +25,7 @@ services:
     volumes:
       - ./venom:/venom
     entrypoint: ["sh", "-c"]
-    command: ["venom run --output-dir=/results --var=app=http://app:3001 /venom/*.yml"]
+    command: ["venom run --output-dir=/results --var=app=http://app:3000 /venom/*.yml"]
     depends_on:
       app:
         condition: service_healthy

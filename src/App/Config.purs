@@ -44,8 +44,8 @@ loadConfig = do
   let
     port' = case Int.fromString portStr of
       Just p -> p
-      Nothing -> 3001
-  if portStr /= "" && Int.fromString portStr == Nothing then log "Warning: Invalid PORT env var, falling back to 3001" else pure unit
+      Nothing -> 3000
+  if portStr /= "" && Int.fromString portStr == Nothing then log "Warning: Invalid PORT env var, falling back to 3000" else pure unit
 
   staticRoot <- getEnvDefault "STATIC_ROOT" "dist"
   -- dist/ is self-contained after `make build`; Docker sets STATIC_ROOT=.
