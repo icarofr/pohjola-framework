@@ -12,9 +12,9 @@ renderCTA lang =
   let
     d = (dict lang).cta
   in
-    el "section" [ class_ "py-12 sm:py-16 lg:py-20" ]
+    el "section" [ class_ "py-8 sm:py-12 lg:py-14" ]
       [ container "max-w-7xl" ""
-          [ el "div" [ class_ "relative isolate overflow-hidden bg-gray-900 px-6 py-12 text-center shadow-xl rounded-3xl sm:px-16 sm:py-14 dark:bg-gray-900 dark:ring-1 dark:ring-white/10" ]
+          [ el "div" [ class_ "relative isolate overflow-hidden bg-gray-900 px-6 py-10 text-center shadow-xl rounded-3xl sm:px-16 sm:py-12 dark:bg-gray-900 dark:ring-1 dark:ring-white/10" ]
               [ -- Ambient decorative glow
                 el "div"
                   [ class_ "absolute -top-24 left-1/2 -z-10 -translate-x-1/2 transform-gpu blur-3xl pointer-events-none"

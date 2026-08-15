@@ -14,7 +14,7 @@ renderHero lang =
   let
     d = dict lang
   in
-    el "section" [ class_ "relative isolate overflow-hidden pt-10 pb-12 sm:pt-14 sm:pb-16 lg:pt-16 lg:pb-20" ]
+    el "section" [ class_ "relative isolate overflow-hidden pt-8 pb-10 sm:pt-12 sm:pb-14 lg:pt-14 lg:pb-16" ]
       [ -- Subtle top radial glow
         el "div"
           [ class_ "absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80 pointer-events-none"
