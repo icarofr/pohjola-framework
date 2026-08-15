@@ -21,7 +21,7 @@ renderPostList lang posts =
     d = (dict lang).posts
     navDict = (dict lang).nav
   in
-    container "max-w-7xl" "py-16 sm:py-24"
+    container "max-w-7xl" "py-12 sm:py-16 lg:py-20"
       [ container "max-w-2xl" "text-center"
           [ el "p" [ class_ "text-xs font-mono font-semibold uppercase tracking-widest text-emerald-700 dark:text-emerald-400" ]
               [ text navDict.posts ]
@@ -44,7 +44,7 @@ renderPostDetail lang post =
       _ -> "Type Safety"
     readTime = show (3 + (idNum `mod` 4)) <> " min read"
   in
-    container "max-w-4xl" "py-16 sm:py-24"
+    container "max-w-4xl" "py-12 sm:py-16 lg:py-20"
       [ el "div" [ class_ "mb-8 flex items-center justify-between" ]
           [ spaLink lang PostList
               [ class_ "inline-flex items-center gap-x-2 rounded-lg bg-gray-100 dark:bg-white/5 px-3.5 py-1.5 text-xs font-mono font-medium text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-white/10 ring-1 ring-inset ring-gray-200 dark:ring-white/10 transition-colors" ]
@@ -86,7 +86,7 @@ renderPostsError lang =
   let
     d = (dict lang).posts
   in
-    container "max-w-3xl" "py-16 sm:py-24 text-center"
+    container "max-w-3xl" "py-12 sm:py-16 lg:py-20 text-center"
       [ el "h1" [ class_ "font-display text-4xl font-bold text-gray-900 dark:text-white", xAutofocus, attr "tabindex" "-1" ]
           [ text d.listTitle ]
       , el "div" [ class_ "mt-6 rounded-xl bg-red-50 p-4 border border-red-200 dark:bg-red-500/10 dark:border-red-500/20 text-red-800 dark:text-red-200 text-sm font-medium shadow-xs" ]
