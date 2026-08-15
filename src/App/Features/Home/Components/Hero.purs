@@ -29,7 +29,7 @@ renderHero lang =
           [ -- Eyebrow pill
             el "div" [ class_ "mb-6 flex justify-center" ]
               [ el "span"
-                  [ class_ "inline-flex items-center gap-x-2 rounded-full bg-emerald-50 px-3.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-700/10 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-400/20" ]
+                  [ class_ "inline-flex items-center gap-x-2 rounded-full bg-emerald-50 px-3.5 py-1 text-xs font-semibold text-emerald-800 ring-1 ring-inset ring-emerald-800/15 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-400/30" ]
                   [ text "PureScript • Bun • Alpine.js" ]
               ]
           , el "h1" [ class_ "font-display text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl dark:text-white sm:leading-[1.1]", xAutofocus, attr "tabindex" "-1" ]
