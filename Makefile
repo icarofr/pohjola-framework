@@ -18,7 +18,7 @@ export BASE_URL ?= http://localhost:3000
 # spago bundle shells out to esbuild (devDependency, installed locally)
 export PATH := $(CURDIR)/node_modules/.bin:$(PATH)
 
-.PHONY: all help deps assets assets-check dev dev-server watch css css-watch bundle build sync-static run test test/integration test/integration/down test/e2e check image up down clean gate format format-check gen-sql new-feature evals eval
+.PHONY: all help deps assets assets-check dev watch css css-watch bundle build sync-static run test test/integration test/integration/down test/e2e check image up down clean gate format format-check gen-sql new-feature evals eval
 
 # ==================================================================================== #
 # HELPERS
@@ -118,11 +118,6 @@ dev: css sync-static
 	@trap 'kill 0' INT TERM EXIT; \
 	npx @tailwindcss/cli -i css/input.css -o $(DIST_DIR)/css/styles.css --watch & \
 	spago build --watch --strict & \
-	bun --watch --eval "import('./output/App.Main/index.js').then(m => m.main())"
-
-## dev-server: run Bun server with hot reload on PureScript output changes
-.PHONY: dev-server
-dev-server:
 	bun --watch --eval "import('./output/App.Main/index.js').then(m => m.main())"
 
 ## watch: PureScript hot rebuild

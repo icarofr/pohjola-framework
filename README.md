@@ -7,7 +7,10 @@
 [![Bun Runtime](https://img.shields.io/badge/Bun-Runtime-000000?style=flat&logo=bun&logoColor=white)](https://bun.sh)
 [![Alpine.js](https://img.shields.io/badge/Alpine.js-3.15-77C1D2?style=flat&logo=alpinedotjs&logoColor=white)](https://alpinejs.dev)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4.0-06B6D4?style=flat&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
-[![Tests](https://img.shields.io/badge/Tests-191%20Passed-059669?style=flat)](https://github.com/icarofr/pohjola-framework)
+[![Architecture](https://img.shields.io/badge/Architecture-SSR%20%2B%20Alpine%20Morph-059669?style=flat)](https://github.com/icarofr/pohjola-framework)
+[![Unit & Property Tests](https://img.shields.io/badge/Unit%20%26%20Property%20Tests-191%20Passed-059669?style=flat)](https://github.com/icarofr/pohjola-framework)
+[![E2E Tests](https://img.shields.io/badge/Playwright%20E2E-40%20Passed-059669?style=flat&logo=playwright&logoColor=white)](https://github.com/icarofr/pohjola-framework)
+[![Security](https://img.shields.io/badge/Security-Strict%20CSP%20%2B%20Zero%20XSS-10B981?style=flat)](https://github.com/icarofr/pohjola-framework)
 [![License: MIT](https://img.shields.io/badge/License-MIT-gray?style=flat)](LICENCE.md)
 
 **Pohjola is an opinionated full-stack SSR framework where routes, data decoding, errors, translations, and HTML share a single, unbroken compile-time model.**
@@ -148,7 +151,6 @@ Visit [`http://localhost:3000/en`](http://localhost:3000/en) locally, or view th
 | Command | Description |
 |:---|:---|
 | `make dev` | Run full concurrent development environment (Tailwind + Spago + Bun hot reload) |
-| `make dev-server` | Run Bun server with hot reload on PureScript output changes |
 | `make watch` | Run Spago watcher for PureScript hot rebuilds |
 | `make css-watch` | Run Tailwind CSS CLI watcher |
 | `make run` | Build production bundle and run under Bun |
