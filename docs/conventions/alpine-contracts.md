@@ -77,7 +77,7 @@ expressions" block. There is deliberately no escape hatch — the same decision
 the `Html` ADT makes about unescaped HTML (ADR-001).
 
 If an interaction cannot be expressed as a named builder, that is a signal the
-behavior belongs on the server, not that the seam needs loosening.
+behaviour belongs on the server, not that the seam needs loosening.
 
 ## SPA navigation
 

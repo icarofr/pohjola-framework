@@ -4,7 +4,7 @@
 -- | `Aff (Either AppError a)`. Callers pattern-match exhaustively.
 -- | Errors are values (AppError), not exceptions.
 -- |
--- | In a customized deployment, configure POSTS_API_BASE to point to your CMS
+-- | In a customised deployment, configure POSTS_API_BASE to point to your CMS
 -- | (Directus, Contentful, Strapi). The pattern stays the same: Bun native fetch
 -- | via App.FetchBun -> Argonaut decode -> Either.
 module App.Features.Posts.Service

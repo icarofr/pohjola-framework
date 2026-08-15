@@ -11,7 +11,7 @@
 [![Unit & Property Tests](https://img.shields.io/badge/Unit%20%26%20Property%20Tests-191%20Passed-059669?style=flat)](https://github.com/icarofr/pohjola-framework)
 [![E2E Tests](https://img.shields.io/badge/Playwright%20E2E-40%20Passed-059669?style=flat&logo=playwright&logoColor=white)](https://github.com/icarofr/pohjola-framework)
 [![Security](https://img.shields.io/badge/Security-Strict%20CSP%20%2B%20Zero%20XSS-10B981?style=flat)](https://github.com/icarofr/pohjola-framework)
-[![License: MIT](https://img.shields.io/badge/License-MIT-gray?style=flat)](LICENCE.md)
+[![Licence: Woke](https://img.shields.io/badge/Licence-Woke_Software_Licence-059669?style=flat)](LICENCE.md)
 
 **Pohjola is an opinionated full-stack SSR framework where routes, data decoding, errors, translations, and HTML share a single, unbroken compile-time model.**
 
@@ -21,7 +21,7 @@ The compiler is your contract. Pohjola turns brittle architectural conventions i
 
 ## The Seam Problem
 
-Every serialization step, unchecked template string, and ad-hoc API boundary is a seam where contracts drift and silent bugs breed. As web applications grow, asynchronous data flows and untyped DOM mutations spread across uncontrolled surfaces until confidence erodes and maintenance slows.
+Every serialisation step, unchecked template string, and ad-hoc API boundary is a seam where contracts drift and silent bugs breed. As web applications grow, asynchronous data flows and untyped DOM mutations spread across uncontrolled surfaces until confidence erodes and maintenance slows.
 
 Pohjola closes the seams.
 
@@ -100,12 +100,12 @@ Pohjola makes a deliberate architectural choice: the **server renders the first 
 
 ### Landscape Comparison
 
-| Framework / Paradigm | Primary Optimization | How Pohjola Compares |
+| Framework / Paradigm | Primary Optimisation | How Pohjola Compares |
 |:---|:---|:---|
 | **IHP (Integrated Haskell Platform)** | Full-stack Haskell with built-in ORM, schema designer, and heavy Nix environment. | Pohjola provides pure typed functional SSR on the ultra-fast Bun runtime with standard npm access, avoiding heavy Nix tooling and GHC build overhead. |
 | **Django / Rails / Laravel** | Batteries-included conventions (ORM, admin panel, built-in mailers). | Pohjola trades built-in framework magic for total compile-time control over domain types, explicit effects, and guaranteed HTML safety. |
-| **Next.js / SvelteKit / Nuxt** | Large npm ecosystem, client hydration, and hybrid meta-framework tooling. | Pohjola avoids hydration waterfall debt and runtime serialization surprises; types, error values, and HTML escaping survive all boundaries. |
-| **Elm Architecture** | Strict client-side event loops and centralized browser state. | Pohjola keeps the request lifecycle on the server with `Aff` async orchestration, avoiding heavy single-page client runtimes. |
+| **Next.js / SvelteKit / Nuxt** | Large npm ecosystem, client hydration, and hybrid meta-framework tooling. | Pohjola avoids hydration waterfall debt and runtime serialisation surprises; types, error values, and HTML escaping survive all boundaries. |
+| **Elm Architecture** | Strict client-side event loops and centralised browser state. | Pohjola keeps the request lifecycle on the server with `Aff` async orchestration, avoiding heavy single-page client runtimes. |
 | **Gleam / BEAM (Phoenix)** | Actor concurrency, fault-tolerant supervision, and distributed clustering. | Pohjola brings functional type safety directly to the Bun runtime, providing seamless access to modern web tooling and npm dependencies. |
 
 ---
@@ -186,6 +186,6 @@ make check
 
 ---
 
-## License
+## Licence
 
-Distributed under the open source [MIT License](LICENCE.md).
+Distributed under the [Woke Software Licence](LICENCE.md).

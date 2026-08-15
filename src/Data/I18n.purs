@@ -177,9 +177,9 @@ en =
       }
   , contact:
       { title: "Community & Contributing"
-      , subtitle: "Pohjola is open source under the MIT License. Report issues, join discussions, or inspect the codebase directly on GitHub."
+      , subtitle: "Pohjola is open source under the Woke Software Licence. Report issues, join discussions, or inspect the codebase directly on GitHub."
       , issuesTitle: "Bug Reports & Issues"
-      , issuesText: "Found a bug, edge case, or unexpected behavior? Open an issue on GitHub with reproduction steps."
+      , issuesText: "Found a bug, edge case, or unexpected behaviour? Open an issue on GitHub with reproduction steps."
       , issuesButton: "Open an Issue"
       , discussionsTitle: "Discussions & Q&A"
       , discussionsText: "Have architectural questions, design proposals, or want to discuss PureScript and Bun?"
@@ -203,7 +203,7 @@ en =
       , resources: "Resources"
       , github: "Source Code"
       , issues: "Bug Tracker"
-      , copyright: "© 2026 Pohjola Framework. Open source under MIT License."
+      , copyright: "© 2026 Pohjola Framework. Open source under the Woke Software Licence."
       }
   , common:
       { siteTitle: "Pohjola"
@@ -265,7 +265,7 @@ fr =
       }
   , contact:
       { title: "Communauté & Contribution"
-      , subtitle: "Pohjola est un projet open source sous licence MIT. Signalez des bugs, échangez ou explorez le code directement sur GitHub."
+      , subtitle: "Pohjola est un projet open source sous la Woke Software Licence. Signalez des bugs, échangez ou explorez le code directement sur GitHub."
       , issuesTitle: "Bugs & Problèmes techniques"
       , issuesText: "Un problème, un bug ou un comportement inattendu ? Ouvrez une issue avec les étapes de reproduction."
       , issuesButton: "Ouvrir une issue"
@@ -291,7 +291,7 @@ fr =
       , resources: "Ressources"
       , github: "Code source"
       , issues: "Suivi des bugs"
-      , copyright: "© 2026 Pohjola Framework. Open source sous licence MIT."
+      , copyright: "© 2026 Pohjola Framework. Open source sous la Woke Software Licence."
       }
   , common:
       { siteTitle: "Pohjola"

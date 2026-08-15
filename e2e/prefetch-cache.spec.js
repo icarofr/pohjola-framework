@@ -1,4 +1,4 @@
-// Prefetch / cache behavior — measured, not assumed.
+// Prefetch / cache behaviour: measured, not assumed.
 //
 // This file exists because reasoning about these headers predicted the wrong
 // answer twice. Every assertion here was arrived at by running a real browser
@@ -8,7 +8,7 @@
 // Current policy: successful full pages and AJAX fragments are
 // `private, max-age=10`; errors are `no-store`, and redirects derive their
 // policy from the closed RedirectKind set.
-//   * Full pages use `private` because they embed a per-request CSP nonce — a
+//   * Full pages use `private` because they embed a per-request CSP nonce - a
 //     shared cache would replay one visitor's nonce to everyone else.
 //   * Fragments contain no nonce, but retain `private` as the conservative
 //     browser-cache policy.
@@ -17,7 +17,7 @@
 //     reused and the hover prefetch becomes pure overhead.
 //
 // If you change the cache policy, these tests fail. That is deliberate: the
-// change should be a visible decision, not a silent behavior shift.
+// change should be a visible decision, not a silent behaviour shift.
 const { test, expect } = require('@playwright/test');
 
 const TARGET = '/en/posts';

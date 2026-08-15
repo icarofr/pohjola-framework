@@ -1,4 +1,4 @@
--- | Behavioral invariant tests the compiler cannot express.
+-- | Behavioural invariant tests the compiler cannot express.
 -- |
 -- | The type system can't see the stringly-typed seams this suite pins:
 -- | security header tuples on every Response, the Alpine contentTarget /
