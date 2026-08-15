@@ -31,7 +31,7 @@ labelClass :: String
 labelClass = "block text-sm/6 font-medium text-gray-900 dark:text-white"
 
 buttonClass :: String
-buttonClass = "inline-flex items-center justify-center rounded-md bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-emerald-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 dark:bg-emerald-500 dark:shadow-none dark:hover:bg-emerald-400 dark:focus-visible:outline-emerald-500 transition-all cursor-pointer select-none"
+buttonClass = "inline-flex items-center justify-center rounded-md bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700 dark:bg-emerald-500 dark:text-gray-950 dark:font-bold dark:shadow-none dark:hover:bg-emerald-400 dark:focus-visible:outline-emerald-400 transition-all cursor-pointer select-none"
 
 type FormConfig =
   { action :: String
