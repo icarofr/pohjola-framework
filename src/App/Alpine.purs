@@ -41,12 +41,16 @@ module App.Alpine
   , Flag(..)
   , flagName
   , ThemeMode(..)
+  , themeModeName
   , setTheme
+  , cycleTheme
   , Expr
   , renderExpr
   , xDataFlag
+  , xDataTheme
   , xShowFlag
   , xShowNotFlag
+  , xShowTheme
   , setFlag
   , toggleFlag
   , ariaExpandedFlag
@@ -103,7 +107,6 @@ alpineRequestHeader = "x-alpine-request"
 data Flag
   = MenuOpen
   | LangMenuOpen
-  | ThemeMenuOpen
 
 derive instance eqFlag :: Eq Flag
 
@@ -111,14 +114,12 @@ instance showFlag :: Show Flag where
   show = case _ of
     MenuOpen -> "MenuOpen"
     LangMenuOpen -> "LangMenuOpen"
-    ThemeMenuOpen -> "ThemeMenuOpen"
 
 -- | The JavaScript identifier for a flag. Total.
 flagName :: Flag -> String
 flagName = case _ of
   MenuOpen -> "menuOpen"
   LangMenuOpen -> "open"
-  ThemeMenuOpen -> "themeOpen"
 
 -- ============================================================================
 -- Theme modes
@@ -136,6 +137,12 @@ instance showThemeMode :: Show ThemeMode where
     ThemeLight -> "ThemeLight"
     ThemeDark -> "ThemeDark"
     ThemeSystem -> "ThemeSystem"
+
+themeModeName :: ThemeMode -> String
+themeModeName = case _ of
+  ThemeLight -> "light"
+  ThemeDark -> "dark"
+  ThemeSystem -> "system"
 
 -- ============================================================================
 -- Expr — a generated Alpine/JS expression
@@ -197,6 +204,16 @@ setTheme = case _ of
   ThemeSystem ->
     Expr "localStorage.setItem('theme', 'system'); (matchMedia('(prefers-color-scheme: dark)').matches ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark'))"
 
+-- | Cycle theme through system -> dark -> light -> system.
+cycleTheme :: Expr
+cycleTheme = Expr
+  ( "theme = (theme === 'system' ? 'dark' : theme === 'dark' ? 'light' : 'system'); "
+      <> "localStorage.setItem('theme', theme); "
+      <> "if (theme === 'dark') { document.documentElement.classList.add('dark'); } "
+      <> "else if (theme === 'light') { document.documentElement.classList.remove('dark'); } "
+      <> "else { (window.matchMedia('(prefers-color-scheme: dark)').matches ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark')); }"
+  )
+
 -- | Fetch this link's fragment on hover, sending the AJAX header so the server
 -- | answers with a fragment.
 -- |
@@ -219,6 +236,12 @@ xDataFlag :: Flag -> Boolean -> Attr
 xDataFlag f value =
   attr "x-data" ("{ " <> flagName f <> ": " <> boolLit value <> " }")
 
+-- | Alpine component scope holding theme state (system, dark, light):
+-- | `xDataTheme` → `x-data="{ theme: (localStorage.getItem('theme') || 'system') }"`
+xDataTheme :: Attr
+xDataTheme =
+  attr "x-data" "{ theme: (localStorage.getItem('theme') || 'system') }"
+
 -- | Visible while the flag is true.
 xShowFlag :: Flag -> Attr
 xShowFlag f = attr "x-show" (flagName f)
@@ -226,6 +249,10 @@ xShowFlag f = attr "x-show" (flagName f)
 -- | Visible while the flag is false.
 xShowNotFlag :: Flag -> Attr
 xShowNotFlag f = attr "x-show" ("!" <> flagName f)
+
+-- | Visible when theme matches the given mode.
+xShowTheme :: ThemeMode -> Attr
+xShowTheme mode = attr "x-show" ("theme === '" <> themeModeName mode <> "'")
 
 -- | `aria-expanded` bound to a flag. Ties the accessible state to the same
 -- | flag that drives visibility, so the two cannot drift apart.

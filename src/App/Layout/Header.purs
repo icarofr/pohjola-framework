@@ -9,7 +9,7 @@ module App.Layout.Header where
 
 import Prelude
 
-import App.Alpine (Flag(..), ThemeMode(..), ariaExpandedFlag, navLink, onClick, onClickOutside, onKeydownEscapeWindow, setFlag, setTheme, toggleFlag, xCloak, xDataFlag, xShowFlag, xShowNotFlag, xSync)
+import App.Alpine (Flag(..), ThemeMode(..), ariaExpandedFlag, cycleTheme, navLink, onClick, onClickOutside, onKeydownEscapeWindow, setFlag, toggleFlag, xCloak, xDataFlag, xDataTheme, xShowFlag, xShowNotFlag, xShowTheme, xSync)
 import App.Html (Attr, Html, ariaLabel, attr, class_, el, href, id_, text)
 import Data.Foldable (foldMap)
 import Data.I18n (Lang(..), dict, langTag)
@@ -43,7 +43,7 @@ render lang currentRoute =
                   [ foldMap (renderNavItem lang currentRoute) (navItems lang) ]
               -- Desktop utilities (Theme & Language)
               , el "div" [ class_ "hidden md:flex md:flex-1 md:justify-end md:items-center md:gap-x-3 border-l border-gray-200 dark:border-white/10 pl-6" ]
-                  [ renderThemeDropdown lang
+                  [ renderThemeCycleButton lang
                   , renderLangToggle lang currentRoute
                   ]
               -- Mobile menu button
@@ -82,7 +82,7 @@ render lang currentRoute =
                           [ class_ (langLinkClass lang Fr) ]
                           [ text (toUpper (langTag Fr)) ]
                       ]
-                  , renderMobileThemeSwitcher lang
+                  , renderThemeCycleButton lang
                   ]
               ]
           ]
@@ -162,44 +162,10 @@ chevronDownIcon =
         []
     ]
 
-sunIcon :: Html
-sunIcon =
-  el "svg"
-    [ class_ "size-5 dark:hidden"
-    , attr "fill" "none"
-    , attr "viewBox" "0 0 24 24"
-    , attr "stroke-width" "1.5"
-    , attr "stroke" "currentColor"
-    ]
-    [ el "path"
-        [ attr "stroke-linecap" "round"
-        , attr "stroke-linejoin" "round"
-        , attr "d" "M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"
-        ]
-        []
-    ]
-
-moonIcon :: Html
-moonIcon =
-  el "svg"
-    [ class_ "size-5 hidden dark:block"
-    , attr "fill" "none"
-    , attr "viewBox" "0 0 24 24"
-    , attr "stroke-width" "1.5"
-    , attr "stroke" "currentColor"
-    ]
-    [ el "path"
-        [ attr "stroke-linecap" "round"
-        , attr "stroke-linejoin" "round"
-        , attr "d" "M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
-        ]
-        []
-    ]
-
 sunSmallIcon :: Html
 sunSmallIcon =
   el "svg"
-    [ class_ "size-4 shrink-0"
+    [ class_ "size-5 shrink-0"
     , attr "fill" "none"
     , attr "viewBox" "0 0 24 24"
     , attr "stroke-width" "1.5"
@@ -216,7 +182,7 @@ sunSmallIcon =
 moonSmallIcon :: Html
 moonSmallIcon =
   el "svg"
-    [ class_ "size-4 shrink-0"
+    [ class_ "size-5 shrink-0"
     , attr "fill" "none"
     , attr "viewBox" "0 0 24 24"
     , attr "stroke-width" "1.5"
@@ -233,7 +199,7 @@ moonSmallIcon =
 monitorIcon :: Html
 monitorIcon =
   el "svg"
-    [ class_ "size-4 shrink-0"
+    [ class_ "size-5 shrink-0"
     , attr "fill" "none"
     , attr "viewBox" "0 0 24 24"
     , attr "stroke-width" "1.5"
@@ -307,82 +273,23 @@ renderLangToggle lang currentRoute =
           ]
       ]
 
-renderThemeDropdown :: Lang -> Html
-renderThemeDropdown lang =
+renderThemeCycleButton :: Lang -> Html
+renderThemeCycleButton lang =
   let
     d = dict lang
-  in
-    el "div" [ xDataFlag ThemeMenuOpen false, class_ "relative", onKeydownEscapeWindow (setFlag ThemeMenuOpen false) ]
-      [ el "button"
-          [ onClick (toggleFlag ThemeMenuOpen)
-          , attr "type" "button"
-          , ariaExpandedFlag ThemeMenuOpen
-          , attr "aria-haspopup" "true"
-          , attr "aria-controls" "theme-menu"
-          , class_ "rounded-lg p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/10 transition-colors focus-visible:outline-2 focus-visible:outline-emerald-600 cursor-pointer"
-          , ariaLabel d.common.darkModeToggle
-          ]
-          [ sunIcon
-          , moonIcon
-          ]
-      , el "div"
-          [ xShowFlag ThemeMenuOpen
-          , xCloak
-          , onClickOutside (setFlag ThemeMenuOpen false)
-          , id_ "theme-menu"
-          , class_ "absolute right-0 mt-2 w-36 origin-top-right rounded-lg bg-white dark:bg-gray-900 p-1 shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-hidden z-50"
-          ]
-          [ themeOptionButton ThemeLight d.common.themeLight sunSmallIcon
-          , themeOptionButton ThemeDark d.common.themeDark moonSmallIcon
-          , themeOptionButton ThemeSystem d.common.themeSystem monitorIcon
-          ]
-      ]
-
-themeOptionButton :: ThemeMode -> String -> Html -> Html
-themeOptionButton mode label icon =
-  let
-    modeStr = case mode of
-      ThemeLight -> "light"
-      ThemeDark -> "dark"
-      ThemeSystem -> "system"
   in
     el "button"
-      [ onClick (setTheme mode <> setFlag ThemeMenuOpen false)
+      [ xDataTheme
+      , onClick cycleTheme
       , attr "type" "button"
-      , attr "data-theme" modeStr
-      , class_ "flex w-full items-center gap-x-2.5 rounded-md px-3 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer select-none"
+      , ariaLabel d.common.darkModeToggle
+      , attr "data-testid" "theme-toggle"
+      , class_ "relative inline-flex items-center justify-center size-9 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/10 transition-colors focus-visible:outline-2 focus-visible:outline-emerald-600 cursor-pointer select-none"
+      , attr "title" "Toggle theme (System / Dark / Light)"
       ]
-      [ icon
-      , el "span" [] [ text label ]
-      ]
-
-renderMobileThemeSwitcher :: Lang -> Html
-renderMobileThemeSwitcher lang =
-  let
-    d = dict lang
-  in
-    el "div" [ class_ "flex items-center gap-1 rounded-lg bg-gray-100 dark:bg-white/5 p-1 ring-1 ring-gray-200/80 dark:ring-white/10" ]
-      [ el "button"
-          [ onClick (setTheme ThemeLight)
-          , attr "type" "button"
-          , ariaLabel d.common.themeLight
-          , class_ "flex items-center justify-center p-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer"
-          ]
-          [ sunSmallIcon ]
-      , el "button"
-          [ onClick (setTheme ThemeDark)
-          , attr "type" "button"
-          , ariaLabel d.common.themeDark
-          , class_ "flex items-center justify-center p-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer"
-          ]
-          [ moonSmallIcon ]
-      , el "button"
-          [ onClick (setTheme ThemeSystem)
-          , attr "type" "button"
-          , ariaLabel d.common.themeSystem
-          , class_ "flex items-center justify-center p-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer"
-          ]
-          [ monitorIcon ]
+      [ el "span" [ xShowTheme ThemeLight, xCloak, class_ "inline-flex items-center justify-center" ] [ sunSmallIcon ]
+      , el "span" [ xShowTheme ThemeDark, xCloak, class_ "inline-flex items-center justify-center" ] [ moonSmallIcon ]
+      , el "span" [ xShowTheme ThemeSystem, xCloak, class_ "inline-flex items-center justify-center" ] [ monitorIcon ]
       ]
 
 -- | Language switch link — a PLAIN anchor (real href, full reload), NOT
