@@ -22,13 +22,13 @@ renderPostList lang posts =
     navDict = (dict lang).nav
   in
     container "max-w-7xl" "py-12 sm:py-16 lg:py-20"
-      [ container "max-w-2xl" "text-center"
+      [ el "div" [ class_ "text-center max-w-2xl mx-auto mb-12 sm:mb-16" ]
           [ el "p" [ class_ "text-xs font-mono font-semibold uppercase tracking-widest text-emerald-700 dark:text-emerald-400" ]
               [ text navDict.posts ]
-          , el "h1" [ class_ "mt-2 font-display text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl dark:text-white", xAutofocus, attr "tabindex" "-1" ]
+          , el "h1" [ class_ "mt-2 font-display text-4xl sm:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white", xAutofocus, attr "tabindex" "-1" ]
               [ text d.listTitle ]
           ]
-      , el "div" [ class_ "mt-12 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3" ]
+      , el "div" [ class_ "grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3" ]
           [ foldMap (renderPostCard lang) (take 9 posts) ]
       ]
 

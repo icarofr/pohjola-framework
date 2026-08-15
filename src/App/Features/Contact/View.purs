@@ -13,15 +13,15 @@ renderContact lang =
     navDict = (dict lang).nav
   in
     container "max-w-7xl" "py-12 sm:py-16 lg:py-20"
-      [ container "max-w-2xl" "text-center"
+      [ el "div" [ class_ "text-center max-w-2xl mx-auto mb-12 sm:mb-16" ]
           [ el "p" [ class_ "text-xs font-mono font-semibold uppercase tracking-widest text-emerald-700 dark:text-emerald-400" ]
               [ text navDict.contact ]
-          , el "h1" [ class_ "mt-2 font-display text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl dark:text-white", xAutofocus, attr "tabindex" "-1" ]
+          , el "h1" [ class_ "mt-2 font-display text-4xl sm:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white", xAutofocus, attr "tabindex" "-1" ]
               [ text d.title ]
-          , el "p" [ class_ "mt-4 text-base/7 text-gray-600 dark:text-gray-300 font-normal" ]
+          , el "p" [ class_ "mt-4 text-base sm:text-lg text-gray-600 dark:text-gray-300 leading-relaxed max-w-xl mx-auto font-normal" ]
               [ text d.subtitle ]
           ]
-      , el "div" [ class_ "mt-12 grid grid-cols-1 gap-8 md:grid-cols-3" ]
+      , el "div" [ class_ "grid grid-cols-1 gap-8 md:grid-cols-3" ]
           [ -- Card 1: Issues & Bug Reports
             el "div" [ class_ "flex flex-col justify-between rounded-2xl bg-white p-7 shadow-xs ring-1 ring-gray-200 hover:shadow-md hover:ring-emerald-500/30 dark:bg-gray-900/60 dark:ring-white/10 dark:hover:ring-emerald-400/30 transition-all" ]
               [ el "div" []
