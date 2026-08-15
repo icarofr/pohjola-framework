@@ -158,11 +158,11 @@ en =
       , ctaLabel: "About Pohjola"
       }
   , about:
-      { heading: "Architecture & Origin"
+      { heading: "Why Pohjola"
       , paragraphs:
-          [ "Pohjola is an opinionated functional web framework built on PureScript, Bun, and Alpine.js. It combines the performance, SEO, and simplicity of Server-Side Rendered Multi-Page Applications (MPAs) with the fluid micro-interactivity of Single-Page Applications (SPAs) without client-side bundle debt."
-          , "The name draws inspiration from Finnish folklore and the atmospheric weight of Swallow the Sun's monumental album Songs from the North. In mythology, Pohjola is the northern realm: a domain of stark clarity, endurance, and unyielding foundations. In that spirit, this framework was created to serve as an uncompromising true North for web engineering: total compile-time safety, zero runtime exceptions, and instant native performance."
-          , "Every layer is designed with strict invariants: total pattern matching, XSS prevention via an algebraic Html data type, byte-exact Content Security Policy (CSP) headers, honeypot form security, and typed bidirectional routing."
+          [ "Pohjola was born out of a desire to build web applications without the usual trade-offs: no bloated client bundles, no brittle string templates, and no surprise runtime exceptions in production. It pairs PureScript's uncompromising type system with the native speed of Bun and the lightweight interactivity of Alpine.js."
+          , "The name comes from Finnish mythology and the atmosphere of Swallow the Sun's triple album Songs from the North. In Nordic lore, Pohjola is a harsh northern realm where things are forged to endure. That mindset shaped the framework: write explicit code, let the compiler enforce the contracts, and serve fast, semantic HTML to the browser."
+          , "Instead of chasing framework churn or hydrating entire component trees in client memory, Pohjola keeps the architecture straightforward: pure functions transform typed data into HTML, routes are checked in both directions at compile time, and client interactivity is scoped to small, explicit Alpine expressions."
           ]
       }
   , contact:
@@ -242,11 +242,11 @@ fr =
       , ctaLabel: "En savoir plus"
       }
   , about:
-      { heading: "Architecture et origine"
+      { heading: "À propos de Pohjola"
       , paragraphs:
-          [ "Pohjola est un framework web fonctionnel basé sur PureScript, Bun et Alpine.js. Il associe les performances et le SEO des applications multi-pages (MPA) avec la fluidité interactive des SPAs sans bundle JavaScript client."
-          , "Le nom s'inspire de la mythologie finlandaise et de la force atmosphérique du triple album Songs from the North de Swallow the Sun. Dans les légendes, Pohjola est le royaume du Grand Nord : un monde de clarté brute, de résilience et de fondations inébranlables. C'est dans cet esprit que le framework a été conçu comme un véritable cap pour l'ingénierie web : sécurité totale à la compilation, zéro exception à l'exécution et vitesse native."
-          , "Chaque composant applique des garanties strictes : filtrage exhaustif par motif, prévention XSS par ADT Html typé, politique de sécurité CSP stricte, protection antispam honeypot et routage bidirectionnel typé."
+          [ "Pohjola est né d'une envie simple : concevoir des applications web sans compromis inutiles, loin des bundles JavaScript boursouflés, des templates non typés et des exceptions imprévues en production. Le framework combine la rigueur du système de types de PureScript, la rapidité d'exécution de Bun et la légèreté d'Alpine.js."
+          , "Le nom s'inspire de la mythologie finlandaise et de l'atmosphère du triple album Songs from the North de Swallow the Sun. Dans les légendes nordiques, Pohjola est une terre rude où tout ce qui est forgé doit résister à l'épreuve du temps. C'est cette philosophie qui guide le projet : du code explicite, un compilateur qui valide chaque contrat et du HTML propre servi instantanément au navigateur."
+          , "Plutôt que d'hydrater de lourdes architectures côté client, Pohjola privilégie la simplicité : des fonctions pures transforment les données typées en HTML, les routes sont vérifiées dans les deux sens à la compilation, et l'interactivité client reste confinée à des expressions Alpine ciblées."
           ]
       }
   , contact:
