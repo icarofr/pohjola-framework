@@ -81,11 +81,9 @@ The detailed guarantees and their enforcement live in [`docs/GUARANTEES.md`](doc
 
 ## Start
 
-Requirements: Bun canary, PureScript 0.15.16, Spago 1.0.4.
+Requirements: Bun, PureScript 0.15.16, Spago 1.0.4.
 
 ```bash
-bun install --global purescript@0.15.16 spago@1.0.4
-curl -fsSL https://bun.sh/install | bash -s canary
 git clone https://github.com/icarofr/pohjola-framework.git
 cd pohjola-framework
 cp .env.example .env
