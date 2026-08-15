@@ -2,7 +2,13 @@
 
 > A North for your web applications.
 
-**Live Deployment:** [https://pohjola.icaro.fr](https://pohjola.icaro.fr)
+[![Live Website](https://img.shields.io/badge/Live-pohjola.icaro.fr-059669?style=flat)](https://pohjola.icaro.fr)
+[![PureScript](https://img.shields.io/badge/PureScript-0.15.16-1D222D?style=flat&logo=purescript&logoColor=white)](https://www.purescript.org)
+[![Bun Runtime](https://img.shields.io/badge/Bun-Runtime-000000?style=flat&logo=bun&logoColor=white)](https://bun.sh)
+[![Alpine.js](https://img.shields.io/badge/Alpine.js-3.15-77C1D2?style=flat&logo=alpinedotjs&logoColor=white)](https://alpinejs.dev)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4.0-06B6D4?style=flat&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+[![Tests](https://img.shields.io/badge/Tests-191%20Passed-059669?style=flat)](https://github.com/icarofr/pohjola-framework)
+[![License: MIT](https://img.shields.io/badge/License-MIT-gray?style=flat)](LICENCE.md)
 
 **Pohjola is an opinionated full-stack SSR framework where routes, data decoding, errors, translations, and HTML share a single, unbroken compile-time model.**
 
@@ -93,6 +99,7 @@ Pohjola makes a deliberate architectural choice: the **server renders the first 
 
 | Framework / Paradigm | Primary Optimization | How Pohjola Compares |
 |:---|:---|:---|
+| **IHP (Integrated Haskell Platform)** | Full-stack Haskell with built-in ORM, schema designer, and heavy Nix environment. | Pohjola provides pure typed functional SSR on the ultra-fast Bun runtime with standard npm access, avoiding heavy Nix tooling and GHC build overhead. |
 | **Django / Rails / Laravel** | Batteries-included conventions (ORM, admin panel, built-in mailers). | Pohjola trades built-in framework magic for total compile-time control over domain types, explicit effects, and guaranteed HTML safety. |
 | **Next.js / SvelteKit / Nuxt** | Large npm ecosystem, client hydration, and hybrid meta-framework tooling. | Pohjola avoids hydration waterfall debt and runtime serialization surprises; types, error values, and HTML escaping survive all boundaries. |
 | **Elm Architecture** | Strict client-side event loops and centralized browser state. | Pohjola keeps the request lifecycle on the server with `Aff` async orchestration, avoiding heavy single-page client runtimes. |
@@ -129,11 +136,22 @@ cd pohjola-framework
 # 2. Install dependencies & Alpine assets
 make deps
 
-# 3. Start development server with live reload
+# 3. Start development environment with live reload
+# (Runs Tailwind watcher + PureScript watcher + Bun server concurrently)
 make dev
 ```
 
 Visit [`http://localhost:3000/en`](http://localhost:3000/en) locally, or view the live deployment at [`https://pohjola.icaro.fr`](https://pohjola.icaro.fr).
+
+### Development Commands
+
+| Command | Description |
+|:---|:---|
+| `make dev` | Run full concurrent development environment (Tailwind + Spago + Bun hot reload) |
+| `make dev-server` | Run Bun server with hot reload on PureScript output changes |
+| `make watch` | Run Spago watcher for PureScript hot rebuilds |
+| `make css-watch` | Run Tailwind CSS CLI watcher |
+| `make run` | Build production bundle and run under Bun |
 
 ---
 
