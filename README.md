@@ -2,7 +2,9 @@
 
 > A North for your apps.
 
-The compiler is the contract: an opinionated, hardened full-stack SSR foundation in PureScript, Bun, and Alpine.js. Built for applications that demand immovable compile-time safety, lightweight runtime performance, and zero architectural drift.
+**Pohjola is an opinionated full-stack SSR framework where routes, data, errors, translations, and HTML share a single compile-time model.**
+
+The compiler is the contract: turning architectural boundaries from fragile conventions into mechanically enforced invariants. Built on PureScript, Bun, and Alpine.js for systems that demand immovable safety, lightweight runtime performance, and zero architectural drift.
 
 ## The seam problem
 
