@@ -8,17 +8,35 @@
 [![Tests](https://img.shields.io/badge/Tests-191%20Passed-059669?style=flat)](https://github.com/icarofr/pohjola-framework)
 [![Licence](https://img.shields.io/badge/Licence-AGPL-059669?style=flat)](LICENCE.md)
 
-**Pohjola is an opinionated full-stack SSR framework where routes, data decoding, errors, translations, and HTML share a single, unbroken compile-time model.**
+**Pohjola is an opinionated full-stack web framework where routes, data decoding, errors, translations, and HTML share a single, unbroken compile-time model.**
 
-The compiler is your contract. Pohjola turns brittle architectural conventions into mechanically enforced invariants. Built on **PureScript**, **Bun**, and **Alpine.js**, it delivers sub-millisecond server rendering, zero runtime exceptions, instant client fragment transitions, and an immutable safety floor for both humans and AI agents.
+The compiler is your contract. Pohjola turns brittle architectural conventions into mechanically enforced invariants. Built on **PureScript**, **Bun**, and **Alpine.js**, it delivers sub-millisecond hypermedia rendering, zero runtime exceptions, instant client fragment transitions, and an immutable safety floor for both humans and AI coding agents.
 
 ---
 
 ## The Seam Problem
 
-Every serialisation step, unchecked template string, and ad-hoc API boundary is a seam where contracts drift and silent bugs breed. As web applications grow, asynchronous data flows and untyped DOM mutations spread across uncontrolled surfaces until confidence erodes and maintenance slows.
+Every serialisation step, unchecked template string, and ad-hoc JSON endpoint is a seam where contracts drift and silent bugs breed. In traditional Single-Page Applications (SPAs), teams duplicate domain state across two runtimes: a backend serving JSON and a client state machine reconstructing DOM trees from scratch.
 
-Pohjola closes the seams.
+When teams turn to traditional hypermedia (htmx, Django, Rails, PHP), they solve the state duplication problem but inherit a new vulnerability: **stringly-typed templates**. Broken URLs, missing form fields, typoed attributes, and XSS risks hide in raw strings until users encounter them in production.
+
+Pohjola closes both seams.
+
+---
+
+## Hypermedia as the Engine of State (HATEOAS)
+
+Pohjola embraces **Hypermedia as the Engine of Application State (HATEOAS)** with mathematical rigor.
+
+Instead of shipping megabytes of client JavaScript to parse JSON and maintain out-of-band state, the server returns self-contained, semantic HTML. When resource state changes (such as an account balance update or a validation error), the server emits the exact updated hypermedia representation: valid links, enabled actions, and localized error banners.
+
+Alpine AJAX acts as the hypermedia transport: navigation links and form submissions automatically fetch and morph HTML fragments without full page reloads.
+
+```text
+Incoming Request -> PureScript Route Codec -> Typed Service -> Algebraic Html ADT -> Bun Streaming Response
+                                                                                        |
+                                    Browser receives semantic HTML (instant morph via Alpine AJAX)
+```
 
 ---
 
@@ -66,7 +84,7 @@ Feature logic lives in isolated domain modules. Asynchronous effects compose cle
 - **Minimal Asset Footprint:** Zero heavy client JavaScript bundles (<15KB total). Perfect Core Web Vitals (CLS: 0, instant TTFB) by default.
 
 ### Alpine.js Reactive Seams
-- **SPA Feel Without SPA Complexity:** Navigation links (`spaLink`) automatically prefetch HTML fragments on hover (`@mouseenter`) and perform instant DOM morph swaps on click.
+- **SPA Speed Without SPA Complexity:** Navigation links (`spaLink`) automatically prefetch HTML fragments on hover (`@mouseenter`) and perform instant DOM morph swaps on click.
 - **Zero-JS Resilience:** If JavaScript fails or is disabled, all routes, forms, and pages degrade seamlessly into accessible HTML documents.
 
 ### Built for AI Agents: Zero-Drift by Construction
@@ -78,7 +96,7 @@ In loosely typed stacks, AI coding assistants frequently hallucinate missing pro
 
 ## Architectural Trade-offs and Comparisons
 
-Pohjola makes a deliberate architectural choice: the **server renders the first HTML**, **feature code owns its async lifecycle**, and **PureScript unifies routing, decoding, errors, and rendering in one typed codebase**. Alpine adds reactive micro-interactions without turning the application into a bloated client-side runtime.
+Pohjola makes a deliberate architectural choice: the **server renders semantic hypermedia**, **feature code owns its async lifecycle**, and **PureScript unifies routing, decoding, errors, and rendering in one typed codebase**. Alpine adds reactive micro-interactions without turning the application into a bloated client-side runtime.
 
 ### When Pohjola is the Right Fit
 - **Request and response web applications** demanding ultra-fast initial render and low latency.
@@ -97,6 +115,7 @@ Pohjola makes a deliberate architectural choice: the **server renders the first 
 
 | Framework / Paradigm | Primary Optimisation | How Pohjola Compares |
 |:---|:---|:---|
+| **htmx / Hypermedia (Go, Django, Rails)** | Server-rendered HTML fragments driving client DOM updates without heavy SPA frameworks. | Pohjola delivers the same lightweight hypermedia model, but eliminates template typos, broken links, and XSS risks through PureScript ADTs and bidirectional route codecs. |
 | **IHP (Integrated Haskell Platform)** | Full-stack Haskell with built-in ORM, schema designer, and heavy Nix environment. | Pohjola provides pure typed functional SSR on the ultra-fast Bun runtime with standard npm access, avoiding heavy Nix tooling and GHC build overhead. |
 | **Django / Rails / Laravel** | Batteries-included conventions (ORM, admin panel, built-in mailers). | Pohjola trades built-in framework magic for total compile-time control over domain types, explicit effects, and guaranteed HTML safety. |
 | **Next.js / SvelteKit / Nuxt** | Large npm ecosystem, client hydration, and hybrid meta-framework tooling. | Pohjola avoids hydration waterfall debt and runtime serialisation surprises; types, error values, and HTML escaping survive all boundaries. |

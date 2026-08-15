@@ -63,6 +63,12 @@ curatedPosts =
       , title: "Zero-Drift Architecture for Human and AI Pairs"
       , body: "AI coding assistants thrive when constraints are unambiguous and mechanically enforced.\n\nBecause Pohjola expresses routes, translations, and domain effects through exhaustive types, an AI agent cannot invent invalid endpoints or forget error handlers without triggering a compile error. The compiler acts as an unyielding guardrail for human and agentic pair programming."
       }
+  , Post
+      { id: 7
+      , userId: 1
+      , title: "Hypermedia as the Engine of Application State (HATEOAS)"
+      , body: "Why replicate complex state machines and API schemas across client and server when hypermedia already solves distributed state?\n\nIn Pohjola, application state transitions are driven by hypermedia representations. The server emits semantic HTML where available actions, disabled controls, and navigation links reflect the exact server resource state. Paired with PureScript's closed algebraic Html ADT and Alpine AJAX fragment morphing, HATEOAS delivers fluid, reactive client experiences with total compile-time guarantees."
+      }
   ]
 
 -- | Fetch all posts. Uses external API if configured; otherwise serves curated posts.
