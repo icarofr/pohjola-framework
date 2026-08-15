@@ -160,7 +160,7 @@ themeToggle = Expr
 -- | Fetch this link's fragment on hover, sending the AJAX header so the server
 -- | answers with a fragment.
 -- |
--- | Measured behavior: this hover fetch is typically served from Chromium's
+-- | Measured behaviour: this hover fetch is typically served from Chromium's
 -- | prefetch cache (populated by `renderPrefetch`'s `<link rel="prefetch">`),
 -- | so it is nearly free — but the click that follows still hits the network.
 -- | The optimisation currently helps the hover rather than the click. See
@@ -268,7 +268,7 @@ spaLink lang route extraAttrs children =
 -- | (a post card, a back-link, a CTA).
 -- |
 -- | The record argument is deliberate: two adjacent `Route` positionals would
--- | silently invert this behavior if swapped, and the compiler could not tell.
+-- | silently invert this behaviour if swapped, and the compiler could not tell.
 navLink :: { lang :: Lang, current :: Route, target :: Route } -> Array Attr -> Array Html -> Html
 navLink { lang, current, target } extraAttrs children =
   el "a"

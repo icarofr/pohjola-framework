@@ -16,7 +16,7 @@ The starter is an SSR MPA:
 request → typed route → Page/Service → Html ADT → Bun response
 ```
 
-Alpine provides small progressive-enhancement behaviors such as menus, theme
+Alpine provides small progressive-enhancement behaviours such as menus, theme
 state, and fragment navigation. The server-rendered HTML remains meaningful
 without JavaScript.
 
@@ -39,7 +39,7 @@ into a client application or introducing an unreviewed browser framework.
 We need a future path for a feature that has:
 
 - a meaningful server-rendered representation;
-- browser-only behavior in a bounded region;
+- browser-only behaviour in a bounded region;
 - third-party or imperative browser APIs;
 - explicit lifecycle and cleanup requirements;
 - the existing server security, auth, routing, and testing guarantees.
@@ -66,18 +66,18 @@ SSR monolith. It does not propose:
 ### 1. Keep the feature entirely server-rendered
 
 Render useful statistics, tables, SVG, and accessible fallbacks through the
-existing `Html` ADT. Use Alpine only for small local behavior.
+existing `Html` ADT. Use Alpine only for small local behaviour.
 
 This remains the default and should be attempted first. It has the smallest
-maintenance surface and preserves no-JavaScript behavior completely.
+maintenance surface and preserves no-JavaScript behaviour completely.
 
 ### 2. Add one feature-owned browser island
 
 Render a useful fallback on the server and mount one client-owned root for
-browser-heavy behavior. The island may use an existing client library/runtime
+browser-heavy behaviour. The island may use an existing client library/runtime
 or narrowly scoped browser FFI; the choice is deliberately left open.
 
-This is the proposed future path when exact browser behavior is a product
+This is the proposed future path when exact browser behaviour is a product
 requirement. It is an islands architecture, but not a framework-wide islands
 system.
 
@@ -126,7 +126,7 @@ an Alpine `x-target` subtree that can be replaced without lifecycle handling.
 The first pilot should use one page-level island rather than one island per
 visual component. The map, word cloud, timers, and audio can share a feature
 bootstrap and lifecycle. Splitting them later requires independent state,
-failure behavior, lifecycle, and a measurable loading benefit.
+failure behaviour, lifecycle, and a measurable loading benefit.
 
 ### Explicit lifecycle
 
@@ -229,15 +229,15 @@ new application-wide architecture.
 
 1. Port the feature's domain types, service, auth, errors, and pure metrics.
 2. Render a complete useful SSR page with typed fallbacks and no browser
-   library dependencies.
+    library dependencies.
 3. Add pure tests for distance, dates, word weighting, decoding, and localized
-   output.
-4. Prototype the exact browser behavior behind one feature-owned root only if
-   the fallback is insufficient.
+    output.
+4. Prototype the exact browser behaviour behind one feature-owned root only if
+    the fallback is insufficient.
 5. Add the browser adapter, asset/CSP review, bootstrap codec, mount/dispose
-   tests, and browser integration tests.
-6. Measure bundle cost, mount time, failures, and disposal behavior before
-   considering a second island.
+    tests, and browser integration tests.
+6. Measure bundle cost, mount time, failures, and disposal behaviour before
+    considering a second island.
 
 ## Verification requirements
 
@@ -258,7 +258,7 @@ The pilot must add or update:
 Add another island only when it has:
 
 - independent browser state;
-- a real client-only behavior;
+- a real client-only behaviour;
 - independent loading/failure/lifecycle needs;
 - a useful SSR fallback;
 - a measurable reason to load separately.
@@ -273,22 +273,22 @@ accepted amendment to this one.
 This proposal intentionally leaves these undecided:
 
 1. Should the first browser runtime be a feature-local imperative adapter, an
-   existing PureScript client runtime, or a conventional client component
-   bundle?
+    existing PureScript client runtime, or a conventional client component
+    bundle?
 2. Should bootstrap data be embedded or fetched through a same-origin route?
 3. Are map tiles and third-party visualization libraries acceptable under the
-   project's privacy, CSP, and asset policy?
+    project's privacy, CSP, and asset policy?
 4. Should the first island route always use full-document navigation, or is a
-   tested fragment lifecycle worth the added complexity?
+    tested fragment lifecycle worth the added complexity?
 5. Does the first candidate justify browser code at all after SVG/HTML fallback
-   quality is evaluated?
+    quality is evaluated?
 
 ## Consequences if accepted
 
 Positive:
 
 - browser-heavy features have a documented escape hatch;
-- SSR, accessibility, and no-JavaScript behavior remain defaults;
+- SSR, accessibility, and no-JavaScript behaviour remain defaults;
 - client complexity is isolated to the feature that needs it;
 - mount/dispose and ownership become explicit rather than accidental;
 - no generic island framework is introduced prematurely.
@@ -300,7 +300,7 @@ Negative:
 - the first island requires additional build, asset, FFI, and browser tests;
 - shared state between Alpine and an island is intentionally discouraged;
 - a feature may need full-document navigation instead of the Alpine SPA-feel
-  optimization;
+  optimisation;
 - current ADR-000/001/003 would need explicit amendments before code can ship.
 
 ## Decision

@@ -75,7 +75,7 @@ export function hashImpl(password) {
 ```
 
 The probe is the only branching the `.js` side may contain — it is about
-capability, not app behavior. Everything else stays in PureScript. `eval 04`
+capability, not app behaviour. Everything else stays in PureScript. `eval 04`
 asserts this probe exists; an agent that copies `Crypto.js` verbatim for a
 Bun-native task will fail it.
 

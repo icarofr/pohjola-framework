@@ -89,13 +89,13 @@ a transient 5xx must never be answered from cache on retry.
 That policy was arrived at by measurement, not reasoning: `private` alone made
 things worse (explicit but never fresh, nothing to revalidate against, so
 nothing reused). Full measurement in `RECONCILIATION.md` "W6 outcome";
-`e2e/prefetch-cache.spec.js` pins the behavior so it cannot change silently.
+`e2e/prefetch-cache.spec.js` pins the behaviour so it cannot change silently.
 
 ### Risks:
 - **FFI Surface**: New security-critical code in the FFI layer. Mitigated by keeping the FFI minimal and subject to the `make gate` allowlist.
 - **Streaming Errors**: Once the shell is streamed (200 OK), the status code cannot be changed if a downstream data fetch fails. Mitigated by rendering a fragment-shaped error into the stream body: `App.Features.Posts.Page.renderListContent` returns the feature's error view (`renderPostsError`) for non-2xx, decode failure, and network error alike, injected between the shell halves.
 
-  *Amended:* this originally named a function `renderErrorFragment`, which has never existed in the repository. The behavior it describes is real and works; only the name was wrong. Anyone reading the original text would reasonably conclude the mitigation was missing and build a duplicate.
+  *Amended:* this originally named a function `renderErrorFragment`, which has never existed in the repository. The behaviour it describes is real and works; only the name was wrong. Anyone reading the original text would reasonably conclude the mitigation was missing and build a duplicate.
 
   **Now applied on every path.** `App.Main.handleFragment` answers a failed Alpine AJAX fragment request with `renderErrorFragment` (W1, `df7c1040`), and the route-miss 404 does the same when a fragment is requested — that path runs before any `Route` exists, so W1 did not originally reach it. A fragment request is never answered with a full document.
 - **API Stability**: `Bun.serve` is more volatile than `node:http`. Mitigated by the thin FFI wrapper.
