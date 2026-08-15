@@ -1,4 +1,4 @@
-# pohjola-framework
+# Pohjola
 
 > A North for your apps.
 
