@@ -5,8 +5,9 @@
 [![Live Website](https://img.shields.io/badge/Live-pohjola.icaro.fr-059669?style=flat)](https://pohjola.icaro.fr)
 [![PureScript](https://img.shields.io/badge/PureScript-0.15.16-1D222D?style=flat&logo=purescript&logoColor=white)](https://www.purescript.org)
 [![Bun](https://img.shields.io/badge/Bun-1.4-000000?style=flat&logo=bun&logoColor=white)](https://bun.sh)
-[![Tests](https://img.shields.io/badge/Tests-191%20Passed-059669?style=flat)](https://github.com/icarofr/pohjola-framework)
-[![Licence](https://img.shields.io/badge/Licence-AGPL-059669?style=flat)](LICENCE.md)
+[![Alpine.js](https://img.shields.io/badge/Alpine.js-3.15-8BC0D0?style=flat&logo=alpinedotjs&logoColor=white)](https://alpinejs.dev)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4.0-06B6D4?style=flat&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+[![Licence](https://img.shields.io/badge/Licence-AGPL-334155?style=flat)](LICENCE.md)
 
 **Pohjola is an opinionated full-stack web framework where routes, data decoding, errors, translations, and HTML share a single, unbroken compile-time model.**
 
