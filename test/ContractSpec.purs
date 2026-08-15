@@ -217,7 +217,7 @@ findForeignImportsOutsideAllowlist root = do
   pure (mapMaybe identity results)
 
 scriptAllowlist :: Array String
-scriptAllowlist = [ "src/App/Layout/Head.purs", "src/App/Layout/Page.purs" ]
+scriptAllowlist = [ "src/App/Layout/Scripts.purs", "src/App/Layout/Page.purs" ]
 
 -- | Files in src/ containing `el "script"` outside Layout allowlist.
 findScriptsOutsideAllowlist :: String -> Aff (Array String)
@@ -710,7 +710,7 @@ spec = do
       offenders <- findForeignImportsOutsideAllowlist "src"
       offenders `shouldEqual` []
 
-    it "no script elements outside App.Layout.Head and App.Layout.Page" do
+    it "no script elements outside App.Layout.Scripts and App.Layout.Page" do
       offenders <- findScriptsOutsideAllowlist "src"
       offenders `shouldEqual` []
 

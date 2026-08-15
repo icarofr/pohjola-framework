@@ -70,7 +70,7 @@ gate:
 	@echo "Checking for raw usage..."
 	@if grep -rnE "\braw\b|\bRaw\b" src/; then echo "ERROR: raw/Raw found in source — the Html ADT has no Raw constructor"; exit 1; else echo "No raw usage"; fi
 	@echo "Checking for script elements outside App/Layout..."
-	@if grep -rn 'el "script"' src/ | grep -v '^src/App/Layout/Head\.purs:' | grep -v '^src/App/Layout/Page\.purs:'; then echo "ERROR: script elements are restricted to App.Layout.Head and App.Layout.Page (ADR-000)"; exit 1; else echo "No unauthorized script elements found"; fi
+	@if grep -rn 'el "script"' src/ | grep -v '^src/App/Layout/Scripts\.purs:' | grep -v '^src/App/Layout/Page\.purs:'; then echo "ERROR: script elements are restricted to App.Layout.Scripts and App.Layout.Page (ADR-000)"; exit 1; else echo "No unauthorized script elements found"; fi
 	@echo "Checking for env reads outside App/Env.purs..."
 	@if grep -rn 'Node.Process\|lookupEnv' src/ | grep -v '^src/App/Env.purs:'; then echo "ERROR: env read outside App/Env.purs"; exit 1; else echo "No env reads outside App/Env.purs"; fi
 
