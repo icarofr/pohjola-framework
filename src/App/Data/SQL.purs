@@ -138,6 +138,10 @@ foreign import execMultiImpl
 -- | missing or not a string. Plumbing for decoding query results.
 foreign import readStringFieldImpl :: DbRow -> String -> Nullable String
 
+-- | Read an integer field from a query row. Returns null if the field is
+-- | missing or not an integer. Plumbing for decoding query results.
+foreign import readIntFieldImpl :: DbRow -> String -> Nullable Int
+
 -- | Create a Bun.SQL client. Lazy connect — no I/O until first query.
 connect :: String -> Effect SQL
 connect = connectImpl
@@ -179,3 +183,7 @@ execMulti sql stmt = makeAff \callback -> do
 -- | Used to decode `schema_migrations` rows in App.Migration.
 readStringField :: DbRow -> String -> Maybe String
 readStringField = map toMaybe <<< readStringFieldImpl
+
+-- | Read an integer field from a query row. Nothing if missing/non-integer.
+readIntField :: DbRow -> String -> Maybe Int
+readIntField = map toMaybe <<< readIntFieldImpl
