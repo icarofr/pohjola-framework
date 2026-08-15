@@ -1,57 +1,13 @@
 import { test, expect } from '@playwright/test'
 
-test.describe('Forms', () => {
-  test('contact form has required fields', async ({ page }) => {
+test.describe('Community & Contributing Hub', () => {
+  test('community page renders heading and action cards', async ({ page }) => {
     await page.goto('/en/contact')
 
-    // Check form exists
-    const form = page.locator('form[action="/api/contact"]')
-    await expect(form).toBeVisible()
-
-    // Check required inputs
-    await expect(page.locator('form[action="/api/contact"] input[name="name"][required]')).toBeVisible()
-    await expect(page.locator('form[action="/api/contact"] input[name="email"][required]')).toBeVisible()
-    await expect(page.locator('form[action="/api/contact"] textarea[name="message"][required]')).toBeVisible()
-  })
-
-  test('contact form submit button exists', async ({ page }) => {
-    await page.goto('/en/contact')
-    await expect(page.locator('form[action="/api/contact"] button[type="submit"]')).toBeVisible()
-  })
-  
-  test('empty contact form submission shows error', async ({ page }) => {
-    await page.goto('/en/contact')
-    
-    // Submit the form with empty fields
-    // Fill required fields
-    await page.locator('form[action="/api/contact"] input[name="name"]').fill('John Doe')
-    await page.locator('form[action="/api/contact"] input[name="email"]').fill('john@example.com')
-    await page.locator('form[action="/api/contact"] textarea[name="message"]').fill('Hello')
-    // Submit
-    await page.locator('form[action="/api/contact"]').getByRole('button', { name: 'Send' }).click()
-    
-    // Should redirect with error status (no RESEND_API_KEY)
-    await expect(page).toHaveURL(/status=error/)
-    // Error banner visible
-    await expect(page.locator('[role="status"][data-form-status="error"]')).toBeVisible()
-  })
-  
-  test('honeypot filled submits silently', async ({ page }) => {
-    await page.goto('/en/contact')
-
-    // Fill required fields (browser validation blocks submission otherwise)
-    await page.locator('form[action="/api/contact"] input[name="name"]').fill('John Doe')
-    await page.locator('form[action="/api/contact"] input[name="email"]').fill('john@example.com')
-    await page.locator('form[action="/api/contact"] textarea[name="message"]').fill('Hello')
-
-    // Fill the honeypot field (hidden — use evaluate since fill requires visibility)
-    await page.locator('form[action="/api/contact"] input[name="website"]').evaluate((el) => { el.value = 'bot' })
-
-    // Submit the form
-    await page.locator('form[action="/api/contact"]').getByRole('button', { name: 'Send' }).click()
-
-    // Should redirect to success page (silent success)
-    await expect(page).toHaveURL(/status=success/)
+    await expect(page.locator('main')).toContainText('Community & Contributing')
+    await expect(page.locator('main a[href="https://github.com/icarofr/pohjola-framework/issues"]')).toBeVisible()
+    await expect(page.locator('main a[href="https://github.com/icarofr/pohjola-framework/discussions"]')).toBeVisible()
+    await expect(page.locator('main a[href="https://github.com/icarofr/pohjola-framework"]')).toBeVisible()
   })
 })
 
