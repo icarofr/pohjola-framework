@@ -16,7 +16,7 @@ renderServices lang =
   let
     d = (dict lang).services
   in
-    el "section" [ class_ "py-20 sm:py-28 bg-white dark:bg-gray-900/50 transition-colors" ]
+    el "section" [ class_ "py-12 sm:py-16 lg:py-20 bg-white dark:bg-gray-900/50 transition-colors" ]
       [ container "max-w-7xl" ""
           [ container "max-w-2xl" "text-center"
               [ el "p" [ class_ "text-xs font-mono font-semibold uppercase tracking-widest text-emerald-700 dark:text-emerald-400" ] [ text "Features" ]

@@ -12,7 +12,7 @@ renderContact lang =
     d = (dict lang).contact
     navDict = (dict lang).nav
   in
-    container "max-w-7xl" "py-16 sm:py-24"
+    container "max-w-7xl" "py-12 sm:py-16 lg:py-20"
       [ container "max-w-2xl" "text-center"
           [ el "p" [ class_ "text-xs font-mono font-semibold uppercase tracking-widest text-emerald-700 dark:text-emerald-400" ]
               [ text navDict.contact ]
