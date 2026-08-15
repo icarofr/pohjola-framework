@@ -1,18 +1,12 @@
--- | Footer — brand, navigation, newsletter form, copyright
--- |
--- | Footer nav links use `navLink` — SPA-feel navigation, minus the hover
--- | prefetch when a link points at the route already shown.
--- | Newsletter form includes a hidden `lang` field so the POST handler
--- | can redirect back to the correct language.
+-- | Footer — brand, navigation, structured project links, copyright
 module App.Layout.Footer where
 
 import App.Alpine (navLink)
-import App.Form (apiNewsletterPath)
-import App.Html (Html, action_, ariaLabel, attr, class_, el, flag, for_, id_, method_, name_, placeholder_, text, type_)
+import App.Html (Html, attr, class_, el, href, rel_, target_, text)
 import App.Ui.Social (renderSocial)
 import Data.Content (bookingUrl, siteInfo)
 import Data.Foldable (foldMap)
-import Data.I18n (Lang, dict, langTag)
+import Data.I18n (Lang, dict)
 import Data.Route (Route, navItems)
 
 render :: Lang -> Route -> Html
@@ -49,54 +43,52 @@ render lang currentRoute =
                       [ renderSocial bookingUrl "github"
                       ]
                   ]
-              -- Explore
+              -- Navigation
               , el "div" []
                   [ el "h4" [ class_ "text-xs font-semibold uppercase tracking-wider text-gray-900 dark:text-white" ] [ text d.explore ]
                   , el "ul" [ class_ "mt-4 space-y-3" ]
                       [ foldMap (renderFooterNav lang currentRoute) (navItems lang) ]
                   ]
-              -- Newsletter
+              -- Resources & Ecosystem
               , el "div" []
-                  [ el "h4" [ class_ "text-xs font-semibold uppercase tracking-wider text-gray-900 dark:text-white" ] [ text d.newsletter ]
-                  , el "p" [ class_ "mt-3 text-sm/6 text-gray-600 dark:text-gray-400 font-normal" ] [ text d.newsletterText ]
-                  , el "form"
-                      [ action_ apiNewsletterPath
-                      , method_ "POST"
-                      , class_ "mt-4 flex flex-col sm:flex-row gap-2"
-                      ]
-                      [ el "input"
-                          [ type_ "hidden"
-                          , name_ "lang"
-                          , attr "value" (langTag lang)
-                          ]
-                          []
-                      -- Honeypot field
-                      , el "div" [ class_ "absolute -left-[9999px]", attr "aria-hidden" "true" ]
-                          [ el "label" [ for_ "newsletter-website", class_ "block text-sm font-medium text-gray-700 dark:text-gray-300" ]
-                              [ text "Website" ]
-                          , el "input"
-                              [ type_ "text"
-                              , id_ "newsletter-website"
-                              , name_ "website"
-                              , attr "tabindex" "-1"
-                              , attr "autocomplete" "off"
+                  [ el "h4" [ class_ "text-xs font-semibold uppercase tracking-wider text-gray-900 dark:text-white" ] [ text d.resources ]
+                  , el "ul" [ class_ "mt-4 space-y-3 text-sm" ]
+                      [ el "li" []
+                          [ el "a"
+                              [ href "https://github.com/icarofr/pohjola-framework"
+                              , target_ "_blank"
+                              , rel_ "noopener noreferrer"
+                              , class_ "text-gray-600 hover:text-emerald-600 dark:text-gray-400 dark:hover:text-white transition-colors"
                               ]
-                              []
+                              [ text d.github ]
                           ]
-                      , el "input"
-                          [ type_ "email"
-                          , name_ "email"
-                          , flag "required"
-                          , placeholder_ d.newsletterPlaceholder
-                          , ariaLabel (dict lang).common.newsletterEmailLabel
-                          , class_ "min-w-0 flex-auto rounded-md bg-white dark:bg-white/5 px-3.5 py-2 text-base text-gray-900 dark:text-white outline-1 -outline-offset-1 outline-gray-300 dark:outline-white/10 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-emerald-600 sm:text-sm/6"
+                      , el "li" []
+                          [ el "a"
+                              [ href "https://github.com/icarofr/pohjola-framework/issues"
+                              , target_ "_blank"
+                              , rel_ "noopener noreferrer"
+                              , class_ "text-gray-600 hover:text-emerald-600 dark:text-gray-400 dark:hover:text-white transition-colors"
+                              ]
+                              [ text d.issues ]
                           ]
-                          []
-                      , el "button"
-                          [ type_ "submit"
-                          , class_ "flex-none rounded-md bg-emerald-600 px-3.5 py-2 text-sm font-semibold text-white shadow-xs hover:bg-emerald-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 transition-colors cursor-pointer select-none"
+                      , el "li" []
+                          [ el "a"
+                              [ href "https://www.purescript.org"
+                              , target_ "_blank"
+                              , rel_ "noopener noreferrer"
+                              , class_ "text-gray-600 hover:text-emerald-600 dark:text-gray-400 dark:hover:text-white transition-colors"
+                              ]
+                              [ text "PureScript" ]
                           ]
-                          [ text d.newsletterButton ]
+                      , el "li" []
+                          [ el "a"
+                              [ href "https://bun.sh"
+                              , target_ "_blank"
+                              , rel_ "noopener noreferrer"
+                              , class_ "text-gray-600 hover:text-emerald-600 dark:text-gray-400 dark:hover:text-white transition-colors"
+                              ]
+                              [ text "Bun Runtime" ]
+                          ]
                       ]
                   ]
               ]
