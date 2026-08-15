@@ -68,3 +68,26 @@ export function exists(path) {
     return Bun.file(path).exists();
   };
 }
+
+// writeTextFileImpl :: String -> String -> (Unit -> Effect Unit) -> (String -> Effect Unit) -> Effect Unit
+// Bun.write(path, content) — async.
+export function writeTextFileImpl(path) {
+  return function (content) {
+    return function (onSuccess) {
+      return function (onError) {
+        return function () {
+          Bun.write(path, content)
+            .then(function () { onSuccess()(); })
+            .catch(function (err) { onError(err.message || String(err))(); });
+        };
+      };
+    };
+  };
+}
+
+// getArgs :: Effect (Array String)
+// CLI arguments slice(2) via Bun.argv
+export function getArgs() {
+  return Bun.argv.slice(2);
+}
+

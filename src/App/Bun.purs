@@ -49,6 +49,17 @@ foreign import sha256Hex :: String -> Effect String
 -- | Check if a file exists (sync, via Bun.file().exists()).
 foreign import exists :: String -> Effect Boolean
 
+-- | Write UTF-8 text to a file via Bun.write(path, content).
+foreign import writeTextFileImpl
+  :: String
+  -> String
+  -> (Unit -> Effect Unit)
+  -> (String -> Effect Unit)
+  -> Effect Unit
+
+-- | Get command-line arguments (Bun.argv.slice(2)).
+foreign import getArgs :: Effect (Array String)
+
 -- | Safe wrapper: lifts the nullable FFI result to Maybe.
 stringifyXML :: Foreign -> Maybe String
 stringifyXML = toMaybe <<< stringifyXMLImpl
@@ -62,3 +73,13 @@ readTextFile path =
       (\content -> callback (pure (Right content)))
       (\err -> callback (pure (Left err)))
     pure mempty -- no canceler: local disk reads don't need abort
+
+-- | Write UTF-8 text to a file. Returns Left with the error message on failure.
+writeTextFile :: String -> String -> Aff (Either String Unit)
+writeTextFile path content =
+  makeAff \callback -> do
+    writeTextFileImpl path content
+      (\_ -> callback (pure (Right unit)))
+      (\err -> callback (pure (Left err)))
+    pure mempty
+
