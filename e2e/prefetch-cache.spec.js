@@ -18,7 +18,7 @@
 //
 // If you change the cache policy, these tests fail. That is deliberate: the
 // change should be a visible decision, not a silent behaviour shift.
-const { test, expect } = require('@playwright/test');
+import { test, expect } from '@playwright/test'
 
 const TARGET = '/en/posts';
 
