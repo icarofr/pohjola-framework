@@ -4,6 +4,7 @@ module Test.Main where
 import Prelude
 
 import Effect (Effect)
+import Test.AuthSpec as AuthSpec
 import Test.ContractSpec as ContractSpec
 import Test.FormSpec as FormSpec
 import Test.Html.HtmlSpec as HtmlSpec
@@ -15,11 +16,13 @@ import Test.SitemapSpec as SitemapSpec
 import Test.LangDetectSpec as LangDetectSpec
 import Test.LoggerSpec as LoggerSpec
 import Test.ServerSpec as ServerSpec
+import Test.UiSpec as UiSpec
 import Test.Spec.Reporter (consoleReporter)
 import Test.Spec.Runner.Node (runSpecAndExitProcess)
 
 main :: Effect Unit
 main = runSpecAndExitProcess [ consoleReporter ] do
+  AuthSpec.spec
   ContractSpec.spec
   FormSpec.spec
   HtmlSpec.spec
@@ -31,3 +34,4 @@ main = runSpecAndExitProcess [ consoleReporter ] do
   LoggerSpec.spec
   RateLimitSpec.spec
   ServerSpec.spec
+  UiSpec.spec

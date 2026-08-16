@@ -29,6 +29,7 @@ renderHead baseUrl nonce lang route =
     -- Pinned inline head scripts (closed HeadScript ADT per ADR-000)
     <> renderHeadScript nonce DarkModeInit
     <> renderHeadScript nonce TitleSyncPopstateBridge
+    <> renderHeadScript nonce DevLiveReload
     -- Canonical
     <> el "link" [ rel_ "canonical", href (baseUrl <> routeUrl lang route) ] []
     -- hreflang alternates

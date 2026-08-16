@@ -35,6 +35,7 @@ module App.Html
   , property_
   , style_
   , ariaLabel
+  , ariaControls
   , for_
   , rows_
   , width_
@@ -164,6 +165,9 @@ style_ = attr "style"
 
 ariaLabel :: String -> Attr
 ariaLabel = attr "aria-label"
+
+ariaControls :: String -> Attr
+ariaControls = attr "aria-controls"
 
 for_ :: String -> Attr
 for_ = attr "for"

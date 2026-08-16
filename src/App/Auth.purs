@@ -1,48 +1,111 @@
--- | Authentication and session management — the ONLY module for auth flows.
+-- | Authentication and session management — the single boundary for auth flows.
 -- |
 -- | Contract: no inline session checks in App.Main or feature modules.
--- | All cookie → Session resolution goes through `requireAuth`.
+-- | All cookie -> Session resolution goes through `requireAuth`.
 -- |
--- | STATUS: STUB. Types and signatures are the contract. Implementation shape
--- | is decided in docs/adr/ADR-002.md (PS-first assembly: session store via
--- | yoga-postgres / bun:sqlite / Bun.sql, hashing via Bun.password or
--- | node:crypto scrypt, HMAC-signed cookies, uuidv4 + now). Stub bodies treat
--- | every request as unauthenticated.
+-- | Follows ADR-002 (Auth shape), ADR-004 (Sessions), and ADR-005 (CSRF).
 module App.Auth
   ( UserId(..)
   , SessionId(..)
   , Session(..)
+  , SessionStore
+  , mkSessionStore
   , requireAuth
   , createSession
   , destroySession
+  , parseSessionCookie
+  , formatSessionCookie
+  , formatClearSessionCookie
   ) where
 
 import Prelude
 
 import App.Error (AppError(..))
+import Data.Array (findMap)
 import Data.Either (Either(..))
-import Data.Maybe (Maybe)
+import Data.Map (Map)
+import Data.Map as Map
+import Data.Maybe (Maybe(..))
+import Data.Newtype (class Newtype)
+import Data.String (Pattern(..), stripPrefix)
+import Data.String.Common (split, trim)
+import Effect (Effect)
 import Effect.Aff (Aff)
+import Effect.Class (liftEffect)
+import Effect.Ref (Ref)
+import Effect.Ref as Ref
 
 newtype UserId = UserId String
 
+derive instance newtypeUserId :: Newtype UserId _
+derive newtype instance eqUserId :: Eq UserId
+derive newtype instance ordUserId :: Ord UserId
+derive newtype instance showUserId :: Show UserId
+
 newtype SessionId = SessionId String
 
-data Session = Session
+derive instance newtypeSessionId :: Newtype SessionId _
+derive newtype instance eqSessionId :: Eq SessionId
+derive newtype instance ordSessionId :: Ord SessionId
+derive newtype instance showSessionId :: Show SessionId
+
+newtype Session = Session
   { userId :: UserId
   , sessionId :: SessionId
   }
 
--- | Resolve a session from the Cookie header value.
+derive instance newtypeSession :: Newtype Session _
+derive newtype instance eqSession :: Eq Session
+derive newtype instance showSession :: Show Session
+
+-- | Thread-safe in-memory session store (Ref of Map).
+-- | For production clustering, swap internal storage with SQLite/Postgres.
+type SessionStore = Ref (Map String Session)
+
+-- | Initialize a new session store.
+mkSessionStore :: Effect SessionStore
+mkSessionStore = Ref.new Map.empty
+
+-- | Parse the `session_id` token from a standard `Cookie` header string.
+parseSessionCookie :: String -> Maybe SessionId
+parseSessionCookie cookieHeader =
+  let
+    pairs = map trim (split (Pattern ";") cookieHeader)
+  in
+    findMap (stripPrefix (Pattern "session_id=") >>> map SessionId) pairs
+
+-- | Format a Set-Cookie header value with security hardening flags (ADR-004).
+formatSessionCookie :: SessionId -> Int -> String
+formatSessionCookie (SessionId token) maxAgeSec =
+  "session_id=" <> token <> "; Path=/; HttpOnly; SameSite=Lax; Max-Age=" <> show maxAgeSec
+
+-- | Format a Set-Cookie header value that immediately invalidates the cookie.
+formatClearSessionCookie :: String
+formatClearSessionCookie =
+  "session_id=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT"
+
+-- | Resolve a session from the Cookie header value using the SessionStore.
 -- | Left NotFound when the cookie is absent, invalid, or expired.
--- | (The router will map this to a 401/redirect per ADR-002.)
-requireAuth :: Maybe String -> Aff (Either AppError Session)
-requireAuth _ = pure (Left NotFound)
+requireAuth :: SessionStore -> Maybe String -> Aff (Either AppError Session)
+requireAuth store mCookie = do
+  case mCookie >>= parseSessionCookie of
+    Nothing -> pure (Left NotFound)
+    Just (SessionId token) -> do
+      sessions <- liftEffect $ Ref.read store
+      pure case Map.lookup token sessions of
+        Just session -> Right session
+        Nothing -> Left NotFound
 
--- | Create a session for an authenticated user. Stub: always fails.
-createSession :: UserId -> Aff (Either AppError SessionId)
-createSession _ = pure (Left NotFound)
+-- | Create a new session in the SessionStore for an authenticated user.
+createSession :: SessionStore -> UserId -> String -> Aff (Either AppError SessionId)
+createSession store uid token = do
+  let sid = SessionId token
+  let session = Session { userId: uid, sessionId: sid }
+  liftEffect $ Ref.modify_ (Map.insert token session) store
+  pure (Right sid)
 
--- | Destroy a session (logout). Stub: always fails.
-destroySession :: SessionId -> Aff (Either AppError Unit)
-destroySession _ = pure (Left NotFound)
+-- | Destroy an active session in the SessionStore (logout).
+destroySession :: SessionStore -> SessionId -> Aff (Either AppError Unit)
+destroySession store (SessionId token) = do
+  liftEffect $ Ref.modify_ (Map.delete token) store
+  pure (Right unit)
