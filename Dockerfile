@@ -12,16 +12,12 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends git ca-certificates curl && \
     rm -rf /var/lib/apt/lists/*
 
-# Install PureScript compiler + Spago + Bun node-shim for Spago CLI compatibility
-RUN curl -fsSL https://github.com/purescript/purescript/releases/download/v0.15.16/linux64.tar.gz | tar -xz -C /usr/local/bin --strip-components=1 purescript/purs && \
-    bun add -g spago@1.0.4
-
-COPY scripts/node-shim.sh /usr/local/bin/node
-RUN chmod +x /usr/local/bin/node
+# Install PureScript compiler binary
+RUN curl -fsSL https://github.com/purescript/purescript/releases/download/v0.15.16/linux64.tar.gz | tar -xz -C /usr/local/bin --strip-components=1 purescript/purs
 
 WORKDIR /app/pohjola-framework
 
-# Install dependencies (Tailwind, esbuild) with Bun
+# Install dependencies (Spago, Tailwind, esbuild) with Bun
 COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
 
@@ -35,9 +31,9 @@ RUN bun scripts/embed-css.js
 # Bundle server to a PRIVATE dir — dist/ is the public static root and a
 # bundle inside it would be downloadable at /server.js.
 # --pure: use the committed spago.lock without network (avoids flaky registry)
-RUN spago install --pure
-RUN spago build --pure
-RUN spago bundle --module App.Main --outfile dist-server/server.js \
+RUN bun spago install --pure
+RUN bun spago build --pure
+RUN bun spago bundle --module App.Main --outfile dist-server/server.js \
     --bundle-type app --platform node --pure
 
 # Copy static assets into dist

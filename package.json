@@ -12,6 +12,7 @@
     "@tailwindcss/cli": "4.3.3",
     "esbuild": "0.25.12",
     "purs-tidy": "0.11.1",
+    "spago": "1.0.4",
     "tailwindcss": "4.3.3"
   },
   "dependencies": {},
