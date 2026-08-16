@@ -69,7 +69,7 @@ renderPage baseUrl nonce lang route maybeStatus content =
         , el "body"
             [ class_ bodyClass ]
             [ Header.render lang route
-            , el "main" [ id_ contentTarget, class_ "flex-1 flex flex-col" ]
+            , el "main" [ id_ contentTarget, class_ "flex-1 flex flex-col", attr "data-page-title" (routeTitle lang route) ]
                 [ maybeStatusBanner lang maybeStatus
                 , content
                 ]
@@ -82,14 +82,13 @@ renderPage baseUrl nonce lang route maybeStatus content =
         ]
 
 -- | AJAX fragment — nav + content only, for Alpine AJAX requests.
--- | Must contain all x-sync'd elements (nav, title) and the swap target (#content).
+-- | Must contain all x-sync'd elements (nav) and the swap target (#content).
 -- | No baseUrl needed: fragments contain no absolute URLs or head metadata.
 renderFragment :: Lang -> Route -> Html -> String
 renderFragment lang route content =
   render $ el "div" []
     [ Header.render lang route
-    , el "title" [ id_ "page-title" ] [ text (routeTitle lang route) ]
-    , el "main" [ id_ contentTarget, class_ "flex-1 flex flex-col" ]
+    , el "main" [ id_ contentTarget, class_ "flex-1 flex flex-col", attr "data-page-title" (routeTitle lang route) ]
         [ maybeStatusBanner lang Nothing
         , content
         ]

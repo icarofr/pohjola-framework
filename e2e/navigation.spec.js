@@ -95,19 +95,23 @@ test.describe('Alpine AJAX navigation', () => {
     // Navigate to About
     await page.click('a[href="/en/about"]')
     await expect(page).toHaveURL(/\/en\/about/)
+    await expect(page).toHaveTitle(/About/)
     
     // Navigate to Contact
     await page.click('a[href="/en/contact"]')
     await expect(page).toHaveURL(/\/en\/contact/)
+    await expect(page).toHaveTitle(/Contact/)
     
     // Go back — Alpine AJAX restores history but goBack triggers a full
     // reload (Alpine AJAX history limitation), so the marker is lost.
     await page.goBack()
     await expect(page).toHaveURL(/\/en\/about/)
+    await expect(page).toHaveTitle(/About/)
 
     // Go back again
     await page.goBack()
     await expect(page).toHaveURL(/\/en$/)
+    await expect(page).toHaveTitle(/Pohjola/)
 
     // Marker is gone — goBack caused a full reload (expected behaviour)
     expect(await page.evaluate(() => window.__marker)).toBeUndefined()
