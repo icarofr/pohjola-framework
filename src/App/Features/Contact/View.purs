@@ -1,7 +1,6 @@
 -- | Community & Contributing page — direct GitHub bug tracker, discussions, and repository hubs
 module App.Features.Contact.View where
 
-import App.Alpine (xAutofocus)
 import App.Html (Html, attr, class_, el, href, rel_, target_, text)
 import App.Ui.Container (container)
 import Data.I18n (Lang, dict)
@@ -16,7 +15,7 @@ renderContact lang =
       [ el "div" [ class_ "text-center max-w-2xl mx-auto mb-8 sm:mb-10" ]
           [ el "p" [ class_ "text-xs font-mono font-semibold uppercase tracking-widest text-emerald-700 dark:text-emerald-400" ]
               [ text navDict.contact ]
-          , el "h1" [ class_ "mt-2 font-display text-4xl sm:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white focus:outline-none", xAutofocus, attr "tabindex" "-1" ]
+          , el "h1" [ class_ "mt-2 font-display text-4xl sm:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white" ]
               [ text d.title ]
           , el "p" [ class_ "mt-4 text-base sm:text-lg text-gray-600 dark:text-gray-300 leading-relaxed max-w-xl mx-auto font-normal" ]
               [ text d.subtitle ]
