@@ -5,6 +5,7 @@ import Prelude
 
 import App.Html (Html, attr, content_, el, href, name_, property_, rel_, text)
 import App.Layout.Scripts (HeadScript(..), renderHeadScript, renderJsonLdScript)
+import App.Layout.Styles (stylesCss)
 import Data.Argonaut.Core (Json, fromObject, fromString, stringify)
 import Data.Content (siteInfo)
 import Data.Foldable (foldMap)
@@ -36,11 +37,8 @@ renderHead baseUrl nonce lang route =
     <> el "link" [ rel_ "alternate", attr "hreflang" "x-default", href (baseUrl <> routeUrl En route) ] []
     -- Favicon
     <> el "link" [ rel_ "icon", attr "type" "image/svg+xml", href "/favicon.svg" ] []
-    -- CSS (cache: max-age=3600 set server-side; bump fingerprinting via Tailwind build if needed)
-    <> el "link" [ rel_ "preload", href "/css/styles.css", attr "as" "style" ] []
-    <> el "link" [ rel_ "stylesheet", href "/css/styles.css" ] []
-    -- x-cloak: hide Alpine elements until initialized
-    <> el "style" [] [ text "[x-cloak]{display:none!important}" ]
+    -- Inlined CSS (eliminates render-blocking CSS network roundtrip)
+    <> el "style" [] [ text (stylesCss <> "\n[x-cloak]{display:none!important}") ]
     -- Open Graph
     <> el "meta" [ property_ "og:type", content_ "website" ] []
     <> el "meta" [ property_ "og:title", content_ (routeTitle lang route) ] []
