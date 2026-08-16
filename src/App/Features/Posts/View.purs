@@ -25,7 +25,7 @@ renderPostList lang posts =
       [ el "div" [ class_ "text-center max-w-2xl mx-auto mb-8 sm:mb-10" ]
           [ el "p" [ class_ "text-xs font-mono font-semibold uppercase tracking-widest text-emerald-700 dark:text-emerald-400" ]
               [ text navDict.posts ]
-          , el "h1" [ class_ "mt-2 font-display text-4xl sm:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white", xAutofocus, attr "tabindex" "-1" ]
+          , el "h1" [ class_ "mt-2 font-display text-4xl sm:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white focus:outline-none", xAutofocus, attr "tabindex" "-1" ]
               [ text d.listTitle ]
           ]
       , el "div" [ class_ "grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3" ]
@@ -64,7 +64,7 @@ renderPostDetail lang post =
                   , el "span" [ class_ "text-xs font-mono text-gray-400 dark:text-gray-500" ]
                       [ text ("• Note #" <> show idNum) ]
                   ]
-              , el "h1" [ class_ "font-display text-3xl font-bold tracking-tight text-gray-900 sm:text-5xl dark:text-white leading-tight capitalize", xAutofocus, attr "tabindex" "-1" ]
+              , el "h1" [ class_ "font-display text-3xl font-bold tracking-tight text-gray-900 sm:text-5xl dark:text-white leading-tight capitalize focus:outline-none", xAutofocus, attr "tabindex" "-1" ]
                   [ text (postTitle post) ]
               , el "div" [ class_ "mt-6 flex items-center gap-x-3.5 pb-8 border-b border-gray-100 dark:border-white/5" ]
                   [ el "div" [ class_ "size-10 rounded-full bg-gray-900 dark:bg-emerald-500/20 ring-1 ring-gray-800 dark:ring-emerald-400/30 flex items-center justify-center text-emerald-400 text-sm font-mono font-bold shadow-xs" ]
@@ -89,7 +89,7 @@ renderPostsError lang =
     d = (dict lang).posts
   in
     container "max-w-3xl" "py-12 sm:py-16 lg:py-20 text-center"
-      [ el "h1" [ class_ "font-display text-4xl font-bold text-gray-900 dark:text-white", xAutofocus, attr "tabindex" "-1" ]
+      [ el "h1" [ class_ "font-display text-4xl font-bold text-gray-900 dark:text-white focus:outline-none", xAutofocus, attr "tabindex" "-1" ]
           [ text d.listTitle ]
       , el "div" [ class_ "mt-6 rounded-xl bg-red-50 p-4 border border-red-200 dark:bg-red-500/10 dark:border-red-500/20 text-red-800 dark:text-red-200 text-sm font-medium shadow-xs" ]
           [ text d.loadingError ]
