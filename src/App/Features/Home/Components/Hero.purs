@@ -34,7 +34,7 @@ renderHero lang =
                   , text "PureScript • Bun • Alpine.js"
                   ]
               ]
-          , el "h1" [ class_ "font-display text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl dark:text-white sm:leading-[1.1]", xAutofocus, attr "tabindex" "-1" ]
+          , el "h1" [ class_ "font-display text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl dark:text-white sm:leading-[1.1] focus:outline-none", xAutofocus, attr "tabindex" "-1" ]
               [ text d.hero.headline ]
           , el "p" [ class_ "mt-6 text-lg/8 text-gray-600 dark:text-gray-300 max-w-2xl mx-auto font-normal" ]
               [ text d.hero.body ]

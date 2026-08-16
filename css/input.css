@@ -14,4 +14,8 @@
     scroll-behavior: smooth;
     -webkit-tap-highlight-color: transparent;
   }
+
+  [tabindex="-1"]:focus {
+    outline: none;
+  }
 }
