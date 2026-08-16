@@ -60,6 +60,41 @@ foreign import writeTextFileImpl
 -- | Get command-line arguments (Bun.argv.slice(2)).
 foreign import getArgs :: Effect (Array String)
 
+-- | Nanosecond 64-bit non-cryptographic hash via Bun.hash.wyhash.
+-- | Formats output as hex string. Ideal for ETags, cache keys, and checksums.
+foreign import wyhash :: String -> String
+
+foreign import hashPasswordImpl
+  :: String
+  -> (String -> Effect Unit)
+  -> (String -> Effect Unit)
+  -> Effect Unit
+
+foreign import verifyPasswordImpl
+  :: String
+  -> String
+  -> (Boolean -> Effect Unit)
+  -> (String -> Effect Unit)
+  -> Effect Unit
+
+-- | Hash a password using native Argon2id via Bun.password (SIMD multithreaded).
+hashPassword :: String -> Aff (Either String String)
+hashPassword password =
+  makeAff \callback -> do
+    hashPasswordImpl password
+      (\hash -> callback (pure (Right hash)))
+      (\err -> callback (pure (Left err)))
+    pure mempty
+
+-- | Verify a plaintext password against an Argon2id/Bcrypt hash via Bun.password.
+verifyPassword :: String -> String -> Aff (Either String Boolean)
+verifyPassword password hash =
+  makeAff \callback -> do
+    verifyPasswordImpl password hash
+      (\matches -> callback (pure (Right matches)))
+      (\err -> callback (pure (Left err)))
+    pure mempty
+
 -- | Safe wrapper: lifts the nullable FFI result to Maybe.
 stringifyXML :: Foreign -> Maybe String
 stringifyXML = toMaybe <<< stringifyXMLImpl

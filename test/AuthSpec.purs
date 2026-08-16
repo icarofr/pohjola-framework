@@ -3,13 +3,13 @@ module Test.AuthSpec (spec) where
 
 import Prelude
 
-import App.Auth (Session(..), SessionId(..), UserId(..), createSession, destroySession, formatClearSessionCookie, formatSessionCookie, mkSessionStore, parseSessionCookie, requireAuth)
+import App.Auth (Session(..), SessionId(..), UserId(..), createSession, destroySession, formatClearSessionCookie, formatSessionCookie, hashPassword, mkSessionStore, parseSessionCookie, requireAuth, verifyPassword)
 import App.Error (AppError(..))
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Effect.Class (liftEffect)
 import Test.Spec (Spec, describe, it)
-import Test.Spec.Assertions (shouldEqual)
+import Test.Spec.Assertions (fail, shouldEqual, shouldNotEqual)
 import Test.Spec.Assertions.String (shouldContain)
 
 spec :: Spec Unit
@@ -59,3 +59,21 @@ spec = do
         -- After logout, session is not found
         afterLogout <- requireAuth store (Just "session_id=secret-token-xyz")
         afterLogout `shouldEqual` Left NotFound
+
+    describe "Native Argon2id Password Hashing (Bun.password)" do
+      it "hashes password and verifies match correctly" do
+        let plain = "super-secret-password-123"
+        eHash <- hashPassword plain
+        case eHash of
+          Left err -> fail ("hashPassword failed: " <> err)
+          Right hash -> do
+            hash `shouldNotEqual` plain
+            hash `shouldContain` "argon2"
+
+            -- Matching password verifies True
+            valid <- verifyPassword plain hash
+            valid `shouldEqual` Right true
+
+            -- Wrong password verifies False
+            invalid <- verifyPassword "wrong-password" hash
+            invalid `shouldEqual` Right false

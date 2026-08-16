@@ -37,6 +37,7 @@ module App.Server
   , redirectVary
   , tooManyRequests
   , withRequestId
+  , notModified
   , fileResponse
   , streamResponse
   , serveStatic
@@ -240,6 +241,14 @@ okWith hdrs body =
 okText :: String -> String -> Response
 okText contentType body =
   { status: 200, headers: securityHeaders <> [ Tuple "Content-Type" contentType ], body: StringBody body }
+
+-- | 304 Not Modified response carrying security headers and validator metadata.
+notModified :: Array (Tuple String String) -> Response
+notModified hdrs =
+  { status: 304
+  , headers: securityHeaders <> hdrs
+  , body: StringBody ""
+  }
 
 -- | An HTTP error status, guaranteed to be in 400..599.
 -- |

@@ -16,7 +16,7 @@ import App.Form (contactFields, newsletterFields)
 import App.Layout.Head (renderJsonLd, escapeJson)
 import App.Layout.Page (renderErrorFragment, renderErrorPage, renderFragment, renderPage, renderShellOpen, renderShellClose, renderPrefetch)
 import App.Main (pageRenderer)
-import App.Server (RedirectKind(..), Response, cspWithNonce, errorStatusCode, fileResponse, htmlErrorResponse, internalError, methodNotAllowed, notFound, ok, okText, okWith, redirect, redirectVary, securityHeaders, tooManyRequests)
+import App.Server (RedirectKind(..), Response, cspWithNonce, errorStatusCode, fileResponse, htmlErrorResponse, internalError, methodNotAllowed, notFound, notModified, ok, okText, okWith, redirect, redirectVary, securityHeaders, tooManyRequests)
 import App.Cache (insertDynamic, lookupDynamic, mkDynamicCache)
 import App.Html (render, text)
 import Data.Array (concat, filter, find, last, length, mapMaybe, nub, uncons)
@@ -332,6 +332,7 @@ spec = do
     it "redirect" $ checkSecurityHeaders (redirect Found "/en")
     it "redirectVary" $ checkSecurityHeaders (redirectVary Found "/en" [])
     it "tooManyRequests" $ checkSecurityHeaders (tooManyRequests 60.0)
+    it "notModified" $ checkSecurityHeaders (notModified [])
     it "fileResponse" do
       let buf = ""
       checkSecurityHeaders (fileResponse "text/css" buf)
