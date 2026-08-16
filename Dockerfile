@@ -4,32 +4,29 @@
 # =============================================================================
 
 # ---------------------------------------------------------------------------
-# Build stage — Bun + PureScript toolchain (via npm)
+# Build stage — Bun + PureScript toolchain
 # ---------------------------------------------------------------------------
-FROM node:22-bookworm-slim@sha256:f32b81066cde10a75dbac96646099533316d94bac4150c55da1636e1f0ffdc46 AS build
+FROM oven/bun:canary-debian AS build
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends git ca-certificates curl && \
     rm -rf /var/lib/apt/lists/*
 
-# Install PureScript compiler + Spago + Tailwind CSS v4
-RUN npm install -g purescript@0.15.16 spago@1.0.4
-
-WORKDIR /app
-
-# Copy project source
-COPY . /app/pohjola-framework
+# Install PureScript compiler + Spago
+RUN bun add -g purescript@0.15.16 spago@1.0.4
 
 WORKDIR /app/pohjola-framework
 
-# Install npm dependencies for Tailwind + esbuild (spago bundle shells out to it)
-COPY package*.json ./
-RUN npm ci
-ENV PATH=/app/pohjola-framework/node_modules/.bin:$PATH
+# Install dependencies (Tailwind, esbuild) with Bun
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
+
+# Copy project source
+COPY . .
 
 # Build Tailwind CSS and embed into PureScript
-RUN npx @tailwindcss/cli -i css/input.css -o dist/css/styles.css --minify
-RUN node scripts/embed-css.js
+RUN bun x @tailwindcss/cli -i css/input.css -o dist/css/styles.css --minify
+RUN bun scripts/embed-css.js
 
 # Bundle server to a PRIVATE dir — dist/ is the public static root and a
 # bundle inside it would be downloadable at /server.js.
