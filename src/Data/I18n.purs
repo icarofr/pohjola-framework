@@ -174,8 +174,8 @@ en =
   , about:
       { heading: "About Pohjola"
       , paragraphs:
-          [ "Pohjola takes its name from Swallow the Sun's Songs from the North, echoing the legendary realm of Finnish lore. In Finnish, pohja is both the bedrock beneath everything and the root of the North as a cardinal direction: a compass bearing toward clarity and an unforgiving landscape of winter and myth where the master smith Ilmarinen forged the Sampo on an anvil of stone. It represents a guiding orientation where fragility is fatal, and only deliberate, uncompromising craft can endure."
-          , "We built Pohjola with that same ethos as an antidote to the fragility of modern web development. Rather than piling layers of transient JavaScript frameworks on top of one another, Pohjola rests on solid bedrock: PureScript proves correctness at compile time, Bun serves responses in sub-milliseconds, and the server renders clean, semantic HTML."
+          [ "Pohjola takes its name from Swallow the Sun's Songs from the North, echoing the legendary realm of Finnish lore. In Finnish, pohja is both the bedrock beneath everything and the root of the North: not just a place, but a direction and a foundation. It evokes an unforgiving world of winter and myth where the master smith Ilmarinen forged the Sampo on an anvil of stone, where fragility is fatal and only deliberate, uncompromising craft can endure."
+          , "We built Pohjola with that same ethos as an antidote to the fragility of modern web development: a true North for your applications. Rather than piling layers of transient JavaScript frameworks on top of one another, Pohjola rests on solid bedrock: PureScript proves correctness at compile time, Bun serves responses in sub-milliseconds, and the server renders clean, semantic HTML."
           , "Client-side interactivity remains light and transparent through small, typed Alpine.js expressions. You get the fluid responsiveness of a modern application without bloated runtimes, fragile state synchronization, or surprises when the cold winds blow in production."
           ]
       }
@@ -266,8 +266,8 @@ fr =
   , about:
       { heading: "À propos de Pohjola"
       , paragraphs:
-          [ "Pohjola tire son nom de l'album Songs from the North de Swallow the Sun, hommage au royaume légendaire de la mythologie finlandaise. En finnois, pohja désigne à la fois le socle fondamental sur lequel tout repose et la racine du Nord comme direction cardinale : un cap vers la clarté et un territoire d'hiver où le maître forgeron Ilmarinen façonna le Sampo sur une enclume de pierre. Il incarne une orientation où la fragilité ne pardonne pas et où seule une conception sans compromis résiste au temps."
-          , "Nous avons conçu Pohjola selon cette même exigence pour répondre à la fragilité du web moderne. Au lieu d'empiler des couches d'abstractions éphémères, Pohjola s'établit sur un socle inébranlable : PureScript garantit la correction dès la compilation, Bun délivre chaque réponse en moins d'une milliseconde, et le serveur produit du HTML propre et sémantique."
+          [ "Pohjola tire son nom de l'album Songs from the North de Swallow the Sun, hommage au royaume légendaire de la mythologie finlandaise. En finnois, pohja désigne à la fois le socle fondamental sur lequel tout repose et la racine du Nord : pas seulement un lieu, mais une direction et une fondation. Il évoque un monde d'hiver et de légendes où le maître forgeron Ilmarinen façonna le Sampo sur une enclume de pierre, où la fragilité ne pardonne pas et où seule une conception sans compromis résiste au temps."
+          , "Nous avons conçu Pohjola selon cette même exigence pour répondre à la fragilité du web moderne : un cap clair pour vos applications. Au lieu d'empiler des couches d'abstractions éphémères, Pohjola s'établit sur un socle inébranlable : PureScript garantit la correction dès la compilation, Bun délivre chaque réponse en moins d'une milliseconde, et le serveur produit du HTML propre et sémantique."
           , "L'interactivité côté client reste légère et transparente grâce à de courtes expressions Alpine.js typées. Vous profitez de la fluidité d'une application moderne sans la lourdeur des SPA, sans synchronisation d'état complexe, et sans mauvaise surprise en production."
           ]
       }
