@@ -84,7 +84,7 @@ test.describe('Alpine AJAX navigation', () => {
     expect(await page.evaluate(() => window.__marker)).toBe(1)
   })
   
-  test('two AJAX navigations then goBack works correctly', async ({ page }) => {
+  test('two AJAX navigations then goBack works correctly without reload', async ({ page }) => {
     await page.goto('/en')
     
     // Set marker to detect if full reload occurs
@@ -102,19 +102,25 @@ test.describe('Alpine AJAX navigation', () => {
     await expect(page).toHaveURL(/\/en\/contact/)
     await expect(page).toHaveTitle(/Contact/)
     
-    // Go back — Alpine AJAX restores history but goBack triggers a full
-    // reload (Alpine AJAX history limitation), so the marker is lost.
+    // Go back to About — seamless SPA fragment swap (marker preserved!)
     await page.goBack()
     await expect(page).toHaveURL(/\/en\/about/)
     await expect(page).toHaveTitle(/About/)
+    await expect(page.locator('main')).toContainText('About')
+    expect(await page.evaluate(() => window.__marker)).toBe(1)
 
-    // Go back again
+    // Go back to Home — seamless SPA fragment swap (marker preserved!)
     await page.goBack()
     await expect(page).toHaveURL(/\/en$/)
     await expect(page).toHaveTitle(/Pohjola/)
+    await expect(page.locator('main')).toContainText('The Type-Safe Functional Web Framework')
+    expect(await page.evaluate(() => window.__marker)).toBe(1)
 
-    // Marker is gone — goBack caused a full reload (expected behaviour)
-    expect(await page.evaluate(() => window.__marker)).toBeUndefined()
+    // Go forward to About
+    await page.goForward()
+    await expect(page).toHaveURL(/\/en\/about/)
+    await expect(page).toHaveTitle(/About/)
+    expect(await page.evaluate(() => window.__marker)).toBe(1)
   })
 
   test('hover prefetch requests a fragment, not a full page', async ({ page }) => {
