@@ -687,7 +687,7 @@ spec = do
         for_ allLangs \lang -> do
           html <- renderStaticPage route lang
           html `StrAssert.shouldContain` "if(localStorage.getItem('theme')==='dark'"
-          html `StrAssert.shouldContain` "(function(){window.addEventListener(\"ajax:merged\",function(){var m=document.getElementById(\"content\");if(m&&m.dataset.pageTitle)document.title=m.dataset.pageTitle});window.addEventListener(\"popstate\",function(e){if(e.state&&e.state.__ajax)window.location.reload()})})();"
+          html `StrAssert.shouldContain` "window.addEventListener(\"ajax:merged\",function(){var m=document.getElementById(\"content\");if(m&&m.dataset.pageTitle)document.title=m.dataset.pageTitle});"
           html `StrAssert.shouldContain` "var es=new EventSource('/dev/live-reload')"
 
   describe "pages flow through the layout shell" do

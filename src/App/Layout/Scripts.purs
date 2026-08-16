@@ -23,7 +23,7 @@ renderHeadScript nonce = case _ of
 
   TitleSyncPopstateBridge ->
     el "script" [ attr "nonce" nonce ]
-      [ text "(function(){window.addEventListener(\"ajax:merged\",function(){var m=document.getElementById(\"content\");if(m&&m.dataset.pageTitle)document.title=m.dataset.pageTitle});window.addEventListener(\"popstate\",function(e){if(e.state&&e.state.__ajax)window.location.reload()})})();" ]
+      [ text "window.addEventListener(\"ajax:merged\",function(){var m=document.getElementById(\"content\");if(m&&m.dataset.pageTitle)document.title=m.dataset.pageTitle});" ]
 
   DevLiveReload ->
     el "script" [ attr "nonce" nonce ]
