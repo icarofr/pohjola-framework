@@ -25,7 +25,9 @@ jobs:
         run: echo "$HOME/.bun/bin" >> $GITHUB_PATH
 
       - name: Install PureScript toolchain
-        run: bun add -g purescript@0.15.16 spago@1.0.4
+        run: |
+          sudo curl -fsSL https://github.com/purescript/purescript/releases/download/v0.15.16/linux64.tar.gz | sudo tar -xz -C /usr/local/bin --strip-components=1 purescript/purs
+          bun add -g spago@1.0.4
 
       - name: Install dependencies (Tailwind, esbuild)
         run: bun install --frozen-lockfile
@@ -61,7 +63,9 @@ jobs:
         run: echo "$HOME/.bun/bin" >> $GITHUB_PATH
 
       - name: Install PureScript toolchain
-        run: bun add -g purescript@0.15.16 spago@1.0.4
+        run: |
+          sudo curl -fsSL https://github.com/purescript/purescript/releases/download/v0.15.16/linux64.tar.gz | sudo tar -xz -C /usr/local/bin --strip-components=1 purescript/purs
+          bun add -g spago@1.0.4
 
       - name: Install dependencies
         run: bun install --frozen-lockfile && spago install --pure && make assets
@@ -107,7 +111,9 @@ jobs:
         run: echo "$HOME/.bun/bin" >> $GITHUB_PATH
 
       - name: Install PureScript toolchain
-        run: bun add -g purescript@0.15.16 spago@1.0.4
+        run: |
+          sudo curl -fsSL https://github.com/purescript/purescript/releases/download/v0.15.16/linux64.tar.gz | sudo tar -xz -C /usr/local/bin --strip-components=1 purescript/purs
+          bun add -g spago@1.0.4
 
       - name: Install dependencies
         run: bun install --frozen-lockfile && spago install --pure && make assets

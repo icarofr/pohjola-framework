@@ -13,7 +13,8 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Install PureScript compiler + Spago
-RUN bun add -g purescript@0.15.16 spago@1.0.4
+RUN curl -fsSL https://github.com/purescript/purescript/releases/download/v0.15.16/linux64.tar.gz | tar -xz -C /usr/local/bin --strip-components=1 purescript/purs && \
+    bun add -g spago@1.0.4
 
 WORKDIR /app/pohjola-framework
 
