@@ -24,18 +24,14 @@ jobs:
       - name: Add Bun to PATH
         run: echo "$HOME/.bun/bin" >> $GITHUB_PATH
 
-      - name: Install PureScript toolchain + Bun node-shim
-        run: |
-          sudo curl -fsSL https://github.com/purescript/purescript/releases/download/v0.15.16/linux64.tar.gz | sudo tar -xz -C /usr/local/bin --strip-components=1 purescript/purs
-          bun add -g spago@1.0.4
-          sudo cp scripts/node-shim.sh /usr/local/bin/node
-          sudo chmod +x /usr/local/bin/node
+      - name: Install PureScript compiler binary
+        run: sudo curl -fsSL https://github.com/purescript/purescript/releases/download/v0.15.16/linux64.tar.gz | sudo tar -xz -C /usr/local/bin --strip-components=1 purescript/purs
 
-      - name: Install dependencies (Tailwind, esbuild)
+      - name: Install dependencies (Spago, Tailwind, esbuild)
         run: bun install --frozen-lockfile
 
       - name: Install PureScript dependencies (locked, no network)
-        run: spago install --pure
+        run: bun spago install --pure
 
       - name: Format check (purs-tidy)
         run: make format-check
@@ -64,15 +60,11 @@ jobs:
       - name: Add Bun to PATH
         run: echo "$HOME/.bun/bin" >> $GITHUB_PATH
 
-      - name: Install PureScript toolchain + Bun node-shim
-        run: |
-          sudo curl -fsSL https://github.com/purescript/purescript/releases/download/v0.15.16/linux64.tar.gz | sudo tar -xz -C /usr/local/bin --strip-components=1 purescript/purs
-          bun add -g spago@1.0.4
-          sudo cp scripts/node-shim.sh /usr/local/bin/node
-          sudo chmod +x /usr/local/bin/node
+      - name: Install PureScript compiler binary
+        run: sudo curl -fsSL https://github.com/purescript/purescript/releases/download/v0.15.16/linux64.tar.gz | sudo tar -xz -C /usr/local/bin --strip-components=1 purescript/purs
 
-      - name: Install dependencies
-        run: bun install --frozen-lockfile && spago install --pure && make assets
+      - name: Install dependencies (Spago, Tailwind, esbuild)
+        run: bun install --frozen-lockfile && bun spago install --pure && make assets
 
       - name: Gate (unsafe fns, FFI, HTML escape hatch)
         run: make gate
@@ -80,11 +72,11 @@ jobs:
       # Run the compiled suite under Bun for runtime parity with production
       # (Bun canary — required for Bun.serve routes). `spago test`
       # hardcodes the Node runner (no flag/env override), so compile with
-      # `spago build` (already includes test modules) and invoke the compiled
+      # `bun spago build` (already includes test modules) and invoke the compiled
       # Test.Main entry with Bun directly.
       - name: Unit/property tests (Bun)
         run: |
-          spago build --pure
+          bun spago build --pure
           bun -e "import { main } from './output/Test.Main/index.js'; main()"
 
   integration:
@@ -114,15 +106,11 @@ jobs:
       - name: Add Bun to PATH
         run: echo "$HOME/.bun/bin" >> $GITHUB_PATH
 
-      - name: Install PureScript toolchain + Bun node-shim
-        run: |
-          sudo curl -fsSL https://github.com/purescript/purescript/releases/download/v0.15.16/linux64.tar.gz | sudo tar -xz -C /usr/local/bin --strip-components=1 purescript/purs
-          bun add -g spago@1.0.4
-          sudo cp scripts/node-shim.sh /usr/local/bin/node
-          sudo chmod +x /usr/local/bin/node
+      - name: Install PureScript compiler binary
+        run: sudo curl -fsSL https://github.com/purescript/purescript/releases/download/v0.15.16/linux64.tar.gz | sudo tar -xz -C /usr/local/bin --strip-components=1 purescript/purs
 
-      - name: Install dependencies
-        run: bun install --frozen-lockfile && spago install --pure && make assets
+      - name: Install dependencies (Spago, Tailwind, esbuild)
+        run: bun install --frozen-lockfile && bun spago install --pure && make assets
 
       - name: Install Playwright browsers
         run: bun x playwright install --with-deps chromium

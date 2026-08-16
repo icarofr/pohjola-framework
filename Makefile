@@ -18,6 +18,8 @@ export BASE_URL ?= http://localhost:3000
 # spago bundle shells out to esbuild (devDependency, installed locally)
 export PATH := $(CURDIR)/node_modules/.bin:$(PATH)
 
+SPAGO := bun spago
+
 .PHONY: all help deps assets assets-check dev watch css css-watch bundle build sync-static run test test/integration test/integration/down test/e2e check image up down clean gate format format-check gen-sql new-feature evals eval
 
 # ==================================================================================== #
@@ -81,8 +83,8 @@ gate:
 ## deps: install PureScript dependencies + Bun packages + Alpine JS assets
 .PHONY: deps
 deps:
-	spago install
 	bun install
+	$(SPAGO) install
 	$(MAKE) assets
 
 # ==================================================================================== #
@@ -115,17 +117,17 @@ assets-check:
 ## dev: run Tailwind watcher, Spago watcher, and Bun server with hot reload
 .PHONY: dev
 dev: css sync-static
-	@spago build --strict
+	@$(SPAGO) build --strict
 	@echo "Starting hot-reload dev environment (Tailwind + Spago + Bun)..."
 	@trap 'kill 0' INT TERM EXIT; \
 	bun x @tailwindcss/cli -i css/input.css -o $(DIST_DIR)/css/styles.css --watch & \
-	bun -e "const { spawn } = require('child_process'), fs = require('fs'); let t; fs.watch('src', { recursive: true }, (e, f) => { if (f && f.endsWith('.purs')) { clearTimeout(t); t = setTimeout(() => spawn('spago', ['build', '--pure', '--strict'], { stdio: 'inherit' }), 100); } });" & \
+	bun -e "const { spawn } = require('child_process'), fs = require('fs'); let t; fs.watch('src', { recursive: true }, (e, f) => { if (f && f.endsWith('.purs')) { clearTimeout(t); t = setTimeout(() => spawn('bun', ['spago', 'build', '--pure', '--strict'], { stdio: 'inherit' }), 100); } });" & \
 	bun --watch --eval "import('./output/App.Main/index.js').then(m => m.main())"
 
 ## watch: PureScript hot rebuild
 .PHONY: watch
 watch:
-	@bun -e "const { spawn } = require('child_process'), fs = require('fs'); let t; console.log('[watch] Watching src/ for changes...'); fs.watch('src', { recursive: true }, (e, f) => { if (f && f.endsWith('.purs')) { clearTimeout(t); t = setTimeout(() => spawn('spago', ['build', '--pure', '--strict'], { stdio: 'inherit' }), 100); } });"
+	@bun -e "const { spawn } = require('child_process'), fs = require('fs'); let t; console.log('[watch] Watching src/ for changes...'); fs.watch('src', { recursive: true }, (e, f) => { if (f && f.endsWith('.purs')) { clearTimeout(t); t = setTimeout(() => spawn('bun', ['spago', 'build', '--pure', '--strict'], { stdio: 'inherit' }), 100); } });"
 
 ## css: compile Tailwind CSS (minified) and embed into PureScript
 .PHONY: css
@@ -149,7 +151,7 @@ css-watch:
 .PHONY: bundle
 bundle:
 	mkdir -p $(SERVER_BUNDLE_DIR) $(DIST_DIR)/css $(DIST_DIR)/images
-	spago bundle --module App.Main --outfile $(SERVER_BUNDLE_DIR)/server.js --bundle-type app --platform node --pure --strict
+	$(SPAGO) bundle --module App.Main --outfile $(SERVER_BUNDLE_DIR)/server.js --bundle-type app --platform node --pure --strict
 
 ## build: production build (bundle JS + Tailwind + static assets)
 .PHONY: build
@@ -199,7 +201,7 @@ migrate-create:
 ## test: run PureScript unit + property tests under Bun (production runtime)
 .PHONY: test
 test:
-	spago build --pure
+	$(SPAGO) build --pure
 	bun -e "import { main } from './output/Test.Main/index.js'; main()"
 
 ## test/integration: run Venom HTTP tests via Docker Compose
@@ -234,7 +236,7 @@ new-feature:
 ## gen-sql: generate PureScript types & codecs from SQL migrations (usage: make gen-sql [FILE=migrations/001.sql] [TABLE=comments] [OUT=path])
 .PHONY: gen-sql
 gen-sql:
-	@spago build --quiet && bun --eval "import('./output/App.Cli.GenSql/index.js').then(m => m.main())" -- $${FILE:+"--file=$(FILE)"} $${TABLE:+"--table=$(TABLE)"} $${OUT:+"--out=$(OUT)"}
+	@$(SPAGO) build --quiet && bun --eval "import('./output/App.Cli.GenSql/index.js').then(m => m.main())" -- $${FILE:+"--file=$(FILE)"} $${TABLE:+"--table=$(TABLE)"} $${OUT:+"--out=$(OUT)"}
 
 # ==================================================================================== #
 # AGENT EVALS
