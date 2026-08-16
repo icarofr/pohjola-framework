@@ -45,7 +45,7 @@ renderHero lang =
           , el "div" [ class_ "mt-8 flex justify-center" ]
               [ el "div" [ class_ "inline-flex items-center gap-x-3 rounded-lg bg-gray-900 px-4 py-2 text-xs sm:text-sm font-mono text-gray-200 shadow-md ring-1 ring-gray-900/10 dark:bg-gray-800 dark:ring-white/10" ]
                   [ el "span" [ class_ "text-emerald-400 select-none font-bold" ] [ text "$" ]
-                  , el "span" [] [ text "git clone & make dev" ]
+                  , el "span" [] [ text "git clone https://github.com/icarofr/pohjola-framework.git" ]
                   ]
               ]
           ]
