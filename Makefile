@@ -132,7 +132,7 @@ watch:
 css:
 	mkdir -p $(DIST_DIR)/css
 	npx @tailwindcss/cli -i css/input.css -o $(DIST_DIR)/css/styles.css --minify
-	bun scripts/embed-css.js
+	node scripts/embed-css.js
 
 ## css-watch: Tailwind CSS hot reload
 .PHONY: css-watch
