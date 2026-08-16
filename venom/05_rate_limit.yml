@@ -7,14 +7,14 @@ name: Rate limit tests
 # (303 allowed / 429 gated), requests 6-8 strictly 429. No sleeps, no
 # suite-alphabet dependence, no shared-slot arithmetic.
 vars:
-  base_url: http://app:3000
+  app: http://app:3000
   payload: "name=Bot&email=bot%40example.com&message=x&website=spam-fills-this"
 testcases:
 - name: POST contact burst exceeds limit
   steps:
   - type: http
     method: POST
-    url: "{{.base_url}}/api/contact"
+    url: "{{.app}}/api/contact"
     body: "{{.payload}}"
     headers:
       Content-Type: "application/x-www-form-urlencoded"
@@ -23,7 +23,7 @@ testcases:
     - result.statuscode ShouldBeBetweenOrEqual 303 429
   - type: http
     method: POST
-    url: "{{.base_url}}/api/contact"
+    url: "{{.app}}/api/contact"
     body: "{{.payload}}"
     headers:
       Content-Type: "application/x-www-form-urlencoded"
@@ -32,7 +32,7 @@ testcases:
     - result.statuscode ShouldBeBetweenOrEqual 303 429
   - type: http
     method: POST
-    url: "{{.base_url}}/api/contact"
+    url: "{{.app}}/api/contact"
     body: "{{.payload}}"
     headers:
       Content-Type: "application/x-www-form-urlencoded"
@@ -41,7 +41,7 @@ testcases:
     - result.statuscode ShouldBeBetweenOrEqual 303 429
   - type: http
     method: POST
-    url: "{{.base_url}}/api/contact"
+    url: "{{.app}}/api/contact"
     body: "{{.payload}}"
     headers:
       Content-Type: "application/x-www-form-urlencoded"
@@ -50,7 +50,7 @@ testcases:
     - result.statuscode ShouldBeBetweenOrEqual 303 429
   - type: http
     method: POST
-    url: "{{.base_url}}/api/contact"
+    url: "{{.app}}/api/contact"
     body: "{{.payload}}"
     headers:
       Content-Type: "application/x-www-form-urlencoded"
@@ -59,7 +59,7 @@ testcases:
     - result.statuscode ShouldBeBetweenOrEqual 303 429
   - type: http
     method: POST
-    url: "{{.base_url}}/api/contact"
+    url: "{{.app}}/api/contact"
     body: "{{.payload}}"
     headers:
       Content-Type: "application/x-www-form-urlencoded"
@@ -68,7 +68,7 @@ testcases:
     - result.statuscode ShouldEqual 429
   - type: http
     method: POST
-    url: "{{.base_url}}/api/contact"
+    url: "{{.app}}/api/contact"
     body: "{{.payload}}"
     headers:
       Content-Type: "application/x-www-form-urlencoded"
@@ -77,7 +77,7 @@ testcases:
     - result.statuscode ShouldEqual 429
   - type: http
     method: POST
-    url: "{{.base_url}}/api/contact"
+    url: "{{.app}}/api/contact"
     body: "{{.payload}}"
     headers:
       Content-Type: "application/x-www-form-urlencoded"
