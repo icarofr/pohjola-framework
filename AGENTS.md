@@ -12,7 +12,7 @@
 ### Commands (daily use)
 | Target | Description |
 |---|---|
-|`make deps`|Install Spago/NPM and Alpine assets |
+|`make deps`|Install Spago/Bun and Alpine assets |
 |`make dev`|Tailwind + static sync + Spago build |
 |`make run`|Build and run with Bun |
 |`make build`|Produce production CSS & bundle (output to `dist-server/`) |

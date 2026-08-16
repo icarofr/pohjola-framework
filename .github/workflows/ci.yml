@@ -18,16 +18,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
+      - name: Install Bun (canary)
+        run: curl -fsSL https://bun.sh/install | bash -s canary
+
+      - name: Add Bun to PATH
+        run: echo "$HOME/.bun/bin" >> $GITHUB_PATH
 
       - name: Install PureScript toolchain
-        run: npm install -g purescript@0.15.16 spago@1.0.4
+        run: bun add -g purescript@0.15.16 spago@1.0.4
 
-      - name: Install npm dependencies (Tailwind, esbuild)
-        run: npm ci
+      - name: Install dependencies (Tailwind, esbuild)
+        run: bun install --frozen-lockfile
 
       - name: Install PureScript dependencies (locked, no network)
         run: spago install --pure
@@ -53,19 +54,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
-      - name: Install PureScript toolchain + Bun
-        run: npm install -g purescript@0.15.16 spago@1.0.4 && curl -fsSL https://bun.sh/install | bash -s canary
+      - name: Install Bun (canary)
+        run: curl -fsSL https://bun.sh/install | bash -s canary
 
       - name: Add Bun to PATH
         run: echo "$HOME/.bun/bin" >> $GITHUB_PATH
 
+      - name: Install PureScript toolchain
+        run: bun add -g purescript@0.15.16 spago@1.0.4
+
       - name: Install dependencies
-        run: npm ci && spago install --pure && make assets
+        run: bun install --frozen-lockfile && spago install --pure && make assets
 
       - name: Gate (unsafe fns, FFI, HTML escape hatch)
         run: make gate
@@ -101,28 +100,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
-      - name: Install PureScript toolchain + Bun
-        run: npm install -g purescript@0.15.16 spago@1.0.4 && curl -fsSL https://bun.sh/install | bash -s canary
+      - name: Install Bun (canary)
+        run: curl -fsSL https://bun.sh/install | bash -s canary
 
       - name: Add Bun to PATH
         run: echo "$HOME/.bun/bin" >> $GITHUB_PATH
 
-      - name: Install dependencies
-        run: npm ci && spago install --pure && make assets
+      - name: Install PureScript toolchain
+        run: bun add -g purescript@0.15.16 spago@1.0.4
 
-      - name: Install Playwright
-        run: npx playwright install --with-deps chromium
+      - name: Install dependencies
+        run: bun install --frozen-lockfile && spago install --pure && make assets
+
+      - name: Install Playwright browsers
+        run: bun x playwright install --with-deps chromium
 
       - name: Build assets (Playwright webServer runs `make run`)
         run: make build
 
       - name: Run Playwright tests
-        run: npm run test:e2e
+        run: bun run test:e2e
 
       - name: Upload test results
         if: always()

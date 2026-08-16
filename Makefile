@@ -53,12 +53,12 @@ FFI_ALLOWLIST_GREP := ^src/App/ServerBun\.purs|^src/App/FetchBun\.purs|^src/App/
 ## format: purs-tidy format-in-place (src/ + test/)
 .PHONY: format
 format:
-	npx purs-tidy format-in-place 'src/**/*.purs' 'test/**/*.purs'
+	bun x purs-tidy format-in-place 'src/**/*.purs' 'test/**/*.purs'
 
 ## format-check: verify formatting (runs in make check + CI)
 .PHONY: format-check
 format-check:
-	npx purs-tidy check 'src/**/*.purs' 'test/**/*.purs'
+	bun x purs-tidy check 'src/**/*.purs' 'test/**/*.purs'
 
 ## gate: check for banned functions, FFI, and raw usage
 .PHONY: gate
@@ -78,11 +78,11 @@ gate:
 # DEPENDENCIES
 # ==================================================================================== #
 
-## deps: install PureScript dependencies + npm packages + Alpine JS assets
+## deps: install PureScript dependencies + Bun packages + Alpine JS assets
 .PHONY: deps
 deps:
 	spago install
-	npm install
+	bun install
 	$(MAKE) assets
 
 # ==================================================================================== #
@@ -118,7 +118,7 @@ dev: css sync-static
 	@spago build --strict
 	@echo "Starting hot-reload dev environment (Tailwind + Spago + Bun)..."
 	@trap 'kill 0' INT TERM EXIT; \
-	npx @tailwindcss/cli -i css/input.css -o $(DIST_DIR)/css/styles.css --watch & \
+	bun x @tailwindcss/cli -i css/input.css -o $(DIST_DIR)/css/styles.css --watch & \
 	bun -e "const { spawn } = require('child_process'), fs = require('fs'); let t; fs.watch('src', { recursive: true }, (e, f) => { if (f && f.endsWith('.purs')) { clearTimeout(t); t = setTimeout(() => spawn('spago', ['build', '--pure', '--strict'], { stdio: 'inherit' }), 100); } });" & \
 	bun --watch --eval "import('./output/App.Main/index.js').then(m => m.main())"
 
@@ -131,14 +131,14 @@ watch:
 .PHONY: css
 css:
 	mkdir -p $(DIST_DIR)/css
-	npx @tailwindcss/cli -i css/input.css -o $(DIST_DIR)/css/styles.css --minify
-	node scripts/embed-css.js
+	bun x @tailwindcss/cli -i css/input.css -o $(DIST_DIR)/css/styles.css --minify
+	bun scripts/embed-css.js
 
 ## css-watch: Tailwind CSS hot reload
 .PHONY: css-watch
 css-watch:
 	mkdir -p $(DIST_DIR)/css
-	npx @tailwindcss/cli -i css/input.css -o $(DIST_DIR)/css/styles.css --watch
+	bun x @tailwindcss/cli -i css/input.css -o $(DIST_DIR)/css/styles.css --watch
 
 # ==================================================================================== #
 # BUILD
@@ -215,7 +215,7 @@ test/integration/down:
 ## test/e2e: run Playwright browser tests (requires server running)
 .PHONY: test/e2e
 test/e2e:
-	npx playwright test
+	bun x playwright test
 
 ## check: full pre-push validation (build + test — mirrors CI)
 .PHONY: check
