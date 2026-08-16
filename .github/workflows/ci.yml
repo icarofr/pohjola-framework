@@ -24,10 +24,12 @@ jobs:
       - name: Add Bun to PATH
         run: echo "$HOME/.bun/bin" >> $GITHUB_PATH
 
-      - name: Install PureScript toolchain
+      - name: Install PureScript toolchain + Bun node-shim
         run: |
           sudo curl -fsSL https://github.com/purescript/purescript/releases/download/v0.15.16/linux64.tar.gz | sudo tar -xz -C /usr/local/bin --strip-components=1 purescript/purs
           bun add -g spago@1.0.4
+          sudo cp scripts/node-shim.sh /usr/local/bin/node
+          sudo chmod +x /usr/local/bin/node
 
       - name: Install dependencies (Tailwind, esbuild)
         run: bun install --frozen-lockfile
@@ -62,10 +64,12 @@ jobs:
       - name: Add Bun to PATH
         run: echo "$HOME/.bun/bin" >> $GITHUB_PATH
 
-      - name: Install PureScript toolchain
+      - name: Install PureScript toolchain + Bun node-shim
         run: |
           sudo curl -fsSL https://github.com/purescript/purescript/releases/download/v0.15.16/linux64.tar.gz | sudo tar -xz -C /usr/local/bin --strip-components=1 purescript/purs
           bun add -g spago@1.0.4
+          sudo cp scripts/node-shim.sh /usr/local/bin/node
+          sudo chmod +x /usr/local/bin/node
 
       - name: Install dependencies
         run: bun install --frozen-lockfile && spago install --pure && make assets
@@ -110,10 +114,12 @@ jobs:
       - name: Add Bun to PATH
         run: echo "$HOME/.bun/bin" >> $GITHUB_PATH
 
-      - name: Install PureScript toolchain
+      - name: Install PureScript toolchain + Bun node-shim
         run: |
           sudo curl -fsSL https://github.com/purescript/purescript/releases/download/v0.15.16/linux64.tar.gz | sudo tar -xz -C /usr/local/bin --strip-components=1 purescript/purs
           bun add -g spago@1.0.4
+          sudo cp scripts/node-shim.sh /usr/local/bin/node
+          sudo chmod +x /usr/local/bin/node
 
       - name: Install dependencies
         run: bun install --frozen-lockfile && spago install --pure && make assets

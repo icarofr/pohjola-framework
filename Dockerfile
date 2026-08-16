@@ -12,9 +12,12 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends git ca-certificates curl && \
     rm -rf /var/lib/apt/lists/*
 
-# Install PureScript compiler + Spago
+# Install PureScript compiler + Spago + Bun node-shim for Spago CLI compatibility
 RUN curl -fsSL https://github.com/purescript/purescript/releases/download/v0.15.16/linux64.tar.gz | tar -xz -C /usr/local/bin --strip-components=1 purescript/purs && \
     bun add -g spago@1.0.4
+
+COPY scripts/node-shim.sh /usr/local/bin/node
+RUN chmod +x /usr/local/bin/node
 
 WORKDIR /app/pohjola-framework
 
