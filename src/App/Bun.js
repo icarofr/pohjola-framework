@@ -91,3 +91,40 @@ export function getArgs() {
   return Bun.argv.slice(2);
 }
 
+// wyhash :: String -> String
+// Nanosecond 64-bit non-cryptographic hash via Bun.hash.wyhash
+export function wyhash(str) {
+  return Bun.hash.wyhash(str).toString(16);
+}
+
+// hashPasswordImpl :: String -> (String -> Effect Unit) -> (String -> Effect Unit) -> Effect Unit
+// Native Argon2id password hashing via Bun.password (SIMD-accelerated background thread)
+export function hashPasswordImpl(password) {
+  return function (onSuccess) {
+    return function (onError) {
+      return function () {
+        Bun.password.hash(password, { algorithm: "argon2id" })
+          .then(function (hash) { onSuccess(hash)(); })
+          .catch(function (err) { onError(err.message || String(err))(); });
+      };
+    };
+  };
+}
+
+// verifyPasswordImpl :: String -> String -> (Boolean -> Effect Unit) -> (String -> Effect Unit) -> Effect Unit
+// Native password verification via Bun.password
+export function verifyPasswordImpl(password) {
+  return function (hash) {
+    return function (onSuccess) {
+      return function (onError) {
+        return function () {
+          Bun.password.verify(password, hash)
+            .then(function (match) { onSuccess(match)(); })
+            .catch(function (err) { onError(err.message || String(err))(); });
+        };
+      };
+    };
+  };
+}
+
+

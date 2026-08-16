@@ -16,10 +16,13 @@ module App.Auth
   , parseSessionCookie
   , formatSessionCookie
   , formatClearSessionCookie
+  , hashPassword
+  , verifyPassword
   ) where
 
 import Prelude
 
+import App.Bun as Bun
 import App.Error (AppError(..))
 import Data.Array (findMap)
 import Data.Either (Either(..))
@@ -109,3 +112,11 @@ destroySession :: SessionStore -> SessionId -> Aff (Either AppError Unit)
 destroySession store (SessionId token) = do
   liftEffect $ Ref.modify_ (Map.delete token) store
   pure (Right unit)
+
+-- | Hash a password using native Argon2id via Bun.password (SIMD multithreaded).
+hashPassword :: String -> Aff (Either String String)
+hashPassword = Bun.hashPassword
+
+-- | Verify a plaintext password against an Argon2id/Bcrypt hash via Bun.password.
+verifyPassword :: String -> String -> Aff (Either String Boolean)
+verifyPassword = Bun.verifyPassword
