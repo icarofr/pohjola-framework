@@ -57,5 +57,27 @@ test.describe('Theme switcher (Light / Dark / System cycle)', () => {
     // Dark mode should still be present
     await expect(page.locator('html')).toHaveClass(/dark/)
   })
+
+  test('clicking theme switcher in mobile menu changes theme without closing the menu', async ({ page }) => {
+    await page.goto('/en')
+    await page.setViewportSize({ width: 375, height: 667 })
+
+    // Open mobile menu
+    await page.click('button[aria-label="Open menu"]')
+    const mobileMenu = page.locator('#mobile-menu')
+    await expect(mobileMenu).toBeVisible()
+
+    // Click the theme switcher inside the mobile menu
+    const mobileThemeToggle = mobileMenu.locator('button[data-testid="theme-toggle"]')
+    await mobileThemeToggle.click()
+
+    // Mobile menu must still be visible
+    await expect(mobileMenu).toBeVisible()
+
+    // Click again to cycle to dark
+    await mobileThemeToggle.click()
+    await expect(mobileMenu).toBeVisible()
+    await expect(page.locator('html')).toHaveClass(/dark/)
+  })
 })
 

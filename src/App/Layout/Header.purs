@@ -66,7 +66,6 @@ render lang currentRoute =
               [ xShowFlag MenuOpen
               , xCloak
               , onClickOutside (setFlag MenuOpen false)
-              , onClick (setFlag MenuOpen false)
               , onKeydownEscapeWindow (setFlag MenuOpen false)
               , class_ "lg:hidden px-2 pb-4 pt-2 space-y-1 border-t border-gray-200 dark:border-white/10"
               , id_ "mobile-menu"
