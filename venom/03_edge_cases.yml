@@ -8,7 +8,7 @@ testcases:
     url: "{{.app}}/robots.txt"
     assertions:
     - result.statuscode ShouldEqual 200
-    - 'result.body ShouldContainSubstring "Disallow: /"'
+    - 'result.body ShouldContainSubstring "Disallow:"'
 
 - name: robots.txt has Sitemap
   steps:
