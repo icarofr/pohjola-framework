@@ -18,7 +18,7 @@ export BASE_URL ?= http://localhost:3000
 # spago bundle shells out to esbuild (devDependency, installed locally)
 export PATH := $(CURDIR)/node_modules/.bin:$(PATH)
 
-SPAGO := bun spago
+SPAGO := bun x spago
 
 .PHONY: all help deps assets assets-check dev watch css css-watch bundle build sync-static run test test/integration test/integration/down test/e2e check image up down clean gate format format-check gen-sql new-feature evals eval
 

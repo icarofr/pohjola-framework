@@ -17,8 +17,9 @@ RUN curl -fsSL https://github.com/purescript/purescript/releases/download/v0.15.
 
 WORKDIR /app/pohjola-framework
 
-# Install dependencies (Spago, Tailwind, esbuild) with Bun
+# Install dependencies (Spago, Tailwind, esbuild) with Bun (applies patches automatically)
 COPY package.json bun.lock ./
+COPY patches ./patches
 RUN bun install --frozen-lockfile
 
 # Copy project source
@@ -31,9 +32,9 @@ RUN bun scripts/embed-css.js
 # Bundle server to a PRIVATE dir — dist/ is the public static root and a
 # bundle inside it would be downloadable at /server.js.
 # --pure: use the committed spago.lock without network (avoids flaky registry)
-RUN bun spago install --pure
-RUN bun spago build --pure
-RUN bun spago bundle --module App.Main --outfile dist-server/server.js \
+RUN bun x spago install --pure
+RUN bun x spago build --pure
+RUN bun x spago bundle --module App.Main --outfile dist-server/server.js \
     --bundle-type app --platform node --pure
 
 # Copy static assets into dist

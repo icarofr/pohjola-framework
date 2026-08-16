@@ -31,7 +31,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Install PureScript dependencies (locked, no network)
-        run: bun spago install --pure
+        run: bun x spago install --pure
 
       - name: Format check (purs-tidy)
         run: make format-check
@@ -64,7 +64,7 @@ jobs:
         run: sudo curl -fsSL https://github.com/purescript/purescript/releases/download/v0.15.16/linux64.tar.gz | sudo tar -xz -C /usr/local/bin --strip-components=1 purescript/purs
 
       - name: Install dependencies (Spago, Tailwind, esbuild)
-        run: bun install --frozen-lockfile && bun spago install --pure && make assets
+        run: bun install --frozen-lockfile && bun x spago install --pure && make assets
 
       - name: Gate (unsafe fns, FFI, HTML escape hatch)
         run: make gate
@@ -72,11 +72,11 @@ jobs:
       # Run the compiled suite under Bun for runtime parity with production
       # (Bun canary — required for Bun.serve routes). `spago test`
       # hardcodes the Node runner (no flag/env override), so compile with
-      # `bun spago build` (already includes test modules) and invoke the compiled
+      # `bun x spago build` (already includes test modules) and invoke the compiled
       # Test.Main entry with Bun directly.
       - name: Unit/property tests (Bun)
         run: |
-          bun spago build --pure
+          bun x spago build --pure
           bun -e "import { main } from './output/Test.Main/index.js'; main()"
 
   integration:
@@ -110,7 +110,7 @@ jobs:
         run: sudo curl -fsSL https://github.com/purescript/purescript/releases/download/v0.15.16/linux64.tar.gz | sudo tar -xz -C /usr/local/bin --strip-components=1 purescript/purs
 
       - name: Install dependencies (Spago, Tailwind, esbuild)
-        run: bun install --frozen-lockfile && bun spago install --pure && make assets
+        run: bun install --frozen-lockfile && bun x spago install --pure && make assets
 
       - name: Install Playwright browsers
         run: bun x playwright install --with-deps chromium

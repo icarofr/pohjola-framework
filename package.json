@@ -18,5 +18,8 @@
   "dependencies": {},
   "allowScripts": {
     "esbuild@0.25.12": true
+  },
+  "patchedDependencies": {
+    "spago@1.0.4": "patches/spago@1.0.4.patch"
   }
 }
