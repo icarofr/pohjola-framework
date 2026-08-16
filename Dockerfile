@@ -27,6 +27,10 @@ COPY package*.json ./
 RUN npm ci
 ENV PATH=/app/pohjola-framework/node_modules/.bin:$PATH
 
+# Build Tailwind CSS and embed into PureScript
+RUN npx @tailwindcss/cli -i css/input.css -o dist/css/styles.css --minify
+RUN node scripts/embed-css.js
+
 # Bundle server to a PRIVATE dir — dist/ is the public static root and a
 # bundle inside it would be downloadable at /server.js.
 # --pure: use the committed spago.lock without network (avoids flaky registry)
@@ -34,9 +38,6 @@ RUN spago install --pure
 RUN spago build --pure
 RUN spago bundle --module App.Main --outfile dist-server/server.js \
     --bundle-type app --platform node --pure
-
-# Build Tailwind CSS (needs local node_modules for @import resolution)
-RUN npx @tailwindcss/cli -i css/input.css -o dist/css/styles.css --minify
 
 # Copy static assets into dist
 RUN cp -r static/* dist/ 2>/dev/null || true
