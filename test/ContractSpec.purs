@@ -364,12 +364,12 @@ spec = do
           html <- renderStaticPage route lang
           html `StrAssert.shouldContain` ("id=\"" <> contentTarget <> "\"")
 
-  describe "Alpine seam — x-sync title" do
-    it "every static page renders x-sync page title in both languages" do
+  describe "Alpine seam — data-page-title" do
+    it "every static page renders data-page-title in both languages" do
       for_ staticRoutes \route ->
         for_ allLangs \lang -> do
           html <- renderStaticPage route lang
-          html `StrAssert.shouldContain` "<title id=\"page-title\" x-sync>"
+          html `StrAssert.shouldContain` "data-page-title"
 
   describe "Alpine seam — attribute literals" do
     it "head carries the x-cloak style reset" do
@@ -687,6 +687,7 @@ spec = do
         for_ allLangs \lang -> do
           html <- renderStaticPage route lang
           html `StrAssert.shouldContain` "if(localStorage.getItem('theme')==='dark'"
+          html `StrAssert.shouldContain` "window.addEventListener(\"ajax:merged\",function(){var m=document.getElementById(\"content\");if(m&&m.dataset.pageTitle)document.title=m.dataset.pageTitle});"
           html `StrAssert.shouldContain` "var es=new EventSource('/dev/live-reload')"
 
   describe "pages flow through the layout shell" do
