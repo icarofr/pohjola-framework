@@ -15,6 +15,7 @@ import App.Html (Html, attr, class_, doctype, el, escape, flag, href, id_, name_
 import App.Layout.Head (renderHead)
 import App.Layout.Header (render) as Header
 import App.Layout.Footer (render) as Footer
+import App.Layout.Scripts (HeadScript(..), renderHeadScript)
 import App.Layout.Styles (stylesCss)
 import App.Ui.Container (container)
 import Data.Either (Either(..))
@@ -75,12 +76,15 @@ renderPage baseUrl nonce lang route maybeStatus content =
                 , content
                 ]
             , Footer.render lang route
-            -- Alpine AJAX before Alpine core (plugin must register first)
-            -- Pinned versions, self-hosted from /assets/js/ for caching
-            , el "script" [ flag "defer", src "/assets/js/alpine-ajax.min.js", attr "nonce" nonce ] []
-            , el "script" [ flag "defer", src "/assets/js/alpinejs.min.js", attr "nonce" nonce ] []
+            , renderScripts nonce
             ]
         ]
+
+-- | Client script tags (Alpine AJAX + Alpine core). Pinned, self-hosted from /assets/js/.
+renderScripts :: String -> Html
+renderScripts nonce =
+  el "script" [ flag "defer", src "/assets/js/alpine-ajax.min.js", attr "nonce" nonce ] []
+    <> el "script" [ flag "defer", src "/assets/js/alpinejs.min.js", attr "nonce" nonce ] []
 
 -- | AJAX fragment — nav + content only, for Alpine AJAX requests.
 -- | Must contain all x-sync'd elements (nav) and the swap target (#content).
@@ -144,7 +148,7 @@ renderErrorPage nonce lang status =
               , el "meta" [ name_ "robots", attr "content" "noindex" ] []
               , el "title" [] [ text (show status <> " — " <> d.common.siteTitle) ]
               , el "style" [] [ text (stylesCss <> "\n[x-cloak]{display:none!important}") ]
-              , el "script" [ attr "nonce" nonce ] [ text "if(localStorage.getItem('theme')==='dark'||(!localStorage.getItem('theme')&&matchMedia('(prefers-color-scheme:dark)').matches))document.documentElement.classList.add('dark')" ]
+              , renderHeadScript nonce DarkModeInit
               ]
           , el "body"
               [ class_ bodyClass ]
@@ -152,8 +156,7 @@ renderErrorPage nonce lang status =
               , el "main" [ id_ contentTarget, class_ "flex-1 flex flex-col" ]
                   [ content ]
               , Footer.render lang Home
-              , el "script" [ flag "defer", src "/assets/js/alpine-ajax.min.js", attr "nonce" nonce ] []
-              , el "script" [ flag "defer", src "/assets/js/alpinejs.min.js", attr "nonce" nonce ] []
+              , renderScripts nonce
               ]
           ]
 
@@ -208,6 +211,5 @@ renderShellClose :: String -> Lang -> Route -> String
 renderShellClose nonce lang route =
   "</main>"
     <> render (Footer.render lang route)
-    <> render (el "script" [ flag "defer", src "/assets/js/alpine-ajax.min.js", attr "nonce" nonce ] [])
-    <> render (el "script" [ flag "defer", src "/assets/js/alpinejs.min.js", attr "nonce" nonce ] [])
+    <> render (renderScripts nonce)
     <> "</body></html>"

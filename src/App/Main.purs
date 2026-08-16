@@ -12,7 +12,7 @@ import App.Config (Config, loadConfig)
 import App.Email (ResendConfig, parseForm, sendContactEmail, sendNewsletterEmail)
 import App.Env (getEnvMaybe)
 import App.Error (AppError(..))
-import App.Form (ContactSubmission(..), FormStatus(..), NewsletterSubmission(..), decodeContact, decodeNewsletter, formStatusQuery, parseFormStatus, apiContactPath, apiNewsletterPath)
+import App.Form (ContactSubmission(..), FormStatus(..), NewsletterSubmission(..), decodeContact, decodeNewsletter, formStatusQuery, parseFormStatus)
 import App.Migration (migrate, renderMigrationError)
 import App.Features.About.Page as About
 import App.Features.Contact.Page as Contact
@@ -25,7 +25,7 @@ import App.RateLimit (RateLimiter, RateLimitVerdict(..), checkRateLimit, mkRateL
 import App.Server as Server
 import App.ServerBun (streamResponseImpl)
 import App.Sitemap (renderRobots, renderSitemap)
-import Data.Array (filter, head)
+import Data.Array (head)
 import Data.Either (Either(..))
 import Data.I18n (Lang, defaultLang, parseLang)
 import Data.Map (Map)
@@ -61,8 +61,8 @@ rateGate cfg limiter request next =
 router :: Config -> RateLimiter -> PageCache -> Server.Request -> Aff Server.Response
 router cfg limiter cache request@{ method, path, headers, body, query, nonce } = case method of
   Server.POST -> case path of
-    _ | path == filter (not <<< eq "") (split (Pattern "/") apiContactPath) -> rateGate cfg limiter request (handleContact cfg request.id headers body)
-    _ | path == filter (not <<< eq "") (split (Pattern "/") apiNewsletterPath) -> rateGate cfg limiter request (handleNewsletter cfg request.id headers body)
+    [ "api", "contact" ] -> rateGate cfg limiter request (handleContact cfg request.id headers body)
+    [ "api", "newsletter" ] -> rateGate cfg limiter request (handleNewsletter cfg request.id headers body)
     _ -> pure Server.notFound
   Server.GET -> handleGet cfg cache nonce headers query path
   Server.HEAD -> handleGet cfg cache nonce headers query path

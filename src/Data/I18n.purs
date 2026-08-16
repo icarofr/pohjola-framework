@@ -113,6 +113,13 @@ type Dictionary =
       , issues :: String
       , copyright :: String
       }
+  , seo ::
+      { homeDescription :: String
+      , aboutDescription :: String
+      , contactDescription :: String
+      , postsDescription :: String
+      , postDetailDescription :: String
+      }
   , common ::
       { siteTitle :: String
       , darkModeToggle :: String
@@ -209,6 +216,13 @@ en =
       , issues: "Bug Tracker"
       , copyright: "© 2026 Pohjola Framework. Open source software."
       }
+  , seo:
+      { homeDescription: "The Type-Safe Functional Web Framework for Bun, PureScript, and Alpine.js"
+      , aboutDescription: "Learn more about Pohjola."
+      , contactDescription: "Get in touch with the Pohjola community."
+      , postsDescription: "Read engineering notes and architectural highlights from Pohjola."
+      , postDetailDescription: "An engineering note on Pohjola."
+      }
   , common:
       { siteTitle: "Pohjola"
       , darkModeToggle: "Toggle dark mode"
@@ -300,6 +314,13 @@ fr =
       , github: "Code source"
       , issues: "Suivi des bugs"
       , copyright: "© 2026 Pohjola Framework. Logiciel open source."
+      }
+  , seo:
+      { homeDescription: "Le framework web fonctionnel et typé pour Bun, PureScript et Alpine.js"
+      , aboutDescription: "En savoir plus sur Pohjola."
+      , contactDescription: "Rejoindre la communauté et contribuer à Pohjola."
+      , postsDescription: "Lire les notes d'ingénierie et l'architecture de Pohjola."
+      , postDetailDescription: "Un article d'ingénierie sur Pohjola."
       }
   , common:
       { siteTitle: "Pohjola"

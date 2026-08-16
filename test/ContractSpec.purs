@@ -19,14 +19,14 @@ import App.Main (pageRenderer)
 import App.Server (RedirectKind(..), Response, cspWithNonce, errorStatusCode, fileResponse, htmlErrorResponse, internalError, methodNotAllowed, notFound, notModified, ok, okText, okWith, redirect, redirectVary, securityHeaders, tooManyRequests)
 import App.Cache (insertDynamic, lookupDynamic, mkDynamicCache)
 import App.Html (render, text)
-import Data.Array (concat, filter, find, last, length, mapMaybe, nub, uncons)
+import Data.Array (concat, find, last, length, mapMaybe, nub, uncons)
 import Data.Char (toCharCode)
 import Data.Content (services)
 import Data.Either (Either(..))
 import Data.Foldable (any, for_)
 import Data.I18n (Lang(..), dict)
 import Data.Maybe (Maybe(..), fromMaybe)
-import Data.Route (Route(..), allLangs, allRoutes, routeUrl)
+import Data.Route (Route(..), allLangs, allRoutes, routeUrl, staticRoutes)
 import Data.Email (EmailAddress(..), mkEmailAddress)
 import Data.String.CodeUnits (fromCharArray, stripPrefix, toCharArray) as CodeUnits
 import Data.String.Common (split, replaceAll) as Common
@@ -44,16 +44,6 @@ import Test.Spec.Assertions.String as StrAssert
 -- ============================================================================
 -- Helpers
 -- ============================================================================
-
--- | Static routes: allRoutes minus the data-backed ones. PostList (and the
--- | dynamic PostDetail, which isn't in allRoutes) fetch from the network at
--- | render time — they're excluded here so the tests never hit the wire.
-staticRoutes :: Array Route
-staticRoutes = filter (not <<< isDataBacked) allRoutes
-  where
-  isDataBacked PostList = true
-  isDataBacked (PostDetail _) = true
-  isDataBacked _ = false
 
 -- | Config stub for render tests — static pages never read any field; the
 -- | data-backed routes are excluded from `staticRoutes` so `postsApiBase`

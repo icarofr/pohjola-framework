@@ -40,7 +40,6 @@ module App.Server
   , notModified
   , fileResponse
   , streamResponse
-  , serveStatic
   , serve
   , nextRequestId
   , parseMethod
@@ -53,13 +52,12 @@ module App.Server
 import Prelude
 
 import App.Alpine (alpineRequestHeader)
-import App.Config (mimeType)
 import App.Logger (Level(..))
 import App.Logger as AppLog
 import App.ServerBun (JsRequest, JsResponse, ReadableStream, generateNonce, serveImpl)
 import Data.Array (cons, filter, mapMaybe, tail)
 import Data.Either (Either(..))
-import Data.Foldable (any, intercalate, null)
+import Data.Foldable (any, intercalate)
 import Data.FormURLEncoded (decode)
 import Data.FormURLEncoded as FormURLEncoded
 import Data.Int as Int
@@ -78,8 +76,6 @@ import Effect.Uncurried (EffectFn1, EffectFn2, mkEffectFn2, runEffectFn1)
 import Foreign (unsafeToForeign)
 import Foreign.Object (Object)
 import Foreign.Object as Object
-import Node.Encoding (Encoding(..))
-import Node.FS.Aff as FS
 
 -- ============================================================================
 -- Types
@@ -429,29 +425,6 @@ streamResponse stream =
       ]
   , body: StreamBody stream
   }
-
--- ============================================================================
--- Static files — test-only (Bun's { dir } routes serve static in production)
--- ============================================================================
-
--- | Serve a file from staticRoot. Returns `Nothing` when the file doesn't
--- | exist, the MIME type is unknown, or the path is unsafe. Kept for
--- | ContractSpec and ServerSpec tests; not on the production hot path.
-serveStatic :: String -> Array String -> Aff (Maybe Response)
-serveStatic staticRoot path
-  | isUnsafePath path = pure Nothing
-  | null path = pure Nothing
-  | otherwise =
-      let
-        fileName = intercalate "/" path
-      in
-        case mimeType fileName of
-          Nothing -> pure Nothing
-          Just mime -> do
-            result <- attempt $ FS.readTextFile UTF8 (staticRoot <> "/" <> fileName)
-            pure case result of
-              Left _ -> Nothing
-              Right content -> Just $ fileResponse mime content
 
 -- ============================================================================
 -- Server
