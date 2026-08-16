@@ -22,7 +22,6 @@ renderHead baseUrl nonce lang route =
   -- Meta tags
   el "meta" [ attr "charset" "UTF-8" ] []
     <> el "meta" [ name_ "viewport", content_ "width=device-width, initial-scale=1.0" ] []
-    <> el "meta" [ name_ "robots", content_ "noindex, nofollow" ] []
     <> el "meta" [ name_ "description", content_ (seoDescription lang route) ] []
     <> el "meta" [ name_ "author", content_ siteInfo.title ] []
     <> el "meta" [ name_ "theme-color", content_ siteInfo.themeColor ] []

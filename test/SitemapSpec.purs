@@ -32,8 +32,8 @@ spec = do
   describe "Robots.txt rendering" do
     let robots = renderRobots "https://example.com"
 
-    it "blocks all crawling with Disallow: /" do
-      robots `StrAssert.shouldContain` "Disallow: /\n"
+    it "allows all crawling with empty Disallow" do
+      robots `StrAssert.shouldContain` "Disallow:\n"
 
     it "includes sitemap URL" do
       robots `StrAssert.shouldContain` "Sitemap: https://example.com/sitemap.xml\n"
