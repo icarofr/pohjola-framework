@@ -7,9 +7,10 @@ import App.Html (Html, attr, content_, el, href, name_, property_, rel_, text)
 import App.Layout.Scripts (HeadScript(..), renderHeadScript, renderJsonLdScript)
 import App.Layout.Styles (stylesCss)
 import Data.Argonaut.Core (Json, fromObject, fromString, stringify)
+import Data.Array (filter)
 import Data.Content (siteInfo)
 import Data.Foldable (foldMap)
-import Data.I18n (Lang(..), langTag)
+import Data.I18n (Lang(..), dict, langTag)
 import Data.Maybe (Maybe(..))
 import Data.Route (Route(..), allLangs, routeTitle, routeUrl)
 import Data.String.Common (replaceAll) as S
@@ -46,7 +47,7 @@ renderHead baseUrl nonce lang route =
     <> el "meta" [ property_ "og:url", content_ (baseUrl <> routeUrl lang route) ] []
     <> el "meta" [ property_ "og:site_name", content_ siteInfo.title ] []
     <> el "meta" [ property_ "og:locale", content_ (ogLocale lang) ] []
-    <> el "meta" [ property_ "og:locale:alternate", content_ (ogLocale (otherLang lang)) ] []
+    <> foldMap (\l -> el "meta" [ property_ "og:locale:alternate", content_ (ogLocale l) ] []) (filter (_ /= lang) allLangs)
     -- Twitter
     <> el "meta" [ name_ "twitter:card", content_ "summary" ] []
     <> el "meta" [ name_ "twitter:title", content_ (routeTitle lang route) ] []
@@ -64,23 +65,17 @@ ogLocale :: Lang -> String
 ogLocale En = "en_US"
 ogLocale Fr = "fr_FR"
 
-otherLang :: Lang -> Lang
-otherLang En = Fr
-otherLang Fr = En
-
 seoDescription :: Lang -> Route -> String
-seoDescription En = case _ of
-  Home -> siteInfo.description
-  About -> "Learn more about " <> siteInfo.title <> "."
-  Contact -> "Get in touch with " <> siteInfo.title <> "."
-  PostList -> "Read the latest posts on " <> siteInfo.title <> "."
-  PostDetail _ -> "A post on " <> siteInfo.title <> "."
-seoDescription Fr = case _ of
-  Home -> "Site vitrine de demonstration PureScript + Alpine.js (SSR bilingue, formulaires, SEO)."
-  About -> "En savoir plus sur " <> siteInfo.title <> "."
-  Contact -> "Contactez " <> siteInfo.title <> "."
-  PostList -> "Lire les derniers articles sur " <> siteInfo.title <> "."
-  PostDetail _ -> "Un article sur " <> siteInfo.title <> "."
+seoDescription lang route =
+  let
+    d = dict lang
+  in
+    case route of
+      Home -> d.seo.homeDescription
+      About -> d.seo.aboutDescription
+      Contact -> d.seo.contactDescription
+      PostList -> d.seo.postsDescription
+      PostDetail _ -> d.seo.postDetailDescription
 
 -- ============================================================================
 -- JSON-LD structured data — type-safe, exhaustive on Route, XSS-escaped

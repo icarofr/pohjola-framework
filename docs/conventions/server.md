@@ -18,13 +18,11 @@ invariant here is enforced by gate, ContractSpec, or Venom.
 
 ## Static files
 
-Production: Bun's `routes: { dir }` serves `/assets/*`, `/css/*`, `/images/*`,
-and `/favicon.svg` from the `staticRoot` (passed through `serveImpl`) with
+Production and local dev: Bun's `routes: { dir }` serves `/assets/*`, `/css/*`,
+`/images/*`, and `/favicon.svg` from `staticRoot` (passed through `serveImpl`) with
 kernel-level path safety. The `STATIC_ROOT` env var flows from `Config` →
-`serve` → `serveImpl` → Bun routes.
-
-`serveStatic` is test-only — kept for ContractSpec and ServerSpec. Path
-safety via `isUnsafePath` (exact `..` / `\` segments rejected).
+`serve` → `serveImpl` → Bun routes. Route path safety is verified via `isUnsafePath`
+(exact `..` / `\` segments rejected).
 
 ## Security headers
 

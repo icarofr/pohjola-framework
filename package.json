@@ -1,5 +1,6 @@
 {
   "name": "pohjola-framework",
+  "type": "module",
   "homepage": "https://pohjola.icaro.fr",
   "private": true,
   "scripts": {
