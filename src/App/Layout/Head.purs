@@ -3,7 +3,8 @@ module App.Layout.Head where
 
 import Prelude
 
-import App.Html (Html, attr, content_, el, href, name_, property_, rel_, text)
+import App.Alpine (xSync)
+import App.Html (Html, attr, content_, el, href, id_, name_, property_, rel_, text)
 import App.Layout.Scripts (HeadScript(..), renderHeadScript, renderJsonLdScript)
 import Data.Argonaut.Core (Json, fromObject, fromString, stringify)
 import Data.Content (siteInfo)
@@ -28,7 +29,6 @@ renderHead baseUrl nonce lang route =
     <> el "meta" [ name_ "theme-color", content_ siteInfo.themeColor ] []
     -- Pinned inline head scripts (closed HeadScript ADT per ADR-000)
     <> renderHeadScript nonce DarkModeInit
-    <> renderHeadScript nonce TitleSyncPopstateBridge
     <> renderHeadScript nonce DevLiveReload
     -- Canonical
     <> el "link" [ rel_ "canonical", href (baseUrl <> routeUrl lang route) ] []
@@ -55,7 +55,7 @@ renderHead baseUrl nonce lang route =
     <> el "meta" [ name_ "twitter:title", content_ (routeTitle lang route) ] []
     <> el "meta" [ name_ "twitter:description", content_ (seoDescription lang route) ] []
     -- Title
-    <> el "title" [] [ text (routeTitle lang route) ]
+    <> el "title" [ id_ "page-title", xSync ] [ text (routeTitle lang route) ]
     -- JSON-LD structured data (exhaustive on Route, XSS-escaped)
     <> foldMap identity (renderJsonLd baseUrl nonce lang route)
 
