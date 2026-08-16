@@ -127,11 +127,12 @@ dev: css sync-static
 watch:
 	@bun -e "const { spawn } = require('child_process'), fs = require('fs'); let t; console.log('[watch] Watching src/ for changes...'); fs.watch('src', { recursive: true }, (e, f) => { if (f && f.endsWith('.purs')) { clearTimeout(t); t = setTimeout(() => spawn('spago', ['build', '--pure', '--strict'], { stdio: 'inherit' }), 100); } });"
 
-## css: compile Tailwind CSS (minified)
+## css: compile Tailwind CSS (minified) and embed into PureScript
 .PHONY: css
 css:
 	mkdir -p $(DIST_DIR)/css
 	npx @tailwindcss/cli -i css/input.css -o $(DIST_DIR)/css/styles.css --minify
+	node scripts/embed-css.js
 
 ## css-watch: Tailwind CSS hot reload
 .PHONY: css-watch

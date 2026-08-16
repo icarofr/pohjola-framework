@@ -15,6 +15,7 @@ import App.Html (Html, attr, class_, doctype, el, escape, flag, href, id_, name_
 import App.Layout.Head (renderHead)
 import App.Layout.Header (render) as Header
 import App.Layout.Footer (render) as Footer
+import App.Layout.Styles (stylesCss)
 import App.Ui.Container (container)
 import Data.Either (Either(..))
 import Data.Foldable (foldMap)
@@ -142,8 +143,7 @@ renderErrorPage nonce lang status =
               , el "meta" [ attr "name" "viewport", attr "content" "width=device-width, initial-scale=1.0" ] []
               , el "meta" [ name_ "robots", attr "content" "noindex" ] []
               , el "title" [] [ text (show status <> " — " <> d.common.siteTitle) ]
-              , el "link" [ attr "rel" "stylesheet", attr "href" "/css/styles.css" ] []
-              , el "style" [] [ text "[x-cloak]{display:none!important}" ]
+              , el "style" [] [ text (stylesCss <> "\n[x-cloak]{display:none!important}") ]
               , el "script" [ attr "nonce" nonce ] [ text "if(localStorage.getItem('theme')==='dark'||(!localStorage.getItem('theme')&&matchMedia('(prefers-color-scheme:dark)').matches))document.documentElement.classList.add('dark')" ]
               ]
           , el "body"
