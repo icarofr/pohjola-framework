@@ -73,6 +73,7 @@ handleGet :: Config -> PageCache -> String -> Map String String -> Map String St
 handleGet cfg cache nonce headers query path = case path of
   [] -> redirectRoot headers
   [ "healthz" ] -> pure $ Server.okText "text/plain" "ok"
+  [ "dev", "live-reload" ] -> pure $ Server.okWith [ Tuple "Content-Type" "text/event-stream", Tuple "Cache-Control" "no-cache", Tuple "Connection" "keep-alive" ] "retry: 1500\n\n: live-reload connected\n\n"
   [ "robots.txt" ] -> pure $ Server.okText "text/plain" (renderRobots cfg.baseUrl)
   [ "sitemap.xml" ] -> pure $ Server.okText "application/xml" (renderSitemap cfg.baseUrl)
   _ -> case parseRoute path of
@@ -401,6 +402,13 @@ main = do
           Left err -> Log.logErr "migrate-failed" [ Tuple "error" (renderMigrationError err) ]
           Right n -> Log.logInfo "migrate-ok" [ Tuple "applied" (show n) ]
     Nothing -> do
+      case cfg.databaseUrl of
+        Just url -> launchAff_ do
+          result <- migrate url
+          liftEffect case result of
+            Left err -> Log.logErr "auto-migrate-failed" [ Tuple "error" (renderMigrationError err) ]
+            Right n -> if n > 0 then Log.logInfo "auto-migrate-ok" [ Tuple "applied" (show n) ] else pure unit
+        Nothing -> pure unit
       limiter <- mkRateLimiter
       cache <- mkPageCache
       when (isNothing cfg.resendApiKey) $ Log.logWarn "resend-key-missing" [ Tuple "msg" "contact/newsletter forms will return status=error" ]

@@ -107,6 +107,10 @@ alpineRequestHeader = "x-alpine-request"
 data Flag
   = MenuOpen
   | LangMenuOpen
+  | ModalOpen
+  | ToastVisible
+  | AccordionOpen
+  | TabActive
 
 derive instance eqFlag :: Eq Flag
 
@@ -114,12 +118,20 @@ instance showFlag :: Show Flag where
   show = case _ of
     MenuOpen -> "MenuOpen"
     LangMenuOpen -> "LangMenuOpen"
+    ModalOpen -> "ModalOpen"
+    ToastVisible -> "ToastVisible"
+    AccordionOpen -> "AccordionOpen"
+    TabActive -> "TabActive"
 
 -- | The JavaScript identifier for a flag. Total.
 flagName :: Flag -> String
 flagName = case _ of
   MenuOpen -> "menuOpen"
   LangMenuOpen -> "open"
+  ModalOpen -> "modalOpen"
+  ToastVisible -> "toastVisible"
+  AccordionOpen -> "accordionOpen"
+  TabActive -> "tabActive"
 
 -- ============================================================================
 -- Theme modes

@@ -8,7 +8,8 @@
 -- | (Directus, Contentful, Strapi). The pattern stays the same: Bun native fetch
 -- | via App.FetchBun -> Argonaut decode -> Either.
 module App.Features.Posts.Service
-  ( curatedPosts
+  ( createPost
+  , curatedPosts
   , fetchPost
   , fetchPosts
   ) where
@@ -116,3 +117,16 @@ fetchPost cfg id = case cfg.databaseUrl of
       case Array.find (\(Post p) -> p.id == id) curatedPosts of
         Just post -> pure (Right post)
         Nothing -> pure (Left NotFound)
+
+-- | Create a new post in SQL storage when DATABASE_URL is configured.
+createPost :: Config -> Post -> Aff (Either AppError Int)
+createPost cfg (Post post) = case cfg.databaseUrl of
+  Just dbUrl -> do
+    sql <- liftEffect $ SQL.connect dbUrl
+    result <- SQL.execute sql "INSERT INTO posts (id, user_id, title, body) VALUES ($1, $2, $3, $4)"
+      [ SQL.SqlInt post.id, SQL.SqlInt post.userId, SQL.SqlString post.title, SQL.SqlString post.body ]
+    case result of
+      Left err -> pure (Left (DecodeError (TypeMismatch (show err))))
+      Right _ -> pure (Right post.id)
+  Nothing ->
+    pure (Right post.id)
