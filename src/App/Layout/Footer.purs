@@ -25,8 +25,7 @@ render lang currentRoute =
                   [ el "div" [ class_ "flex items-center gap-x-3" ]
                       [ el "div" [ class_ "size-7 rounded-md bg-primary flex items-center justify-center text-primary-content font-bold text-xs" ]
                           [ pohjolaLogo ]
-                      , el "h3" [ class_ "font-mono text-sm font-bold uppercase tracking-widest text-base-content" ] [ text siteInfo.title ]
-                      , Badge.badge Badge.BadgeSuccess "OPERATIONAL"
+                      , el "h3" [ class_ "font-mono text-sm font-bold tracking-tight text-base-content" ] [ text siteInfo.title ]
                       ]
                   , el "p" [ class_ "text-sm leading-relaxed text-base-content/80 max-w-sm font-normal" ] [ text siteInfo.description ]
                   , el "div" [ class_ "pt-2 flex space-x-3" ]
@@ -66,7 +65,7 @@ render lang currentRoute =
           -- Bottom strip
           , el "div" [ class_ "pt-8 border-t border-base-300 text-xs font-mono text-base-content/60 flex flex-col sm:flex-row justify-between gap-4" ]
               [ el "p" [] [ text "© 2026 Pohjola Framework. Open source software." ]
-              , el "p" [] [ text "ARCHITECTURAL TOTALITY • 0kB CLIENT RUNTIME" ]
+              , el "p" [] [ text "PureScript & Bun • MIT License" ]
               ]
           ]
       ]

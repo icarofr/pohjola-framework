@@ -10,7 +10,6 @@ import App.Html (Html, attr, class_, el, text)
 import App.Ui as Ui
 import App.Ui.Container (container)
 import Data.Array (take)
-import Data.Foldable (foldMap)
 import Data.I18n (Lang, dict)
 import Data.Maybe (Maybe(..))
 import Data.Route (Route(..))
@@ -39,30 +38,19 @@ renderPostDetail lang post =
   let
     d = (dict lang).posts
     idNum = postId post
-    categoryTag = case idNum `mod` 3 of
-      0 -> "PERFORMANCE"
-      1 -> "ARCHITECTURE"
-      _ -> "TYPE SAFETY"
-    categoryVariant = case idNum `mod` 3 of
-      0 -> Ui.BadgePrimary
-      1 -> Ui.BadgeTertiary
-      _ -> Ui.BadgeSecondary
-    readTime = show (3 + (idNum `mod` 4)) <> " MIN READ"
   in
     container "max-w-4xl" "py-16 sm:py-24 space-y-6"
       [ el "div" [ class_ "flex items-center justify-between" ]
           [ spaLink lang PostList
               [ class_ "btn btn-ghost btn-sm text-xs font-mono" ]
-              [ el "span" [ attr "aria-hidden" "true" ] [ text "←" ]
+              [ el "span" [ attr "aria-hidden" "true" ] [ text "← " ]
               , text d.backToList
               ]
           ]
       , el "article" [ class_ "card bg-base-100 shadow-md border border-base-200" ]
           [ el "div" [ class_ "card-body p-8 sm:p-12 space-y-6" ]
-              [ el "div" [ class_ "flex items-center gap-x-3 text-xs" ]
-                  [ Ui.badge categoryVariant categoryTag
-                  , el "span" [ class_ "font-mono text-base-content/60 text-xs" ] [ text readTime ]
-                  , el "span" [ class_ "font-mono text-base-content/60 text-xs" ] [ text ("• ARCHIVE NOTE #" <> show idNum) ]
+              [ el "div" [ class_ "flex items-center gap-x-3 text-xs font-mono text-base-content/60" ]
+                  [ el "span" [] [ text ("Article #" <> show idNum) ]
                   ]
               , el "h1" [ class_ "text-3xl sm:text-4xl font-extrabold tracking-tight text-base-content leading-tight capitalize" ]
                   [ text (postTitle post) ]
@@ -73,7 +61,7 @@ renderPostDetail lang post =
                       ]
                   , el "div" [ class_ "text-xs" ]
                       [ el "p" [ class_ "font-semibold text-base-content" ] [ text d.unknownAuthor ]
-                      , el "p" [ class_ "text-base-content/60 font-mono text-[11px] uppercase" ] [ text "Pohjola Engineering Core" ]
+                      , el "p" [ class_ "text-base-content/60 font-mono text-[11px] uppercase" ] [ text "Engineering Team" ]
                       ]
                   ]
               , el "div" [ class_ "pt-2" ]
