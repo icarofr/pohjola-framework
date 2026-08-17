@@ -1,4 +1,4 @@
--- | Rigid ActionCard layout template with DaisyUI card semantic classes
+-- | Pure DaisyUI ActionCard layout template
 module App.Ui.Layout.ActionCard where
 
 import Prelude
@@ -24,7 +24,7 @@ type ActionCardProps =
 -- | Render an ActionCard using DaisyUI card semantics
 actionCard :: ActionCardProps -> Html
 actionCard props =
-  el "div" [ class_ "card bg-base-100 shadow-sm border border-base-300 flex flex-col justify-between h-full hover:shadow-md transition-shadow" ]
+  el "div" [ class_ "card bg-base-100 shadow-md border border-base-200 flex flex-col justify-between h-full hover:shadow-lg transition-all" ]
     [ case props.imageUrl of
         Just img ->
           el "figure" [ class_ "aspect-16/10 overflow-hidden bg-base-200" ]
@@ -41,13 +41,13 @@ actionCard props =
             ]
         Nothing -> text ""
     , el "div" [ class_ "card-body flex flex-col justify-between p-6 space-y-4" ]
-        [ el "div" [ class_ "space-y-2" ]
+        [ el "div" [ class_ "space-y-3" ]
             [ case props.tag of
                 Just t -> Badge.badge t.variant t.text
                 Nothing -> text ""
             , el "h3" [ class_ "card-title text-lg font-bold text-base-content" ]
                 [ text props.title ]
-            , el "p" [ class_ "text-sm text-base-content/80 leading-relaxed font-normal" ]
+            , el "p" [ class_ "text-sm text-base-content/75 leading-relaxed font-normal" ]
                 [ text props.description ]
             ]
         , el "div" [ class_ "card-actions justify-end pt-4 border-t border-base-200" ]

@@ -1,4 +1,4 @@
--- | Posts view — list and detail rendering via App.Ui component contracts
+-- | Posts view — list and detail rendering using pure DaisyUI components
 module App.Features.Posts.View where
 
 import Prelude
@@ -49,35 +49,37 @@ renderPostDetail lang post =
       _ -> Ui.BadgeSecondary
     readTime = show (3 + (idNum `mod` 4)) <> " MIN READ"
   in
-    container "max-w-4xl" "py-16 sm:py-24 space-y-8"
+    container "max-w-4xl" "py-16 sm:py-24 space-y-6"
       [ el "div" [ class_ "flex items-center justify-between" ]
           [ spaLink lang PostList
-              [ class_ "inline-flex items-center gap-x-2 rounded-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-3.5 py-1.5 text-xs font-mono font-medium text-zinc-800 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors shadow-2xs" ]
+              [ class_ "btn btn-ghost btn-sm text-xs font-mono" ]
               [ el "span" [ attr "aria-hidden" "true" ] [ text "←" ]
               , text d.backToList
               ]
           ]
-      , el "article" [ class_ "p-8 sm:p-12 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xs space-y-8" ]
-          [ el "div" [ class_ "flex items-center gap-x-3 text-xs mb-4" ]
-              [ Ui.badge categoryVariant categoryTag
-              , el "span" [ class_ "text-xs font-mono text-zinc-400" ]
-                  [ text readTime ]
-              , el "span" [ class_ "text-xs font-mono text-zinc-400" ]
-                  [ text ("• ARCHIVE NOTE #" <> show idNum) ]
-              ]
-          , el "h1" [ class_ "font-display text-3xl sm:text-5xl font-extrabold tracking-tight text-zinc-950 dark:text-white leading-[1.1] capitalize" ]
-              [ text (postTitle post) ]
-          , el "div" [ class_ "flex items-center gap-x-3.5 pb-8 border-b border-zinc-100 dark:border-zinc-800" ]
-              [ el "div" [ class_ "size-9 rounded-md bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center text-emerald-400 dark:text-emerald-700 text-sm font-mono font-bold" ]
-                  [ text "P" ]
-              , el "div" [ class_ "text-xs" ]
-                  [ el "p" [ class_ "font-semibold text-zinc-950 dark:text-white" ] [ text d.unknownAuthor ]
-                  , el "p" [ class_ "text-zinc-400 font-mono text-[11px] uppercase" ] [ text "Pohjola Engineering Core" ]
+      , el "article" [ class_ "card bg-base-100 shadow-md border border-base-200" ]
+          [ el "div" [ class_ "card-body p-8 sm:p-12 space-y-6" ]
+              [ el "div" [ class_ "flex items-center gap-x-3 text-xs" ]
+                  [ Ui.badge categoryVariant categoryTag
+                  , el "span" [ class_ "font-mono text-base-content/60 text-xs" ] [ text readTime ]
+                  , el "span" [ class_ "font-mono text-base-content/60 text-xs" ] [ text ("• ARCHIVE NOTE #" <> show idNum) ]
                   ]
-              ]
-          , el "div" [ class_ "pt-2" ]
-              [ el "p" [ class_ "text-lg sm:text-xl text-zinc-700 dark:text-zinc-300 leading-relaxed font-normal whitespace-pre-line" ]
-                  [ text (postBody post) ]
+              , el "h1" [ class_ "text-3xl sm:text-4xl font-extrabold tracking-tight text-base-content leading-tight capitalize" ]
+                  [ text (postTitle post) ]
+              , el "div" [ class_ "flex items-center gap-x-3.5 pb-6 border-b border-base-200" ]
+                  [ el "div" [ class_ "avatar placeholder" ]
+                      [ el "div" [ class_ "bg-primary text-primary-content rounded-md size-9 flex items-center justify-center font-mono font-bold text-sm" ]
+                          [ el "span" [] [ text "P" ] ]
+                      ]
+                  , el "div" [ class_ "text-xs" ]
+                      [ el "p" [ class_ "font-semibold text-base-content" ] [ text d.unknownAuthor ]
+                      , el "p" [ class_ "text-base-content/60 font-mono text-[11px] uppercase" ] [ text "Pohjola Engineering Core" ]
+                      ]
+                  ]
+              , el "div" [ class_ "pt-2" ]
+                  [ el "p" [ class_ "text-base sm:text-lg text-base-content/85 leading-relaxed font-normal whitespace-pre-line" ]
+                      [ text (postBody post) ]
+                  ]
               ]
           ]
       ]
@@ -89,7 +91,7 @@ renderPostsError lang =
     d = (dict lang).posts
   in
     container "max-w-3xl" "py-20 text-center space-y-6"
-      [ el "h1" [ class_ "font-display text-4xl font-extrabold text-zinc-950 dark:text-white" ]
+      [ el "h1" [ class_ "text-4xl font-extrabold text-base-content" ]
           [ text d.listTitle ]
       , Ui.alert Ui.AlertError d.loadingError
       ]

@@ -1,4 +1,4 @@
--- | Rigid Hero section template using DaisyUI semantic hero classes
+-- | Pure DaisyUI Hero section template
 module App.Ui.Layout.Hero where
 
 import Prelude
@@ -23,11 +23,11 @@ type HeroProps =
   , secondaryAction :: Maybe HeroAction
   }
 
--- | Render a Hero section with DaisyUI hero semantics
+-- | Render a Hero section using DaisyUI hero component classes
 hero :: HeroProps -> Html
 hero props =
   el "section" [ class_ "hero bg-base-200 py-16 sm:py-24 border-b border-base-300" ]
-    [ el "div" [ class_ "hero-content text-center max-w-4xl flex-col space-y-6" ]
+    [ el "div" [ class_ "hero-content text-center max-w-3xl flex-col space-y-6" ]
         [ case props.eyebrow of
             Just eb -> Badge.badge BadgePrimary eb
             Nothing -> text ""
@@ -48,6 +48,6 @@ renderHeroButton :: ButtonVariant -> HeroAction -> Html
 renderHeroButton variant action =
   case action.target of
     Internal t ->
-      buttonLink { variant, size: Lg, lang: t.lang, route: t.route, extraClass: "" } action.label
+      buttonLink { variant, size: Lg, lang: t.lang, route: t.route, extraClass: "shadow-sm" } action.label
     External t ->
-      buttonLinkExternal { variant, size: Lg, href: t.href, extraClass: "" } action.label
+      buttonLinkExternal { variant, size: Lg, href: t.href, extraClass: "shadow-sm" } action.label
