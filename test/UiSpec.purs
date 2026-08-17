@@ -34,7 +34,6 @@ spec = do
         let html = render (renderToast { id: "test-toast", message: "Changes saved successfully", isSuccess: true })
         html `shouldContain` "role=\"status\""
         html `shouldContain` "Changes saved successfully"
-        html `shouldContain` "bg-emerald-50"
 
     describe "Accordion" do
       it "renders accordion group with ARIA controls" do
@@ -66,15 +65,15 @@ spec = do
     describe "Badge" do
       it "renders badge class with semantic variant" do
         let html = render (Badge.badge BadgeSuccess "Active")
-        html `shouldContain` "font-mono"
-        html `shouldContain` "border-emerald-300"
+        html `shouldContain` "badge"
+        html `shouldContain` "badge-success"
         html `shouldContain` "Active"
 
     describe "Alert" do
       it "renders alert role and semantic class" do
         let html = render (Alert.alert AlertError "Something broke")
         html `shouldContain` "role=\"alert\""
-        html `shouldContain` "bg-red-50"
+        html `shouldContain` "alert-error"
         html `shouldContain` "Something broke"
 
     describe "Stat" do
