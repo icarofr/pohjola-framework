@@ -4,13 +4,14 @@ module App.Ui.Layout.ActionCard where
 import Prelude
 
 import App.Html (Html, alt, class_, decoding_, el, height_, loading_, src, text, width_)
+import App.Ui.Badge (BadgeVariant)
 import App.Ui.Badge as Badge
-import App.Ui.Button (buttonLink, buttonLinkExternal, Variant(..), Size(..))
+import App.Ui.Button (ButtonVariant(..), Size(..), buttonLink, buttonLinkExternal)
 import App.Ui.Layout.Types (ActionTarget(..))
 import Data.Maybe (Maybe(..))
 
 type ActionCardProps =
-  { tag :: Maybe { text :: String, variant :: Badge.Variant }
+  { tag :: Maybe { text :: String, variant :: BadgeVariant }
   , imageUrl :: Maybe { url :: String, alt :: String, width :: Int, height :: Int }
   , title :: String
   , description :: String
@@ -53,8 +54,8 @@ actionCard props =
     , el "div" [ class_ "mt-6 pt-4 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-end" ]
         [ case props.action.target of
             Internal t ->
-              buttonLink { variant: Secondary, size: Sm, lang: t.lang, route: t.route, extraClass: "w-full" } props.action.label
+              buttonLink { variant: ButtonSecondary, size: Sm, lang: t.lang, route: t.route, extraClass: "w-full" } props.action.label
             External t ->
-              buttonLinkExternal { variant: Outline, size: Sm, href: t.href, extraClass: "w-full" } props.action.label
+              buttonLinkExternal { variant: ButtonOutline, size: Sm, href: t.href, extraClass: "w-full" } props.action.label
         ]
     ]

@@ -1,17 +1,11 @@
--- | Home page view — strictly assembled via rigid slot-based layout templates
+-- | Home page view — strictly assembled via rigid App.Ui component contracts
 module App.Features.Home.View where
 
 import Prelude
 
 import App.Html (Html, class_, el, text)
-import App.Ui.Badge as Badge
+import App.Ui as Ui
 import App.Ui.Container (container)
-import App.Ui.Layout.ActionCard (actionCard)
-import App.Ui.Layout.ConversionCta (conversionCta)
-import App.Ui.Layout.Grid (grid3)
-import App.Ui.Layout.Hero (hero)
-import App.Ui.Layout.SectionHeader (Align(..), sectionHeader)
-import App.Ui.Layout.Types (ActionTarget(..))
 import Data.Content (Service, bookingUrl, formatPrice, services)
 import Data.I18n (Lang, dict, langTag)
 import Data.Maybe (Maybe(..))
@@ -24,18 +18,18 @@ renderHome lang =
   in
     el "div" [ class_ "flex flex-col w-full" ]
       [ -- Hero Section
-        hero
+        Ui.hero
           { eyebrow: Just "POHJOLA FRAMEWORK 2026"
           , title: d.hero.headline
           , body: d.hero.body
-          , primaryAction: { label: d.hero.ctaLabel, target: Internal { lang, route: About } }
-          , secondaryAction: Just { label: "GitHub Repository →", target: External { href: bookingUrl } }
+          , primaryAction: { label: d.hero.ctaLabel, target: Ui.Internal { lang, route: About } }
+          , secondaryAction: Just { label: "GitHub Repository →", target: Ui.External { href: bookingUrl } }
           }
 
       -- Invariant Guarantees Strip
       , el "section" [ class_ "py-16 sm:py-20 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/30" ]
           [ container "max-w-5xl" ""
-              [ grid3
+              [ Ui.grid3
                   [ renderInvariantBlock "01 // TOTALITY" "Zero Runtime Errors" "Exhaustive type-level guarantees with PureScript ADTs. Every failure path is explicitly handled in the compiler."
                   , renderInvariantBlock "02 // NATIVE BUN" "Sub-millisecond SSR" "High-speed server rendering executed directly on Bun.serve with zero Node.js overhead and instant restarts."
                   , renderInvariantBlock "03 // ISOMORPHIC" "Alpine Interactivity" "Zero custom JavaScript build steps. Interactivity is delivered through verified, typed Alpine.js seams."
@@ -46,13 +40,12 @@ renderHome lang =
       -- Features / Capabilities Section
       , el "section" [ class_ "py-20 sm:py-28 border-b border-zinc-200 dark:border-zinc-800" ]
           [ container "max-w-5xl" "space-y-12"
-              [ sectionHeader
-                  { eyebrow: Just "CORE MODULES"
+              [ Ui.pageHeader
+                  { category: Just "CORE MODULES"
                   , title: d.services.sectionTitle
                   , subtitle: Nothing
-                  , align: Left
                   }
-              , grid3 (map (renderServiceActionCard lang) services)
+              , Ui.grid3 (map (renderServiceActionCard lang) services)
               ]
           ]
 
@@ -71,10 +64,10 @@ renderHome lang =
           ]
 
       -- CTA Conversion Section
-      , conversionCta
+      , Ui.conversionCta
           { heading: d.cta.heading
           , body: d.cta.body
-          , action: { label: d.cta.ctaLabel, target: Internal { lang, route: About } }
+          , action: { label: d.cta.ctaLabel, target: Ui.Internal { lang, route: About } }
           }
       ]
 
@@ -92,10 +85,10 @@ renderServiceActionCard lang service =
     d = (dict lang).services
     copy = d.serviceCopy service.id
   in
-    actionCard
-      { tag: Just { text: formatPrice (langTag lang) service.price, variant: Badge.Secondary }
+    Ui.actionCard
+      { tag: Just { text: formatPrice (langTag lang) service.price, variant: Ui.BadgeSecondary }
       , imageUrl: Just { url: service.imageUrl, alt: copy.title, width: service.imageWidth, height: service.imageHeight }
       , title: copy.title
       , description: copy.description
-      , action: { label: d.bookButton <> " →", target: External { href: bookingUrl } }
+      , action: { label: d.bookButton <> " →", target: Ui.External { href: bookingUrl } }
       }
