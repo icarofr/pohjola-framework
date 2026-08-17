@@ -4,6 +4,7 @@ module App.Features.Home.Components.ServiceCard where
 import Prelude
 
 import App.Html (Html, class_, el, text)
+import App.Ui.Badge as Badge
 import App.Ui.Button (buttonLinkExternal, Variant(..), Size(..))
 import App.Ui.Card (card, cardImage, cardBody)
 import Data.Content (Service, bookingUrl, formatPrice)
@@ -23,10 +24,8 @@ renderServiceCard lang service =
               , el "p" [ class_ "mt-2 text-sm/6 text-gray-600 dark:text-gray-400" ] [ text copy.description ]
               ]
               <> el "div" [ class_ "mt-6 flex items-center justify-between pt-4 border-t border-gray-100 dark:border-white/5" ]
-                [ el "span" [ class_ "inline-flex items-center gap-1.5 rounded-md bg-gray-100 dark:bg-white/5 px-2.5 py-1 text-xs font-mono font-medium text-gray-800 dark:text-gray-200 ring-1 ring-inset ring-gray-200 dark:ring-white/10" ]
-                    [ el "span" [ class_ "size-1.5 rounded-full bg-emerald-500" ] []
-                    , text (formatPrice (langTag lang) service.price)
-                    ]
-                , buttonLinkExternal { variant: Primary, size: Sm, href: bookingUrl, extraClass: "" } d.bookButton
+                [ Badge.badge Badge.Neutral (formatPrice (langTag lang) service.price)
+                , buttonLinkExternal { variant: Secondary, size: Sm, href: bookingUrl, extraClass: "" } d.bookButton
                 ]
           )
+

@@ -5,9 +5,14 @@ import Prelude
 
 import App.Html (render, text)
 import App.Ui.Accordion (renderAccordion)
+import App.Ui.Alert as Alert
+import App.Ui.Badge as Badge
+import App.Ui.EmptyState as EmptyState
 import App.Ui.Modal (renderModal)
+import App.Ui.Stat as Stat
 import App.Ui.Tabs (renderTabs)
 import App.Ui.Toast (renderToast)
+import Data.Maybe (Maybe(..))
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions.String (shouldContain)
 
@@ -56,3 +61,32 @@ spec = do
         html `shouldContain` "role=\"tabpanel\""
         html `shouldContain` "Tab 1"
         html `shouldContain` "Panel 1"
+
+    describe "Badge" do
+      it "renders badge class with semantic variant" do
+        let html = render (Badge.badge Badge.Success "Active")
+        html `shouldContain` "badge badge-sm"
+        html `shouldContain` "badge-success"
+        html `shouldContain` "Active"
+
+    describe "Alert" do
+      it "renders alert role and semantic class" do
+        let html = render (Alert.alert Alert.Error "Something broke")
+        html `shouldContain` "role=\"alert\""
+        html `shouldContain` "alert-error"
+        html `shouldContain` "Something broke"
+
+    describe "Stat" do
+      it "renders stat card with title and value" do
+        let html = render (Stat.statCard { label: "Total Users", value: "1,250", description: Just "+12% this month" })
+        html `shouldContain` "stat-title"
+        html `shouldContain` "Total Users"
+        html `shouldContain` "stat-value"
+        html `shouldContain` "1,250"
+        html `shouldContain` "+12% this month"
+
+    describe "EmptyState" do
+      it "renders actionable empty state" do
+        let html = render (EmptyState.emptyState { title: "No items yet", description: "Get started by creating one.", action: Nothing })
+        html `shouldContain` "No items yet"
+        html `shouldContain` "Get started by creating one."

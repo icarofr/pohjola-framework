@@ -26,6 +26,7 @@
 
 ### Task → doc trigger map
 - Adding a page → `docs/conventions/adding-pages.md`, `docs/adr/ADR-008-component-architecture.md`
+- UI / Styling / Components → `docs/conventions/design-system.md`, `DESIGN.md`
 - Forms → `docs/conventions/forms.md`
 - Data fetching → `docs/conventions/data-layer.md`
 - Server internals → `docs/conventions/server.md`
@@ -56,6 +57,7 @@
 
 ### Default agent rules
 - Before adding a feature, read the relevant convention doc (task→doc map above). **If you skip this, state why.**
+- Before adding UI/styles, read `DESIGN.md` and `docs/conventions/design-system.md`. Compose views with `App.Ui` primitives.
 - Before adding FFI, read `docs/ffi-taming-guide.md`. **If you skip this, state why.**
 - Before proposing auth, read `docs/adr/ADR-002-auth-shape.md`. **If you skip this, state why.**
 - Before committing, run `make check`. **If you skip this, state why.**
