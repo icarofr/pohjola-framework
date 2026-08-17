@@ -18,6 +18,7 @@ module App.Alpine
   , xShowFlag
   , xShowNotFlag
   , xShowTheme
+  , xSetTheme
   , setFlag
   , toggleFlag
   , ariaExpandedFlag
@@ -147,11 +148,11 @@ themeToggle = Expr
 setTheme :: ThemeMode -> Expr
 setTheme = case _ of
   ThemeLight ->
-    Expr "localStorage.setItem('theme', 'light'); document.documentElement.setAttribute('data-theme', 'light'); document.documentElement.classList.remove('dark')"
+    Expr "theme = 'light'; localStorage.setItem('theme', 'light'); document.documentElement.setAttribute('data-theme', 'light'); document.documentElement.classList.remove('dark')"
   ThemeDark ->
-    Expr "localStorage.setItem('theme', 'dark'); document.documentElement.setAttribute('data-theme', 'dark'); document.documentElement.classList.add('dark')"
+    Expr "theme = 'dark'; localStorage.setItem('theme', 'dark'); document.documentElement.setAttribute('data-theme', 'dark'); document.documentElement.classList.add('dark')"
   ThemeSystem ->
-    Expr "localStorage.setItem('theme', 'system'); document.documentElement.removeAttribute('data-theme'); (matchMedia('(prefers-color-scheme: dark)').matches ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark'))"
+    Expr "theme = 'system'; localStorage.setItem('theme', 'system'); document.documentElement.removeAttribute('data-theme'); (matchMedia('(prefers-color-scheme: dark)').matches ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark'))"
 
 -- | Cycle theme through system -> light -> dark -> system for DaisyUI + Tailwind.
 cycleTheme :: Expr
@@ -187,6 +188,9 @@ xShowNotFlag f = attr "x-show" ("!" <> flagName f)
 
 xShowTheme :: ThemeMode -> Attr
 xShowTheme mode = attr "x-show" ("theme === '" <> themeModeName mode <> "'")
+
+xSetTheme :: ThemeMode -> Attr
+xSetTheme mode = onClick (setTheme mode)
 
 ariaExpandedFlag :: Flag -> Attr
 ariaExpandedFlag f = attr ":aria-expanded" (flagName f <> ".toString()")

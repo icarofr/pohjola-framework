@@ -1,8 +1,6 @@
 -- | Pure DaisyUI Hero section template
 module App.Ui.Layout.Hero where
 
-import Prelude
-
 import App.Html (Html, class_, el, text)
 import App.Ui.Badge (BadgeVariant(..))
 import App.Ui.Badge as Badge

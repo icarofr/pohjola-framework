@@ -1,8 +1,6 @@
 -- | Pure DaisyUI ActionCard layout template
 module App.Ui.Layout.ActionCard where
 
-import Prelude
-
 import App.Html (Html, alt, class_, decoding_, el, height_, loading_, src, text, width_)
 import App.Ui.Badge (BadgeVariant)
 import App.Ui.Badge as Badge
