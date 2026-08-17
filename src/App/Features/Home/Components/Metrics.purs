@@ -11,22 +11,22 @@ import Data.Maybe (Maybe(..))
 
 renderMetrics :: Lang -> Html
 renderMetrics _lang =
-  el "section" [ class_ "py-10 sm:py-12 border-b border-gray-200/80 dark:border-white/5 bg-base-100/50" ]
+  el "section" [ class_ "py-12 sm:py-16 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/20" ]
     [ container "max-w-7xl" ""
         [ statGrid
-            [ { label: "Runtime Speed"
+            [ { label: "Runtime Engine"
               , value: "100% Bun"
               , description: Just "Native zero-node runtime"
               }
-            , { label: "Type Safety"
+            , { label: "Type Totality"
               , value: "PureScript"
-              , description: Just "Totality & exhaustive ADT"
+              , description: Just "0 uncaught exceptions"
               }
-            , { label: "Design Drift"
-              , value: "0.00%"
+            , { label: "Design System"
+              , value: "0.00% Drift"
               , description: Just "DESIGN.md + Layr guarded"
               }
-            , { label: "JavaScript Shipped"
+            , { label: "JS Shipped"
               , value: "0 kB"
               , description: Just "Alpine typed seams only"
               }

@@ -21,7 +21,7 @@ render lang currentRoute =
   let
     d = dict lang
   in
-    el "header" [ class_ "sticky top-0 z-40 w-full backdrop-blur-md bg-white/80 dark:bg-gray-950/80 border-b border-gray-200/80 dark:border-white/10 transition-colors" ]
+    el "header" [ class_ "sticky top-0 z-40 w-full backdrop-blur-md bg-white/95 dark:bg-zinc-950/95 border-b border-zinc-200 dark:border-zinc-800 transition-colors" ]
       [ el "nav"
           [ id_ "nav"
           , xDataFlag MenuOpen false
@@ -33,9 +33,9 @@ render lang currentRoute =
               [ -- Brand Logo
                 el "div" [ class_ "flex lg:flex-1" ]
                   [ navLink { lang, current: currentRoute, target: Home }
-                      [ class_ "flex items-center gap-x-2.5 font-display text-lg font-bold text-gray-900 dark:text-white tracking-tight group focus-visible:outline-2 focus-visible:outline-emerald-600 rounded-lg p-1 -m-1" ]
+                      [ class_ "flex items-center gap-x-3 font-mono text-sm font-bold text-zinc-900 dark:text-white tracking-wider group focus-visible:outline-2 focus-visible:outline-emerald-600 rounded-md p-1 -m-1" ]
                       [ brandIcon
-                      , el "span" [ class_ "transition-colors group-hover:text-emerald-700 dark:group-hover:text-emerald-400" ] [ text d.common.siteTitle ]
+                      , el "span" [ class_ "transition-colors group-hover:text-emerald-700 dark:group-hover:text-emerald-400 uppercase tracking-widest text-xs sm:text-sm font-bold" ] [ text d.common.siteTitle ]
                       ]
                   ]
               -- Desktop nav
@@ -90,9 +90,9 @@ render lang currentRoute =
 brandIcon :: Html
 brandIcon =
   el "div"
-    [ class_ "size-8 rounded-lg bg-emerald-700 flex items-center justify-center text-white shadow-xs font-bold text-sm tracking-wider" ]
+    [ class_ "size-7 rounded-md bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center text-emerald-400 dark:text-emerald-700 shadow-2xs font-bold text-xs" ]
     [ el "svg"
-        [ class_ "size-5"
+        [ class_ "size-4"
         , attr "viewBox" "0 0 24 24"
         , attr "fill" "none"
         , attr "stroke" "currentColor"

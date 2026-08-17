@@ -1,33 +1,33 @@
 ---
-name: Pohjola Nordic
+name: Pohjola Architectural Nordic
 colors:
   primary: "#047857"
   on-primary: "#FFFFFF"
-  secondary: "#4B5563"
+  secondary: "#18181B"
   on-secondary: "#FFFFFF"
   tertiary: "#0F766E"
   on-tertiary: "#FFFFFF"
-  neutral: "#F9FAFB"
+  neutral: "#FAFAFA"
   surface: "#FFFFFF"
-  on-surface: "#111827"
+  on-surface: "#09090B"
   error: "#DC2626"
   on-error: "#FFFFFF"
 typography:
   headline-display:
     fontFamily: Inter, sans-serif
-    fontSize: 48px
-    fontWeight: 700
-    lineHeight: 1.1
+    fontSize: 56px
+    fontWeight: 800
+    lineHeight: 1.05
   headline-lg:
     fontFamily: Inter, sans-serif
-    fontSize: 32px
-    fontWeight: 600
-    lineHeight: 1.2
+    fontSize: 36px
+    fontWeight: 700
+    lineHeight: 1.15
   headline-md:
     fontFamily: Inter, sans-serif
     fontSize: 24px
-    fontWeight: 600
-    lineHeight: 1.3
+    fontWeight: 700
+    lineHeight: 1.25
   body-lg:
     fontFamily: Inter, sans-serif
     fontSize: 18px
@@ -35,23 +35,23 @@ typography:
     lineHeight: 1.6
   body-md:
     fontFamily: Inter, sans-serif
-    fontSize: 16px
+    fontSize: 15px
     fontWeight: 400
     lineHeight: 1.5
   body-sm:
     fontFamily: Inter, sans-serif
-    fontSize: 14px
+    fontSize: 13px
     fontWeight: 400
     lineHeight: 1.5
   label-md:
-    fontFamily: Inter, sans-serif
-    fontSize: 14px
-    fontWeight: 500
+    fontFamily: JetBrains Mono, monospace
+    fontSize: 12px
+    fontWeight: 600
     lineHeight: 1
 rounded:
   sm: 4px
-  md: 8px
-  lg: 16px
+  md: 6px
+  lg: 10px
   full: 9999px
 spacing:
   xs: 4px
@@ -82,7 +82,7 @@ components:
   badge:
     backgroundColor: "{colors.tertiary}"
     textColor: "{colors.on-tertiary}"
-    rounded: "{rounded.full}"
+    rounded: "{rounded.sm}"
     padding: "{spacing.xs}"
   alert-error:
     backgroundColor: "{colors.error}"
@@ -93,70 +93,67 @@ components:
 
 ## Overview
 
-Pohjola is an opinionated, minimalist Nordic design system built for high-performance server-rendered web applications. It emphasizes natural clarity, functional hierarchy, high contrast legibility, and zero visual clutter.
+Pohjola is a sharp, architectural Nordic design system engineered for high-performance server-rendered web applications. It embodies structural precision, high-contrast monochrome surfaces, deep pine-green accents, hairline grid structures, and technical monospace metadata.
 
 ## Colors
 
-Primary (#047857): Deep Nordic pine green used strictly for the single primary call-to-action on any screen. Never use for generic background decoration.
+Primary (#047857): Deep Nordic Pine. Reserved strictly for the single primary call-to-action on any screen. Never used for generic backgrounds.
 
-Secondary (#4B5563): Slate gray used for secondary actions, borders, and supportive metadata.
+Secondary (#18181B): Obsidian black. Used for high-contrast inverted cards, secondary interactive triggers, and dark surface containers.
 
-Tertiary (#0F766E): Nordic deep teal reserved for active badges, highlights, and subtle focus cues.
+Tertiary (#0D9488): Glacial teal accent for active indicator tags, badge highlights, and subtle focus cues.
 
-Neutral (#F9FAFB): Crisp off-white canvas background ensuring calm contrast without blinding brightness.
+Neutral (#FAFAFA): Clean chalk-white page canvas ensuring calm, crisp contrast (Dark: #09090B).
 
-Surface (#FFFFFF): Pure white surface cards for elevated containers and content panels.
+Surface (#FFFFFF): Pure white architectural card panels with sharp 1px borders (Dark: #121215).
 
-On-Surface (#111827): Near-black ink for headlines, body copy, and primary readable text.
+On-Surface (#09090B): Deep obsidian ink for text and headlines ensuring maximum WCAG AAA legibility.
 
-Error (#DC2626): Pure accessible red reserved for validation errors, destructive confirmations, and critical alerts.
+Error (#DC2626): Pure accessible crimson for validation errors, destructive actions, and alerts.
 
 ## Typography
 
-The typography is built entirely on **Inter** to ensure geometric rhythm and high legibility at all screen sizes.
+Pohjola pairs **Inter** for editorial display headlines with **JetBrains Mono** for technical metadata, tags, and code telemetry.
 
-Headlines use tight negative tracking (`-0.02em`) with strong weight (600/700) to establish instant focal points. Body text is balanced at 1.5 line height for effortless scanning.
+- Display Headlines: Heavyweight (700/800), tight tracking (`tracking-tighter` / `-0.03em`), and tight line-height (`1.05-1.15`).
+- Body Copy: Balanced at 1.5 line height, high readability.
+- Monospace Telemetry: `text-xs font-mono uppercase tracking-widest` for status badges, indexes, and technical indicators.
 
 ## Layout
 
-The layout uses a fluid container with a maximum width of 1280px (`max-w-7xl`). All layout rhythm conforms to a strict **8px grid** (with a 4px micro-scale).
-
-Container spacing rules:
-- Page container padding: 16px mobile (`sm`), 32px desktop (`xl`).
-- Grid gaps: 24px (`lg`) between primary cards, 16px (`md`) between form elements.
+Layout follows a strict **Architectural Grid**:
+- Standard Container: `max-w-7xl` with 16px mobile / 32px desktop padding.
+- Grid Separators: Crisp 1px hairline borders (`border-zinc-200 dark:border-zinc-800`).
+- Section Spacing: Generous vertical rhythm (`py-16` to `py-24`).
 
 ## Elevation & Depth
 
-Visual hierarchy is communicated through **tonal layering and subtle 1px border rings** rather than heavy drop shadows.
-
-- Layer 0 (Canvas): `#F9FAFB` (Dark: `#0B0F17`)
-- Layer 1 (Card / Surface): `#FFFFFF` with `ring-1 ring-gray-200` (Dark: `#111827` with `ring-white/10`)
-- Layer 2 (Modal / Popover): Elevated with `shadow-lg ring-1 ring-gray-300`
+No soft blurry drop-shadows. Depth is created through **hairline border rings, crisp 1px borders, and tonal layering**:
+- Level 0 (Canvas): `#FAFAFA` (Dark: `#09090B`)
+- Level 1 (Card): `#FFFFFF` with `border border-zinc-200 dark:border-zinc-800` (Dark: `#121215`)
+- Level 2 (Dock / Terminal): `#18181B` with `border border-zinc-700`
 
 ## Shapes
 
-Shapes are strictly geometric with purposeful rounding:
-- Inputs and buttons: 8px (`rounded-md`)
-- Cards and content panels: 16px (`rounded-lg`)
-- Badges and pills: 9999px (`rounded-full`)
-
-Never mix arbitrary rounding values (e.g. `rounded-[22px]`).
+Shapes are engineered and crisp:
+- Buttons and inputs: 6px (`rounded-md`)
+- Cards and content panels: 10px (`rounded-lg`)
+- Badges and indicators: 4px (`rounded-sm`) or 9999px pill
 
 ## Components
 
-All UI generation MUST use pre-composed component primitives from `App.Ui`:
-
-* **Buttons (`App.Ui.Button`)**: `Primary` (Emerald CTA), `Secondary` (Slate border), `Outline`, `Ghost`.
-* **Cards (`App.Ui.Card`)**: Surface container with standardized padding, 16px radius, and subtle border ring.
-* **Badges (`App.Ui.Badge`)**: Pill-shaped status indicators with semantic color mappings.
-* **Alerts (`App.Ui.Alert`)**: Structured error and notification boxes with role="alert" or role="status".
-* **Modals (`App.Ui.Modal`)**: Accessible dialogs with focus traps, escape-key dismiss, and backdrop blur.
-* **Accordions & Tabs (`App.Ui.Accordion`, `App.Ui.Tabs`)**: Accessible ARIA-compliant expandable views.
+All views MUST use typed primitives from `App.Ui`:
+* `App.Ui.Button`: High-contrast, tactile buttons (`Primary`, `Secondary`, `Outline`, `Ghost`, `Inverted`).
+* `App.Ui.Card`: Structured architectural cards with razor-thin borders.
+* `App.Ui.Badge`: Monospace pill/tag indicators.
+* `App.Ui.Stat`: Hairline metric blocks for telemetry and invariant guarantees.
+* `App.Ui.Alert`: Structured ARIA status banners.
+* `App.Ui.EmptyState`: Technical blueprint empty states.
 
 ## Do's and Don'ts
 
-- DO: Limit each view to ONE primary button variant (`Primary`).
-- DO: Use semantic component constructors from `App.Ui` instead of writing raw Tailwind strings.
-- DO: Maintain WCAG AA contrast (minimum 4.5:1 for body text, 3:1 for large text).
-- DON'T: Create decorative gradients, pulse pills, or icon-stuffed bento boxes without user purpose.
-- DON'T: Use arbitrary custom CSS classes or inline pixel values.
+- DO: Keep one single primary CTA per page view.
+- DO: Use monospace telemetry tags (`01 / TOTALITY`, `SYSTEM: READY`) for technical context.
+- DO: Rely on razor-sharp 1px borders and tonal contrast for layout structure.
+- DON'T: Use blurry gradient blobs, pastel cards, or generic dashboard pill badges.
+- DON'T: Assemble raw 20-class Tailwind utility chains outside `App.Ui`.

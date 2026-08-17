@@ -6,6 +6,7 @@ module App.Features.Home.Components.Services where
 
 import App.Features.Home.Components.ServiceCard (renderServiceCard)
 import App.Html (Html, class_, el, text)
+import App.Ui.Badge as Badge
 import App.Ui.Container (container)
 import Data.Content (services)
 import Data.Foldable (foldMap)
@@ -16,14 +17,15 @@ renderServices lang =
   let
     d = (dict lang).services
   in
-    el "section" [ class_ "py-8 sm:py-12 lg:py-14 bg-white dark:bg-gray-900/50 transition-colors" ]
+    el "section" [ class_ "py-16 sm:py-24 bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800" ]
       [ container "max-w-7xl" ""
-          [ el "div" [ class_ "text-center max-w-2xl mx-auto mb-8 sm:mb-10" ]
-              [ el "p" [ class_ "text-xs font-mono font-semibold uppercase tracking-widest text-emerald-700 dark:text-emerald-400" ] [ text "Features" ]
-              , el "h2" [ class_ "mt-2 font-display text-4xl sm:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white" ]
+          [ el "div" [ class_ "max-w-2xl mb-12" ]
+              [ el "div" [ class_ "mb-3" ]
+                  [ Badge.badge Badge.Neutral "CAPABILITIES & MODULES" ]
+              , el "h2" [ class_ "font-display text-3xl sm:text-4xl font-extrabold tracking-tight text-zinc-950 dark:text-white" ]
                   [ text d.sectionTitle ]
               ]
-          , el "div" [ class_ "grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3" ]
+          , el "div" [ class_ "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3" ]
               [ foldMap (renderServiceCard lang) services ]
           ]
       ]
