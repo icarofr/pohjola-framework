@@ -6,8 +6,8 @@ import Prelude
 import App.Html (Html, class_, el, text)
 import App.Ui as Ui
 import App.Ui.Container (container)
-import Data.Content (Service, bookingUrl, formatPrice, services)
-import Data.I18n (Lang, dict, langTag)
+import Data.Content (Service, bookingUrl, services)
+import Data.I18n (Lang, dict)
 import Data.Maybe (Maybe(..))
 import Data.Route (Route(..))
 
@@ -30,9 +30,9 @@ renderHome lang =
       , el "section" [ class_ "py-16 bg-base-200/50 border-b border-base-300" ]
           [ container "max-w-5xl" ""
               [ Ui.grid3
-                  [ renderInvariantCard "Type Totality" "PureScript ADTs and exhaustive pattern matching guarantee that runtime exceptions are eliminated at compile time."
-                  , renderInvariantCard "Bun Runtime" "Native Bun server implementation rendering sub-millisecond SSR responses with zero Node.js runtime overhead."
-                  , renderInvariantCard "Alpine Interactivity" "Lightweight client-side interactivity delivered through typed, verified constructors without custom JavaScript."
+                  [ renderInvariantCard "Type Safety" "PureScript ADTs and exhaustive pattern matching guarantee that runtime exceptions are eliminated at compile time."
+                  , renderInvariantCard "Bun SSR Runtime" "Native Bun server implementation rendering sub-millisecond SSR responses with zero Node.js runtime overhead."
+                  , renderInvariantCard "Zero Visual Drift (daisyUI)" "Rigid slot archetypes over daisyUI 5 semantic components (experimental) mechanically prevent layout deformation."
                   ]
               ]
           ]

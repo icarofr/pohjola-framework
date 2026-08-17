@@ -89,8 +89,9 @@ Feature logic lives in isolated domain modules. Asynchronous effects compose cle
 - **Zero-JS Resilience:** If JavaScript fails or is disabled, all routes, forms, and pages degrade seamlessly into accessible HTML documents.
 
 ### Built for AI Agents: Zero-Drift by Construction
-In loosely typed stacks, AI coding assistants frequently hallucinate missing properties, drop edge cases, forget localized translation keys, or introduce runtime bugs.
-- **Mechanical Enforcement:** An agent cannot declare a route without completing its bidirectional codec, sitemap entry, and bilingual dictionaries.
+In loosely typed stacks, AI coding assistants frequently hallucinate missing properties, drop edge cases, forget localized translation keys, or produce inconsistent "utility soup" layouts.
+- **Mechanical Logic Enforcement:** An agent cannot declare a route without completing its bidirectional codec, sitemap entry, and bilingual dictionaries.
+- **Visual Drift Prevention (daisyUI + Slot Archetypes):** Raw layout utility soup in views is strictly forbidden. Views must compose rigid PureScript slot archetypes (`App.Ui.Layout.*`) built on top of **daisyUI 5 semantic components** (experimental). Agents provide typed data records (`title`, `description`, `action`) rather than ad-hoc margin/flex CSS chains, guaranteeing that card alignments, button baselines, and touch targets remain structurally sound.
 - **Instant Guardrails:** `make gate` (~2s) and `ContractSpec` automatically verify FFI boundaries, CSP nonces, and feature isolation before changes can land.
 
 ---
