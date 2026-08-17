@@ -29,7 +29,7 @@ sectionHeader props =
   in
     el "div" [ class_ ("flex flex-col max-w-3xl mb-12 sm:mb-16 space-y-4 " <> alignClass) ]
       [ case props.eyebrow of
-          Just eb -> Badge.badge Badge.Primary eb
+          Just eb -> Badge.badge Badge.BadgePrimary eb
           Nothing -> text ""
       , el "h2" [ class_ "font-display text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-zinc-950 dark:text-white leading-[1.1]" ]
           [ text props.title ]

@@ -4,6 +4,7 @@ module Test.UiSpec (spec) where
 import Prelude
 
 import App.Html (render, text)
+import App.Ui (AlertVariant(..), BadgeVariant(..))
 import App.Ui.Accordion (renderAccordion)
 import App.Ui.Alert as Alert
 import App.Ui.Badge as Badge
@@ -64,14 +65,14 @@ spec = do
 
     describe "Badge" do
       it "renders badge class with semantic variant" do
-        let html = render (Badge.badge Badge.Success "Active")
+        let html = render (Badge.badge BadgeSuccess "Active")
         html `shouldContain` "font-mono"
         html `shouldContain` "border-emerald-300"
         html `shouldContain` "Active"
 
     describe "Alert" do
       it "renders alert role and semantic class" do
-        let html = render (Alert.alert Alert.Error "Something broke")
+        let html = render (Alert.alert AlertError "Something broke")
         html `shouldContain` "role=\"alert\""
         html `shouldContain` "bg-red-50"
         html `shouldContain` "Something broke"

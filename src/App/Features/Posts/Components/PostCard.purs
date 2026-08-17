@@ -22,9 +22,9 @@ renderPostCard lang post =
       1 -> "ARCHITECTURE"
       _ -> "TYPE SAFETY"
     categoryVariant = case idNum `mod` 3 of
-      0 -> Badge.Primary
-      1 -> Badge.Tertiary
-      _ -> Badge.Secondary
+      0 -> Badge.BadgePrimary
+      1 -> Badge.BadgeTertiary
+      _ -> Badge.BadgeSecondary
     readTime = show (3 + (idNum `mod` 4)) <> " MIN READ"
   in
     card $ cardBody

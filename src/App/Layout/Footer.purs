@@ -38,7 +38,7 @@ render lang currentRoute =
                               ]
                           ]
                       , el "h3" [ class_ "font-mono text-sm font-bold text-zinc-900 dark:text-white uppercase tracking-widest" ] [ text siteInfo.title ]
-                      , Badge.badge Badge.Success "OPERATIONAL"
+                      , Badge.badge Badge.BadgeSuccess "OPERATIONAL"
                       ]
                   , el "p" [ class_ "text-sm leading-relaxed text-zinc-600 dark:text-zinc-400 max-w-sm font-normal" ] [ text siteInfo.description ]
                   , el "div" [ class_ "pt-2 flex space-x-3" ]

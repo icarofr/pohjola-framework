@@ -1,4 +1,4 @@
--- | Posts view — list and detail rendering via slot-based layout templates
+-- | Posts view — list and detail rendering via App.Ui component contracts
 module App.Features.Posts.View where
 
 import Prelude
@@ -7,11 +7,8 @@ import App.Alpine (spaLink)
 import App.Features.Posts.Components.PostCard (renderPostCard)
 import App.Features.Posts.Types (Post, postBody, postId, postTitle)
 import App.Html (Html, attr, class_, el, text)
-import App.Ui.Alert as Alert
-import App.Ui.Badge as Badge
+import App.Ui as Ui
 import App.Ui.Container (container)
-import App.Ui.Layout.Grid (grid3)
-import App.Ui.Layout.SectionHeader (Align(..), sectionHeader)
 import Data.Array (take)
 import Data.Foldable (foldMap)
 import Data.I18n (Lang, dict)
@@ -25,15 +22,16 @@ renderPostList lang posts =
     d = (dict lang).posts
     navDict = (dict lang).nav
   in
-    container "max-w-5xl" "py-16 sm:py-24 space-y-12"
-      [ sectionHeader
-          { eyebrow: Just navDict.posts
-          , title: d.listTitle
-          , subtitle: Nothing
-          , align: Left
-          }
-      , grid3 (map (renderPostCard lang) (take 9 posts))
-      ]
+    Ui.pageLayout
+      { header:
+          Ui.pageHeader
+            { category: Just navDict.posts
+            , title: d.listTitle
+            , subtitle: Nothing
+            }
+      , content:
+          Ui.grid3 (map (renderPostCard lang) (take 9 posts))
+      }
 
 -- | Post detail page — shows a single post with a back link and rich layout.
 renderPostDetail :: Lang -> Post -> Html
@@ -46,9 +44,9 @@ renderPostDetail lang post =
       1 -> "ARCHITECTURE"
       _ -> "TYPE SAFETY"
     categoryVariant = case idNum `mod` 3 of
-      0 -> Badge.Primary
-      1 -> Badge.Tertiary
-      _ -> Badge.Secondary
+      0 -> Ui.BadgePrimary
+      1 -> Ui.BadgeTertiary
+      _ -> Ui.BadgeSecondary
     readTime = show (3 + (idNum `mod` 4)) <> " MIN READ"
   in
     container "max-w-4xl" "py-16 sm:py-24 space-y-8"
@@ -61,7 +59,7 @@ renderPostDetail lang post =
           ]
       , el "article" [ class_ "p-8 sm:p-12 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xs space-y-8" ]
           [ el "div" [ class_ "flex items-center gap-x-3 text-xs mb-4" ]
-              [ Badge.badge categoryVariant categoryTag
+              [ Ui.badge categoryVariant categoryTag
               , el "span" [ class_ "text-xs font-mono text-zinc-400" ]
                   [ text readTime ]
               , el "span" [ class_ "text-xs font-mono text-zinc-400" ]
@@ -93,5 +91,5 @@ renderPostsError lang =
     container "max-w-3xl" "py-20 text-center space-y-6"
       [ el "h1" [ class_ "font-display text-4xl font-extrabold text-zinc-950 dark:text-white" ]
           [ text d.listTitle ]
-      , Alert.alert Alert.Error d.loadingError
+      , Ui.alert Ui.AlertError d.loadingError
       ]

@@ -4,7 +4,7 @@ module App.Ui.Layout.ConversionCta where
 import Prelude
 
 import App.Html (Html, class_, el, text)
-import App.Ui.Button (buttonLink, buttonLinkExternal, Variant(..), Size(..))
+import App.Ui.Button (ButtonVariant(..), Size(..), buttonLink, buttonLinkExternal)
 import App.Ui.Container (container)
 import App.Ui.Layout.Types (ActionTarget(..))
 
@@ -29,9 +29,9 @@ conversionCta props =
         , el "div" [ class_ "pt-4 flex justify-center" ]
             [ case props.action.target of
                 Internal t ->
-                  buttonLink { variant: Inverted, size: Lg, lang: t.lang, route: t.route, extraClass: "px-8 py-3.5 text-base font-bold shadow-lg" } props.action.label
+                  buttonLink { variant: ButtonInverted, size: Lg, lang: t.lang, route: t.route, extraClass: "px-8 py-3.5 text-base font-bold shadow-lg" } props.action.label
                 External t ->
-                  buttonLinkExternal { variant: Inverted, size: Lg, href: t.href, extraClass: "px-8 py-3.5 text-base font-bold shadow-lg" } props.action.label
+                  buttonLinkExternal { variant: ButtonInverted, size: Lg, href: t.href, extraClass: "px-8 py-3.5 text-base font-bold shadow-lg" } props.action.label
             ]
         ]
     ]
