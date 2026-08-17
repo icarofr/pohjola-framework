@@ -1,9 +1,9 @@
--- | Site header navigation — DaisyUI navbar component
+-- | Site header navigation — DaisyUI navbar component with Theme Toggle
 module App.Layout.Header where
 
 import Prelude
 
-import App.Alpine (Flag(..), ariaExpandedFlag, navLink, onClick, spaLink, toggleFlag, xCloak, xDataFlag, xShowFlag)
+import App.Alpine (Flag(..), ThemeMode(..), ariaExpandedFlag, cycleTheme, navLink, onClick, toggleFlag, xCloak, xDataFlag, xDataTheme, xShowFlag, xShowTheme)
 import App.Html (Html, attr, class_, el, href, text)
 import App.Layout.Icons (pohjolaLogo)
 import App.Ui.Badge as Badge
@@ -47,14 +47,33 @@ render lang currentRoute =
               , renderNavItem lang currentRoute PostList d.nav.posts
               ]
 
-          -- Navbar End: Language switcher + Mobile menu button
+          -- Navbar End: Theme toggle + Language switcher + Mobile menu button
           , el "div" [ class_ "navbar-end w-auto flex items-center gap-2" ]
-              [ el "a"
+              [ -- Theme toggle button
+                el "button"
+                  [ class_ "btn btn-ghost btn-sm btn-square text-base-content"
+                  , onClick cycleTheme
+                  , xDataTheme
+                  , attr "aria-label" "Toggle color theme (Light / Dark / System)"
+                  ]
+                  [ -- Sun icon for Light
+                    el "svg" [ class_ "size-4", xShowTheme ThemeLight, attr "fill" "none", attr "viewBox" "0 0 24 24", attr "stroke-width" "2", attr "stroke" "currentColor" ]
+                      [ el "path" [ attr "stroke-linecap" "round", attr "stroke-linejoin" "round", attr "d" "M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" ] [] ]
+                  -- Moon icon for Dark
+                  , el "svg" [ class_ "size-4", xShowTheme ThemeDark, attr "fill" "none", attr "viewBox" "0 0 24 24", attr "stroke-width" "2", attr "stroke" "currentColor" ]
+                      [ el "path" [ attr "stroke-linecap" "round", attr "stroke-linejoin" "round", attr "d" "M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" ] [] ]
+                  -- Monitor icon for System
+                  , el "svg" [ class_ "size-4", xShowTheme ThemeSystem, attr "fill" "none", attr "viewBox" "0 0 24 24", attr "stroke-width" "2", attr "stroke" "currentColor" ]
+                      [ el "path" [ attr "stroke-linecap" "round", attr "stroke-linejoin" "round", attr "d" "M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" ] [] ]
+                  ]
+              -- Language toggle button
+              , el "a"
                   [ href langToggleUrl
                   , class_ "btn btn-ghost btn-sm font-mono text-xs"
                   , attr "aria-label" ("Switch language to " <> langToggleLabel)
                   ]
                   [ text langToggleLabel ]
+              -- Mobile menu trigger
               , el "button"
                   [ class_ "btn btn-ghost btn-sm md:hidden"
                   , onClick (toggleFlag MenuOpen)
