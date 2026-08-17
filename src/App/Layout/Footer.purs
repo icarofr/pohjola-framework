@@ -1,14 +1,11 @@
 -- | Site footer — DaisyUI semantic footer component
 module App.Layout.Footer where
 
-import Prelude
-
 import App.Alpine (navLink)
 import App.Html (Html, attr, class_, el, href, rel_, target_, text)
 import App.Layout.Icons (githubIcon, pohjolaLogo)
-import App.Ui.Badge as Badge
 import Data.Content (siteInfo)
-import Data.I18n (Dictionary, Lang, dict)
+import Data.I18n (Lang, dict)
 import Data.Route (Route(..))
 
 render :: Lang -> Route -> Html

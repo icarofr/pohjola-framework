@@ -1,13 +1,13 @@
--- | Site header navigation — DaisyUI navbar with Theme Toggle and Language Dropdown
+-- | Site header navigation — DaisyUI navbar with Theme Dropdown and Language Dropdown
 module App.Layout.Header where
 
 import Prelude
 
-import App.Alpine (Flag(..), ThemeMode(..), ariaExpandedFlag, cycleTheme, navLink, onClick, toggleFlag, xCloak, xDataFlag, xDataTheme, xShowFlag, xShowTheme)
+import App.Alpine (Flag(..), ThemeMode(..), ariaExpandedFlag, navLink, onClick, toggleFlag, xCloak, xDataFlag, xDataTheme, xSetTheme, xShowFlag, xShowTheme)
 import App.Html (Html, attr, class_, el, href, text)
 import App.Layout.Icons (pohjolaLogo)
 import Data.Content (siteInfo)
-import Data.I18n (Dictionary, Lang(..), dict)
+import Data.I18n (Lang(..), dict)
 import Data.Route (Route(..), routeUrl)
 
 render :: Lang -> Route -> Html
@@ -41,24 +41,61 @@ render lang currentRoute =
               , renderNavItem lang currentRoute PostList d.nav.posts
               ]
 
-          -- Navbar End: Theme toggle + Language Dropdown + Mobile menu button
+          -- Navbar End: Theme Dropdown + Language Dropdown + Mobile menu button
           , el "div" [ class_ "navbar-end w-auto flex items-center gap-2" ]
-              [ -- Theme toggle button
-                el "button"
-                  [ class_ "btn btn-ghost btn-sm btn-square text-base-content"
-                  , onClick cycleTheme
-                  , xDataTheme
-                  , attr "aria-label" "Toggle color theme (Light / Dark / System)"
-                  ]
-                  [ -- Sun icon for Light
-                    el "svg" [ class_ "size-4", xShowTheme ThemeLight, attr "fill" "none", attr "viewBox" "0 0 24 24", attr "stroke-width" "2", attr "stroke" "currentColor" ]
-                      [ el "path" [ attr "stroke-linecap" "round", attr "stroke-linejoin" "round", attr "d" "M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" ] [] ]
-                  -- Moon icon for Dark
-                  , el "svg" [ class_ "size-4", xShowTheme ThemeDark, attr "fill" "none", attr "viewBox" "0 0 24 24", attr "stroke-width" "2", attr "stroke" "currentColor" ]
-                      [ el "path" [ attr "stroke-linecap" "round", attr "stroke-linejoin" "round", attr "d" "M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" ] [] ]
-                  -- Monitor icon for System
-                  , el "svg" [ class_ "size-4", xShowTheme ThemeSystem, attr "fill" "none", attr "viewBox" "0 0 24 24", attr "stroke-width" "2", attr "stroke" "currentColor" ]
-                      [ el "path" [ attr "stroke-linecap" "round", attr "stroke-linejoin" "round", attr "d" "M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" ] [] ]
+              [ -- Theme controller dropdown (DaisyUI dropdown)
+                el "div" [ class_ "dropdown dropdown-end", xDataTheme ]
+                  [ el "div"
+                      [ attr "tabindex" "0"
+                      , attr "role" "button"
+                      , class_ "btn btn-ghost btn-sm btn-circle text-base-content"
+                      , attr "aria-label" (d.common.themeLabel <> " (Light / Dark / System)")
+                      ]
+                      [ -- Sun icon for Light
+                        el "svg" [ class_ "size-4", xShowTheme ThemeLight, attr "fill" "none", attr "viewBox" "0 0 24 24", attr "stroke-width" "2", attr "stroke" "currentColor" ]
+                          [ el "path" [ attr "stroke-linecap" "round", attr "stroke-linejoin" "round", attr "d" "M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" ] [] ]
+                      -- Moon icon for Dark
+                      , el "svg" [ class_ "size-4", xShowTheme ThemeDark, attr "fill" "none", attr "viewBox" "0 0 24 24", attr "stroke-width" "2", attr "stroke" "currentColor" ]
+                          [ el "path" [ attr "stroke-linecap" "round", attr "stroke-linejoin" "round", attr "d" "M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" ] [] ]
+                      -- Monitor icon for System
+                      , el "svg" [ class_ "size-4", xShowTheme ThemeSystem, attr "fill" "none", attr "viewBox" "0 0 24 24", attr "stroke-width" "2", attr "stroke" "currentColor" ]
+                          [ el "path" [ attr "stroke-linecap" "round", attr "stroke-linejoin" "round", attr "d" "M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" ] [] ]
+                      ]
+                  , el "ul"
+                      [ attr "tabindex" "0"
+                      , class_ "dropdown-content menu bg-base-100 rounded-box z-50 w-36 p-1.5 shadow-lg border border-base-200 text-xs font-mono mt-1 whitespace-nowrap"
+                      ]
+                      [ el "li" []
+                          [ el "button"
+                              [ class_ "flex items-center gap-2"
+                              , xSetTheme ThemeLight
+                              ]
+                              [ el "svg" [ class_ "size-3.5", attr "fill" "none", attr "viewBox" "0 0 24 24", attr "stroke-width" "2", attr "stroke" "currentColor" ]
+                                  [ el "path" [ attr "stroke-linecap" "round", attr "stroke-linejoin" "round", attr "d" "M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" ] [] ]
+                              , el "span" [] [ text d.common.themeLight ]
+                              ]
+                          ]
+                      , el "li" []
+                          [ el "button"
+                              [ class_ "flex items-center gap-2"
+                              , xSetTheme ThemeDark
+                              ]
+                              [ el "svg" [ class_ "size-3.5", attr "fill" "none", attr "viewBox" "0 0 24 24", attr "stroke-width" "2", attr "stroke" "currentColor" ]
+                                  [ el "path" [ attr "stroke-linecap" "round", attr "stroke-linejoin" "round", attr "d" "M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" ] [] ]
+                              , el "span" [] [ text d.common.themeDark ]
+                              ]
+                          ]
+                      , el "li" []
+                          [ el "button"
+                              [ class_ "flex items-center gap-2"
+                              , xSetTheme ThemeSystem
+                              ]
+                              [ el "svg" [ class_ "size-3.5", attr "fill" "none", attr "viewBox" "0 0 24 24", attr "stroke-width" "2", attr "stroke" "currentColor" ]
+                                  [ el "path" [ attr "stroke-linecap" "round", attr "stroke-linejoin" "round", attr "d" "M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" ] [] ]
+                              , el "span" [] [ text d.common.themeSystem ]
+                              ]
+                          ]
+                      ]
                   ]
 
               -- Language dropdown (DaisyUI dropdown)
@@ -132,31 +169,21 @@ render lang currentRoute =
       ]
 
 renderNavItem :: Lang -> Route -> Route -> String -> Html
-renderNavItem lang current target label =
+renderNavItem lang currentRoute targetRoute label =
   let
-    isActive = isCurrentRoute current target
-    activeClass = if isActive then "btn-active font-bold text-primary" else ""
+    isActive = currentRoute == targetRoute
+    activeClass = if isActive then "btn btn-sm btn-ghost font-semibold text-primary" else "btn btn-sm btn-ghost font-normal text-base-content/80 hover:text-base-content"
   in
-    navLink { lang, current, target }
-      [ class_ ("btn btn-ghost btn-sm text-xs font-semibold " <> activeClass) ]
+    navLink { lang, current: currentRoute, target: targetRoute }
+      [ class_ activeClass ]
       [ text label ]
 
 renderMobileNavItem :: Lang -> Route -> Route -> String -> Html
-renderMobileNavItem lang current target label =
+renderMobileNavItem lang currentRoute targetRoute label =
   let
-    isActive = isCurrentRoute current target
-    activeClass = if isActive then "bg-base-200 font-bold text-primary" else "text-base-content"
+    isActive = currentRoute == targetRoute
+    activeClass = if isActive then "block px-3 py-2 rounded-lg text-sm font-semibold bg-base-200 text-primary" else "block px-3 py-2 rounded-lg text-sm font-normal text-base-content/80 hover:bg-base-200"
   in
-    navLink { lang, current, target }
-      [ class_ ("block px-3 py-2 rounded-md text-sm font-medium hover:bg-base-200 transition-colors " <> activeClass) ]
+    navLink { lang, current: currentRoute, target: targetRoute }
+      [ class_ activeClass ]
       [ text label ]
-
-isCurrentRoute :: Route -> Route -> Boolean
-isCurrentRoute current target =
-  case current, target of
-    Home, Home -> true
-    About, About -> true
-    Contact, Contact -> true
-    PostList, PostList -> true
-    PostDetail _, PostList -> true
-    _, _ -> false
