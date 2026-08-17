@@ -139,7 +139,7 @@ toggleFlag f = Expr (flagName f <> " = !" <> flagName f)
 themeToggle :: Expr
 themeToggle = Expr
   ( "document.documentElement.classList.toggle('dark'); "
-      <> "document.documentElement.setAttribute('data-theme', document.documentElement.classList.contains('dark') ? 'dim' : 'nord'); "
+      <> "document.documentElement.setAttribute('data-theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light'); "
       <> "localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light')"
   )
 
@@ -147,9 +147,9 @@ themeToggle = Expr
 setTheme :: ThemeMode -> Expr
 setTheme = case _ of
   ThemeLight ->
-    Expr "localStorage.setItem('theme', 'light'); document.documentElement.setAttribute('data-theme', 'nord'); document.documentElement.classList.remove('dark')"
+    Expr "localStorage.setItem('theme', 'light'); document.documentElement.setAttribute('data-theme', 'light'); document.documentElement.classList.remove('dark')"
   ThemeDark ->
-    Expr "localStorage.setItem('theme', 'dark'); document.documentElement.setAttribute('data-theme', 'dim'); document.documentElement.classList.add('dark')"
+    Expr "localStorage.setItem('theme', 'dark'); document.documentElement.setAttribute('data-theme', 'dark'); document.documentElement.classList.add('dark')"
   ThemeSystem ->
     Expr "localStorage.setItem('theme', 'system'); document.documentElement.removeAttribute('data-theme'); (matchMedia('(prefers-color-scheme: dark)').matches ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark'))"
 
@@ -158,8 +158,8 @@ cycleTheme :: Expr
 cycleTheme = Expr
   ( "theme = (theme === 'system' ? 'light' : theme === 'light' ? 'dark' : 'system'); "
       <> "localStorage.setItem('theme', theme); "
-      <> "if (theme === 'dark') { document.documentElement.setAttribute('data-theme', 'dim'); document.documentElement.classList.add('dark'); } "
-      <> "else if (theme === 'light') { document.documentElement.setAttribute('data-theme', 'nord'); document.documentElement.classList.remove('dark'); } "
+      <> "if (theme === 'dark') { document.documentElement.setAttribute('data-theme', 'dark'); document.documentElement.classList.add('dark'); } "
+      <> "else if (theme === 'light') { document.documentElement.setAttribute('data-theme', 'light'); document.documentElement.classList.remove('dark'); } "
       <> "else { document.documentElement.removeAttribute('data-theme'); (window.matchMedia('(prefers-color-scheme: dark)').matches ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark')); }"
   )
 
