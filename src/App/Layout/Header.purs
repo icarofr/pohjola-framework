@@ -1,4 +1,4 @@
--- | Site header navigation — DaisyUI navbar component with Theme Toggle
+-- | Site header navigation — DaisyUI navbar with Theme Toggle and Language Dropdown
 module App.Layout.Header where
 
 import Prelude
@@ -6,7 +6,6 @@ import Prelude
 import App.Alpine (Flag(..), ThemeMode(..), ariaExpandedFlag, cycleTheme, navLink, onClick, toggleFlag, xCloak, xDataFlag, xDataTheme, xShowFlag, xShowTheme)
 import App.Html (Html, attr, class_, el, href, text)
 import App.Layout.Icons (pohjolaLogo)
-import App.Ui.Badge as Badge
 import Data.Content (siteInfo)
 import Data.I18n (Dictionary, Lang(..), dict)
 import Data.Route (Route(..), routeUrl)
@@ -15,13 +14,9 @@ render :: Lang -> Route -> Html
 render lang currentRoute =
   let
     d = dict lang
-    otherLang = case lang of
-      En -> Fr
-      Fr -> En
-    langToggleUrl = routeUrl otherLang currentRoute
-    langToggleLabel = case lang of
-      En -> "FR"
-      Fr -> "EN"
+    currentLangLabel = case lang of
+      En -> "EN"
+      Fr -> "FR"
   in
     el "header"
       [ class_ "sticky top-0 z-50 bg-base-100/90 backdrop-blur-md border-b border-base-300"
@@ -37,7 +32,6 @@ render lang currentRoute =
                   , el "span" [ class_ "font-mono font-bold uppercase tracking-wider text-sm" ]
                       [ text siteInfo.title ]
                   ]
-              , Badge.badge Badge.BadgeSuccess "v0.1"
               ]
 
           -- Navbar Center: Desktop Nav
@@ -47,7 +41,7 @@ render lang currentRoute =
               , renderNavItem lang currentRoute PostList d.nav.posts
               ]
 
-          -- Navbar End: Theme toggle + Language switcher + Mobile menu button
+          -- Navbar End: Theme toggle + Language Dropdown + Mobile menu button
           , el "div" [ class_ "navbar-end w-auto flex items-center gap-2" ]
               [ -- Theme toggle button
                 el "button"
@@ -66,13 +60,40 @@ render lang currentRoute =
                   , el "svg" [ class_ "size-4", xShowTheme ThemeSystem, attr "fill" "none", attr "viewBox" "0 0 24 24", attr "stroke-width" "2", attr "stroke" "currentColor" ]
                       [ el "path" [ attr "stroke-linecap" "round", attr "stroke-linejoin" "round", attr "d" "M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" ] [] ]
                   ]
-              -- Language toggle button
-              , el "a"
-                  [ href langToggleUrl
-                  , class_ "btn btn-ghost btn-sm font-mono text-xs"
-                  , attr "aria-label" ("Switch language to " <> langToggleLabel)
+
+              -- Language dropdown (DaisyUI dropdown)
+              , el "div" [ class_ "dropdown dropdown-end" ]
+                  [ el "div"
+                      [ attr "tabindex" "0"
+                      , attr "role" "button"
+                      , class_ "btn btn-ghost btn-sm text-xs font-mono flex items-center gap-1 text-base-content"
+                      , attr "aria-label" "Select language"
+                      ]
+                      [ el "span" [] [ text currentLangLabel ]
+                      , el "svg" [ class_ "size-3 opacity-60", attr "fill" "none", attr "viewBox" "0 0 24 24", attr "stroke-width" "2.5", attr "stroke" "currentColor" ]
+                          [ el "path" [ attr "stroke-linecap" "round", attr "stroke-linejoin" "round", attr "d" "M19.5 8.25l-7.5 7.5-7.5-7.5" ] [] ]
+                      ]
+                  , el "ul"
+                      [ attr "tabindex" "0"
+                      , class_ "dropdown-content menu bg-base-100 rounded-box z-50 w-32 p-1.5 shadow-lg border border-base-200 text-xs font-mono mt-1"
+                      ]
+                      [ el "li" []
+                          [ el "a"
+                              [ href (routeUrl En currentRoute)
+                              , class_ (if lang == En then "active font-bold" else "")
+                              ]
+                              [ text "English (EN)" ]
+                          ]
+                      , el "li" []
+                          [ el "a"
+                              [ href (routeUrl Fr currentRoute)
+                              , class_ (if lang == Fr then "active font-bold" else "")
+                              ]
+                              [ text "Français (FR)" ]
+                          ]
+                      ]
                   ]
-                  [ text langToggleLabel ]
+
               -- Mobile menu trigger
               , el "button"
                   [ class_ "btn btn-ghost btn-sm md:hidden"
@@ -95,6 +116,14 @@ render lang currentRoute =
           [ renderMobileNavItem lang currentRoute About d.nav.about
           , renderMobileNavItem lang currentRoute Contact d.nav.contact
           , renderMobileNavItem lang currentRoute PostList d.nav.posts
+          , el "div" [ class_ "pt-2 mt-2 border-t border-base-200 flex items-center justify-between text-xs font-mono px-3" ]
+              [ el "span" [ class_ "text-base-content/60" ] [ text "Language" ]
+              , el "div" [ class_ "flex gap-2" ]
+                  [ el "a" [ href (routeUrl En currentRoute), class_ (if lang == En then "font-bold text-primary" else "text-base-content/70") ] [ text "EN" ]
+                  , el "span" [ class_ "text-base-content/40" ] [ text "|" ]
+                  , el "a" [ href (routeUrl Fr currentRoute), class_ (if lang == Fr then "font-bold text-primary" else "text-base-content/70") ] [ text "FR" ]
+                  ]
+              ]
           ]
       ]
 
