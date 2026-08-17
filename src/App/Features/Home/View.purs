@@ -1,4 +1,4 @@
--- | Home page view — completely rebuilt using pure DaisyUI component contracts
+-- | Home page view — clean, mature functional web framework presentation
 module App.Features.Home.View where
 
 import Prelude
@@ -19,20 +19,20 @@ renderHome lang =
     el "div" [ class_ "flex flex-col w-full" ]
       [ -- Hero Section
         Ui.hero
-          { eyebrow: Just "POHJOLA FRAMEWORK 2026"
+          { eyebrow: Nothing
           , title: d.hero.headline
           , body: d.hero.body
           , primaryAction: { label: d.hero.ctaLabel, target: Ui.Internal { lang, route: About } }
           , secondaryAction: Just { label: "GitHub Repository →", target: Ui.External { href: bookingUrl } }
           }
 
-      -- Invariant Guarantees Strip
+      -- Architectural Foundation
       , el "section" [ class_ "py-16 bg-base-200/50 border-b border-base-300" ]
           [ container "max-w-5xl" ""
               [ Ui.grid3
-                  [ renderInvariantCard "01 // TOTALITY" "Zero Runtime Errors" "Exhaustive type-level guarantees with PureScript ADTs. Every failure path is explicitly handled in the compiler."
-                  , renderInvariantCard "02 // NATIVE BUN" "Sub-millisecond SSR" "High-speed server rendering executed directly on Bun.serve with zero Node.js overhead and instant restarts."
-                  , renderInvariantCard "03 // ISOMORPHIC" "Alpine Interactivity" "Zero custom JavaScript build steps. Interactivity is delivered through verified, typed Alpine.js seams."
+                  [ renderInvariantCard "Type Totality" "PureScript ADTs and exhaustive pattern matching guarantee that runtime exceptions are eliminated at compile time."
+                  , renderInvariantCard "Bun Runtime" "Native Bun server implementation rendering sub-millisecond SSR responses with zero Node.js runtime overhead."
+                  , renderInvariantCard "Alpine Interactivity" "Lightweight client-side interactivity delivered through typed, verified constructors without custom JavaScript."
                   ]
               ]
           ]
@@ -41,7 +41,7 @@ renderHome lang =
       , el "section" [ class_ "py-16 sm:py-24 border-b border-base-300" ]
           [ container "max-w-5xl" "space-y-10"
               [ Ui.pageHeader
-                  { category: Just "CORE MODULES"
+                  { category: Nothing
                   , title: d.services.sectionTitle
                   , subtitle: Nothing
                   }
@@ -49,21 +49,21 @@ renderHome lang =
               ]
           ]
 
-      -- Quickstart Code Strip (DaisyUI Mockup Code)
+      -- Quickstart Code Strip
       , el "section" [ class_ "py-12 bg-base-200 border-b border-base-300" ]
           [ container "max-w-5xl" "flex flex-col md:flex-row items-center justify-between gap-6"
               [ el "div" [ class_ "space-y-1 text-center md:text-left" ]
-                  [ el "p" [ class_ "text-sm font-bold text-base-content font-mono" ] [ text "QUICKSTART TEMPLATE" ]
-                  , el "p" [ class_ "text-xs text-base-content/70 font-mono" ] [ text "Scaffold a production-ready Pohjola application in seconds." ]
+                  [ el "p" [ class_ "text-sm font-semibold text-base-content" ] [ text "Getting Started" ]
+                  , el "p" [ class_ "text-xs text-base-content/70" ] [ text "Clone the starter repository and run the local development server." ]
                   ]
               , el "div" [ class_ "mockup-code bg-neutral text-neutral-content text-xs font-mono py-3 px-4 shadow-md w-full md:w-auto" ]
                   [ el "pre" [ class_ "text-success select-all" ]
-                      [ el "code" [] [ text "$ git clone https://github.com/icarofr/pohjola-framework.git my-app" ] ]
+                      [ el "code" [] [ text "git clone https://github.com/icarofr/pohjola-framework.git my-app" ] ]
                   ]
               ]
           ]
 
-      -- CTA Conversion Section
+      -- CTA Section
       , Ui.conversionCta
           { heading: d.cta.heading
           , body: d.cta.body
@@ -71,12 +71,11 @@ renderHome lang =
           }
       ]
 
-renderInvariantCard :: String -> String -> String -> Html
-renderInvariantCard tag title desc =
+renderInvariantCard :: String -> String -> Html
+renderInvariantCard title desc =
   el "div" [ class_ "card bg-base-100 shadow-md border border-base-200" ]
     [ el "div" [ class_ "card-body p-6 space-y-2" ]
-        [ el "span" [ class_ "badge badge-sm badge-primary font-mono" ] [ text tag ]
-        , el "h3" [ class_ "card-title text-base font-bold text-base-content" ] [ text title ]
+        [ el "h3" [ class_ "card-title text-base font-bold text-base-content" ] [ text title ]
         , el "p" [ class_ "text-sm text-base-content/75 leading-relaxed font-normal" ] [ text desc ]
         ]
     ]
@@ -88,7 +87,7 @@ renderServiceActionCard lang service =
     copy = d.serviceCopy service.id
   in
     Ui.actionCard
-      { tag: Just { text: formatPrice (langTag lang) service.price, variant: Ui.BadgeSecondary }
+      { tag: Nothing
       , imageUrl: Just { url: service.imageUrl, alt: copy.title, width: service.imageWidth, height: service.imageHeight }
       , title: copy.title
       , description: copy.description

@@ -5,8 +5,7 @@ import Prelude
 
 import App.Alpine (spaLink)
 import App.Features.Posts.Types (Post, postBody, postId, postTitle)
-import App.Html (Html, attr, class_, el, text)
-import App.Ui.Badge as Badge
+import App.Html (Html, class_, el, text)
 import App.Ui.Card (card, cardActions, cardBody, cardTitle)
 import Data.I18n (Lang, dict)
 import Data.Route (Route(..))
@@ -16,22 +15,12 @@ renderPostCard lang post =
   let
     d = (dict lang).posts
     idNum = postId post
-    categoryTag = case idNum `mod` 3 of
-      0 -> "PERFORMANCE"
-      1 -> "ARCHITECTURE"
-      _ -> "TYPE SAFETY"
-    categoryVariant = case idNum `mod` 3 of
-      0 -> Badge.BadgePrimary
-      1 -> Badge.BadgeTertiary
-      _ -> Badge.BadgeSecondary
-    readTime = show (3 + (idNum `mod` 4)) <> " MIN READ"
   in
     card $ cardBody
       ( el "div" [ class_ "flex flex-col justify-between h-full space-y-4" ]
           [ el "div" [ class_ "space-y-3" ]
-              [ el "div" [ class_ "flex items-center justify-between text-xs" ]
-                  [ Badge.badge categoryVariant categoryTag
-                  , el "span" [ class_ "font-mono text-base-content/60 text-xs" ] [ text readTime ]
+              [ el "div" [ class_ "flex items-center justify-between text-xs text-base-content/60 font-mono" ]
+                  [ el "span" [] [ text ("Article #" <> show idNum) ]
                   ]
               , cardTitle (el "span" [ class_ "line-clamp-2 text-base font-bold text-base-content" ] [ text (postTitle post) ])
               , el "p" [ class_ "line-clamp-3 text-sm text-base-content/75 font-normal leading-relaxed" ]

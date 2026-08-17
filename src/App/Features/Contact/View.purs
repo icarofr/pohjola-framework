@@ -24,21 +24,21 @@ renderContact lang =
       , content:
           Ui.grid3
             [ Ui.actionCard
-                { tag: Just { text: "TRIAGE < 24H", variant: Ui.BadgeError }
+                { tag: Just { text: "Issues", variant: Ui.BadgeError }
                 , imageUrl: Nothing
                 , title: d.issuesTitle
                 , description: d.issuesText
                 , action: { label: d.issuesButton <> " →", target: Ui.External { href: "https://github.com/icarofr/pohjola-framework/issues" } }
                 }
             , Ui.actionCard
-                { tag: Just { text: "OPEN RFC", variant: Ui.BadgeTertiary }
+                { tag: Just { text: "Community", variant: Ui.BadgeTertiary }
                 , imageUrl: Nothing
                 , title: d.discussionsTitle
                 , description: d.discussionsText
                 , action: { label: d.discussionsButton <> " →", target: Ui.External { href: "https://github.com/icarofr/pohjola-framework/discussions" } }
                 }
             , Ui.actionCard
-                { tag: Just { text: "MIT LICENSE", variant: Ui.BadgePrimary }
+                { tag: Just { text: "Source", variant: Ui.BadgePrimary }
                 , imageUrl: Nothing
                 , title: d.sourceTitle
                 , description: d.sourceText
