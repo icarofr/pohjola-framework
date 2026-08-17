@@ -1,110 +1,72 @@
--- | Footer — brand, navigation, structured project links, copyright
+-- | Site footer — DaisyUI semantic footer component
 module App.Layout.Footer where
+
+import Prelude
 
 import App.Alpine (navLink)
 import App.Html (Html, attr, class_, el, href, rel_, target_, text)
+import App.Layout.Icons (githubIcon, pohjolaLogo)
 import App.Ui.Badge as Badge
-import App.Ui.Social (renderSocial)
-import Data.Content (bookingUrl, siteInfo)
-import Data.Foldable (foldMap)
-import Data.I18n (Lang, dict)
-import Data.Route (Route, navItems)
+import Data.Content (siteInfo)
+import Data.I18n (Dictionary, Lang, dict)
+import Data.Route (Route(..))
 
 render :: Lang -> Route -> Html
 render lang currentRoute =
   let
-    d = (dict lang).footer
+    d = dict lang
   in
-    el "footer" [ class_ "bg-white dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 border-t border-zinc-200 dark:border-zinc-800 transition-colors" ]
-      [ el "div" [ class_ "mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16" ]
+    el "footer"
+      [ class_ "bg-base-200 text-base-content border-t border-base-300 transition-colors" ]
+      [ el "div" [ class_ "max-w-5xl mx-auto px-4 py-12 sm:px-6 lg:px-8 space-y-8" ]
           [ el "div" [ class_ "grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4" ]
-              [ -- Brand
+              [ -- Brand Block
                 el "div" [ class_ "lg:col-span-2 space-y-4" ]
                   [ el "div" [ class_ "flex items-center gap-x-3" ]
-                      [ el "div" [ class_ "size-7 rounded-md bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center text-emerald-400 dark:text-emerald-700 font-bold text-xs" ]
-                          [ el "svg"
-                              [ class_ "size-4"
-                              , attr "viewBox" "0 0 24 24"
-                              , attr "fill" "none"
-                              , attr "stroke" "currentColor"
-                              , attr "stroke-width" "2"
-                              ]
-                              [ el "path"
-                                  [ attr "stroke-linecap" "round"
-                                  , attr "stroke-linejoin" "round"
-                                  , attr "d" "M13 10V3L4 14h7v7l9-11h-7z"
-                                  ]
-                                  []
-                              ]
-                          ]
-                      , el "h3" [ class_ "font-mono text-sm font-bold text-zinc-900 dark:text-white uppercase tracking-widest" ] [ text siteInfo.title ]
+                      [ el "div" [ class_ "size-7 rounded-md bg-primary flex items-center justify-center text-primary-content font-bold text-xs" ]
+                          [ pohjolaLogo ]
+                      , el "h3" [ class_ "font-mono text-sm font-bold uppercase tracking-widest text-base-content" ] [ text siteInfo.title ]
                       , Badge.badge Badge.BadgeSuccess "OPERATIONAL"
                       ]
-                  , el "p" [ class_ "text-sm leading-relaxed text-zinc-600 dark:text-zinc-400 max-w-sm font-normal" ] [ text siteInfo.description ]
+                  , el "p" [ class_ "text-sm leading-relaxed text-base-content/80 max-w-sm font-normal" ] [ text siteInfo.description ]
                   , el "div" [ class_ "pt-2 flex space-x-3" ]
-                      [ renderSocial bookingUrl "github"
+                      [ el "a"
+                          [ href "https://github.com/icarofr/pohjola-framework"
+                          , target_ "_blank"
+                          , rel_ "noopener noreferrer"
+                          , class_ "btn btn-sm btn-ghost btn-square"
+                          , attr "aria-label" "github"
+                          ]
+                          [ githubIcon ]
                       ]
                   ]
-              -- Navigation
+
+              -- Navigation Links
               , el "div" []
-                  [ el "h4" [ class_ "text-xs font-mono font-semibold uppercase tracking-wider text-zinc-900 dark:text-white" ] [ text d.explore ]
+                  [ el "h4" [ class_ "footer-title font-mono text-xs font-semibold uppercase tracking-wider text-base-content" ] [ text "Navigation" ]
                   , el "ul" [ class_ "mt-4 space-y-2.5 text-sm" ]
-                      [ foldMap (renderFooterNav lang currentRoute) (navItems lang) ]
+                      [ el "li" [] [ navLink { lang, current: currentRoute, target: About } [ class_ "link link-hover text-sm" ] [ text d.nav.about ] ]
+                      , el "li" [] [ navLink { lang, current: currentRoute, target: Contact } [ class_ "link link-hover text-sm" ] [ text d.nav.contact ] ]
+                      , el "li" [] [ navLink { lang, current: currentRoute, target: PostList } [ class_ "link link-hover text-sm" ] [ text d.nav.posts ] ]
+                      ]
                   ]
-              -- Resources & Ecosystem
+
+              -- Resources Links
               , el "div" []
-                  [ el "h4" [ class_ "text-xs font-mono font-semibold uppercase tracking-wider text-zinc-900 dark:text-white" ] [ text d.resources ]
+                  [ el "h4" [ class_ "footer-title font-mono text-xs font-semibold uppercase tracking-wider text-base-content" ] [ text "Resources" ]
                   , el "ul" [ class_ "mt-4 space-y-2.5 text-sm font-mono text-xs" ]
-                      [ el "li" []
-                          [ el "a"
-                              [ href "https://github.com/icarofr/pohjola-framework"
-                              , target_ "_blank"
-                              , rel_ "noopener noreferrer"
-                              , class_ "text-zinc-600 hover:text-emerald-700 dark:text-zinc-400 dark:hover:text-white transition-colors"
-                              ]
-                              [ text d.github ]
-                          ]
-                      , el "li" []
-                          [ el "a"
-                              [ href "https://github.com/icarofr/pohjola-framework/issues"
-                              , target_ "_blank"
-                              , rel_ "noopener noreferrer"
-                              , class_ "text-zinc-600 hover:text-emerald-700 dark:text-zinc-400 dark:hover:text-white transition-colors"
-                              ]
-                              [ text d.issues ]
-                          ]
-                      , el "li" []
-                          [ el "a"
-                              [ href "https://www.purescript.org"
-                              , target_ "_blank"
-                              , rel_ "noopener noreferrer"
-                              , class_ "text-zinc-600 hover:text-emerald-700 dark:text-zinc-400 dark:hover:text-white transition-colors"
-                              ]
-                              [ text "PureScript 0.15.16" ]
-                          ]
-                      , el "li" []
-                          [ el "a"
-                              [ href "https://bun.sh"
-                              , target_ "_blank"
-                              , rel_ "noopener noreferrer"
-                              , class_ "text-zinc-600 hover:text-emerald-700 dark:text-zinc-400 dark:hover:text-white transition-colors"
-                              ]
-                              [ text "Bun.serve Runtime" ]
-                          ]
+                      [ el "li" [] [ el "a" [ href "https://github.com/icarofr/pohjola-framework", target_ "_blank", rel_ "noopener noreferrer", class_ "link link-hover" ] [ text "Source Code" ] ]
+                      , el "li" [] [ el "a" [ href "https://github.com/icarofr/pohjola-framework/issues", target_ "_blank", rel_ "noopener noreferrer", class_ "link link-hover" ] [ text "Bug Tracker" ] ]
+                      , el "li" [] [ el "a" [ href "https://www.purescript.org", target_ "_blank", rel_ "noopener noreferrer", class_ "link link-hover" ] [ text "PureScript 0.15.16" ] ]
+                      , el "li" [] [ el "a" [ href "https://bun.sh", target_ "_blank", rel_ "noopener noreferrer", class_ "link link-hover" ] [ text "Bun.serve Runtime" ] ]
                       ]
                   ]
               ]
-          , el "div" [ class_ "mt-12 pt-8 border-t border-zinc-200 dark:border-zinc-800 text-xs font-mono text-zinc-500 dark:text-zinc-400 flex flex-col sm:flex-row justify-between gap-4" ]
-              [ el "p" [] [ text d.copyright ]
-              , el "p" [ class_ "text-zinc-400 dark:text-zinc-600" ] [ text "ARCHITECTURAL TOTALITY • 0kB CLIENT RUNTIME" ]
+
+          -- Bottom strip
+          , el "div" [ class_ "pt-8 border-t border-base-300 text-xs font-mono text-base-content/60 flex flex-col sm:flex-row justify-between gap-4" ]
+              [ el "p" [] [ text "© 2026 Pohjola Framework. Open source software." ]
+              , el "p" [] [ text "ARCHITECTURAL TOTALITY • 0kB CLIENT RUNTIME" ]
               ]
           ]
       ]
-
-renderFooterNav :: Lang -> Route -> { label :: String, route :: Route } -> Html
-renderFooterNav lang currentRoute item =
-  el "li" []
-    [ navLink { lang, current: currentRoute, target: item.route }
-        [ class_ "text-zinc-600 hover:text-emerald-700 dark:text-zinc-400 dark:hover:text-white transition-colors text-sm font-medium" ]
-        [ text item.label ]
-    ]
