@@ -75,6 +75,8 @@ gate:
 	@if grep -rn 'el "script"' src/ | grep -v '^src/App/Layout/Scripts\.purs:' | grep -v '^src/App/Layout/Page\.purs:'; then echo "ERROR: script elements are restricted to App.Layout.Scripts and App.Layout.Page (ADR-000)"; exit 1; else echo "No unauthorized script elements found"; fi
 	@echo "Checking for env reads outside App/Env.purs..."
 	@if grep -rn 'Node.Process\|lookupEnv' src/ | grep -v '^src/App/Env.purs:'; then echo "ERROR: env read outside App/Env.purs"; exit 1; else echo "No env reads outside App/Env.purs"; fi
+	@echo "Checking Content Firewall (no raw text literals in feature views)..."
+	@if grep -rn 'text "[A-Za-z0-9]' src/App/Features/*/View.purs; then echo "ERROR: Hardcoded text string found in feature view — text must come from Data.I18n (Content Firewall)"; exit 1; else echo "Content Firewall OK"; fi
 
 # ==================================================================================== #
 # DEPENDENCIES
