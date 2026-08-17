@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@plugin "daisyui";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -15,9 +14,9 @@
   --color-on-secondary: #ffffff;
   --color-tertiary: #0f766e;
   --color-on-tertiary: #ffffff;
-  --color-neutral: #fafafa;
+  --color-canvas: #fafafa;
   --color-surface: #ffffff;
-  --color-on-surface: #09090b;
+  --color-ink: #09090b;
   --color-error: #dc2626;
   --color-on-error: #ffffff;
 
