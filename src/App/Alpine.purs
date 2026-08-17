@@ -15,10 +15,12 @@ module App.Alpine
   , renderExpr
   , xDataFlag
   , xDataTheme
+  , xDataThemeWithFlag
   , xShowFlag
   , xShowNotFlag
   , xShowTheme
   , xSetTheme
+  , xSetThemeAndClose
   , setFlag
   , toggleFlag
   , ariaExpandedFlag
@@ -57,6 +59,7 @@ alpineRequestHeader = "x-alpine-request"
 data Flag
   = MenuOpen
   | LangMenuOpen
+  | ThemeMenuOpen
   | ModalOpen
   | ToastVisible
   | AccordionOpen
@@ -68,6 +71,7 @@ instance showFlag :: Show Flag where
   show = case _ of
     MenuOpen -> "MenuOpen"
     LangMenuOpen -> "LangMenuOpen"
+    ThemeMenuOpen -> "ThemeMenuOpen"
     ModalOpen -> "ModalOpen"
     ToastVisible -> "ToastVisible"
     AccordionOpen -> "AccordionOpen"
@@ -77,6 +81,7 @@ flagName :: Flag -> String
 flagName = case _ of
   MenuOpen -> "menuOpen"
   LangMenuOpen -> "open"
+  ThemeMenuOpen -> "themeOpen"
   ModalOpen -> "modalOpen"
   ToastVisible -> "toastVisible"
   AccordionOpen -> "accordionOpen"
@@ -159,14 +164,14 @@ cycleTheme :: Expr
 cycleTheme = Expr
   ( "theme = (theme === 'system' ? 'light' : theme === 'light' ? 'dark' : 'system'); "
       <> "localStorage.setItem('theme', theme); "
-      <> "if (theme === 'dark') { document.documentElement.setAttribute('data-theme', 'dark'); document.documentElement.classList.add('dark'); } "
-      <> "else if (theme === 'light') { document.documentElement.setAttribute('data-theme', 'light'); document.documentElement.classList.remove('dark'); } "
-      <> "else { document.documentElement.removeAttribute('data-theme'); (window.matchMedia('(prefers-color-scheme: dark)').matches ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark')); }"
+      <> "if (theme === 'system') { "
+      <> "  document.documentElement.removeAttribute('data-theme'); "
+      <> "  (matchMedia('(prefers-color-scheme: dark)').matches ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark')); "
+      <> "} else { "
+      <> "  document.documentElement.setAttribute('data-theme', theme); "
+      <> "  (theme === 'dark' ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark')); "
+      <> "}"
   )
-
-prefetchExpr :: Expr
-prefetchExpr = Expr
-  ("fetch($el.href, {headers: {'" <> alpineRequestHeader <> "': 'true'}})")
 
 -- ============================================================================
 -- Attribute constructors
@@ -180,6 +185,10 @@ xDataTheme :: Attr
 xDataTheme =
   attr "x-data" "{ theme: (localStorage.getItem('theme') || 'system') }"
 
+xDataThemeWithFlag :: Flag -> Boolean -> Attr
+xDataThemeWithFlag f b =
+  attr "x-data" ("{ theme: (localStorage.getItem('theme') || 'system'), " <> flagName f <> ": " <> boolLit b <> " }")
+
 xShowFlag :: Flag -> Attr
 xShowFlag f = attr "x-show" (flagName f)
 
@@ -191,6 +200,9 @@ xShowTheme mode = attr "x-show" ("theme === '" <> themeModeName mode <> "'")
 
 xSetTheme :: ThemeMode -> Attr
 xSetTheme mode = onClick (setTheme mode)
+
+xSetThemeAndClose :: ThemeMode -> Flag -> Attr
+xSetThemeAndClose mode f = onClick (setTheme mode <> setFlag f false)
 
 ariaExpandedFlag :: Flag -> Attr
 ariaExpandedFlag f = attr ":aria-expanded" (flagName f <> ".toString()")
@@ -225,6 +237,10 @@ onMouseenter e = attr "@mouseenter" (renderExpr e)
 
 prefetchHover :: Attr
 prefetchHover = onMouseenter prefetchExpr
+
+prefetchExpr :: Expr
+prefetchExpr = Expr
+  ("fetch($el.href, {headers: {'" <> alpineRequestHeader <> "': 'true'}})")
 
 spaLink :: Lang -> Route -> Array Attr -> Array Html -> Html
 spaLink lang route extraAttrs children =

@@ -3,8 +3,8 @@ module App.Layout.Header where
 
 import Prelude
 
-import App.Alpine (Flag(..), ThemeMode(..), ariaExpandedFlag, navLink, onClick, toggleFlag, xCloak, xDataFlag, xDataTheme, xSetTheme, xShowFlag, xShowTheme)
-import App.Html (Html, attr, class_, el, href, text)
+import App.Alpine (Flag(..), ThemeMode(..), ariaExpandedFlag, navLink, onClick, onClickOutside, onKeydownEscapeWindow, setFlag, toggleFlag, xCloak, xDataFlag, xDataThemeWithFlag, xSetThemeAndClose, xShowFlag, xShowTheme)
+import App.Html (Html, attr, class_, el, href, text, type_)
 import App.Layout.Icons (pohjolaLogo)
 import Data.Content (siteInfo)
 import Data.I18n (Lang(..), dict)
@@ -21,6 +21,7 @@ render lang currentRoute =
     el "header"
       [ class_ "sticky top-0 z-50 bg-base-100/90 backdrop-blur-md border-b border-base-300"
       , xDataFlag MenuOpen false
+      , onKeydownEscapeWindow (setFlag MenuOpen false)
       ]
       [ el "div" [ class_ "navbar max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 justify-between" ]
           [ -- Navbar Start: Logo + Title
@@ -43,13 +44,19 @@ render lang currentRoute =
 
           -- Navbar End: Theme Dropdown + Language Dropdown + Mobile menu button
           , el "div" [ class_ "navbar-end w-auto flex items-center gap-2" ]
-              [ -- Theme controller dropdown (DaisyUI dropdown)
-                el "div" [ class_ "dropdown dropdown-end", xDataTheme ]
-                  [ el "div"
-                      [ attr "tabindex" "0"
-                      , attr "role" "button"
+              [ -- Theme controller dropdown with click-outside and escape dismiss
+                el "div"
+                  [ class_ "dropdown dropdown-end"
+                  , xDataThemeWithFlag ThemeMenuOpen false
+                  , onClickOutside (setFlag ThemeMenuOpen false)
+                  , onKeydownEscapeWindow (setFlag ThemeMenuOpen false)
+                  ]
+                  [ el "button"
+                      [ type_ "button"
+                      , onClick (toggleFlag ThemeMenuOpen)
                       , class_ "btn btn-ghost btn-sm btn-circle text-base-content"
                       , attr "aria-label" (d.common.themeLabel <> " (Light / Dark / System)")
+                      , ariaExpandedFlag ThemeMenuOpen
                       ]
                       [ -- Sun icon for Light
                         el "svg" [ class_ "size-4", xShowTheme ThemeLight, attr "fill" "none", attr "viewBox" "0 0 24 24", attr "stroke-width" "2", attr "stroke" "currentColor" ]
@@ -62,13 +69,15 @@ render lang currentRoute =
                           [ el "path" [ attr "stroke-linecap" "round", attr "stroke-linejoin" "round", attr "d" "M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" ] [] ]
                       ]
                   , el "ul"
-                      [ attr "tabindex" "0"
-                      , class_ "dropdown-content menu bg-base-100 rounded-box z-50 w-36 p-1.5 shadow-lg border border-base-200 text-xs font-mono mt-1 whitespace-nowrap"
+                      [ xShowFlag ThemeMenuOpen
+                      , xCloak
+                      , class_ "dropdown-content menu bg-base-100 rounded-box z-50 w-36 p-1.5 shadow-lg border border-base-200 text-xs font-mono mt-1 whitespace-nowrap block"
                       ]
                       [ el "li" []
                           [ el "button"
-                              [ class_ "flex items-center gap-2"
-                              , xSetTheme ThemeLight
+                              [ type_ "button"
+                              , class_ "flex items-center gap-2"
+                              , xSetThemeAndClose ThemeLight ThemeMenuOpen
                               ]
                               [ el "svg" [ class_ "size-3.5", attr "fill" "none", attr "viewBox" "0 0 24 24", attr "stroke-width" "2", attr "stroke" "currentColor" ]
                                   [ el "path" [ attr "stroke-linecap" "round", attr "stroke-linejoin" "round", attr "d" "M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" ] [] ]
@@ -77,8 +86,9 @@ render lang currentRoute =
                           ]
                       , el "li" []
                           [ el "button"
-                              [ class_ "flex items-center gap-2"
-                              , xSetTheme ThemeDark
+                              [ type_ "button"
+                              , class_ "flex items-center gap-2"
+                              , xSetThemeAndClose ThemeDark ThemeMenuOpen
                               ]
                               [ el "svg" [ class_ "size-3.5", attr "fill" "none", attr "viewBox" "0 0 24 24", attr "stroke-width" "2", attr "stroke" "currentColor" ]
                                   [ el "path" [ attr "stroke-linecap" "round", attr "stroke-linejoin" "round", attr "d" "M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" ] [] ]
@@ -87,8 +97,9 @@ render lang currentRoute =
                           ]
                       , el "li" []
                           [ el "button"
-                              [ class_ "flex items-center gap-2"
-                              , xSetTheme ThemeSystem
+                              [ type_ "button"
+                              , class_ "flex items-center gap-2"
+                              , xSetThemeAndClose ThemeSystem ThemeMenuOpen
                               ]
                               [ el "svg" [ class_ "size-3.5", attr "fill" "none", attr "viewBox" "0 0 24 24", attr "stroke-width" "2", attr "stroke" "currentColor" ]
                                   [ el "path" [ attr "stroke-linecap" "round", attr "stroke-linejoin" "round", attr "d" "M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" ] [] ]
@@ -98,21 +109,28 @@ render lang currentRoute =
                       ]
                   ]
 
-              -- Language dropdown (DaisyUI dropdown)
-              , el "div" [ class_ "dropdown dropdown-end" ]
-                  [ el "div"
-                      [ attr "tabindex" "0"
-                      , attr "role" "button"
+              -- Language dropdown with click-outside and escape dismiss
+              , el "div"
+                  [ class_ "dropdown dropdown-end"
+                  , xDataFlag LangMenuOpen false
+                  , onClickOutside (setFlag LangMenuOpen false)
+                  , onKeydownEscapeWindow (setFlag LangMenuOpen false)
+                  ]
+                  [ el "button"
+                      [ type_ "button"
+                      , onClick (toggleFlag LangMenuOpen)
                       , class_ "btn btn-ghost btn-sm text-xs font-mono flex items-center gap-1 text-base-content"
                       , attr "aria-label" "Select language"
+                      , ariaExpandedFlag LangMenuOpen
                       ]
                       [ el "span" [] [ text currentLangLabel ]
                       , el "svg" [ class_ "size-3 opacity-60", attr "fill" "none", attr "viewBox" "0 0 24 24", attr "stroke-width" "2.5", attr "stroke" "currentColor" ]
                           [ el "path" [ attr "stroke-linecap" "round", attr "stroke-linejoin" "round", attr "d" "M19.5 8.25l-7.5 7.5-7.5-7.5" ] [] ]
                       ]
                   , el "ul"
-                      [ attr "tabindex" "0"
-                      , class_ "dropdown-content menu bg-base-100 rounded-box z-50 w-40 p-1.5 shadow-lg border border-base-200 text-xs font-mono mt-1 whitespace-nowrap"
+                      [ xShowFlag LangMenuOpen
+                      , xCloak
+                      , class_ "dropdown-content menu bg-base-100 rounded-box z-50 w-40 p-1.5 shadow-lg border border-base-200 text-xs font-mono mt-1 whitespace-nowrap block"
                       ]
                       [ el "li" []
                           [ el "a"
@@ -153,6 +171,7 @@ render lang currentRoute =
           [ class_ "md:hidden border-t border-base-300 bg-base-100 px-4 py-3 space-y-1"
           , xShowFlag MenuOpen
           , xCloak
+          , onClickOutside (setFlag MenuOpen false)
           ]
           [ renderMobileNavItem lang currentRoute About d.nav.about
           , renderMobileNavItem lang currentRoute Contact d.nav.contact
