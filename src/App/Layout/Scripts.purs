@@ -19,7 +19,7 @@ renderHeadScript :: String -> HeadScript -> Html
 renderHeadScript nonce = case _ of
   DarkModeInit ->
     el "script" [ attr "nonce" nonce ]
-      [ text "if(localStorage.getItem('theme')==='dark'||((!localStorage.getItem('theme')||localStorage.getItem('theme')==='system')&&matchMedia('(prefers-color-scheme:dark)').matches))document.documentElement.classList.add('dark')" ]
+      [ text "if(localStorage.getItem('theme')==='dark'||((!localStorage.getItem('theme')||localStorage.getItem('theme')==='system')&&matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');document.documentElement.setAttribute('data-theme','dim')}else{document.documentElement.classList.remove('dark');document.documentElement.setAttribute('data-theme','nord')}" ]
 
   TitleSync ->
     el "script" [ attr "nonce" nonce ]
