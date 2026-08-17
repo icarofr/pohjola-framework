@@ -1,4 +1,4 @@
--- | Badge primitive — Semantic status indicators conforming to DESIGN.md
+-- | Badge primitive — Semantic and monospace status indicators conforming to DESIGN.md
 module App.Ui.Badge where
 
 import Prelude
@@ -17,9 +17,9 @@ renderVariant = case _ of
   Error -> "badge-error"
   Neutral -> "badge-neutral"
 
--- | Render a semantic badge / pill
+-- | Render a semantic badge with monospace typography and sharp border
 badge :: Variant -> String -> Html
 badge variant label =
   el "span"
-    [ class_ ("badge badge-sm font-medium " <> renderVariant variant) ]
+    [ class_ ("badge badge-sm font-mono text-xs font-medium border " <> renderVariant variant) ]
     [ text label ]

@@ -28,7 +28,7 @@ import Effect.Aff (Aff)
 -- | Shared body class — used by renderPage, renderShellOpen, and renderErrorPage.
 -- | Extracted to prevent drift between streamed and non-streamed pages.
 bodyClass :: String
-bodyClass = "bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 antialiased min-h-screen flex flex-col transition-colors selection:bg-emerald-500 selection:text-white"
+bodyClass = "bg-neutral text-zinc-950 dark:text-zinc-50 antialiased min-h-screen flex flex-col font-sans selection:bg-emerald-700 selection:text-white"
 
 -- | Pages provide their own render function.
 -- | Static pages use `staticPage` to wrap pure Html. Data-backed pages fetch
@@ -44,9 +44,9 @@ maybeStatusBanner :: Lang -> Maybe FormStatus -> Html
 maybeStatusBanner lang = maybe (text "") \status ->
   let
     statusClass = case status of
-      FormSuccess -> "rounded-xl bg-green-50 p-4 border border-green-200 dark:bg-green-500/10 dark:border-green-500/20 text-green-800 dark:text-green-200 shadow-xs"
-      FormError -> "rounded-xl bg-red-50 p-4 border border-red-200 dark:bg-red-500/10 dark:border-red-500/20 text-red-800 dark:text-red-200 shadow-xs"
-      FormSubscribed -> "rounded-xl bg-green-50 p-4 border border-green-200 dark:bg-green-500/10 dark:border-green-500/20 text-green-800 dark:text-green-200 shadow-xs"
+      FormSuccess -> "rounded-md bg-emerald-50 p-4 border border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 shadow-2xs font-mono text-xs"
+      FormError -> "rounded-md bg-red-50 p-4 border border-red-200 dark:bg-red-950/40 dark:border-red-800 text-red-900 dark:text-red-200 shadow-2xs font-mono text-xs"
+      FormSubscribed -> "rounded-md bg-emerald-50 p-4 border border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 shadow-2xs font-mono text-xs"
   in
     container "max-w-7xl" "pt-6"
       [ el "div"

@@ -19,13 +19,14 @@ renderServiceCard lang service =
     card $
       cardImage { url: service.imageUrl, alt: copy.title, width: service.imageWidth, height: service.imageHeight }
         <> cardBody
-          ( el "div" [ class_ "flex-1" ]
-              [ el "h3" [ class_ "font-display text-lg font-bold text-gray-900 dark:text-white" ] [ text copy.title ]
-              , el "p" [ class_ "mt-2 text-sm/6 text-gray-600 dark:text-gray-400" ] [ text copy.description ]
+          ( el "div" [ class_ "flex flex-col justify-between h-full" ]
+              [ el "div" []
+                  [ el "h3" [ class_ "font-display text-lg font-bold text-zinc-950 dark:text-white" ] [ text copy.title ]
+                  , el "p" [ class_ "mt-2.5 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400 font-normal" ] [ text copy.description ]
+                  ]
+              , el "div" [ class_ "mt-6 flex items-center justify-between pt-4 border-t border-zinc-100 dark:border-zinc-800" ]
+                  [ Badge.badge Badge.Secondary (formatPrice (langTag lang) service.price)
+                  , buttonLinkExternal { variant: Outline, size: Sm, href: bookingUrl, extraClass: "" } d.bookButton
+                  ]
               ]
-              <> el "div" [ class_ "mt-6 flex items-center justify-between pt-4 border-t border-gray-100 dark:border-white/5" ]
-                [ Badge.badge Badge.Neutral (formatPrice (langTag lang) service.price)
-                , buttonLinkExternal { variant: Secondary, size: Sm, href: bookingUrl, extraClass: "" } d.bookButton
-                ]
           )
-

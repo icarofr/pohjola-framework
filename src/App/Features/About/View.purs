@@ -16,18 +16,19 @@ renderAbout lang =
     d = (dict lang).about
     navDict = (dict lang).nav
   in
-    container "max-w-7xl" "py-12 sm:py-16 lg:py-20"
-      [ el "div" [ class_ "max-w-3xl mx-auto space-y-10" ]
-          [ el "div" [ class_ "text-center max-w-2xl mx-auto" ]
-              [ el "div" [ class_ "mb-4 flex justify-center" ]
-                  [ Badge.badge Badge.Neutral navDict.about ]
-              , el "h1" [ class_ "font-display text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl dark:text-white leading-tight" ]
-                  [ text d.heading ]
+    container "max-w-4xl" "py-16 sm:py-24 space-y-12"
+      [ -- Page Header
+        el "div" [ class_ "space-y-4" ]
+          [ el "div" [ class_ "flex items-center gap-2" ]
+              [ Badge.badge Badge.Primary navDict.about
+              , Badge.badge Badge.Neutral "MANIFESTO"
               ]
-          , card $ cardBody
-              ( el "div" [ class_ "space-y-6 text-base sm:text-lg leading-relaxed text-gray-700 dark:text-gray-300 font-normal" ]
-                  (foldMap (\p -> [ el "p" [] [ text p ] ]) d.paragraphs)
-              )
+          , el "h1" [ class_ "font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-zinc-950 dark:text-white leading-[1.1]" ]
+              [ text d.heading ]
           ]
+      -- Main Content Container
+      , card $ cardBody
+          ( el "div" [ class_ "space-y-6 text-base sm:text-lg leading-relaxed text-zinc-700 dark:text-zinc-300 font-normal" ]
+              (foldMap (\p -> [ el "p" [] [ text p ] ]) d.paragraphs)
+          )
       ]
-
