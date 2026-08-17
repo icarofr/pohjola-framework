@@ -1,4 +1,4 @@
--- | About page sections — strictly assembled via App.Ui component contracts
+-- | About page sections — rebuilt using pure DaisyUI components
 module App.Features.About.View where
 
 import Prelude
@@ -23,6 +23,8 @@ renderAbout lang =
             , subtitle: Nothing
             }
       , content:
-          el "div" [ class_ "p-8 sm:p-10 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xs space-y-6 text-base sm:text-lg leading-relaxed text-zinc-700 dark:text-zinc-300 font-normal" ]
-            (foldMap (\p -> [ el "p" [] [ text p ] ]) d.paragraphs)
+          el "div" [ class_ "card bg-base-100 shadow-md border border-base-200" ]
+            [ el "div" [ class_ "card-body p-8 sm:p-10 space-y-6 text-base sm:text-lg leading-relaxed text-base-content/85 font-normal" ]
+                (foldMap (\p -> [ el "p" [] [ text p ] ]) d.paragraphs)
+            ]
       }

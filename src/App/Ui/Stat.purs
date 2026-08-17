@@ -1,4 +1,4 @@
--- | Stat primitive — Telemetry metric card conforming to DESIGN.md
+-- | DaisyUI Stats primitive
 module App.Ui.Stat where
 
 import Prelude
@@ -12,19 +12,17 @@ type StatItem =
   , description :: Maybe String
   }
 
--- | Render a single telemetry metric block
 statCard :: StatItem -> Html
-statCard item =
-  el "div" [ class_ "stat p-6 bg-white dark:bg-zinc-900 border border-zinc-200/90 dark:border-zinc-800 rounded-lg shadow-2xs" ]
-    [ el "div" [ class_ "stat-title text-xs font-mono font-medium uppercase tracking-widest text-zinc-500 dark:text-zinc-400" ] [ text item.label ]
-    , el "div" [ class_ "stat-value mt-2 text-3xl font-extrabold tracking-tight font-display text-zinc-900 dark:text-white" ] [ text item.value ]
-    , case item.description of
-        Just desc -> el "div" [ class_ "stat-desc mt-2 text-xs text-zinc-500 dark:text-zinc-400 font-mono" ] [ text desc ]
+statCard props =
+  el "div" [ class_ "stat" ]
+    [ el "div" [ class_ "stat-title text-base-content/70 font-mono text-xs" ] [ text props.label ]
+    , el "div" [ class_ "stat-value text-primary text-3xl font-black" ] [ text props.value ]
+    , case props.description of
+        Just desc -> el "div" [ class_ "stat-desc text-base-content/60 text-xs" ] [ text desc ]
         Nothing -> text ""
     ]
 
--- | Render a responsive grid of stats with hairline separators
 statGrid :: Array StatItem -> Html
 statGrid items =
-  el "div" [ class_ "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4" ]
+  el "div" [ class_ "stats stats-vertical lg:stats-horizontal shadow-md bg-base-100 border border-base-200 w-full" ]
     (map statCard items)

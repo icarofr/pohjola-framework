@@ -1,4 +1,4 @@
--- | Rigid Conversion CTA banner layout template using DaisyUI neutral hero classes
+-- | Pure DaisyUI Conversion CTA banner layout template
 module App.Ui.Layout.ConversionCta where
 
 import Prelude
@@ -16,21 +16,21 @@ type ConversionCtaProps =
       }
   }
 
--- | Render a high-contrast conversion CTA banner
+-- | Render a high-contrast conversion CTA banner using DaisyUI neutral hero
 conversionCta :: ConversionCtaProps -> Html
 conversionCta props =
-  el "section" [ class_ "hero bg-neutral text-neutral-content py-20 sm:py-24 border-t border-neutral-content/10" ]
+  el "section" [ class_ "hero bg-neutral text-neutral-content py-16 sm:py-20 border-t border-neutral-content/10" ]
     [ el "div" [ class_ "hero-content text-center max-w-2xl flex-col space-y-6" ]
-        [ el "h2" [ class_ "text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight" ]
+        [ el "h2" [ class_ "text-3xl sm:text-4xl font-extrabold tracking-tight leading-tight text-neutral-content" ]
             [ text props.heading ]
-        , el "p" [ class_ "text-lg text-neutral-content/80 max-w-xl mx-auto leading-relaxed" ]
+        , el "p" [ class_ "text-base sm:text-lg text-neutral-content/80 max-w-xl mx-auto leading-relaxed" ]
             [ text props.body ]
-        , el "div" [ class_ "pt-4 flex justify-center" ]
+        , el "div" [ class_ "pt-2 flex justify-center" ]
             [ case props.action.target of
                 Internal t ->
-                  buttonLink { variant: ButtonInverted, size: Lg, lang: t.lang, route: t.route, extraClass: "shadow-lg px-8" } props.action.label
+                  buttonLink { variant: ButtonInverted, size: Lg, lang: t.lang, route: t.route, extraClass: "shadow-md px-8" } props.action.label
                 External t ->
-                  buttonLinkExternal { variant: ButtonInverted, size: Lg, href: t.href, extraClass: "shadow-lg px-8" } props.action.label
+                  buttonLinkExternal { variant: ButtonInverted, size: Lg, href: t.href, extraClass: "shadow-md px-8" } props.action.label
             ]
         ]
     ]
