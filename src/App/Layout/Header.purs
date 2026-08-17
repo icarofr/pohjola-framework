@@ -21,6 +21,7 @@ render lang currentRoute =
     el "header"
       [ class_ "sticky top-0 z-50 bg-base-100/90 backdrop-blur-md border-b border-base-300"
       , xDataFlag MenuOpen false
+      , onClickOutside (setFlag MenuOpen false)
       , onKeydownEscapeWindow (setFlag MenuOpen false)
       ]
       [ el "div" [ class_ "navbar max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 justify-between" ]
@@ -135,6 +136,7 @@ render lang currentRoute =
                       [ el "li" []
                           [ el "a"
                               [ href (routeUrl En currentRoute)
+                              , onClick (setFlag LangMenuOpen false)
                               , class_ ("flex items-center justify-between " <> (if lang == En then "active font-bold" else ""))
                               ]
                               [ el "span" [] [ text "English" ]
@@ -144,6 +146,7 @@ render lang currentRoute =
                       , el "li" []
                           [ el "a"
                               [ href (routeUrl Fr currentRoute)
+                              , onClick (setFlag LangMenuOpen false)
                               , class_ ("flex items-center justify-between " <> (if lang == Fr then "active font-bold" else ""))
                               ]
                               [ el "span" [] [ text "Français" ]
@@ -171,7 +174,6 @@ render lang currentRoute =
           [ class_ "md:hidden border-t border-base-300 bg-base-100 px-4 py-3 space-y-1"
           , xShowFlag MenuOpen
           , xCloak
-          , onClickOutside (setFlag MenuOpen false)
           ]
           [ renderMobileNavItem lang currentRoute About d.nav.about
           , renderMobileNavItem lang currentRoute Contact d.nav.contact
@@ -179,9 +181,9 @@ render lang currentRoute =
           , el "div" [ class_ "pt-2 mt-2 border-t border-base-200 flex items-center justify-between text-xs font-mono px-3" ]
               [ el "span" [ class_ "text-base-content/60" ] [ text "Language" ]
               , el "div" [ class_ "flex gap-2" ]
-                  [ el "a" [ href (routeUrl En currentRoute), class_ (if lang == En then "font-bold text-primary" else "text-base-content/70") ] [ text "EN" ]
+                  [ el "a" [ href (routeUrl En currentRoute), onClick (setFlag MenuOpen false), class_ (if lang == En then "font-bold text-primary" else "text-base-content/70") ] [ text "EN" ]
                   , el "span" [ class_ "text-base-content/40" ] [ text "|" ]
-                  , el "a" [ href (routeUrl Fr currentRoute), class_ (if lang == Fr then "font-bold text-primary" else "text-base-content/70") ] [ text "FR" ]
+                  , el "a" [ href (routeUrl Fr currentRoute), onClick (setFlag MenuOpen false), class_ (if lang == Fr then "font-bold text-primary" else "text-base-content/70") ] [ text "FR" ]
                   ]
               ]
           ]
@@ -204,5 +206,7 @@ renderMobileNavItem lang currentRoute targetRoute label =
     activeClass = if isActive then "block px-3 py-2 rounded-lg text-sm font-semibold bg-base-200 text-primary" else "block px-3 py-2 rounded-lg text-sm font-normal text-base-content/80 hover:bg-base-200"
   in
     navLink { lang, current: currentRoute, target: targetRoute }
-      [ class_ activeClass ]
+      [ class_ activeClass
+      , onClick (setFlag MenuOpen false)
+      ]
       [ text label ]
