@@ -75,21 +75,25 @@ render lang currentRoute =
                       ]
                   , el "ul"
                       [ attr "tabindex" "0"
-                      , class_ "dropdown-content menu bg-base-100 rounded-box z-50 w-32 p-1.5 shadow-lg border border-base-200 text-xs font-mono mt-1"
+                      , class_ "dropdown-content menu bg-base-100 rounded-box z-50 w-40 p-1.5 shadow-lg border border-base-200 text-xs font-mono mt-1 whitespace-nowrap"
                       ]
                       [ el "li" []
                           [ el "a"
                               [ href (routeUrl En currentRoute)
-                              , class_ (if lang == En then "active font-bold" else "")
+                              , class_ ("flex items-center justify-between " <> (if lang == En then "active font-bold" else ""))
                               ]
-                              [ text "English (EN)" ]
+                              [ el "span" [] [ text "English" ]
+                              , el "span" [ class_ "opacity-60 text-[10px]" ] [ text "EN" ]
+                              ]
                           ]
                       , el "li" []
                           [ el "a"
                               [ href (routeUrl Fr currentRoute)
-                              , class_ (if lang == Fr then "active font-bold" else "")
+                              , class_ ("flex items-center justify-between " <> (if lang == Fr then "active font-bold" else ""))
                               ]
-                              [ text "Français (FR)" ]
+                              [ el "span" [] [ text "Français" ]
+                              , el "span" [ class_ "opacity-60 text-[10px]" ] [ text "FR" ]
+                              ]
                           ]
                       ]
                   ]
