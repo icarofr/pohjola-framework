@@ -57,7 +57,7 @@
 
 ### Default agent rules
 - Before adding a feature, read the relevant convention doc (task→doc map above). **If you skip this, state why.**
-- Before adding UI/styles, read `DESIGN.md` and `docs/conventions/design-system.md`. Compose views with `App.Ui` primitives.
+- Before adding UI/styles, read `DESIGN.md` and `docs/conventions/design-system.md`. Compose views with `App.Ui.Layout.*` slot templates and `App.Ui` primitives (never raw layout utility soup).
 - Before adding FFI, read `docs/ffi-taming-guide.md`. **If you skip this, state why.**
 - Before proposing auth, read `docs/adr/ADR-002-auth-shape.md`. **If you skip this, state why.**
 - Before committing, run `make check`. **If you skip this, state why.**
@@ -76,6 +76,7 @@
 
 ### Guardrails (each enforced by a check)
 - Build HTML through the `Html` ADT — string-concatenated HTML bypasses escaping (ADR-001, `make gate`).
+- Compose views via `App.Ui.Layout.*` slot templates — manual `space-y-*` / `flex-col justify-between` soup in feature views is forbidden.
 - Output bundles to `dist-server/` — `dist/` is the public static root only.
 - Keep CSP at the pinned policy — widenings need an ADR (ContractSpec exact-string assertion).
 - The `Html` ADT has no general-purpose unescaped constructor; script/style contexts and `doctype` are explicit (`make gate`).
