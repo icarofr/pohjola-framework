@@ -1,8 +1,6 @@
 -- | DaisyUI EmptyState primitive
 module App.Ui.EmptyState where
 
-import Prelude
-
 import App.Html (Html, class_, el, text)
 import Data.Maybe (Maybe(..))
 

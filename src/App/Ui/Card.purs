@@ -1,8 +1,6 @@
 -- | DaisyUI Card primitive
 module App.Ui.Card where
 
-import Prelude
-
 import App.Html (Html, alt, class_, decoding_, el, height_, loading_, src, width_)
 
 card :: Html -> Html
