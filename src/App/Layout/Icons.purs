@@ -1,8 +1,6 @@
 -- | Shared SVG icons for layout header and footer
 module App.Layout.Icons where
 
-import Prelude
-
 import App.Html (Html, attr, class_, el)
 
 pohjolaLogo :: Html

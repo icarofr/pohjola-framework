@@ -1,8 +1,6 @@
 -- | Pure DaisyUI responsive grid templates
 module App.Ui.Layout.Grid where
 
-import Prelude
-
 import App.Html (Html, class_, el)
 
 -- | 3-Column responsive grid
