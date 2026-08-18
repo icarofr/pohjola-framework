@@ -1,4 +1,4 @@
--- | Site header navigation — DaisyUI navbar with Theme Dropdown and Language Dropdown
+-- | Site header navigation — clean DaisyUI navbar with single-source Theme & Language dropdowns
 module App.Layout.Header where
 
 import Prelude
@@ -25,7 +25,7 @@ render lang currentRoute =
       , onKeydownEscapeWindow (setFlag MenuOpen false)
       ]
       [ el "div" [ class_ "navbar max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 justify-between" ]
-          [ -- Navbar Start: Logo + Title
+          [ -- Navbar Start: Brand Logo + Title
             el "div" [ class_ "navbar-start w-auto flex items-center gap-3" ]
               [ navLink { lang, current: currentRoute, target: Home }
                   [ class_ "flex items-center gap-2.5 font-bold text-base tracking-tight text-base-content hover:opacity-80 transition-opacity" ]
@@ -36,17 +36,60 @@ render lang currentRoute =
                   ]
               ]
 
-          -- Navbar Center: Desktop Nav
+          -- Navbar Center: Desktop Navigation
           , el "div" [ class_ "navbar-center hidden md:flex items-center space-x-1" ]
               [ renderNavItem lang currentRoute About d.nav.about
               , renderNavItem lang currentRoute Contact d.nav.contact
               , renderNavItem lang currentRoute PostList d.nav.posts
               ]
 
-          -- Navbar End: Theme Dropdown + Language Dropdown + Mobile menu button
-          , el "div" [ class_ "navbar-end w-auto flex items-center gap-2" ]
-              [ -- Theme controller dropdown with click-outside and escape dismiss
+          -- Navbar End: Theme Dropdown + Language Dropdown + Mobile Menu Toggle
+          , el "div" [ class_ "navbar-end w-auto flex items-center gap-1.5" ]
+              [ -- Language Dropdown (single source of truth)
                 el "div"
+                  [ class_ "dropdown dropdown-end"
+                  , xDataFlag LangMenuOpen false
+                  , onClickOutside (setFlag LangMenuOpen false)
+                  , onKeydownEscapeWindow (setFlag LangMenuOpen false)
+                  ]
+                  [ el "button"
+                      [ type_ "button"
+                      , onClick (toggleFlag LangMenuOpen)
+                      , class_ "btn btn-ghost btn-sm gap-1 px-2 text-xs font-mono font-medium text-base-content/80 hover:text-base-content"
+                      , attr "aria-label" "Select language"
+                      , ariaExpandedFlag LangMenuOpen
+                      ]
+                      [ globeIcon
+                      , el "span" [ class_ "font-semibold" ] [ text currentLangLabel ]
+                      , el "svg" [ class_ "size-2.5 opacity-50", attr "fill" "none", attr "viewBox" "0 0 24 24", attr "stroke-width" "2.5", attr "stroke" "currentColor" ]
+                          [ el "path" [ attr "stroke-linecap" "round", attr "stroke-linejoin" "round", attr "d" "M19.5 8.25l-7.5 7.5-7.5-7.5" ] [] ]
+                      ]
+                  , el "ul"
+                      [ xShowFlag LangMenuOpen
+                      , xCloak
+                      , class_ "dropdown-content menu menu-sm bg-base-100 rounded-box z-50 w-36 p-1 shadow-lg border border-base-200 text-xs mt-1 block"
+                      ]
+                      [ el "li" []
+                          [ el "a"
+                              [ href (routeUrl En currentRoute)
+                              , onClick (setFlag LangMenuOpen false)
+                              , class_ (if lang == En then "active font-bold" else "")
+                              ]
+                              [ text "English" ]
+                          ]
+                      , el "li" []
+                          [ el "a"
+                              [ href (routeUrl Fr currentRoute)
+                              , onClick (setFlag LangMenuOpen false)
+                              , class_ (if lang == Fr then "active font-bold" else "")
+                              ]
+                              [ text "Français" ]
+                          ]
+                      ]
+                  ]
+
+              -- Theme Controller Dropdown
+              , el "div"
                   [ class_ "dropdown dropdown-end"
                   , xDataThemeWithFlag ThemeMenuOpen false
                   , onClickOutside (setFlag ThemeMenuOpen false)
@@ -55,7 +98,7 @@ render lang currentRoute =
                   [ el "button"
                       [ type_ "button"
                       , onClick (toggleFlag ThemeMenuOpen)
-                      , class_ "btn btn-ghost btn-sm btn-circle text-base-content"
+                      , class_ "btn btn-ghost btn-sm btn-circle text-base-content/80 hover:text-base-content"
                       , attr "aria-label" (d.common.themeLabel <> " (Light / Dark / System)")
                       , ariaExpandedFlag ThemeMenuOpen
                       ]
@@ -72,7 +115,7 @@ render lang currentRoute =
                   , el "ul"
                       [ xShowFlag ThemeMenuOpen
                       , xCloak
-                      , class_ "dropdown-content menu bg-base-100 rounded-box z-50 w-36 p-1.5 shadow-lg border border-base-200 text-xs font-mono mt-1 whitespace-nowrap block"
+                      , class_ "dropdown-content menu menu-sm bg-base-100 rounded-box z-50 w-32 p-1 shadow-lg border border-base-200 text-xs font-mono mt-1 whitespace-nowrap block"
                       ]
                       [ el "li" []
                           [ el "button"
@@ -110,56 +153,9 @@ render lang currentRoute =
                       ]
                   ]
 
-              -- Idiomatic DaisyUI Language dropdown with Globe icon, click-outside and escape dismiss
-              , el "div"
-                  [ class_ "dropdown dropdown-end"
-                  , xDataFlag LangMenuOpen false
-                  , onClickOutside (setFlag LangMenuOpen false)
-                  , onKeydownEscapeWindow (setFlag LangMenuOpen false)
-                  ]
-                  [ el "button"
-                      [ type_ "button"
-                      , onClick (toggleFlag LangMenuOpen)
-                      , class_ "btn btn-ghost btn-sm gap-1.5 px-2 text-xs font-mono text-base-content"
-                      , attr "aria-label" "Select language"
-                      , ariaExpandedFlag LangMenuOpen
-                      ]
-                      [ globeIcon
-                      , el "span" [ class_ "font-bold tracking-wide" ] [ text currentLangLabel ]
-                      , el "svg" [ class_ "size-2.5 opacity-50", attr "fill" "none", attr "viewBox" "0 0 24 24", attr "stroke-width" "2.5", attr "stroke" "currentColor" ]
-                          [ el "path" [ attr "stroke-linecap" "round", attr "stroke-linejoin" "round", attr "d" "M19.5 8.25l-7.5 7.5-7.5-7.5" ] [] ]
-                      ]
-                  , el "ul"
-                      [ xShowFlag LangMenuOpen
-                      , xCloak
-                      , class_ "dropdown-content menu menu-sm bg-base-100 rounded-box z-50 w-44 p-1.5 shadow-xl border border-base-200 text-xs font-mono mt-1 whitespace-nowrap block space-y-0.5"
-                      ]
-                      [ el "li" []
-                          [ el "a"
-                              [ href (routeUrl En currentRoute)
-                              , onClick (setFlag LangMenuOpen false)
-                              , class_ ("flex items-center justify-between py-1.5 " <> (if lang == En then "active font-bold" else ""))
-                              ]
-                              [ el "span" [ class_ "font-sans text-xs" ] [ text "English" ]
-                              , el "span" [ class_ "badge badge-sm badge-ghost text-[10px] opacity-70" ] [ text "EN" ]
-                              ]
-                          ]
-                      , el "li" []
-                          [ el "a"
-                              [ href (routeUrl Fr currentRoute)
-                              , onClick (setFlag LangMenuOpen false)
-                              , class_ ("flex items-center justify-between py-1.5 " <> (if lang == Fr then "active font-bold" else ""))
-                              ]
-                              [ el "span" [ class_ "font-sans text-xs" ] [ text "Français" ]
-                              , el "span" [ class_ "badge badge-sm badge-ghost text-[10px] opacity-70" ] [ text "FR" ]
-                              ]
-                          ]
-                      ]
-                  ]
-
-              -- Mobile menu trigger
+              -- Mobile Menu Hamburger Trigger
               , el "button"
-                  [ class_ "btn btn-ghost btn-sm md:hidden"
+                  [ class_ "btn btn-ghost btn-sm btn-square md:hidden text-base-content/80 hover:text-base-content"
                   , onClick (toggleFlag MenuOpen)
                   , ariaExpandedFlag MenuOpen
                   , attr "aria-label" "Toggle navigation menu"
@@ -170,7 +166,7 @@ render lang currentRoute =
               ]
           ]
 
-      -- Mobile Dropdown Menu
+      -- Mobile Dropdown Menu (Clean page list only — zero duplicate controls)
       , el "div"
           [ class_ "md:hidden border-t border-base-300 bg-base-100 px-4 py-3 space-y-1"
           , xShowFlag MenuOpen
@@ -179,30 +175,6 @@ render lang currentRoute =
           [ renderMobileNavItem lang currentRoute About d.nav.about
           , renderMobileNavItem lang currentRoute Contact d.nav.contact
           , renderMobileNavItem lang currentRoute PostList d.nav.posts
-          , el "div" [ class_ "pt-3 mt-3 border-t border-base-200 space-y-1.5" ]
-              [ el "div" [ class_ "flex items-center gap-1.5 px-3 text-[11px] font-mono font-semibold uppercase tracking-wider text-base-content/60" ]
-                  [ globeIcon
-                  , el "span" [] [ text "Language" ]
-                  ]
-              , el "div" [ class_ "grid grid-cols-2 gap-1.5 px-1" ]
-                  [ el "a"
-                      [ href (routeUrl En currentRoute)
-                      , onClick (setFlag MenuOpen false)
-                      , class_ ("btn btn-sm justify-between " <> (if lang == En then "btn-primary font-bold shadow-sm" else "btn-ghost text-base-content/80"))
-                      ]
-                      [ el "span" [ class_ "font-sans text-xs" ] [ text "English" ]
-                      , el "span" [ class_ "text-[10px] font-mono opacity-70" ] [ text "EN" ]
-                      ]
-                  , el "a"
-                      [ href (routeUrl Fr currentRoute)
-                      , onClick (setFlag MenuOpen false)
-                      , class_ ("btn btn-sm justify-between " <> (if lang == Fr then "btn-primary font-bold shadow-sm" else "btn-ghost text-base-content/80"))
-                      ]
-                      [ el "span" [ class_ "font-sans text-xs" ] [ text "Français" ]
-                      , el "span" [ class_ "text-[10px] font-mono opacity-70" ] [ text "FR" ]
-                      ]
-                  ]
-              ]
           ]
       ]
 
@@ -220,7 +192,7 @@ renderMobileNavItem :: Lang -> Route -> Route -> String -> Html
 renderMobileNavItem lang currentRoute targetRoute label =
   let
     isActive = currentRoute == targetRoute
-    activeClass = if isActive then "block px-3 py-2 rounded-lg text-sm font-semibold bg-base-200 text-primary" else "block px-3 py-2 rounded-lg text-sm font-normal text-base-content/80 hover:bg-base-200"
+    activeClass = if isActive then "block px-3 py-2.5 rounded-lg text-sm font-semibold bg-base-200 text-primary" else "block px-3 py-2.5 rounded-lg text-sm font-normal text-base-content/80 hover:bg-base-200"
   in
     navLink { lang, current: currentRoute, target: targetRoute }
       [ class_ activeClass
