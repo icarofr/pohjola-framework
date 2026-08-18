@@ -5,7 +5,7 @@ import Prelude
 
 import App.Alpine (Flag(..), ThemeMode(..), ariaExpandedFlag, navLink, onClick, onClickOutside, onKeydownEscapeWindow, setFlag, toggleFlag, xCloak, xDataFlag, xDataThemeWithFlag, xSetThemeAndClose, xShowFlag, xShowTheme)
 import App.Html (Html, attr, class_, el, href, text, type_)
-import App.Layout.Icons (pohjolaLogo)
+import App.Layout.Icons (globeIcon, pohjolaLogo)
 import Data.Content (siteInfo)
 import Data.I18n (Lang(..), dict)
 import Data.Route (Route(..), routeUrl)
@@ -110,7 +110,7 @@ render lang currentRoute =
                       ]
                   ]
 
-              -- Language dropdown with click-outside and escape dismiss
+              -- Idiomatic DaisyUI Language dropdown with Globe icon, click-outside and escape dismiss
               , el "div"
                   [ class_ "dropdown dropdown-end"
                   , xDataFlag LangMenuOpen false
@@ -120,37 +120,38 @@ render lang currentRoute =
                   [ el "button"
                       [ type_ "button"
                       , onClick (toggleFlag LangMenuOpen)
-                      , class_ "btn btn-ghost btn-sm text-xs font-mono flex items-center gap-1 text-base-content"
+                      , class_ "btn btn-ghost btn-sm gap-1.5 px-2 text-xs font-mono text-base-content"
                       , attr "aria-label" "Select language"
                       , ariaExpandedFlag LangMenuOpen
                       ]
-                      [ el "span" [] [ text currentLangLabel ]
-                      , el "svg" [ class_ "size-3 opacity-60", attr "fill" "none", attr "viewBox" "0 0 24 24", attr "stroke-width" "2.5", attr "stroke" "currentColor" ]
+                      [ globeIcon
+                      , el "span" [ class_ "font-bold tracking-wide" ] [ text currentLangLabel ]
+                      , el "svg" [ class_ "size-2.5 opacity-50", attr "fill" "none", attr "viewBox" "0 0 24 24", attr "stroke-width" "2.5", attr "stroke" "currentColor" ]
                           [ el "path" [ attr "stroke-linecap" "round", attr "stroke-linejoin" "round", attr "d" "M19.5 8.25l-7.5 7.5-7.5-7.5" ] [] ]
                       ]
                   , el "ul"
                       [ xShowFlag LangMenuOpen
                       , xCloak
-                      , class_ "dropdown-content menu bg-base-100 rounded-box z-50 w-40 p-1.5 shadow-lg border border-base-200 text-xs font-mono mt-1 whitespace-nowrap block"
+                      , class_ "dropdown-content menu menu-sm bg-base-100 rounded-box z-50 w-44 p-1.5 shadow-xl border border-base-200 text-xs font-mono mt-1 whitespace-nowrap block space-y-0.5"
                       ]
                       [ el "li" []
                           [ el "a"
                               [ href (routeUrl En currentRoute)
                               , onClick (setFlag LangMenuOpen false)
-                              , class_ ("flex items-center justify-between " <> (if lang == En then "active font-bold" else ""))
+                              , class_ ("flex items-center justify-between py-1.5 " <> (if lang == En then "active font-bold" else ""))
                               ]
-                              [ el "span" [] [ text "English" ]
-                              , el "span" [ class_ "opacity-60 text-[10px]" ] [ text "EN" ]
+                              [ el "span" [ class_ "font-sans text-xs" ] [ text "English" ]
+                              , el "span" [ class_ "badge badge-sm badge-ghost text-[10px] opacity-70" ] [ text "EN" ]
                               ]
                           ]
                       , el "li" []
                           [ el "a"
                               [ href (routeUrl Fr currentRoute)
                               , onClick (setFlag LangMenuOpen false)
-                              , class_ ("flex items-center justify-between " <> (if lang == Fr then "active font-bold" else ""))
+                              , class_ ("flex items-center justify-between py-1.5 " <> (if lang == Fr then "active font-bold" else ""))
                               ]
-                              [ el "span" [] [ text "Français" ]
-                              , el "span" [ class_ "opacity-60 text-[10px]" ] [ text "FR" ]
+                              [ el "span" [ class_ "font-sans text-xs" ] [ text "Français" ]
+                              , el "span" [ class_ "badge badge-sm badge-ghost text-[10px] opacity-70" ] [ text "FR" ]
                               ]
                           ]
                       ]
@@ -178,12 +179,28 @@ render lang currentRoute =
           [ renderMobileNavItem lang currentRoute About d.nav.about
           , renderMobileNavItem lang currentRoute Contact d.nav.contact
           , renderMobileNavItem lang currentRoute PostList d.nav.posts
-          , el "div" [ class_ "pt-2 mt-2 border-t border-base-200 flex items-center justify-between text-xs font-mono px-3" ]
-              [ el "span" [ class_ "text-base-content/60" ] [ text "Language" ]
-              , el "div" [ class_ "flex gap-2" ]
-                  [ el "a" [ href (routeUrl En currentRoute), onClick (setFlag MenuOpen false), class_ (if lang == En then "font-bold text-primary" else "text-base-content/70") ] [ text "EN" ]
-                  , el "span" [ class_ "text-base-content/40" ] [ text "|" ]
-                  , el "a" [ href (routeUrl Fr currentRoute), onClick (setFlag MenuOpen false), class_ (if lang == Fr then "font-bold text-primary" else "text-base-content/70") ] [ text "FR" ]
+          , el "div" [ class_ "pt-3 mt-3 border-t border-base-200 space-y-1.5" ]
+              [ el "div" [ class_ "flex items-center gap-1.5 px-3 text-[11px] font-mono font-semibold uppercase tracking-wider text-base-content/60" ]
+                  [ globeIcon
+                  , el "span" [] [ text "Language" ]
+                  ]
+              , el "div" [ class_ "grid grid-cols-2 gap-1.5 px-1" ]
+                  [ el "a"
+                      [ href (routeUrl En currentRoute)
+                      , onClick (setFlag MenuOpen false)
+                      , class_ ("btn btn-sm justify-between " <> (if lang == En then "btn-primary font-bold shadow-sm" else "btn-ghost text-base-content/80"))
+                      ]
+                      [ el "span" [ class_ "font-sans text-xs" ] [ text "English" ]
+                      , el "span" [ class_ "text-[10px] font-mono opacity-70" ] [ text "EN" ]
+                      ]
+                  , el "a"
+                      [ href (routeUrl Fr currentRoute)
+                      , onClick (setFlag MenuOpen false)
+                      , class_ ("btn btn-sm justify-between " <> (if lang == Fr then "btn-primary font-bold shadow-sm" else "btn-ghost text-base-content/80"))
+                      ]
+                      [ el "span" [ class_ "font-sans text-xs" ] [ text "Français" ]
+                      , el "span" [ class_ "text-[10px] font-mono opacity-70" ] [ text "FR" ]
+                      ]
                   ]
               ]
           ]
