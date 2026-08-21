@@ -2,6 +2,9 @@
 
 ## Scaffold a new feature
 
+`scripts/auto-scaffold.js` is the canonical feature generator. The shell script is
+legacy compatibility tooling and must not be used for new generator behavior.
+
 ```bash
 make new-feature NAME=Team                    # static page (default)
 make new-feature NAME=Products TYPE=data      # data-backed page
@@ -10,6 +13,13 @@ make new-feature NAME=Team SLUG_FR=equipe     # custom FR slug
 ```
 
 Creates `src/App/Features/<Name>/` with the standard file split. When `WIRE=1` is passed, it automatically wires the feature across `Data.Route`, `App.Main`, `Data.I18n`, and `App.Layout.Head` and validates compilation immediately.
+
+Generated views consume `App.Ui` component/layout recipes. Do not add raw Tailwind
+utility chains to feature views; layout utilities belong inside the UI boundary.
+
+`make generator-policy` validates the canonical generator and its boundary
+contract. It is not a full proof of the CSS/type system; existing feature views
+may still require migration to current recipes.
 
 ## Generate PureScript types from SQL Schema
 
@@ -36,7 +46,7 @@ ContractSpec enforces feature isolation — see `test/ContractSpec.purs`.
 
 ## Checklist after scaffolding
 
-- `make gate && spago build && make test` passes.
+- `make gate && bun x spago build && make test` passes.
 - No new cross-feature imports (ContractSpec isolation test).
 - `make check` passes (lint + formatting).
 

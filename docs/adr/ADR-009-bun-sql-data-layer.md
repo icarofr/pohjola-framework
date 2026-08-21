@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Accepted (implementation pending)
 
 ## Context
 
@@ -43,9 +43,10 @@ Bun's native fetch. Adding database support requires three decisions:
 - **Transactions**: managed explicitly via `execute` with `BEGIN`/
   `COMMIT`/`ROLLBACK`. Keeps all transaction logic in PureScript — the
   JS side stays pure plumbing (no `sql.begin` callback bridge needed).
-- **Connection pooling**: `Bun.SQL` auto-pools (lazy connect, default
-  10 connections). One `SQL` handle per app lifetime; `close` on
-  shutdown.
+- **Connection pooling and lifecycle**: `Bun.SQL` auto-pools (lazy connect,
+  default 10 connections). The application creates one `SQL` handle after
+  synchronous startup migrations complete, reuses it for the app lifetime,
+  and closes it during shutdown.
 
 ### Migrations: hand-rolled runner in `App.Migration`
 
@@ -69,6 +70,13 @@ Bun's native fetch. Adding database support requires three decisions:
 allowlisted) — keeps the FFI allowlist at 4 modules instead of adding
 a fifth for file operations.
 
+The same approved Bun boundary is the default boundary for auth/session
+cryptographic primitives: secure random generation, SHA-256 token hashing,
+and password operations. The opaque session bearer token does not require an
+HMAC boundary. If the eventual implementation needs a new module, it must be
+added to the FFI allowlist with explicit justification; this ADR does not
+claim that auth/session implementation is complete.
+
 ### CLI integration
 
 `MIGRATE_ONLY=1` env var makes the server bundle run migrations and
@@ -88,6 +96,9 @@ exit (no HTTP serve). Makefile targets:
   (trusted SQL only); `query`/`execute` are parameterized.
 - **No `node:fs`** — Bun-native file/glob/hash APIs throughout.
 - **Forward-only** — simpler model, no down-migration bugs.
+- **Startup ordering** — migrations complete before the long-lived SQL handle
+  is made available to request handling. This lifecycle is approved; source
+  implementation remains pending.
 
 ### Negative
 

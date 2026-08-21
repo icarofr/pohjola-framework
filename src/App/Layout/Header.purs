@@ -3,8 +3,8 @@ module App.Layout.Header where
 
 import Prelude
 
-import App.Alpine (Flag(..), ThemeMode(..), ariaExpandedFlag, navLink, onClick, onClickOutside, onKeydownEscapeWindow, setFlag, toggleFlag, xCloak, xDataFlag, xDataTheme, xDataThemeWithFlag, xSetTheme, xSetThemeAndClose, xShowFlag, xShowTheme)
-import App.Html (Html, attr, class_, el, href, text, type_)
+import App.Alpine (Flag(..), ThemeMode(..), ariaExpandedFlag, navLink, onClick, onClickOutside, onKeydownEscapeWindow, setFlag, toggleFlag, xCloak, xDataFlag, xDataTheme, xDataThemeWithFlag, xSetTheme, xSetThemeAndClose, xShowFlag, xShowTheme, xSync)
+import App.Html (Html, attr, class_, el, href, id_, text, type_)
 import App.Layout.Icons (globeIcon, pohjolaLogo)
 import Data.Content (siteInfo)
 import Data.I18n (Lang(..), dict)
@@ -19,7 +19,9 @@ render lang currentRoute =
       Fr -> "FR"
   in
     el "header"
-      [ class_ "sticky top-0 z-50 bg-base-100/90 backdrop-blur-md border-b border-base-300"
+      [ id_ "header"
+      , xSync
+      , class_ "sticky top-0 z-50 bg-base-100/90 backdrop-blur-md border-b border-base-300"
       , xDataFlag MenuOpen false
       , onClickOutside (setFlag MenuOpen false)
       , onKeydownEscapeWindow (setFlag MenuOpen false)
@@ -168,7 +170,7 @@ render lang currentRoute =
 
       -- Mobile Drawer (Clean, thumb-friendly navigation & utilities)
       , el "div"
-          [ class_ "md:hidden border-t border-base-300 bg-base-100 px-4 py-4 space-y-4"
+          [ class_ "mobile-drawer md:hidden border-t border-base-300 bg-base-100 px-4 py-4 space-y-4"
           , xShowFlag MenuOpen
           , xCloak
           ]

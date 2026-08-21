@@ -19,11 +19,10 @@ import App.Features.Contact.Page as Contact
 import App.Features.Home.Page as Home
 import App.Features.Posts.Page as Posts
 import App.Html (Html)
-import App.Layout.Page (renderErrorFragment, renderErrorPage, renderFragment, renderPage, renderShellClose, renderShellOpen)
+import App.Layout.Page (renderErrorFragment, renderErrorPage, renderFragment, renderPage)
 import App.Logger as Log
 import App.RateLimit (RateLimiter, RateLimitVerdict(..), checkRateLimit, mkRateLimiter)
 import App.Server as Server
-import App.ServerBun (streamResponseImpl)
 import App.Sitemap (renderRobots, renderSitemap)
 import Data.Array (head)
 import Data.Either (Either(..))
@@ -73,7 +72,7 @@ handleGet :: Config -> PageCache -> String -> Map String String -> Map String St
 handleGet cfg cache nonce headers query path = case path of
   [] -> redirectRoot headers
   [ "healthz" ] -> pure $ Server.okText "text/plain" "ok"
-  [ "dev", "live-reload" ] -> pure $ Server.okWith [ Tuple "Content-Type" "text/event-stream", Tuple "Cache-Control" "no-cache", Tuple "Connection" "keep-alive" ] "retry: 1500\n\n: live-reload connected\n\n"
+  [ "dev", "live-reload" ] -> pure $ Server.okTextWith [ Tuple "Cache-Control" "no-cache", Tuple "Connection" "keep-alive" ] "text/event-stream" "retry: 1500\n\n: live-reload connected\n\n"
   [ "robots.txt" ] -> pure $ Server.okText "text/plain" (renderRobots cfg.baseUrl)
   [ "sitemap.xml" ] -> pure $ Server.okText "application/xml" (renderSitemap cfg.baseUrl)
   _ -> case parseRoute path of
@@ -142,7 +141,9 @@ statusFor ctx = Map.lookup "status" ctx.query >>= parseFormStatus
 
 fullPage :: RequestCtx -> Maybe FormStatus -> Html -> Server.Response
 fullPage ctx status html =
-  Server.okWith [ varyHeader ] (renderPage ctx.cfg.baseUrl ctx.nonce ctx.lang ctx.route status html)
+  case status of
+    Just _ -> Server.okWithNoStore [ varyHeader ] (renderPage ctx.cfg.baseUrl ctx.nonce ctx.lang ctx.route status html)
+    Nothing -> Server.okWith [ varyHeader ] (renderPage ctx.cfg.baseUrl ctx.nonce ctx.lang ctx.route status html)
 
 -- | Log a page-render failure. Shared by both error paths so the log shape
 -- | cannot drift between them.
@@ -174,12 +175,13 @@ failureFragment ctx err = do
 -- | Exhaustive over `Route` on purpose. The previous wildcard let a new route
 -- | compile while silently inheriting static serving; naming every route forces
 -- | a decision. This deliberately does NOT introduce a policy sum type — with
--- | one streamed and one dynamically-cached route that would be abstraction
--- | ahead of need, and exhaustiveness is the property actually wanted.
+-- | one experimental streaming implementation and dynamically-cached routes
+-- | that would be abstraction ahead of need, and exhaustiveness is the property
+-- | actually wanted.
 -- |
--- | PostList streams: the shell arrives immediately, content follows when the
--- | upstream fetch resolves. PostDetail can 404, so it cannot stream — the
--- | status is committed at shell time. Fragment requests never stream.
+-- | Ordinary pages use buffered rendering. Streaming remains an experimental,
+-- | unselected path outside this route-level renderer.
+-- | Fragment requests always use the buffered fragment path.
 handleRoute :: RequestCtx -> Aff Server.Response
 handleRoute ctx =
   if isFragmentRequest ctx.headers ctx.query then
@@ -196,7 +198,7 @@ handleRoute ctx =
     Home -> cachedStaticPage ctx
     About -> cachedStaticPage ctx
     Contact -> cachedStaticPage ctx
-    PostList -> streamPostList ctx
+    PostList -> cachedDynamicPage ctx
     PostDetail _ -> cachedDynamicPage ctx
 
 -- | True when the request carries a form-status banner query.
@@ -258,21 +260,6 @@ renderThen ctx store = do
     Right html -> do
       store html
       pure $ fullPage ctx (statusFor ctx) html
-
--- | Stream PostList: shell arrives immediately, content streams when the
--- | API fetch resolves. The ReadableStream is created by the FFI's
--- | `streamResponseImpl` — the fetch and stream population happen entirely
--- | in the JS event loop (async start + native fetch), not in a forked Aff.
--- | This avoids the Aff scheduler issue where forked fibers don't resume
--- | reliably on Bun.
-streamPostList :: RequestCtx -> Aff Server.Response
-streamPostList ctx = do
-  stream <- liftEffect $ streamResponseImpl
-    (Posts.streamListUrl ctx.cfg)
-    (Posts.renderListContent ctx.lang)
-    (renderShellOpen ctx.cfg.baseUrl ctx.nonce ctx.lang PostList)
-    (renderShellClose ctx.nonce ctx.lang PostList)
-  pure $ Server.streamResponse stream
 
 -- | A fragment request is either an Alpine AJAX navigation (x-alpine-request
 -- | header) or a prefetch of a ?_frag=1 URL. Both return the same fragment.

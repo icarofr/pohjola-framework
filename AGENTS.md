@@ -20,7 +20,12 @@
 |`make test/integration`|Venom integration tests |
 |`make test/e2e`|Playwright end-to-end |
 |`make gate`|Banned-fn / FFI / HTML-escape checks |
-|`make check`|gate + build + test + format-check |
+|`make fast`|Local policy + formatting checks |
+|`make generator-policy`|Canonical generator/`App.Ui` boundary check (not a full CSS/type-system proof) |
+|`make local`|Fast checks + build |
+|`make full`|Full local validation |
+|`make ci-equivalent`|Canonical CI validation (non-container jobs) |
+|`make check`|Alias for full |
 |`make new-feature`|Scaffold a feature (NAME=X [TYPE=data] [SLUG_FR=x] [WIRE=1]) |
 |`make gen-sql`|Generate PureScript types & codecs from SQL Schema |
 
@@ -58,6 +63,8 @@
 ### Default agent rules
 - Before adding a feature, read the relevant convention doc (task→doc map above). **If you skip this, state why.**
 - Before adding UI/styles, read `DESIGN.md` and `docs/conventions/design-system.md`. Compose views with `App.Ui.Layout.*` slot templates and `App.Ui` primitives (never raw layout utility soup).
+- DaisyUI is the semantic component layer: `App.Ui` owns recipes, feature views consume them, and Tailwind layout utilities are allowed only inside `App.Ui`.
+- Use `scripts/auto-scaffold.js` (via `make new-feature`) as the canonical feature generator; `scripts/new-feature.sh` is legacy.
 - Before adding FFI, read `docs/ffi-taming-guide.md`. **If you skip this, state why.**
 - Before proposing auth, read `docs/adr/ADR-002-auth-shape.md`. **If you skip this, state why.**
 - Before committing, run `make check`. **If you skip this, state why.**

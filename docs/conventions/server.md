@@ -56,8 +56,8 @@ is not representable by an arbitrary `String`.
 `private` on full pages because each embeds a per-request CSP nonce and a
 shared cache would replay one visitor's nonce to everyone else; `max-age`
 because without a freshness lifetime the response is never reusable, which makes
-hover prefetch pure overhead. Both halves were established by measurement — see
-`RECONCILIATION.md` "W6 outcome" and `e2e/prefetch-cache.spec.js`.
+hover prefetch pure overhead. Both halves are pinned by the response contracts
+and `e2e/prefetch-cache.spec.js`.
 
 **Fragments share the policy for a different reason.** `renderFragment` emits no
 `<script>` tags and therefore carries no nonce at all — verified, a fragment
@@ -82,8 +82,9 @@ applies headers with `Headers.set` in iteration order, so a caller-supplied
 
 ## Streaming & fragments
 
-- **Streaming**: `PostList` sends the HTML shell immediately via `StreamBody`
-  (a `ReadableStream`). Page content streams as it resolves.
+- **Streaming**: Buffered SSR is the default. The `StreamBody` path is disabled
+  experimental opt-in; when enabled, `PostList` sends the HTML shell immediately
+  via `ReadableStream`.
   `controller.close()` is guaranteed via `try/finally` even on enqueue
   failure. Status is always 200 (committed at shell time).
 - **Fragments**: The server detects fragment requests via **either** signal —

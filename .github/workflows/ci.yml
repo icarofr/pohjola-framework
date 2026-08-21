@@ -37,7 +37,7 @@ jobs:
         run: make format-check
 
       - name: Gate (unsafe fns, FFI, HTML escape hatch) + build
-        run: make gate build assets-check
+        run: make ci-equivalent
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4

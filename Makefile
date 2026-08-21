@@ -20,7 +20,7 @@ export PATH := $(CURDIR)/node_modules/.bin:$(PATH)
 
 SPAGO := bun x spago
 
-.PHONY: all help deps assets assets-check dev watch css css-watch bundle build sync-static run test test/integration test/integration/down test/e2e check image up down clean gate format format-check gen-sql new-feature evals eval
+.PHONY: all help deps assets assets-check dev watch css css-watch bundle build sync-static run test test/integration test/integration/down test/e2e check image up down clean gate generator-policy design-policy fast local full ci-equivalent format format-check gen-sql new-feature evals eval
 
 # ==================================================================================== #
 # HELPERS
@@ -77,6 +77,13 @@ gate:
 	@if grep -rn 'Node.Process\|lookupEnv' src/ | grep -v '^src/App/Env.purs:'; then echo "ERROR: env read outside App/Env.purs"; exit 1; else echo "No env reads outside App/Env.purs"; fi
 	@echo "Checking Content Firewall (no raw text literals in feature views)..."
 	@if grep -rn 'text "[A-Za-z0-9]' src/App/Features/*/View.purs; then echo "ERROR: Hardcoded text string found in feature view — text must come from Data.I18n (Content Firewall)"; exit 1; else echo "Content Firewall OK"; fi
+
+## generator-policy: validate the canonical generator and App.Ui boundary
+.PHONY: generator-policy design-policy
+generator-policy:
+	@bash scripts/verify-generator-fixture.sh
+
+design-policy: generator-policy
 
 # ==================================================================================== #
 # DEPENDENCIES
@@ -223,8 +230,20 @@ test/e2e:
 
 ## check: full pre-push validation (build + test — mirrors CI)
 .PHONY: check
-check: gate build test assets-check format-check
+check: full
 	@echo "All checks passed."
+
+## fast: cheap local policy and formatting checks
+fast: gate generator-policy format-check
+
+## local: fast checks plus the normal local build
+local: fast build
+
+## full: complete local validation (build, tests, assets, formatting)
+full: gate generator-policy build test assets-check format-check
+
+## ci-equivalent: canonical CI validation target (excluding integration/e2e jobs)
+ci-equivalent: full
 
 # ==================================================================================== #
 # SCAFFOLDING
@@ -233,7 +252,7 @@ check: gate build test assets-check format-check
 ## new-feature: scaffold a feature (usage: make new-feature NAME=Team [TYPE=data] [SLUG_FR=equipe])
 .PHONY: new-feature
 new-feature:
-	@./scripts/new-feature.sh
+	@bun scripts/auto-scaffold.js --name=$(NAME) $(if $(TYPE),--type=$(TYPE),) $(if $(SLUG_EN),--slug-en=$(SLUG_EN),) $(if $(SLUG_FR),--slug-fr=$(SLUG_FR),) $(if $(WIRE),--wire,)
 
 ## gen-sql: generate PureScript types & codecs from SQL migrations (usage: make gen-sql [FILE=migrations/001.sql] [TABLE=comments] [OUT=path])
 .PHONY: gen-sql

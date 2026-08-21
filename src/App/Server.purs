@@ -28,7 +28,9 @@ module App.Server
   , errorCacheControl
   , ok
   , okWith
+  , okWithNoStore
   , okText
+  , okTextWith
   , htmlErrorResponse
   , notFound
   , methodNotAllowed
@@ -183,7 +185,7 @@ withCsp nonce response =
 -- | The trade: within that window one nonce is reused, for that visitor only.
 -- | Exploiting it requires already knowing the nonce, and learning it requires
 -- | reading the response — which same-origin policy prevents, and which would
--- | permit immediate injection anyway. See RECONCILIATION.md "W6 outcome".
+-- | permit immediate injection anyway.
 -- |
 -- | AJAX fragments share this policy for a *different* reason, which the
 -- | previous wording obscured by saying "each HTML response embeds a nonce":
@@ -234,9 +236,23 @@ okWith hdrs body =
   , body: StringBody body
   }
 
+okWithNoStore :: Array (Tuple String String) -> String -> Response
+okWithNoStore hdrs body =
+  { status: 200
+  , headers: securityHeaders <> [ Tuple "Content-Type" "text/html; charset=utf-8" ] <> hdrs <> [ errorCacheControl ]
+  , body: StringBody body
+  }
+
 okText :: String -> String -> Response
 okText contentType body =
   { status: 200, headers: securityHeaders <> [ Tuple "Content-Type" contentType ], body: StringBody body }
+
+okTextWith :: Array (Tuple String String) -> String -> String -> Response
+okTextWith hdrs contentType body =
+  { status: 200
+  , headers: securityHeaders <> [ Tuple "Content-Type" contentType ] <> hdrs
+  , body: StringBody body
+  }
 
 -- | 304 Not Modified response carrying security headers and validator metadata.
 notModified :: Array (Tuple String String) -> Response
@@ -420,7 +436,7 @@ streamResponse stream =
   { status: 200
   , headers: securityHeaders <>
       [ Tuple "Content-Type" "text/html; charset=utf-8"
-      , htmlCacheControl
+      , Tuple "Cache-Control" "no-cache"
       , Tuple "Vary" alpineRequestHeader
       ]
   , body: StreamBody stream

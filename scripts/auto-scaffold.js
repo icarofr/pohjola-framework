@@ -75,10 +75,11 @@ render lang = staticPage (render${name} lang)
     `-- | ${name} page — page-level rendering, orchestrates Components/
 module App.Features.${name}.View where
 
-import App.Alpine (xAutofocus)
-import App.Html (Html, attr, class_, el, text)
+import App.Html (Html)
 import App.Ui.Container (container)
+import App.Ui.Layout.SectionHeader (Align(..), sectionHeader)
 import Data.I18n (Lang, dict)
+import Data.Maybe (Maybe(..))
 
 render${name} :: Lang -> Html
 render${name} lang =
@@ -86,11 +87,7 @@ render${name} lang =
     d = (dict lang).${lower}
   in
     container "max-w-3xl" "py-16"
-      [ el "h1" [ class_ "font-display text-4xl font-bold text-slate-900 dark:text-white", xAutofocus, attr "tabindex" "-1" ]
-          [ text d.heading ]
-      , el "p" [ class_ "mt-6 text-lg leading-8 text-slate-600 dark:text-slate-300" ]
-          [ text d.body ]
-      ]
+      [ sectionHeader { eyebrow: Nothing, title: d.heading, subtitle: Just d.body, align: Left } ]
 `
   );
 } else {
@@ -102,11 +99,7 @@ module App.Features.${name}.Types where
 
 import Prelude
 
-import App.Error (AppError(..))
 import Data.Argonaut.Decode (class DecodeJson, decodeJson, (.:))
-import Data.Argonaut.Decode.Error (JsonDecodeError(..))
-import Data.Argonaut.Parser (jsonParser)
-import Data.Either (Either(..))
 import Data.Newtype (class Newtype)
 
 newtype ${name} = ${name}
@@ -116,8 +109,8 @@ newtype ${name} = ${name}
   }
 
 derive instance newtype${name} :: Newtype ${name} _
-derive instance eq${name} :: Eq ${name}
-derive instance show${name} :: Show ${name}
+derive newtype instance eq${name} :: Eq ${name}
+derive newtype instance show${name} :: Show ${name}
 
 instance decodeJson${name} :: DecodeJson ${name} where
   decodeJson json = do
@@ -127,12 +120,6 @@ instance decodeJson${name} :: DecodeJson ${name} where
     body <- obj .: "body"
     pure (${name} { id, title, body })
 
-decode${name}s :: String -> Either AppError (Array ${name})
-decode${name}s jsonStr = case jsonParser jsonStr of
-  Left err -> Left (JsonDecodeFail (TypeMismatch ("JSON parse error: " <> err)))
-  Right json -> case decodeJson json of
-    Left err -> Left (JsonDecodeFail err)
-    Right items -> Right items
 `
   );
 
@@ -146,12 +133,12 @@ import Prelude
 import App.Config (Config)
 import App.Data.Fetch (fetchJson)
 import App.Error (AppError)
-import App.Features.${name}.Types (${name}, decode${name}s)
+import App.Features.${name}.Types (${name})
 import Data.Either (Either)
 import Effect.Aff (Aff)
 
 fetch${name}s :: Config -> Aff (Either AppError (Array ${name}))
-fetch${name}s cfg = fetchJson (cfg.postsApiBase <> "/posts") decode${name}s
+fetch${name}s cfg = fetchJson (cfg.postsApiBase <> "/posts")
 `
   );
 
@@ -162,17 +149,16 @@ fetch${name}s cfg = fetchJson (cfg.postsApiBase <> "/posts") decode${name}s
 module App.Features.${name}.Components.${name}Card where
 
 import App.Features.${name}.Types (${name}(..))
-import App.Html (Html, class_, el, text)
+import App.Html (Html, el, text)
+import App.Ui.Card (card, cardBody, cardTitle)
 import Data.I18n (Lang)
 
 render${name}Card :: Lang -> ${name} -> Html
 render${name}Card _ (${name} item) =
-  el "article" [ class_ "rounded-lg border border-slate-200 dark:border-slate-800 p-6 bg-white dark:bg-slate-900 shadow-sm" ]
-    [ el "h2" [ class_ "text-xl font-semibold text-slate-900 dark:text-white" ]
-        [ text item.title ]
-    , el "p" [ class_ "mt-2 text-slate-600 dark:text-slate-300" ]
-        [ text item.body ]
-    ]
+  card (cardBody (el "div" []
+    [ cardTitle (el "p" [] [ text item.title ])
+    , el "p" [] [ text item.body ]
+    ]))
 `
   );
 
@@ -181,15 +167,14 @@ render${name}Card _ (${name} item) =
     `-- | ${name} view — list rendering, orchestrates Components/
 module App.Features.${name}.View where
 
-import Prelude
-
-import App.Alpine (xAutofocus)
 import App.Features.${name}.Components.${name}Card (render${name}Card)
 import App.Features.${name}.Types (${name})
-import App.Html (Html, attr, class_, el, text)
+import App.Html (Html)
 import App.Ui.Container (container)
+import App.Ui.Layout.SectionHeader (Align(..), sectionHeader)
 import Data.Foldable (foldMap)
 import Data.I18n (Lang, dict)
+import Data.Maybe (Maybe(..))
 
 render${name}List :: Lang -> Array ${name} -> Html
 render${name}List lang items =
@@ -197,10 +182,8 @@ render${name}List lang items =
     d = (dict lang).${lower}
   in
     container "max-w-3xl" "py-16"
-      [ el "h1" [ class_ "font-display text-4xl font-bold text-slate-900 dark:text-white", xAutofocus, attr "tabindex" "-1" ]
-          [ text d.heading ]
-      , el "div" [ class_ "mt-8 space-y-6" ]
-          [ foldMap (render${name}Card lang) items ]
+      [ sectionHeader { eyebrow: Nothing, title: d.heading, subtitle: Nothing, align: Left }
+      , foldMap (render${name}Card lang) items
       ]
 
 render${name}Error :: Lang -> Html
@@ -209,11 +192,7 @@ render${name}Error lang =
     d = (dict lang).${lower}
   in
     container "max-w-3xl" "py-16"
-      [ el "h1" [ class_ "font-display text-4xl font-bold text-slate-900 dark:text-white", xAutofocus, attr "tabindex" "-1" ]
-          [ text d.heading ]
-      , el "p" [ class_ "mt-4 text-lg text-red-600 dark:text-red-400" ]
-          [ text "Error loading data." ]
-      ]
+       [ sectionHeader { eyebrow: Nothing, title: d.heading, subtitle: Just (dict lang).common.error500, align: Left } ]
 `
   );
 
@@ -252,6 +231,12 @@ if (wire) {
 
   // A. Update src/Data/Route.purs
   let routeContent = readFileSync("src/Data/Route.purs", "utf-8");
+
+  const requireMarker = (content, marker, file, description) => {
+    if (!content.includes(marker)) {
+      throw new Error(`Auto-wiring failed: ${description} was not inserted in ${file}.`);
+    }
+  };
 
   // Sum type
   routeContent = routeContent.replace(
@@ -328,6 +313,22 @@ if (wire) {
   );
 
   writeFileSync("src/Data/Route.purs", routeContent, "utf-8");
+  for (const marker of [
+    `| ${name}`,
+    `${name} -> "${name}"`,
+    `"${name}": "${slugEn}"`,
+    `"${name}": "${slugFr}"`,
+    `prefetchFor ${name} =`,
+    `allRoutes = [`,
+    `routeTitle lang route =`,
+    `${name} -> d.nav.${lower}`,
+  ]) requireMarker(routeContent, marker, "src/Data/Route.purs", `Route marker ${marker}`);
+  const allRoutesLine = routeContent.match(/allRoutes = \[[^\n]*\n?/);
+  if (!allRoutesLine || !allRoutesLine[0].includes(name)) throw new Error(`Auto-wiring failed: allRoutes was not updated in src/Data/Route.purs.`);
+  if (type === "static") {
+    const staticRoutesLine = routeContent.match(/staticRoutes = \[[^\n]*\n?/);
+    if (!staticRoutesLine || !staticRoutesLine[0].includes(name)) throw new Error(`Auto-wiring failed: staticRoutes was not updated in src/Data/Route.purs.`);
+  }
   console.log("  ✓ Updated src/Data/Route.purs");
 
   // B. Update src/App/Main.purs
@@ -374,6 +375,9 @@ if (wire) {
   }
 
   writeFileSync("src/App/Main.purs", mainContent, "utf-8");
+  requireMarker(mainContent, importLine, "src/App/Main.purs", "feature import");
+  requireMarker(mainContent, renderCase, "src/App/Main.purs", "pageRenderer case");
+  requireMarker(mainContent, handleRouteCase, "src/App/Main.purs", "handleRoute case");
   console.log("  ✓ Updated src/App/Main.purs");
 
   // C. Update src/Data/I18n.purs
@@ -434,45 +438,60 @@ if (wire) {
   );
 
   writeFileSync("src/Data/I18n.purs", i18nContent, "utf-8");
+  for (const marker of [
+    `      , ${lower} :: String`,
+    `  , ${lower} ::\n      { heading :: String`,
+    `      , ${lower}: "${name}"`,
+    `  , ${lower}:\n      { heading: "${name}"`,
+  ]) requireMarker(i18nContent, marker, "src/Data/I18n.purs", `I18n field ${marker}`);
+  // The same field names occur in both language dictionaries; verify each one
+  // in its own section rather than accepting an English-only replacement.
+  for (const lang of ["en", "fr"]) {
+    const section = i18nContent.match(new RegExp(`${lang}\\s*::\\s*Dictionary\\s*\\n${lang}\\s*=([\\s\\S]*?)(?=\\n\\n(?:en|fr)\\s*::|$)`));
+    if (!section || !section[1].includes(`  , ${lower}:`) || !section[1].includes(`      , ${lower}:`)) {
+      throw new Error(`Auto-wiring failed: ${lang} I18n fields were not inserted in src/Data/I18n.purs.`);
+    }
+  }
   console.log("  ✓ Updated src/Data/I18n.purs");
 
   // D. Update src/App/Layout/Head.purs (seoDescription)
   let headContent = readFileSync("src/App/Layout/Head.purs", "utf-8");
 
-  // seoDescription En
-  headContent = headContent.replace(
-    /(seoDescription En = case _ of\s*\n[\s\S]*?)(seoDescription Fr = case _ of)/,
-    (match, p1, p2) => {
-      if (p1.includes(`${name} ->`)) return match;
-      return `${p1.trimEnd()}\n  ${name} -> "${name} on " <> siteInfo.title <> "."\n${p2}`;
+  // seoDescription has one language-polymorphic case expression. Insert the
+  // route once and use the generated dictionary section for both languages.
+  const headMarker = `      ${name} -> d.${lower}.body`;
+  if (!headContent.includes(headMarker)) {
+    const before = headContent;
+    headContent = headContent.replace(
+      /(seoDescription :: Lang -> Route -> String[\s\S]*?case route of\s*\n[\s\S]*?\n)(\s+PostDetail _ -> [^\n]*\n)/,
+      `$1$2      ${name} -> d.${lower}.body\n`
+    );
+    if (headContent === before) {
+      throw new Error("Auto-wiring failed: could not find the seoDescription route case insertion point in src/App/Layout/Head.purs.");
     }
-  );
-
-  // seoDescription Fr
-  headContent = headContent.replace(
-    /(seoDescription Fr = case _ of\s*\n[\s\S]*?)(-- ==)/,
-    (match, p1, p2) => {
-      if (p1.includes(`${name} ->`)) return match;
-      return `${p1.trimEnd()}\n  ${name} -> "${name} sur " <> siteInfo.title <> "."\n\n${p2}`;
-    }
-  );
+  }
 
   writeFileSync("src/App/Layout/Head.purs", headContent, "utf-8");
+  requireMarker(headContent, headMarker, "src/App/Layout/Head.purs", "seoDescription route case");
   console.log("  ✓ Updated src/App/Layout/Head.purs");
 
   // Format code
   try {
-    execSync("npx purs-tidy format-in-place 'src/**/*.purs' 'test/**/*.purs'", {
-      stdio: "ignore",
+    execSync("bun x purs-tidy format-in-place 'src/**/*.purs' 'test/**/*.purs'", {
+      stdio: "inherit",
     });
     console.log("  ✓ Formatted with purs-tidy");
-  } catch {}
+  } catch (error) {
+    console.error("✘ Formatting failed; refusing to complete auto-wiring.");
+    throw error;
+  }
 
   console.log("\n⚡ Auto-wiring complete! Validating with Spago build...");
   try {
-    execSync("spago build --strict", { stdio: "inherit" });
+    execSync("bun x spago build --strict", { stdio: "inherit" });
     console.log("✓ Built successfully with zero compiler errors!");
-  } catch {
+  } catch (error) {
     console.error("✘ Build check failed. Inspect generated changes.");
+    throw error;
   }
 }

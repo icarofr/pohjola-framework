@@ -1,6 +1,6 @@
 # Pohjola — Design System & UI Generation Guide
 
-Pohjola uses a 3-tier architecture with **Slot-Based Layout Archetypes** to guarantee that AI-generated user interfaces remain brand-consistent, structurally non-deformed, and accessible without visual drift or "utility soup".
+Pohjola uses a 3-tier architecture with **Slot-Based Layout Archetypes** to guide AI-generated user interfaces toward brand consistency, accessible structure, and less "utility soup". These conventions are not a structural guarantee of every visual or accessibility outcome.
 
 ---
 
@@ -11,9 +11,9 @@ Pohjola uses a 3-tier architecture with **Slot-Based Layout Archetypes** to guar
    - The 85/100 evidence-based scorecard audits every UI change before completion.
 2. **Tier 2: Design Tokens & Single Source of Truth (`DESIGN.md`)**:
    - Google Labs `DESIGN.md` format defines exact colors, typography scales, radii, and spacing in YAML.
-   - Built-in linting validates WCAG AA contrast (4.5:1 text-on-surface).
-   - Exported directly to Tailwind CSS v4 `@theme` in `css/input.css`.
-3. **Tier 3: Rigid Slot-Based Templates & Primitives (`App.Ui.Layout.*` & `App.Ui.*`)**:
+    - WCAG contrast is a design intent checked through manual review; automated token linting is pending.
+    - Direct export to Tailwind CSS v4 `@theme` is a planned integration, not current repository tooling.
+3. **Tier 3: DaisyUI semantic recipes & rigid templates (`App.Ui.Layout.*` & `App.Ui.*`)**:
    - High-level layout archetypes (`Hero`, `SectionHeader`, `Grid`, `ActionCard`, `ConversionCta`) that enforce rigid slots.
    - Encapsulates box model, margin rhythm, and baseline alignment so agents only pass typed data records.
 
@@ -21,10 +21,10 @@ Pohjola uses a 3-tier architecture with **Slot-Based Layout Archetypes** to guar
 
 ## 2. Core Design Rules
 
-* **Zero Layout Soup in Views**: Feature views (`Features/*/View.purs`) MUST NOT author raw layout utility chains (`flex`, `space-y-*`, `grid`, `gap-*`, `py-*`). Views must compose slot-based templates from `App.Ui.Layout.*`.
+* **DaisyUI boundary**: `App.Ui` owns semantic component recipes and their Tailwind/DaisyUI classes. Feature views consume those recipes; Tailwind layout utilities are allowed only inside `App.Ui`.
 * **Single Primary Action Rule**: Every screen/view must have at most ONE primary button (`Button.Primary`). All secondary actions must use `Button.Secondary`, `Button.Outline`, or `Button.Ghost`.
 * **At Most One Eyebrow**: Section headers and cards may have at most ONE single eyebrow tag. Chaining multiple badges above a title is strictly forbidden.
-* **Contrast Floor**: All body text must achieve at least 4.5:1 contrast against its background container (WCAG AA).
+* **Contrast Floor**: Aim for at least 4.5:1 contrast against the background (WCAG AA); verify this through manual review until automated tooling is available.
 * **Target Size**: All interactive click targets must be $\ge 40\times 40\text{px}$ on desktop and $\ge 44\times 44\text{px}$ on mobile.
 
 ---
@@ -59,11 +59,15 @@ Pohjola uses a 3-tier architecture with **Slot-Based Layout Archetypes** to guar
 
 ## 5. Pre-Ship UI Scorecard (Hard Gates)
 
+`make generator-policy` validates the canonical generator's `App.Ui` boundary;
+it is not a full CSS/type-system proof, and existing feature views may still
+require migration.
+
 Before finalizing any UI feature, verify these hard gates:
 1. [ ] Only ONE primary CTA exists on the screen.
 2. [ ] Views compose slot templates from `App.Ui.Layout.*` (zero manual `space-y-*` or `flex-col justify-between` soup in feature modules).
 3. [ ] At most one eyebrow tag is present per section.
-4. [ ] Text contrast meets WCAG AA standards (`bun x designmd lint DESIGN.md`).
+4. [ ] Text contrast has been manually reviewed against WCAG AA standards (automated linting is pending).
 5. [ ] All click targets meet the $44\times 44\text{px}$ touch target minimum.
 6. [ ] Keyboard focus states and ARIA roles are present on interactive elements.
 7. [ ] Empty and error states are handled gracefully via typed primitives.
