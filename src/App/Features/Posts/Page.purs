@@ -8,18 +8,15 @@
 -- |   1. Fetch data via a Service module (returns `Aff (Either AppError a)`)
 -- |   2. Pattern-match: Right data → render view, Left err → render error
 -- |   3. The router maps AppError to HTTP status codes
-module App.Features.Posts.Page (renderList, renderDetail, renderListContent, streamListUrl) where
+module App.Features.Posts.Page (renderList, renderDetail) where
 
 import Prelude
 
 import App.Config (Config)
 import App.Error (AppError)
-import App.FetchBun (FetchResult)
-import App.Features.Posts.Service (curatedPosts, fetchPost, fetchPosts)
-import App.Features.Posts.Types (decodePosts)
+import App.Features.Posts.Service (fetchPost, fetchPosts)
 import App.Features.Posts.View (renderPostDetail, renderPostList, renderPostsError)
-import App.Html (Html, render)
-import App.ServerBun (StreamContent)
+import App.Html (Html)
 import Data.Either (Either(..))
 import Data.I18n (Lang)
 import Effect.Aff (Aff)
@@ -45,32 +42,3 @@ renderDetail cfg lang id = do
   pure case result of
     Right post -> Right (renderPostDetail lang post)
     Left err -> Left err
-
--- | URL for streaming the post list. Returns empty string when serving local
--- | curated posts, or the external API URL when configured.
-streamListUrl :: Config -> String
-streamListUrl cfg =
-  if cfg.postsApiBase == "" || cfg.postsApiBase == "https://jsonplaceholder.typicode.com" then
-    ""
-  else
-    cfg.postsApiBase <> "/posts"
-
--- | Pure content renderer for the streaming path. Decodes the fetch result
--- | and returns pre-rendered HTML. Called synchronously by the FFI's
--- | ReadableStream async start — no Aff, no fiber scheduling.
--- | When body is empty (local curated mode), returns curatedPosts.
--- | On any error (network, decode, HTTP status), returns the error fragment.
-renderListContent :: Lang -> FetchResult -> StreamContent
-renderListContent lang { status, body } =
-  { html: render content }
-  where
-  content :: Html
-  content =
-    if body == "" then
-      renderPostList lang curatedPosts
-    else if status >= 200 && status < 300 then
-      case decodePosts body of
-        Left _ -> renderPostsError lang
-        Right posts -> renderPostList lang posts
-    else
-      renderPostsError lang

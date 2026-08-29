@@ -1,11 +1,12 @@
 # ADR-002: Auth shape — PS-first assembly behind App.Auth
 
-**Status:** Accepted (interface fixed by stub; implementation pending)
+**Status:** Accepted (target interface fixed; current scaffold is legacy and production implementation pending)
 **Date:** 2026-08
 
 ## Context
 
-The starter ships no auth. Auth is the domain where parallel implementations
+The starter's current auth module is legacy in-memory scaffolding, not a
+production session implementation. Auth is the domain where parallel implementations
 accumulate fastest ("10 auth wrappers"): the first agent to need auth defines
 the shape every later agent inherits. The shape is therefore fixed BEFORE the
 first implementation, by the stub at `src/App/Auth.purs`. Deployment is 100%
@@ -20,19 +21,31 @@ No inline session checks in `Main.purs` or feature modules. Session cookies
 over JWT: an SSR MPA fits server-side sessions; revisit only if a second
 (API) client appears.
 
-**Implementation (defaults marked; choose at implementation time):**
+**Implementation (approved shape; implementation pending):**
 
 | Concern | Options | Default |
 |---|---|---|
 | Password hashing | `Bun.password` (native argon2, zero-dep) / `node:crypto` scrypt (portable) | **`Bun.password`** |
-| Session store | `bun:sqlite` (embedded, zero-dep) / `Bun.sql` (native Postgres client, zero-dep) / `yoga-postgres` (PS-first, portable) | **`bun:sqlite`** for small apps; **`Bun.sql`** or **`yoga-postgres`** when Postgres exists |
-| Session token | HMAC-signed random `uuidv4` in an `HttpOnly; Secure; SameSite=Strict` cookie | yes |
-| Expiry | `datetime` + `now`; server-side expiry in the store | yes |
+| Session store | PostgreSQL rows through `Bun.sql` | **required** |
+| Session token | Opaque random 32-byte value in a `__Host-ps_session` cookie; only its hash is stored | **required** |
+| Expiry and revocation | Fixed 24-hour server-side expiry and an explicit revoked state | **required** |
 | Alternative | `yoga-better-auth` (registry, rowtype-yoga — PS bindings to better-auth) | **evaluate BEFORE hand-rolling** |
 
-FFI required: exactly one small tamed module (hashing + HMAC), targeting
-Bun-native per `docs/ffi-taming-guide.md`. Allowlist entry + this ADR satisfy
-the taming recipe.
+The opaque bearer token does not use HMAC: its security comes from the
+cryptographically random 32-byte value, server-side SHA-256 hash lookup, fixed
+expiry, and revocation. No new HMAC boundary is required. Secure random
+generation, token hashing, and password operations use the existing approved
+Bun boundary, subject to the allowlist in `docs/ffi-taming-guide.md`; add a
+new explicitly justified allowlist entry only if the implementation requires
+one.
+
+The session repository is an injected dependency of the auth/session service;
+handlers call that service rather than accessing SQL or a global store. The
+repository owns persistence and is not an in-memory `Ref (Map ...)` in
+production. Authentication failures remain
+`Unauthorized` (401), while authenticated callers lacking permission remain
+`Forbidden` (403). The repository uses the one application-lifetime SQL handle
+approved by ADR-009. Implementation remains pending.
 
 ## Explicitly rejected
 

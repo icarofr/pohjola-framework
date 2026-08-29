@@ -18,6 +18,7 @@ module App.Migration
   , loadMigrations
   , getAppliedMigrations
   , runMigrations
+  , migrateOnPool
   , migrate
   , renderMigrationError
   ) where
@@ -25,7 +26,7 @@ module App.Migration
 import Prelude
 
 import App.Bun (glob, readTextFile, sha256Hex)
-import App.Data.SQL (SQL, SQLError, close, connect, execMulti, execute, query, readStringField, SqlValue(..))
+import App.Data.SQL (SQL, SQLError, close, connect, execMulti, execute, query, readStringField, release, reserve, SqlValue(..))
 import Data.Array (filter, find, length, mapMaybe, null, sortWith, uncons)
 import Data.Either (Either(..), either)
 import Data.Foldable (elem, traverse_)
@@ -38,6 +39,11 @@ import Effect.Aff (Aff, bracket)
 import Effect.Class (liftEffect)
 import Control.Monad.Except (ExceptT, runExceptT, throwError, catchError)
 import Control.Monad.Trans.Class (lift)
+
+-- | Session-level advisory lock key for the migration runner. Pinned to one
+-- | reserved connection so concurrent startup attempts serialize safely.
+migrationLockKey :: Int
+migrationLockKey = 8347291
 
 -- ============================================================================
 -- Types
@@ -163,15 +169,46 @@ runSingleMigration sql migration =
     let stmt = "INSERT INTO schema_migrations (filename, checksum) VALUES ($1, $2)"
     liftSql (execute sql stmt [ SqlString migration.filename, SqlString migration.checksum ])
 
--- | Run an action in a transaction. ROLLBACK on error, COMMIT on success.
+-- | Run an action in a transaction. ROLLBACK on body or COMMIT failure.
 withTx :: forall a. SQL -> ExceptT MigrationError Aff a -> ExceptT MigrationError Aff a
 withTx sql body = do
   _ <- liftSql (execute sql "BEGIN" [])
   res <- catchError body \err -> do
     _ <- liftSql (execute sql "ROLLBACK" [])
     throwError err
-  _ <- liftSql (execute sql "COMMIT" [])
-  pure res
+  commitResult <- lift $ execute sql "COMMIT" []
+  case commitResult of
+    Left err -> do
+      _ <- liftSql (execute sql "ROLLBACK" [])
+      throwError (MigrationExecutionError ("COMMIT failed: " <> show err))
+    Right _ -> pure res
+
+-- | Acquire the session-level migration advisory lock on a reserved connection.
+acquireMigrationLock :: SQL -> ExceptT MigrationError Aff Unit
+acquireMigrationLock sql =
+  liftSql (execute sql "SELECT pg_advisory_lock($1)" [ SqlInt migrationLockKey ])
+
+-- | Release the session-level migration advisory lock.
+releaseMigrationLock :: SQL -> ExceptT MigrationError Aff Unit
+releaseMigrationLock sql =
+  liftSql (execute sql "SELECT pg_advisory_unlock($1)" [ SqlInt migrationLockKey ])
+
+-- | Run migrations on a reserved, locked connection; always releases both.
+withReservedMigrationLock :: SQL -> (SQL -> ExceptT MigrationError Aff Int) -> Aff (Either MigrationError Int)
+withReservedMigrationLock pool body = do
+  reserveResult <- reserve pool
+  case reserveResult of
+    Left err -> pure (Left (MigrationQueryError (show err)))
+    Right conn -> do
+      result <- runExceptT do
+        _ <- acquireMigrationLock conn
+        bodyResult <- catchError (body conn) \err -> do
+          _ <- releaseMigrationLock conn
+          throwError err
+        _ <- releaseMigrationLock conn
+        pure bodyResult
+      liftEffect $ release conn
+      pure result
 
 -- | Helper to lift SQL operations into the Migration runner's ExceptT.
 liftSql :: forall a. Aff (Either SQLError a) -> ExceptT MigrationError Aff a
@@ -213,16 +250,21 @@ verifyChecksums migrations applied = traverse_ checkOne applied
 -- Top-level entry point
 -- ============================================================================
 
--- | Full migration flow: load from disk, connect, ensure tracking table,
--- | verify checksums, run pending migrations. Closes the connection.
--- | Returns the number of pending migrations that were applied
--- | (0 = already up to date).
+-- | Run pending migrations against an existing pool handle without closing it.
+-- | Reserves one physical connection, acquires a session advisory lock, runs
+-- | pending migrations, then releases the lock and connection.
+migrateOnPool :: SQL -> Aff (Either MigrationError Int)
+migrateOnPool pool =
+  withReservedMigrationLock pool \conn -> do
+    migrations <- liftEither loadMigrations
+    applied <- liftEither (getAppliedMigrations conn)
+    runMigrations conn migrations applied
+
+-- | Full migration flow: connect, run on the pool, close. Returns the number
+-- | of pending migrations that were applied (0 = already up to date).
 migrate :: String -> Aff (Either MigrationError Int)
-migrate connectionString = runExceptT do
-  migrations <- liftEither loadMigrations
-  liftEither $ bracket
+migrate connectionString =
+  bracket
     (liftEffect $ connect connectionString)
     close
-    \db -> runExceptT do
-      applied <- liftEither (getAppliedMigrations db)
-      runMigrations db migrations applied
+    migrateOnPool

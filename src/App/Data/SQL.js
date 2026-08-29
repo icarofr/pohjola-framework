@@ -28,6 +28,29 @@ export function closeImpl(sql) {
   };
 }
 
+// reserveImpl :: SQL -> (SQL -> Effect Unit) -> (String -> Effect Unit) -> Effect Unit
+// Takes one pooled connection via Bun.SQL.reserve(). The returned handle
+// supports the same unsafe() API as the pool and must be released.
+export function reserveImpl(sql) {
+  return function (onSuccess) {
+    return function (onError) {
+      return function () {
+        sql.reserve()
+          .then(function (reserved) { onSuccess(reserved)(); })
+          .catch(function (err) { onError(err.message || String(err))(); });
+      };
+    };
+  };
+}
+
+// releaseImpl :: SQL -> Effect Unit
+// Returns a reserved connection to the pool. No-op if already released.
+export function releaseImpl(reserved) {
+  return function () {
+    reserved.release();
+  };
+}
+
 // queryImpl :: SQL -> String -> Array Foreign
 //          -> (Array Row -> Effect Unit) -> (String -> Effect Unit)
 //          -> Effect Unit

@@ -18,14 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Bun (canary)
-        run: curl -fsSL https://bun.sh/install | bash -s canary
-
-      - name: Add Bun to PATH
-        run: echo "$HOME/.bun/bin" >> $GITHUB_PATH
-
-      - name: Install PureScript compiler binary
-        run: sudo curl -fsSL https://github.com/purescript/purescript/releases/download/v0.15.16/linux64.tar.gz | sudo tar -xz -C /usr/local/bin --strip-components=1 purescript/purs
+      - uses: ./.github/actions/setup-toolchain
 
       - name: Install dependencies (Spago, Tailwind, esbuild)
         run: bun install --frozen-lockfile
@@ -37,7 +30,7 @@ jobs:
         run: make format-check
 
       - name: Gate (unsafe fns, FFI, HTML escape hatch) + build
-        run: make gate build assets-check
+        run: make ci-equivalent
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -54,14 +47,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Bun (canary)
-        run: curl -fsSL https://bun.sh/install | bash -s canary
-
-      - name: Add Bun to PATH
-        run: echo "$HOME/.bun/bin" >> $GITHUB_PATH
-
-      - name: Install PureScript compiler binary
-        run: sudo curl -fsSL https://github.com/purescript/purescript/releases/download/v0.15.16/linux64.tar.gz | sudo tar -xz -C /usr/local/bin --strip-components=1 purescript/purs
+      - uses: ./.github/actions/setup-toolchain
 
       - name: Install dependencies (Spago, Tailwind, esbuild)
         run: bun install --frozen-lockfile && bun x spago install --pure && make assets
@@ -100,14 +86,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Bun (canary)
-        run: curl -fsSL https://bun.sh/install | bash -s canary
-
-      - name: Add Bun to PATH
-        run: echo "$HOME/.bun/bin" >> $GITHUB_PATH
-
-      - name: Install PureScript compiler binary
-        run: sudo curl -fsSL https://github.com/purescript/purescript/releases/download/v0.15.16/linux64.tar.gz | sudo tar -xz -C /usr/local/bin --strip-components=1 purescript/purs
+      - uses: ./.github/actions/setup-toolchain
 
       - name: Install dependencies (Spago, Tailwind, esbuild)
         run: bun install --frozen-lockfile && bun x spago install --pure && make assets

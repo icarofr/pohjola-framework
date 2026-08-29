@@ -120,8 +120,8 @@ without the nonce is blocked) without breaking Alpine or violating ADR-000.
 - `App.Layout.Page`: all render functions embed the placeholder; `App.Main`
   replaces it for the streaming path (StringBody replacement happens in
   `serve`).
-- The static page cache stores nonce-agnostic HTML (with the placeholder);
-  replacement happens per-request at serve time, so cached pages get fresh
-  nonces.
+- Nonces are threaded directly through each response render. HTML containing a
+  nonce is private and must not be shared-cached; a browser may reuse its own
+  private response, but a shared cache must never replay it to another client.
 - The JS-side 500-fallback CSP (in `App.ServerBun.js`) drops `unsafe-inline`
   too — it's `text/plain` so no scripts execute regardless.

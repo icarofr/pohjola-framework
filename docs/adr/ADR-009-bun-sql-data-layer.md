@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Accepted (Phase 3A: reserved-connection migration affinity implemented)
 
 ## Context
 
@@ -32,7 +32,7 @@ Bun's native fetch. Adding database support requires three decisions:
 ### Driver: `Bun.SQL` via `App.Data.SQL`
 
 - `App.Data.SQL` wraps `Bun.SQL` with typed FFI: `connect`, `close`,
-  `query`, `execute`, `execMulti`.
+  `reserve`, `release`, `query`, `execute`, `execMulti`.
 - **Injection safety**: `query`/`execute` use `sql.unsafe(sql, params)`
   — Bun binds parameters separately via the PostgreSQL extended wire
   protocol. User input never reaches the SQL parser.
@@ -43,9 +43,18 @@ Bun's native fetch. Adding database support requires three decisions:
 - **Transactions**: managed explicitly via `execute` with `BEGIN`/
   `COMMIT`/`ROLLBACK`. Keeps all transaction logic in PureScript — the
   JS side stays pure plumbing (no `sql.begin` callback bridge needed).
-- **Connection pooling**: `Bun.SQL` auto-pools (lazy connect, default
-  10 connections). One `SQL` handle per app lifetime; `close` on
-  shutdown.
+  If `COMMIT` fails, the runner issues `ROLLBACK` before surfacing the
+  error.
+- **Connection affinity**: `Bun.SQL` pools connections; separate pool
+  calls do not guarantee the same physical connection. Migrations use
+  `sql.reserve()` to pin one connection for the whole run, acquire a
+  session-level `pg_advisory_lock`, and `release()` it in a bracketed
+  cleanup path. Application request handling still uses the shared pool
+  handle; only the migration runner reserves.
+- **Connection pooling and lifecycle**: `Bun.SQL` auto-pools (lazy connect,
+  default 10 connections). The application creates one `SQL` handle after
+  synchronous startup migrations complete, reuses it for the app lifetime,
+  and closes it during shutdown.
 
 ### Migrations: hand-rolled runner in `App.Migration`
 
@@ -57,8 +66,13 @@ Bun's native fetch. Adding database support requires three decisions:
   checked against current file checksums. Mismatch fails the run —
   detects tampering or accidental edits.
 - **Transaction per migration**: each pending migration runs in
-  `BEGIN`/`COMMIT` with `ROLLBACK` on error. The `schema_migrations`
-  insert is in the same transaction as the migration SQL — atomic.
+  `BEGIN`/`COMMIT` with `ROLLBACK` on body or commit failure. The
+  `schema_migrations` insert is in the same transaction as the migration
+  SQL — atomic.
+- **Reserved connection**: `migrateOnPool` reserves one pooled connection,
+  acquires a session advisory lock, runs pending migrations on that handle,
+  then unlocks and releases. `migrate` connects, delegates to
+  `migrateOnPool`, and closes the pool.
 - **Discovery**: `Bun.Glob.scanSync("migrations/*.sql")` — no `node:fs`.
   Sorted by numeric prefix.
 - **File reading**: `Bun.file(path).text()` — no `node:fs`.
@@ -68,6 +82,13 @@ Bun's native fetch. Adding database support requires three decisions:
 `readTextFile`, `glob`, `sha256Hex` added to `App.Bun` (already
 allowlisted) — keeps the FFI allowlist at 4 modules instead of adding
 a fifth for file operations.
+
+The same approved Bun boundary is the default boundary for auth/session
+cryptographic primitives: secure random generation, SHA-256 token hashing,
+and password operations. The opaque session bearer token does not require an
+HMAC boundary. If the eventual implementation needs a new module, it must be
+added to the FFI allowlist with explicit justification; this ADR does not
+claim that auth/session implementation is complete.
 
 ### CLI integration
 
@@ -88,6 +109,9 @@ exit (no HTTP serve). Makefile targets:
   (trusted SQL only); `query`/`execute` are parameterized.
 - **No `node:fs`** — Bun-native file/glob/hash APIs throughout.
 - **Forward-only** — simpler model, no down-migration bugs.
+- **Startup ordering** — migrations complete on a reserved, locked
+  connection before the long-lived SQL handle serves request traffic.
+  Application-lifetime pool wiring remains Phase 3B.
 
 ### Negative
 
@@ -110,7 +134,10 @@ exit (no HTTP serve). Makefile targets:
    JS↔Aff bridge (launchAff_ inside Effect, or Promise-based
    handshake). Explicit BEGIN/COMMIT via `execute` is simpler and
    keeps logic in PS. Rejected.
-4. **`node:fs` for file reading**: user explicitly said "no node fs".
+4. **Pooled BEGIN/COMMIT without `reserve()`**: unsafe because pool
+   calls may hop connections, breaking transactions and session locks.
+   Rejected in Phase 3A.
+5. **`node:fs` for file reading**: user explicitly said "no node fs".
    `Bun.file` + `Bun.Glob` are Bun-native. Rejected.
 
 ## References

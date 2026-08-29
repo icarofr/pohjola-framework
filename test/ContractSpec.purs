@@ -17,9 +17,9 @@ import App.Layout.Head (renderJsonLd, escapeJson)
 import App.Layout.Page (renderErrorFragment, renderErrorPage, renderFragment, renderPage, renderShellOpen, renderShellClose, renderPrefetch)
 import App.Main (pageRenderer)
 import App.Server (RedirectKind(..), Response, cspWithNonce, errorStatusCode, fileResponse, htmlErrorResponse, internalError, methodNotAllowed, notFound, notModified, ok, okText, okWith, redirect, redirectVary, securityHeaders, tooManyRequests)
-import App.Cache (insertDynamic, lookupDynamic, mkDynamicCache)
+import App.Cache (insertDynamic, lookupDynamic, maxEntries, mkDynamicCache)
 import App.Html (render, text)
-import Data.Array (concat, find, last, length, mapMaybe, nub, uncons)
+import Data.Array (concat, find, last, length, mapMaybe, nub, range, uncons)
 import Data.Char (toCharCode)
 import Data.Content (services)
 import Data.Either (Either(..))
@@ -355,6 +355,13 @@ spec = do
           html <- renderStaticPage route lang
           html `StrAssert.shouldContain` ("id=\"" <> contentTarget <> "\"")
 
+    it "full documents carry the synchronized header and document shell" do
+      html <- renderStaticPage Home En
+      html `StrAssert.shouldContain` "<header id=\"header\""
+      html `StrAssert.shouldContain` "x-sync"
+      html `StrAssert.shouldContain` "<!DOCTYPE html"
+      html `StrAssert.shouldContain` "<script"
+
   describe "Alpine seam — data-page-title" do
     it "every static page renders data-page-title in both languages" do
       for_ staticRoutes \route ->
@@ -392,6 +399,33 @@ spec = do
             entries = length (Common.split (Pattern "^src/") gateLine) - 1
           entries `shouldEqual` length ffiAllowlist
 
+  describe "SQL migration affinity (ADR-009 Phase 3A)" do
+    it "App.Data.SQL exposes reserve and release at the FFI boundary" do
+      js <- readTextFile "src/App/Data/SQL.js"
+      case js of
+        Left err -> StrAssert.shouldContain "" ("expected SQL.js to be readable: " <> err)
+        Right source -> do
+          source `StrAssert.shouldContain` "reserveImpl"
+          source `StrAssert.shouldContain` "releaseImpl"
+          source `StrAssert.shouldContain` ".release()"
+    it "App.Migration runs on a reserved connection with an advisory lock" do
+      ps <- readTextFile "src/App/Migration.purs"
+      case ps of
+        Left err -> StrAssert.shouldContain "" ("expected Migration.purs to be readable: " <> err)
+        Right source -> do
+          source `StrAssert.shouldContain` "migrateOnPool"
+          source `StrAssert.shouldContain` "reserve"
+          source `StrAssert.shouldContain` "pg_advisory_lock"
+          source `StrAssert.shouldContain` "pg_advisory_unlock"
+          source `StrAssert.shouldContain` "COMMIT failed"
+    it "ADR-009 documents reserve-based migration affinity" do
+      adr <- readTextFile "docs/adr/ADR-009-bun-sql-data-layer.md"
+      case adr of
+        Left err -> StrAssert.shouldContain "" ("expected ADR-009 to be readable: " <> err)
+        Right source -> do
+          source `StrAssert.shouldContain` "reserve"
+          source `StrAssert.shouldContain` "pg_advisory_lock"
+
   describe "the success cache policy rests on a checked premise" do
     -- The policy is documented as `private` because a full page embeds a
     -- per-request CSP nonce. That premise is true for pages and FALSE for AJAX
@@ -412,6 +446,15 @@ spec = do
         frag `StrAssert.shouldNotContain` "nonce="
 
   describe "fragment responses are fragment-shaped" do
+    it "fragments contain the synchronized header and content only" do
+      let frag = renderFragment En Home (text "content")
+      frag `StrAssert.shouldContain` "<header id=\"header\""
+      frag `StrAssert.shouldContain` "x-sync"
+      frag `StrAssert.shouldContain` "<main id=\"content\""
+      frag `StrAssert.shouldNotContain` "<!DOCTYPE"
+      frag `StrAssert.shouldNotContain` "<html"
+      frag `StrAssert.shouldNotContain` "<script"
+
     -- A fragment response is swapped into #content by Alpine AJAX. If an error
     -- path answers with a full document, the client nests a complete
     -- <!DOCTYPE> document inside the page body. ADR-007 states this principle
@@ -567,6 +610,15 @@ spec = do
       map render gotFr `shouldEqual` Just "un"
       map render missing `shouldEqual` Nothing
 
+    it "never exceeds its hard capacity when no entry is expired" do
+      cache <- liftEffect mkDynamicCache
+      for_ (range 0 maxEntries) \n ->
+        liftEffect $ insertDynamic cache (Tuple (PostDetail n) En) (text (show n)) 60000.0
+      first <- liftEffect $ lookupDynamic cache (Tuple (PostDetail 0) En)
+      lastEntry <- liftEffect $ lookupDynamic cache (Tuple (PostDetail maxEntries) En)
+      map render first `shouldEqual` Nothing
+      map render lastEntry `shouldEqual` Just (show maxEntries)
+
   describe "nonce-bearing HTML is never shared-cached (W6)" do
     -- Every HTML response embeds a per-request CSP nonce. A shared cache
     -- storing one would replay a single visitor's nonce to everyone else,
@@ -677,8 +729,11 @@ spec = do
       for_ staticRoutes \route ->
         for_ allLangs \lang -> do
           html <- renderStaticPage route lang
-          html `StrAssert.shouldContain` "if(localStorage.getItem('theme')==='dark'"
-          html `StrAssert.shouldContain` "if(!history.state)history.replaceState({__ajax:true},'',location.href);window.addEventListener('ajax:merged',function(){var m=document.getElementById('content');if(m&&m.dataset.pageTitle)document.title=m.dataset.pageTitle;window.scrollTo({top:0,left:0,behavior:'instant'})});window.addEventListener('popstate',function(e){if(e.state&&e.state.__ajax){e.stopImmediatePropagation();fetch(window.location.href,{headers:{'X-Alpine-Request':'true'}}).then(function(r){return r.text()}).then(function(h){var d=new DOMParser().parseFromString(h,'text/html');var nc=d.getElementById('content'),cc=document.getElementById('content');if(nc&&cc){cc.replaceWith(nc);if(nc.dataset.pageTitle)document.title=nc.dataset.pageTitle}var nn=d.getElementById('nav'),cn=document.getElementById('nav');if(nn&&cn)cn.replaceWith(nn);if(window.Alpine)window.Alpine.initTree(document.body);window.scrollTo({top:0,left:0,behavior:'instant'})})}},true);"
+          StrAssert.shouldContain html "if(localStorage.getItem('theme')==='dark'"
+          StrAssert.shouldContain html "document.addEventListener('ajax:merged',sync);"
+          StrAssert.shouldContain html "window.addEventListener('popstate',restore,true);"
+          StrAssert.shouldContain html "function restore(event){event.stopImmediatePropagation();fetch(location.href"
+          StrAssert.shouldContain html "history.replaceState({__ajax:true},'',location.href)"
           html `StrAssert.shouldContain` "var es=new EventSource('/dev/live-reload')"
 
   describe "pages flow through the layout shell" do

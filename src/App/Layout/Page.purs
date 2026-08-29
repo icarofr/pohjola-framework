@@ -91,13 +91,12 @@ renderScripts nonce =
 -- | No baseUrl needed: fragments contain no absolute URLs or head metadata.
 renderFragment :: Lang -> Route -> Html -> String
 renderFragment lang route content =
-  render $ el "div" []
-    [ Header.render lang route
-    , el "main" [ id_ contentTarget, class_ "flex-1 flex flex-col", attr "data-page-title" (routeTitle lang route) ]
+  render $
+    Header.render lang route
+      <> el "main" [ id_ contentTarget, class_ "flex-1 flex flex-col", attr "data-page-title" (routeTitle lang route) ]
         [ maybeStatusBanner lang Nothing
         , content
         ]
-    ]
 
 -- | Rendered error page — branded 404/500 with full layout.
 -- | Standalone HTML document (not via renderPage) because error pages have no
@@ -125,10 +124,8 @@ errorContent lang status =
 -- | `renderErrorPage` returns a complete `<!DOCTYPE>` document, which the client
 -- | then swaps into `#content` — a whole document nested inside the page body.
 -- |
--- | This is the mitigation ADR-007 describes for the streaming path, applied to
--- | the path that actually lacked it. The streaming path already renders a
--- | fragment-shaped error via the feature's own error view
--- | (`renderListContent` → `renderPostsError`); this covers the AJAX path.
+-- | This is the mitigation ADR-007 describes for an experimental streaming
+-- | path, applied here to the path that actually needs it: AJAX fragments.
 renderErrorFragment :: Lang -> Route -> Int -> String
 renderErrorFragment lang route status =
   renderFragment lang route (errorContent lang status)

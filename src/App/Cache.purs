@@ -7,6 +7,7 @@ import Data.I18n (Lang)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
+import Data.Foldable (foldl)
 import Data.Route (Route)
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
@@ -48,6 +49,22 @@ maxEntries = 10000
 pruneExpired :: Number -> Map DynamicKey CacheEntry -> Map DynamicKey CacheEntry
 pruneExpired nowMs = Map.filter (\entry -> entry.expires > nowMs)
 
+-- | Pick the eviction candidate explicitly rather than relying on map key order:
+-- | expiry is the primary order, with the key providing a stable tie-break.
+earliestExpiryKey :: Map DynamicKey CacheEntry -> Maybe DynamicKey
+earliestExpiryKey entries =
+  map (\(Tuple key _) -> key)
+    (foldl choose Nothing (Map.toUnfoldable entries :: Array (Tuple DynamicKey CacheEntry)))
+  where
+  choose Nothing (Tuple key entry) = Just (Tuple key entry)
+  choose (Just (Tuple bestKey bestEntry)) (Tuple key entry) =
+    case compare entry.expires bestEntry.expires of
+      LT -> Just (Tuple key entry)
+      GT -> Just (Tuple bestKey bestEntry)
+      EQ ->
+        if compare key bestKey == LT then Just (Tuple key entry)
+        else Just (Tuple bestKey bestEntry)
+
 mkDynamicCache :: Effect DynamicCache
 mkDynamicCache = Ref.new Map.empty
 
@@ -75,7 +92,14 @@ insertDynamic cache key html ttlMs = do
   Ref.modify_
     ( \m ->
         let
-          m' = if Map.size m >= maxEntries then pruneExpired nowMs m else m
+          pruned = pruneExpired nowMs m
+          m' =
+            if Map.member key pruned then pruned
+            else if Map.size pruned >= maxEntries then
+              case earliestExpiryKey pruned of
+                Just evictionKey -> Map.delete evictionKey pruned
+                Nothing -> pruned
+            else pruned
         in
           Map.insert key { html, expires: nowMs + ttlMs } m'
     )

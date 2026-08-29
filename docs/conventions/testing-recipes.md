@@ -40,6 +40,6 @@ sets `RATE_LIMIT_MAX=0`.
 Assert on user-visible state: URL, banner text, `data-page-title`. Asserting
 on implementation-only classes or IDs couples the test to structure.
 
-Tests compile cleanly when `npx playwright test --list` succeeds.
+Tests compile cleanly when `bun x playwright test --list` succeeds.
 
 **Verify**: `make test/e2e`

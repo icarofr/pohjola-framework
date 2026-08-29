@@ -9,11 +9,13 @@
 FROM oven/bun:canary-debian AS build
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends git ca-certificates curl && \
+    apt-get install -y --no-install-recommends git ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
-# Install PureScript compiler binary
-RUN curl -fsSL https://github.com/purescript/purescript/releases/download/v0.15.16/linux64.tar.gz | tar -xz -C /usr/local/bin --strip-components=1 purescript/purs
+# PureScript compiler — npm registry (pinned), same as CI setup-toolchain action.
+# Avoid curling GitHub release tarballs during docker build (504-prone, uncached).
+ARG PURESCRIPT_VERSION=0.15.16
+RUN bun install --global purescript@${PURESCRIPT_VERSION}
 
 WORKDIR /app/pohjola-framework
 

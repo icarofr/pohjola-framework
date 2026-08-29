@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# LEGACY: make new-feature uses scripts/auto-scaffold.js. Keep this script only for
+# compatibility with older callers; new scaffolds must use the canonical generator.
 # Scaffold a new feature — generates templated files and prints manual edits.
 #
 # Usage:

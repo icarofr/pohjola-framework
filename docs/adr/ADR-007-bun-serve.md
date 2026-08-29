@@ -9,7 +9,7 @@ The project originally decided to use the `node:http` API surface (implemented b
 
 However, several factors changed:
 1. **Bun 100% Commitment**: The project has committed fully to the Bun runtime, removing the need for Node.js portability.
-2. **Streaming SSR**: Lessons from Next.js and production deployments (spurs.icaro.fr) showed that streaming SSR is critical for perceived performance. `Bun.serve` provides native `ReadableStream` support, allowing the shell to arrive in ~5ms while data-backed content streams in.
+2. **SSR response modes**: Buffered SSR is the current default response contract. `Bun.serve` also provides native `ReadableStream` support; streaming remains disabled experimental opt-in, not a default.
 3. **Prefetching & Caching**: The `Vary` header approach for fragments proved fragile. Moving to `?_frag=1` URL-based fragments gives fragments their own cache key, independent of `Vary`.
 
    *Amended:* this originally also claimed `?_frag=1` "enables reliable browser-native prefetching". It does not, and cannot with the current `spaLink` design — see "Fragment prefetching (amended)" under Consequences.
@@ -21,7 +21,7 @@ Migrate the server boundary from `node:http` to `Bun.serve` via a single, tamed 
 
 ### Key Implementation Details:
 - **Tamed FFI**: All `Bun.serve` interactions are isolated in `App.ServerBun`. The FFI is thin (~100 lines), allowlisted in the Makefile, and documented.
-- **Streaming SSR**: `PostList` streams the HTML shell immediately via `StreamBody`, with content streaming as data resolves. The data layer uses Bun's native `fetch` (`App.FetchBun`) instead of `Affjax.Node` — `Affjax.Node`'s `node:http` compat layer hangs in forked fibers on Bun, preventing streaming.
+- **SSR**: Responses are buffered by default. The experimental streaming path is opt-in and disabled by default. The data layer uses Bun's native `fetch` (`App.FetchBun`) instead of `Affjax.Node` — `Affjax.Node`'s `node:http` compat layer hangs in forked fibers on Bun.
 - **Fragment Detection**: A request is a fragment request when **either** `?_frag=1` is present **or** the `x-alpine-request` header is — `App.Main.isFragmentRequest` is a boolean OR. (Amended: this originally read "avoiding the `Vary` header bug". W6 added `Vary: x-alpine-request` to every HTML response including the streamed one, so fragment detection no longer avoids `Vary` — it complements it. `?_frag=1` still earns its place as a header-free way to request a fragment.)
 - **Type-Safe Prefetching**: 
     - `prefetchFor :: Route -> Array Route` provides a compile-time exhaustive list of routes to prefetch for any given page.
@@ -34,7 +34,7 @@ Migrate the server boundary from `node:http` to `Bun.serve` via a single, tamed 
 ## Consequences
 
 ### Gains:
-- **Performance**: Near-instant Time to First Byte (TTFB) via streaming; zero-copy static serving via Bun's `routes: { dir }`.
+- **Performance**: Buffered SSR is the predictable default; opt-in streaming can improve TTFB when explicitly enabled. Static serving uses Bun's `routes: { dir }`.
 - **UX**: Perceived instant page loads via hover-prefetching and View Transitions.
 - **SEO**: Better structured data via JSON-LD.
 - **Simplicity**: A cleaner boundary between PureScript and the Bun runtime.
@@ -88,8 +88,8 @@ a transient 5xx must never be answered from cache on retry.
 
 That policy was arrived at by measurement, not reasoning: `private` alone made
 things worse (explicit but never fresh, nothing to revalidate against, so
-nothing reused). Full measurement in `RECONCILIATION.md` "W6 outcome";
-`e2e/prefetch-cache.spec.js` pins the behaviour so it cannot change silently.
+nothing reused). `e2e/prefetch-cache.spec.js` pins the behaviour so it cannot
+change silently.
 
 ### Risks:
 - **FFI Surface**: New security-critical code in the FFI layer. Mitigated by keeping the FFI minimal and subject to the `make gate` allowlist.

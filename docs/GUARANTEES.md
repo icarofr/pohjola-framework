@@ -81,6 +81,26 @@ Honesty is what makes the claim worth anything:
   (`App.ServerBun`). Its semantics are upstream's; the integration and e2e
   layers exercise the server under Bun on every push.
 
+## Architectural boundaries (approved, implementation pending)
+
+These are design constraints, not claims that the current starter already
+implements them:
+
+- PureScript owns server-authoritative hypermedia rendering. The browser may
+  progressively enhance HTML, but Pohjola does not promise a SPA or broad
+  browser-island model.
+- SSR is buffered by default. Streaming is experimental and must be opted in;
+  it is not the default response contract.
+- When sessions are implemented, `__Host-ps_session` will carry an opaque
+  random 32-byte value, while PostgreSQL stores only its hash. Sessions have a
+  fixed 24-hour expiry, explicit revocation, and a per-session CSRF token.
+- The SQL layer will use one application-lifetime handle, created after
+  synchronous migrations and closed during shutdown.
+
+The session and SQL constraints above are specified by ADR-002, ADR-004,
+ADR-005, and ADR-009. Until source work lands, they must not be reported as
+runtime-enforced guarantees.
+
 ## Keeping it true
 
 - Every future FFI module: decode at the boundary, allowlist entry, ADR.

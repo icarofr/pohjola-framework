@@ -13,7 +13,24 @@
 -- | Transactions: managed explicitly via `execute` with BEGIN/COMMIT/
 -- | ROLLBACK statements — keeps all transaction logic in PureScript,
 -- | the JS side stays pure plumbing. See App.Migration.
-module App.Data.SQL where
+-- |
+-- | Connection affinity: `reserve`/`release` pin one physical connection
+-- | from the pool for session-level locks and explicit transactions.
+module App.Data.SQL
+  ( SQL
+  , DbRow
+  , SQLError(..)
+  , SqlValue(..)
+  , connect
+  , close
+  , reserve
+  , release
+  , query
+  , execute
+  , execMulti
+  , readStringField
+  , readIntField
+  ) where
 
 import Prelude
 
@@ -36,6 +53,7 @@ type DbRow = Foreign
 -- | SQL errors — structured, not stringly-typed.
 data SQLError
   = ConnectionError String
+  | ReserveError String
   | QueryError String
   | ExecuteError String
 
@@ -45,6 +63,7 @@ derive instance ordSQLError :: Ord SQLError
 instance showSQLError :: Show SQLError where
   show = case _ of
     ConnectionError msg -> "ConnectionError: " <> msg
+    ReserveError msg -> "ReserveError: " <> msg
     QueryError msg -> "QueryError: " <> msg
     ExecuteError msg -> "ExecuteError: " <> msg
 
@@ -100,6 +119,17 @@ foreign import connectImpl :: String -> Effect SQL
 -- | Callback pattern (like fetchImpl) so PS wraps via makeAff.
 foreign import closeImpl :: SQL -> (Effect Unit -> Effect Unit) -> Effect Unit
 
+-- | Reserve one pooled connection via `Bun.SQL.reserve()`.
+-- | The returned handle uses the same query API as the pool.
+foreign import reserveImpl
+  :: SQL
+  -> (SQL -> Effect Unit)
+  -> (String -> Effect Unit)
+  -> Effect Unit
+
+-- | Return a reserved connection to the pool.
+foreign import releaseImpl :: SQL -> Effect Unit
+
 -- | Parameterized query — `sql.unsafe(sql, params)`.
 -- | Bun binds params separately (extended protocol): injection-safe.
 -- | Returns rows as an Array of Foreign objects.
@@ -151,6 +181,19 @@ close :: SQL -> Aff Unit
 close sql = makeAff \callback -> do
   closeImpl sql (\_ -> callback (pure unit))
   pure mempty
+
+-- | Reserve one physical connection from the pool. Required for session-level
+-- | advisory locks and explicit transactions that must not hop connections.
+reserve :: SQL -> Aff (Either SQLError SQL)
+reserve sql = makeAff \callback -> do
+  reserveImpl sql
+    (\reserved -> callback (pure (Right reserved)))
+    (\msg -> callback (pure (Left (ReserveError msg))))
+  pure mempty
+
+-- | Release a connection previously obtained via `reserve`.
+release :: SQL -> Effect Unit
+release = releaseImpl
 
 -- | Parameterized query — injection-safe (Bun extended protocol).
 -- | Returns rows as Foreign objects for caller-side decoding.
