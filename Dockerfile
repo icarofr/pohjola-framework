@@ -35,7 +35,7 @@ RUN set -eux; \
     esac; \
     curl -fsSL "https://github.com/purescript/purescript/releases/download/v${PURS_VERSION}/${PURS_ARCH}.tar.gz" \
       | tar -xzf - -C /tmp; \
-    install -m 0755 "/tmp/purs" "node_modules/purescript/purs.bin"; \
+    install -m 0755 "/tmp/purescript/purs" "node_modules/purescript/purs.bin"; \
     node_modules/purescript/purs.bin --version
 
 RUN node node_modules/esbuild/install.js
