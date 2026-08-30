@@ -55,13 +55,15 @@ test.describe("Alpine AJAX navigation", () => {
     // Desktop navbar + mobile primary nav each render one About link. Language
     // switcher links also point at the current URL (/en/about) — scope to nav
     // regions, not href alone (mobile drawer utility footer reuses the URL).
+    // Use href + region scoping, not getByRole: the mobile drawer is md:hidden
+    // on desktop viewports, so role queries (visible-only) miss those links.
     await expect(
       page.locator('header#header .navbar-center a[href="/en/about"]'),
     ).toHaveCount(1);
     await expect(
-      page
-        .locator("header#header .mobile-drawer > .space-y-1")
-        .getByRole("link", { name: "About", exact: true }),
+      page.locator(
+        'header#header .mobile-drawer > .space-y-1 a[href="/en/about"]',
+      ),
     ).toHaveCount(1);
 
     // Marker should still be 1 (no reload occurred)

@@ -8,16 +8,37 @@
 # ---------------------------------------------------------------------------
 FROM oven/bun:debian AS build
 
+ARG PURS_VERSION=0.15.16
+
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends git ca-certificates && \
+    apt-get install -y --no-install-recommends git ca-certificates curl && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app/pohjola-framework
 
 COPY package.json bun.lock ./
 COPY patches ./patches
-# purescript postinstall races when lifecycle scripts run in parallel; serialize them.
-RUN bun install --frozen-lockfile --concurrent-scripts=1
+
+# Install JS deps without lifecycle scripts, then hydrate native binaries
+# explicitly. purescript's postinstall downloads from GitHub and falls back
+# to stack when that fails — stack is not in this image and must not be.
+RUN bun install --frozen-lockfile --ignore-scripts
+
+# Official PureScript release binary (matches package.json devDependency).
+# TARGETARCH is set automatically by BuildKit (amd64 → linux64, arm64 → linux-arm64).
+ARG TARGETARCH
+RUN set -eux; \
+    case "${TARGETARCH}" in \
+      amd64) PURS_ARCH=linux64 ;; \
+      arm64) PURS_ARCH=linux-arm64 ;; \
+      *) echo "unsupported TARGETARCH: ${TARGETARCH}" >&2; exit 1 ;; \
+    esac; \
+    curl -fsSL "https://github.com/purescript/purescript/releases/download/v${PURS_VERSION}/${PURS_ARCH}.tar.gz" \
+      | tar -xzf - -C /tmp; \
+    install -m 0755 "/tmp/purs" "node_modules/purescript/purs.bin"; \
+    node_modules/purescript/purs.bin --version
+
+RUN node node_modules/esbuild/install.js
 
 ENV PATH="/app/pohjola-framework/node_modules/.bin:${PATH}"
 
