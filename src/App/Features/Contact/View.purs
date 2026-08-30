@@ -1,4 +1,4 @@
--- | Community & Contributing page — strictly assembled via rigid App.Ui component contracts
+-- | Community & Contributing — hub page archetype
 module App.Features.Contact.View where
 
 import Prelude
@@ -14,35 +14,28 @@ renderContact lang =
     d = (dict lang).contact
     navDict = (dict lang).nav
   in
-    Ui.pageLayout
-      { header:
-          Ui.pageHeader
-            { category: Just navDict.contact
-            , title: d.title
-            , subtitle: Just d.subtitle
+    Ui.hubPage
+      { category: Just navDict.contact
+      , title: d.title
+      , subtitle: Just d.subtitle
+      , cards:
+          [ { tag: Just { text: d.issuesTag, variant: Ui.BadgeError }
+            , imageUrl: Nothing
+            , title: d.issuesTitle
+            , description: d.issuesText
+            , action: { label: d.issuesButton <> " →", target: Ui.External { href: "https://github.com/icarofr/pohjola-framework/issues" } }
             }
-      , content:
-          Ui.grid3
-            [ Ui.actionCard
-                { tag: Just { text: "Issues", variant: Ui.BadgeError }
-                , imageUrl: Nothing
-                , title: d.issuesTitle
-                , description: d.issuesText
-                , action: { label: d.issuesButton <> " →", target: Ui.External { href: "https://github.com/icarofr/pohjola-framework/issues" } }
-                }
-            , Ui.actionCard
-                { tag: Just { text: "Community", variant: Ui.BadgeTertiary }
-                , imageUrl: Nothing
-                , title: d.discussionsTitle
-                , description: d.discussionsText
-                , action: { label: d.discussionsButton <> " →", target: Ui.External { href: "https://github.com/icarofr/pohjola-framework/discussions" } }
-                }
-            , Ui.actionCard
-                { tag: Just { text: "Source", variant: Ui.BadgePrimary }
-                , imageUrl: Nothing
-                , title: d.sourceTitle
-                , description: d.sourceText
-                , action: { label: d.sourceButton <> " →", target: Ui.External { href: "https://github.com/icarofr/pohjola-framework" } }
-                }
-            ]
+          , { tag: Just { text: d.discussionsTag, variant: Ui.BadgeTertiary }
+            , imageUrl: Nothing
+            , title: d.discussionsTitle
+            , description: d.discussionsText
+            , action: { label: d.discussionsButton <> " →", target: Ui.External { href: "https://github.com/icarofr/pohjola-framework/discussions" } }
+            }
+          , { tag: Just { text: d.sourceTag, variant: Ui.BadgePrimary }
+            , imageUrl: Nothing
+            , title: d.sourceTitle
+            , description: d.sourceText
+            , action: { label: d.sourceButton <> " →", target: Ui.External { href: "https://github.com/icarofr/pohjola-framework" } }
+            }
+          ]
       }

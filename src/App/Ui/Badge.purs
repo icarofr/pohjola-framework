@@ -8,6 +8,14 @@ import App.Html (Html, class_, el, text)
 data BadgeVariant = BadgePrimary | BadgeSecondary | BadgeTertiary | BadgeSuccess | BadgeWarning | BadgeError | BadgeNeutral
 type Variant = BadgeVariant
 
+data BadgeSize = BadgeXs | BadgeSm | BadgeMd
+
+renderSize :: BadgeSize -> String
+renderSize = case _ of
+  BadgeXs -> "badge-xs"
+  BadgeSm -> "badge-sm"
+  BadgeMd -> ""
+
 renderVariant :: BadgeVariant -> String
 renderVariant = case _ of
   BadgePrimary -> "badge-primary"
@@ -18,9 +26,13 @@ renderVariant = case _ of
   BadgeError -> "badge-error"
   BadgeNeutral -> "badge-neutral"
 
--- | Render a semantic monospace tag / badge
+-- | Render a DaisyUI badge (default size: sm)
 badge :: BadgeVariant -> String -> Html
 badge variant label =
+  badgeSized BadgeSm variant label
+
+badgeSized :: BadgeSize -> BadgeVariant -> String -> Html
+badgeSized size variant label =
   el "span"
-    [ class_ ("badge badge-sm font-mono " <> renderVariant variant) ]
+    [ class_ ("badge font-mono " <> renderSize size <> " " <> renderVariant variant) ]
     [ text label ]

@@ -11,6 +11,7 @@ module Test.ContractSpec where
 import Prelude
 
 import App.Alpine (Flag(..), ThemeMode(..), contentTarget, cycleTheme, flagName, navLink, renderExpr, setFlag, setTheme, spaLink, themeToggle, toggleFlag)
+import App.Theme (darkModeInitScript, daisyThemeDark, daisyThemeLight)
 import App.Config (Config)
 import App.Form (contactFields, newsletterFields)
 import App.Layout.Head (renderJsonLd, escapeJson)
@@ -681,13 +682,22 @@ spec = do
       -- the DOM in agreement; deriving it from the prior state would invert
       -- the theme on reload.
       renderExpr themeToggle `StrAssert.shouldContain` "classList.toggle('dark'); "
+      renderExpr themeToggle `StrAssert.shouldContain` daisyThemeDark
+      renderExpr themeToggle `StrAssert.shouldContain` daisyThemeLight
       renderExpr themeToggle `StrAssert.shouldContain` "classList.contains('dark') ? 'dark' : 'light'"
-    it "setTheme generates explicit theme mutation expressions" do
+    it "setTheme maps to DaisyUI theme names from css/input.css" do
+      renderExpr (setTheme ThemeLight) `StrAssert.shouldContain` daisyThemeLight
+      renderExpr (setTheme ThemeDark) `StrAssert.shouldContain` daisyThemeDark
       renderExpr (setTheme ThemeLight) `StrAssert.shouldContain` "classList.remove('dark')"
       renderExpr (setTheme ThemeDark) `StrAssert.shouldContain` "classList.add('dark')"
       renderExpr (setTheme ThemeSystem) `StrAssert.shouldContain` "prefers-color-scheme: dark"
+    it "darkModeInitScript uses DaisyUI theme names" do
+      darkModeInitScript `StrAssert.shouldContain` daisyThemeDark
+      darkModeInitScript `StrAssert.shouldContain` daisyThemeLight
     it "cycleTheme cycles between system, dark, and light" do
       renderExpr cycleTheme `StrAssert.shouldContain` "localStorage.setItem('theme', theme)"
+      renderExpr cycleTheme `StrAssert.shouldContain` daisyThemeDark
+      renderExpr cycleTheme `StrAssert.shouldContain` daisyThemeLight
       renderExpr cycleTheme `StrAssert.shouldContain` "classList.add('dark')"
       renderExpr cycleTheme `StrAssert.shouldContain` "classList.remove('dark')"
       renderExpr cycleTheme `StrAssert.shouldContain` "prefers-color-scheme: dark"

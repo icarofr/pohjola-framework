@@ -1,15 +1,15 @@
--- | Closed Landing Page Blueprint — enforces rigid rhythm, bounded sections, and slot safety
+-- | Closed landing blueprint — hero + page sections + conversion
 module App.Ui.Layout.LandingPage
   ( LandingPageBlueprint
   , LandingPageSection
   , landingPage
   ) where
 
-import App.Html (Html, class_, el, text)
-import App.Ui.Container (container)
+import App.Html (Html, el, text)
 import App.Ui.Layout.ConversionCta (ConversionCtaProps, conversionCta)
 import App.Ui.Layout.Hero (HeroProps, hero)
-import App.Ui.Layout.SectionHeader (Align(..), sectionHeader)
+import App.Ui.Layout.PageSection (pageSection)
+import App.Ui.Layout.SectionHeader (Align(..))
 import Data.Maybe (Maybe(..))
 
 type LandingPageSection =
@@ -25,35 +25,26 @@ type LandingPageBlueprint =
   , conversion :: ConversionCtaProps
   }
 
--- | Render a landing page blueprint enforcing rigid layout geometry and slot order
+landingSection :: LandingPageSection -> Boolean -> Html
+landingSection sec banded =
+  pageSection
+    { header:
+        { eyebrow: Nothing
+        , title: sec.title
+        , subtitle: sec.subtitle
+        , align: Center
+        }
+    , content: sec.content
+    , banded: banded
+    }
+
 landingPage :: LandingPageBlueprint -> Html
 landingPage page =
-  el "div" [ class_ "flex flex-col w-full" ]
+  el "div" []
     [ hero page.hero
-    , el "section" [ class_ "py-16 sm:py-24 border-y border-base-300 bg-base-200/40" ]
-        [ container "max-w-5xl" "space-y-10"
-            [ sectionHeader
-                { eyebrow: Nothing
-                , title: page.primarySection.title
-                , subtitle: page.primarySection.subtitle
-                , align: Center
-                }
-            , page.primarySection.content
-            ]
-        ]
+    , landingSection page.primarySection false
     , case page.secondarySection of
-        Just sec ->
-          el "section" [ class_ "py-16 sm:py-24 border-b border-base-300" ]
-            [ container "max-w-5xl" "space-y-10"
-                [ sectionHeader
-                    { eyebrow: Nothing
-                    , title: sec.title
-                    , subtitle: sec.subtitle
-                    , align: Center
-                    }
-                , sec.content
-                ]
-            ]
+        Just sec -> landingSection sec true
         Nothing -> text ""
     , conversionCta page.conversion
     ]

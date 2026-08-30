@@ -71,19 +71,21 @@ All width-constrained wrappers go through:
 
 ```purescript
 container :: String -> String -> Array Html -> Html
-container maxWidth extra inner
--- <div class="mx-auto w-full {maxWidth} px-4 sm:px-6 lg:px-8 {extra}">{inner}</div>
+container maxW extraClass children
+-- <div class="container mx-auto px-4 sm:px-6 lg:px-8 {maxW} {extraClass}">{children}</div>
 ```
 
-Hand-written `mx-auto max-w-*` in views is forbidden (enforced by eval 06).
-The `w-full` is load-bearing — it lives in one place, not 14.
+DaisyUI's `container` class provides full-width behaviour inside flex parents.
+Hand-written `mx-auto max-w-*` in feature views is forbidden (enforced by eval 06).
 
 ### What was rejected
 
-- **A `Box`/`Stack`/`Flex` abstraction layer.** Tailwind utilities are the
-  vocabulary; wrapping them in semantic names adds indirection without
-  leverage. `Container` earns its place because it fixes a real bug
-  centrally; generic layout primitives would not.
+- **Generic `Box`/`Stack`/`Flex` layout primitives.** Tailwind utilities are the
+  vocabulary; wrapping them in unnamed semantic aliases adds indirection without
+  leverage. `Container` earns its place because it fixes a real bug centrally.
+  **Named layout archetypes** (`App.Ui.Layout.*` — see amendment below) are
+  allowed because they are closed, agent-facing records — not open-ended flex
+  wrappers.
 
 ## Consequences
 
@@ -143,6 +145,37 @@ roles, build-time enforcement — without adopting React or another CSS compiler
 - **Agent loop**: hallucinated opacities fail `make gate`; repair is "pick a
   `TextTone` variant."
 - **Token drift**: new muted roles require extending the ADT, not freestyle `/N`.
-- **Visual stability**: existing opacities are preserved one-to-one; consolidation
-  is a separate design pass.
+- **Visual stability**: `/70`, `/75`, and `/85` supporting copy consolidated to
+  `Copy` (`/80`); `Meta` remains `/60`.
 - **Eval 06** extended: no `text-base-content/` in `src/App/Features/`.
+
+## Amendment: Layout slot templates (`App.Ui.Layout.*`)
+
+**Date:** 2026-08-30  
+**Status:** Accepted
+
+### Context
+
+Feature views were still accumulating Tailwind utility soup even with
+`Container` and DaisyUI primitives. Agents need a **typed page API** — records
+in, HTML out — not a second vocabulary of class strings.
+
+### Decision
+
+Add a third seam: **`App.Ui.Layout.*`** slot templates (`Hero`, `SectionHeader`,
+`Grid`, `ActionCard`, `ConversionCta`, `LandingPage`, `EditorialPage`,
+`pageLayout`, etc.). Feature `View.purs` modules compose these via typed
+records. Tailwind layout utilities belong inside `App.Ui` (primitives + layout
+templates), not in `App.Features.*`.
+
+`App.Ui` re-exports the common layout entry points (`landingPage`,
+`editorialPage`, `pageLayout`, `pageHeader`). Deeper primitives (`Card`,
+`Container`, `Form`, etc.) remain importable from their modules.
+
+### Consequences
+
+- **Agent API**: Home and Contact are the reference — no `class_` in feature views.
+- **Migration debt**: older features (e.g. Posts detail) may still carry soup;
+  new work must use slot templates.
+- **Enforcement**: convention + eval 06 (container, text tone) — not yet a
+  full `space-y-*` gate. See `docs/conventions/design-system.md`.

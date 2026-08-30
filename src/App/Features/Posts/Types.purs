@@ -11,7 +11,11 @@ import Data.Argonaut.Decode (class DecodeJson, decodeJson, (.:))
 import Data.Argonaut.Decode.Error (JsonDecodeError(..))
 import Data.Argonaut.Parser (jsonParser)
 import Data.Either (Either(..))
+import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
+import Data.Array as Array
+import Data.String as String
+import Data.String.Pattern (Pattern(..), Replacement(..))
 import App.Error (AppError(..))
 
 -- | A blog post / article fetched from an external API (JSONPlaceholder).
@@ -57,6 +61,34 @@ postTitle (Post p) = p.title
 
 postBody :: Post -> String
 postBody (Post p) = p.body
+
+-- | Plain-text excerpt for list/teaser views (never the full body).
+postExcerpt :: Post -> String
+postExcerpt post =
+  let
+    flat =
+      String.trim
+        ( collapseSpaces
+            (String.replaceAll (Pattern "\n") (Replacement " ") (postBody post))
+        )
+    maxLen = 160
+    len = String.length flat
+  in
+    if len <= maxLen then
+      flat
+    else
+      let
+        truncated = String.take maxLen flat
+      in
+        case String.lastIndexOf (Pattern " ") truncated of
+          Just lastSpace | lastSpace > 100 ->
+            String.take lastSpace truncated <> "…"
+          _ ->
+            truncated <> "…"
+
+collapseSpaces :: String -> String
+collapseSpaces s =
+  String.joinWith " " (Array.filter (_ /= "") (String.split (Pattern " ") s))
 
 postUserId :: Post -> Int
 postUserId (Post p) = p.userId

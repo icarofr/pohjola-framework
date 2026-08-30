@@ -1,16 +1,15 @@
--- | Social icons component
+-- | Social links — DaisyUI btn-circle (research/daisyui button docs)
 module App.Ui.Social where
 
 import App.Html (Html, ariaLabel, attr, class_, el, href, rel_, target_)
 
--- | Render a social media link
 renderSocial :: String -> String -> Html
 renderSocial url network =
   el "a"
     [ href url
     , target_ "_blank"
     , rel_ "noopener noreferrer"
-    , class_ "flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:border-white/10 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-white transition-colors"
+    , class_ "btn btn-circle btn-outline"
     , ariaLabel network
     ]
     [ case network of
@@ -23,7 +22,7 @@ renderSocial url network =
 githubIcon :: Html
 githubIcon =
   el "svg"
-    [ class_ "h-5 w-5"
+    [ class_ "size-5"
     , attr "fill" "currentColor"
     , attr "viewBox" "0 0 24 24"
     ]
@@ -36,7 +35,7 @@ githubIcon =
 facebookIcon :: Html
 facebookIcon =
   el "svg"
-    [ class_ "h-5 w-5"
+    [ class_ "size-5"
     , attr "fill" "currentColor"
     , attr "viewBox" "0 0 24 24"
     ]
@@ -49,7 +48,7 @@ facebookIcon =
 instagramIcon :: Html
 instagramIcon =
   el "svg"
-    [ class_ "h-5 w-5"
+    [ class_ "size-5"
     , attr "fill" "currentColor"
     , attr "viewBox" "0 0 24 24"
     ]

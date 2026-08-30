@@ -70,7 +70,7 @@ render lang currentRoute =
                   , el "ul"
                       [ xShowFlag LangMenuOpen
                       , xCloak
-                      , class_ "dropdown-content menu menu-sm bg-base-100 rounded-box z-50 w-36 p-1 shadow-lg border border-base-200 text-xs mt-1 block"
+                      , class_ "dropdown-content menu menu-sm bg-base-100 rounded-box z-50 w-36 p-1 border border-base-300 text-xs mt-1 block"
                       ]
                       [ el "li" []
                           [ el "a"
@@ -118,7 +118,7 @@ render lang currentRoute =
                   , el "ul"
                       [ xShowFlag ThemeMenuOpen
                       , xCloak
-                      , class_ "dropdown-content menu menu-sm bg-base-100 rounded-box z-50 w-32 p-1 shadow-lg border border-base-200 text-xs font-mono mt-1 whitespace-nowrap block"
+                      , class_ "dropdown-content menu menu-sm bg-base-100 rounded-box z-50 w-32 p-1 border border-base-300 text-xs font-mono mt-1 whitespace-nowrap block"
                       ]
                       [ el "li" []
                           [ el "button"
@@ -195,13 +195,13 @@ render lang currentRoute =
                       [ el "a"
                           [ href (routeUrl En currentRoute)
                           , onClick (setFlag MenuOpen false)
-                          , class_ ("btn btn-sm justify-center text-xs " <> if lang == En then "btn-primary font-bold shadow-sm" else "btn-ghost bg-base-200/70 font-normal " <> toneClass Copy)
+                          , class_ ("btn btn-sm justify-center text-xs " <> if lang == En then "btn-outline font-semibold text-primary" else "btn-ghost font-normal " <> toneClass Copy)
                           ]
                           [ text "English (EN)" ]
                       , el "a"
                           [ href (routeUrl Fr currentRoute)
                           , onClick (setFlag MenuOpen false)
-                          , class_ ("btn btn-sm justify-center text-xs " <> if lang == Fr then "btn-primary font-bold shadow-sm" else "btn-ghost bg-base-200/70 font-normal " <> toneClass Copy)
+                          , class_ ("btn btn-sm justify-center text-xs " <> if lang == Fr then "btn-outline font-semibold text-primary" else "btn-ghost font-normal " <> toneClass Copy)
                           ]
                           [ text "Français (FR)" ]
                       ]
@@ -215,7 +215,7 @@ render lang currentRoute =
                       [ el "button"
                           [ type_ "button"
                           , xSetTheme ThemeLight
-                          , class_ "btn btn-sm btn-ghost bg-base-200/70 text-xs font-normal flex items-center justify-center gap-1"
+                          , class_ "btn btn-sm btn-ghost border border-base-300 text-xs font-normal flex items-center justify-center gap-1"
                           ]
                           [ el "svg" [ class_ "size-3.5", attr "fill" "none", attr "viewBox" "0 0 24 24", attr "stroke-width" "2", attr "stroke" "currentColor" ]
                               [ el "path" [ attr "stroke-linecap" "round", attr "stroke-linejoin" "round", attr "d" "M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" ] [] ]
@@ -224,7 +224,7 @@ render lang currentRoute =
                       , el "button"
                           [ type_ "button"
                           , xSetTheme ThemeDark
-                          , class_ "btn btn-sm btn-ghost bg-base-200/70 text-xs font-normal flex items-center justify-center gap-1"
+                          , class_ "btn btn-sm btn-ghost border border-base-300 text-xs font-normal flex items-center justify-center gap-1"
                           ]
                           [ el "svg" [ class_ "size-3.5", attr "fill" "none", attr "viewBox" "0 0 24 24", attr "stroke-width" "2", attr "stroke" "currentColor" ]
                               [ el "path" [ attr "stroke-linecap" "round", attr "stroke-linejoin" "round", attr "d" "M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" ] [] ]
@@ -233,7 +233,7 @@ render lang currentRoute =
                       , el "button"
                           [ type_ "button"
                           , xSetTheme ThemeSystem
-                          , class_ "btn btn-sm btn-ghost bg-base-200/70 text-xs font-normal flex items-center justify-center gap-1"
+                          , class_ "btn btn-sm btn-ghost border border-base-300 text-xs font-normal flex items-center justify-center gap-1"
                           ]
                           [ el "svg" [ class_ "size-3.5", attr "fill" "none", attr "viewBox" "0 0 24 24", attr "stroke-width" "2", attr "stroke" "currentColor" ]
                               [ el "path" [ attr "stroke-linecap" "round", attr "stroke-linejoin" "round", attr "d" "M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" ] [] ]
@@ -259,7 +259,7 @@ renderMobileNavItem :: Lang -> Route -> Route -> String -> Html
 renderMobileNavItem lang currentRoute targetRoute label =
   let
     isActive = currentRoute == targetRoute
-    activeClass = if isActive then "block px-3.5 py-2.5 rounded-lg text-base font-semibold bg-base-200 text-primary" else "block px-3.5 py-2.5 rounded-lg text-base font-normal " <> toneClass Copy <> " hover:bg-base-200"
+    activeClass = if isActive then "block px-3.5 py-2.5 rounded-lg text-base font-semibold bg-base-100 border border-base-300 text-primary" else "block px-3.5 py-2.5 rounded-lg text-base font-normal " <> toneClass Copy <> " hover:bg-base-300"
   in
     navLink { lang, current: currentRoute, target: targetRoute }
       [ class_ activeClass

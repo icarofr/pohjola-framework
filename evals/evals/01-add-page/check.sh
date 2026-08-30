@@ -26,7 +26,7 @@ check "no hand-rolled doctype/html" "! grep -qi '<!doctype\|<html' src/App/Featu
 check "Route has Team constructor" "grep -q 'Team' src/Data/Route.purs"
 
 # i18n: both languages have entries
-check "Dictionary has team entries (en)" "grep -i 'team' src/App/Data/I18n/Dictionary.purs | grep -iv 'import\|--' | head -1 | grep -q ."
+check "I18n has team entries" "grep -i 'team' src/Data/I18n.purs | grep -iv 'import\|--' | head -1 | grep -q ."
 
 # No FFI or raw used for a static page
 check "no FFI in Team feature" "! grep -r 'foreign import' src/App/Features/Team/ 2>/dev/null"

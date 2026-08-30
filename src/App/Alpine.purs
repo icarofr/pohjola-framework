@@ -24,6 +24,9 @@ module App.Alpine
   , setFlag
   , toggleFlag
   , ariaExpandedFlag
+  , ariaSelectedFlag
+  , ariaSelectedNotFlag
+  , classWhenFlag
   , themeToggle
   , onClick
   , onClickOutside
@@ -39,6 +42,7 @@ module App.Alpine
 import Prelude
 
 import App.Html (Attr, Html, attr, el, flag, href)
+import App.Theme (daisyThemeDark, daisyThemeLight)
 import Data.I18n (Lang)
 import Data.Route (Route, routeUrl)
 
@@ -145,7 +149,11 @@ toggleFlag f = Expr (flagName f <> " = !" <> flagName f)
 themeToggle :: Expr
 themeToggle = Expr
   ( "document.documentElement.classList.toggle('dark'); "
-      <> "document.documentElement.setAttribute('data-theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light'); "
+      <> "document.documentElement.setAttribute('data-theme', document.documentElement.classList.contains('dark') ? '"
+      <> daisyThemeDark
+      <> "' : '"
+      <> daisyThemeLight
+      <> "'); "
       <> "localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light')"
   )
 
@@ -153,9 +161,17 @@ themeToggle = Expr
 setTheme :: ThemeMode -> Expr
 setTheme = case _ of
   ThemeLight ->
-    Expr "theme = 'light'; localStorage.setItem('theme', 'light'); document.documentElement.setAttribute('data-theme', 'light'); document.documentElement.classList.remove('dark')"
+    Expr
+      ( "theme = 'light'; localStorage.setItem('theme', 'light'); document.documentElement.setAttribute('data-theme', '"
+          <> daisyThemeLight
+          <> "'); document.documentElement.classList.remove('dark')"
+      )
   ThemeDark ->
-    Expr "theme = 'dark'; localStorage.setItem('theme', 'dark'); document.documentElement.setAttribute('data-theme', 'dark'); document.documentElement.classList.add('dark')"
+    Expr
+      ( "theme = 'dark'; localStorage.setItem('theme', 'dark'); document.documentElement.setAttribute('data-theme', '"
+          <> daisyThemeDark
+          <> "'); document.documentElement.classList.add('dark')"
+      )
   ThemeSystem ->
     Expr "theme = 'system'; localStorage.setItem('theme', 'system'); document.documentElement.removeAttribute('data-theme'); (matchMedia('(prefers-color-scheme: dark)').matches ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark'))"
 
@@ -167,9 +183,16 @@ cycleTheme = Expr
       <> "if (theme === 'system') { "
       <> "  document.documentElement.removeAttribute('data-theme'); "
       <> "  (matchMedia('(prefers-color-scheme: dark)').matches ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark')); "
+      <> "} else if (theme === 'dark') { "
+      <> "  document.documentElement.setAttribute('data-theme', '"
+      <> daisyThemeDark
+      <> "'); "
+      <> "  document.documentElement.classList.add('dark'); "
       <> "} else { "
-      <> "  document.documentElement.setAttribute('data-theme', theme); "
-      <> "  (theme === 'dark' ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark')); "
+      <> "  document.documentElement.setAttribute('data-theme', '"
+      <> daisyThemeLight
+      <> "'); "
+      <> "  document.documentElement.classList.remove('dark'); "
       <> "}"
   )
 
@@ -206,6 +229,16 @@ xSetThemeAndClose mode f = onClick (setTheme mode <> setFlag f false)
 
 ariaExpandedFlag :: Flag -> Attr
 ariaExpandedFlag f = attr ":aria-expanded" (flagName f <> ".toString()")
+
+ariaSelectedFlag :: Flag -> Attr
+ariaSelectedFlag f = attr ":aria-selected" (flagName f <> ".toString()")
+
+ariaSelectedNotFlag :: Flag -> Attr
+ariaSelectedNotFlag f = attr ":aria-selected" ("(!" <> flagName f <> ").toString()")
+
+classWhenFlag :: String -> Flag -> Attr
+classWhenFlag className f =
+  attr ":class" ("{ '" <> className <> "': " <> flagName f <> " }")
 
 xCloak :: Attr
 xCloak = flag "x-cloak"

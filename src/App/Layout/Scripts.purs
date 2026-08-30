@@ -7,6 +7,7 @@ module App.Layout.Scripts
   ) where
 
 import App.Html (Html, attr, el, text)
+import App.Theme (darkModeInitScript)
 
 -- | Closed ADT — only these exact scripts can ever exist inline in <head>.
 data HeadScript
@@ -19,7 +20,7 @@ renderHeadScript :: String -> HeadScript -> Html
 renderHeadScript nonce = case _ of
   DarkModeInit ->
     el "script" [ attr "nonce" nonce ]
-      [ text "if(localStorage.getItem('theme')==='dark'||((!localStorage.getItem('theme')||localStorage.getItem('theme')==='system')&&matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');document.documentElement.setAttribute('data-theme','dark')}else{document.documentElement.classList.remove('dark');document.documentElement.setAttribute('data-theme','light')}" ]
+      [ text darkModeInitScript ]
 
   TitleSync ->
     el "script" [ attr "nonce" nonce ]

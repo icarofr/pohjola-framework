@@ -1,10 +1,9 @@
--- | DaisyUI Stats primitive
+-- | DaisyUI Stats primitive (research/daisyui stat docs)
 module App.Ui.Stat where
 
 import Prelude
 
 import App.Html (Html, class_, el, text)
-import App.Ui.TextTone (TextTone(..), toneClass)
 import Data.Maybe (Maybe(..))
 
 type StatItem =
@@ -16,14 +15,14 @@ type StatItem =
 statCard :: StatItem -> Html
 statCard props =
   el "div" [ class_ "stat" ]
-    [ el "div" [ class_ ("stat-title font-mono text-xs " <> toneClass Copy) ] [ text props.label ]
-    , el "div" [ class_ "stat-value text-primary text-3xl font-black" ] [ text props.value ]
+    [ el "div" [ class_ "stat-title" ] [ text props.label ]
+    , el "div" [ class_ "stat-value text-primary" ] [ text props.value ]
     , case props.description of
-        Just desc -> el "div" [ class_ ("stat-desc text-xs " <> toneClass Meta) ] [ text desc ]
+        Just desc -> el "div" [ class_ "stat-desc" ] [ text desc ]
         Nothing -> text ""
     ]
 
 statGrid :: Array StatItem -> Html
 statGrid items =
-  el "div" [ class_ "stats stats-vertical lg:stats-horizontal shadow-md bg-base-100 border border-base-200 w-full" ]
+  el "div" [ class_ "stats stats-vertical bg-base-100 lg:stats-horizontal w-full" ]
     (map statCard items)

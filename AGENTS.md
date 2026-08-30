@@ -6,7 +6,7 @@
 - `dist/` → public static root; `dist-server/` → private server bundle (never serve from `dist/`).
 - Interactivity via Alpine typed constructors in `App.Alpine` only — no custom JavaScript (ADR-000).
 - Server FFI is restricted to 4 allowlisted modules (ADR-003/007). See `Makefile` `FFI_ALLOWLIST_GREP`.
-- `make gate` enforces exhaustive pattern matching, no unsafe imports, allowlisted FFI, and no general-purpose HTML escape hatch.
+- `make gate` enforces banned unsafe imports, allowlisted FFI, Content Firewall, text-tone policy, and **no `class_` in feature views** (ADR-012).
 - CSP is pinned byte-exact in `test/ContractSpec.purs`. Widening demands justification.
 
 ### Commands (daily use)
@@ -31,7 +31,7 @@
 
 ### Task → doc trigger map
 - Adding a page → `docs/conventions/adding-pages.md`, `docs/adr/ADR-008-component-architecture.md`
-- UI / Styling / Components → `docs/conventions/design-system.md`, `DESIGN.md`
+- UI / Styling / Components → `docs/conventions/design-system.md`, `DESIGN.md`, `docs/adr/ADR-012-semantic-ui-contracts.md`
 - Forms → `docs/conventions/forms.md`
 - Data fetching → `docs/conventions/data-layer.md`
 - Server internals → `docs/conventions/server.md`
@@ -46,13 +46,13 @@
 ### Architecture (6-10 lines)
 - MPA rendered by PureScript server using the `Html` ADT.
 - Routes per language via `routing-duplex` codecs in `Data/Route.purs`.
-- Page view split: static pages (`Page.purs`) and data-backed pages (`View.purs`) using `App.Data.Fetch`.
+- Page view split: every feature has `Page.purs` (orchestrator) + `View.purs` (pure rendering). Data-backed features add `Types.purs` + `Service.purs` and fetch via `App.Data.Fetch`.
 - Forms follow `App.Form` contract with honeypot and same-origin checks.
 - Errors are values (`App.Error` → `Either`) never thrown.
 - Alpine.js provides client interactivity through typed constructors in `App.Alpine`.
 
 ### Content & i18n discipline
-- Text copy lives in `Data.I18n.Dictionary`; `Data.Content` holds only metadata. Both languages must have entries.
+- Text copy lives in `Data.I18n` (`type Dictionary`); `Data.Content` holds only metadata. Both languages must have entries.
 
 ### Human-only docs
 `docs/SETUP.md` is a human-facing setup guide — agents skip unless asked.

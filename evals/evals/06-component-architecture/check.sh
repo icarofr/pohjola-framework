@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Eval 06: Component architecture
-# Asserts: Container usage, Components/ split, no hand-written mx-auto max-w-*, no cross-feature imports
+# Eval 06: Component architecture + ADR-012 UI contract
+# Asserts: App.Ui blueprints, no class_ in features, no mx-auto max-w-*, no cross-feature imports
 set -euo pipefail
 
 pass=0; fail=0
@@ -26,22 +26,22 @@ check "no hand-rolled doctype/html" "! grep -qi '<!doctype\|<html' src/App/Featu
 check "Route has Team constructor" "grep -q 'Team' src/Data/Route.purs"
 
 # i18n: both languages have entries
-check "Dictionary has team entries (en)" "grep -i 'team' src/App/Data/I18n/Dictionary.purs | grep -iv 'import\|--' | head -1 | grep -q ."
+check "I18n has team entries" "grep -i 'team' src/Data/I18n.purs | grep -iv 'import\|--' | head -1 | grep -q ."
 
 # No FFI or raw used for a static page
 check "no FFI in Team feature" "! grep -r 'foreign import' src/App/Features/Team/ 2>/dev/null"
 check "no raw in Team feature" "! grep -r '\braw\b' src/App/Features/Team/ 2>/dev/null"
 
-# Component architecture: View.purs uses container (not hand-written mx-auto max-w-*)
-check "View.purs imports App.Ui.Container" "grep -q 'App.Ui.Container' src/App/Features/Team/View.purs"
-check "View.purs uses container function" "grep -q 'container' src/App/Features/Team/View.purs"
-check "no hand-written mx-auto max-w-* in View.purs" "! grep -q 'mx-auto max-w-' src/App/Features/Team/View.purs"
+# ADR-012: feature views compose App.Ui blueprints (no class_)
+check "View.purs imports App.Ui" "grep -q 'App.Ui' src/App/Features/Team/View.purs"
+check "no class_ in Team View.purs" "! grep -q 'class_' src/App/Features/Team/View.purs"
+check "no class_ in Team Components" "! grep -r 'class_' src/App/Features/Team/Components/ 2>/dev/null"
 
-# No hand-written mx-auto max-w-* anywhere in features (the rule is repo-wide)
+# No hand-written mx-auto max-w-* anywhere in features
 check "no hand-written mx-auto max-w-* in any feature" "! grep -r 'mx-auto max-w-' src/App/Features/ 2>/dev/null"
 
-# No cross-feature imports (Team must not import Posts, Home, etc.)
-check "no cross-feature imports" "! grep -r 'import App.Features.Posts\|import App.Features.Home\|import App.Features.About\|import App.Features.Contact\|import App.Features.Legal' src/App/Features/Team/ 2>/dev/null"
+# No cross-feature imports
+check "no cross-feature imports" "! grep -r 'import App.Features.Posts\|import App.Features.Home\|import App.Features.About\|import App.Features.Contact' src/App/Features/Team/ 2>/dev/null"
 
 # Semantic text tones: no raw opacity modifiers in features (ADR-008)
 check "no raw text-base-content/N in features" "! grep -r 'text-base-content/' src/App/Features/ 2>/dev/null"

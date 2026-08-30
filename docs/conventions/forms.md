@@ -22,7 +22,10 @@ Views import these; handlers decode them. Keep field names and paths in
 
 ## Form UI helpers (`App.Ui.Form`)
 
-Use `src/App/Ui/Form.purs` for rendering form containers and inputs:
+Use `src/App/Ui/Form.purs` for rendering form containers and inputs when you
+add a page that needs one. No demo page currently renders these helpers, but
+`/api/contact` and `/api/newsletter` handlers in `App.Main` are wired for when
+you do.
 - `formContainer` — wraps form with automatic `lang` hidden field and honeypot field.
 - `textField`, `emailField`, `textareaField` — styled inputs with dark mode, labels, and required flags.
 - `submitButton` — accessible Tailwind button with hover/focus states.

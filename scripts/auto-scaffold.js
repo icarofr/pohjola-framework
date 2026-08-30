@@ -72,12 +72,11 @@ render lang = staticPage (render${name} lang)
 
   writeFileSync(
     `${featureDir}/View.purs`,
-    `-- | ${name} page — page-level rendering, orchestrates Components/
+    `-- | ${name} page view — App.Ui blueprints only
 module App.Features.${name}.View where
 
 import App.Html (Html)
-import App.Ui.Container (container)
-import App.Ui.Layout.SectionHeader (Align(..), sectionHeader)
+import App.Ui as Ui
 import Data.I18n (Lang, dict)
 import Data.Maybe (Maybe(..))
 
@@ -86,8 +85,13 @@ render${name} lang =
   let
     d = (dict lang).${lower}
   in
-    container "max-w-3xl" "py-16"
-      [ sectionHeader { eyebrow: Nothing, title: d.heading, subtitle: Just d.body, align: Left } ]
+    Ui.editorialPage
+      { category: Nothing
+      , title: d.heading
+      , subtitle: Just d.body
+      , body: Ui.editorialParagraphs []
+      , action: Nothing
+      }
 `
   );
 } else {
@@ -145,34 +149,38 @@ fetch${name}s cfg = fetchJson (cfg.postsApiBase <> "/posts")
   mkdirSync(`${featureDir}/Components`, { recursive: true });
   writeFileSync(
     `${featureDir}/Components/${name}Card.purs`,
-    `-- | ${name} card — presentational component.
+    `-- | ${name} card — App.Ui primitives only
 module App.Features.${name}.Components.${name}Card where
 
-import App.Features.${name}.Types (${name}(..))
-import App.Html (Html, el, text)
-import App.Ui.Card (card, cardBody, cardTitle)
+import App.Features.${name}.Types (${name})
+import App.Html (Html)
+import App.Ui.Card (card, cardBody, cardTitle, cardText, defaultCardOptions)
 import Data.I18n (Lang)
+import Data.Newtype (unwrap)
 
 render${name}Card :: Lang -> ${name} -> Html
-render${name}Card _ (${name} item) =
-  card (cardBody (el "div" []
-    [ cardTitle (el "p" [] [ text item.title ])
-    , el "p" [] [ text item.body ]
-    ]))
+render${name}Card _ item =
+  card defaultCardOptions
+    [ cardBody
+        [ cardTitle (unwrap item).title
+        , cardText (unwrap item).body
+        ]
+    ]
 `
   );
 
   writeFileSync(
     `${featureDir}/View.purs`,
-    `-- | ${name} view — list rendering, orchestrates Components/
+    `-- | ${name} view — list rendering via App.Ui blueprints
 module App.Features.${name}.View where
+
+import Prelude
 
 import App.Features.${name}.Components.${name}Card (render${name}Card)
 import App.Features.${name}.Types (${name})
 import App.Html (Html)
-import App.Ui.Container (container)
-import App.Ui.Layout.SectionHeader (Align(..), sectionHeader)
-import Data.Foldable (foldMap)
+import App.Ui as Ui
+import Data.Array (null)
 import Data.I18n (Lang, dict)
 import Data.Maybe (Maybe(..))
 
@@ -181,18 +189,40 @@ render${name}List lang items =
   let
     d = (dict lang).${lower}
   in
-    container "max-w-3xl" "py-16"
-      [ sectionHeader { eyebrow: Nothing, title: d.heading, subtitle: Nothing, align: Left }
-      , foldMap (render${name}Card lang) items
-      ]
+    Ui.feedPage
+      { category: Nothing
+      , title: d.heading
+      , subtitle: Nothing
+      , items: map (render${name}Card lang) items
+      , empty:
+          if null items then
+            Just
+              { title: d.heading
+              , description: d.heading
+              , action: Nothing
+              }
+          else
+            Nothing
+      }
 
 render${name}Error :: Lang -> Html
 render${name}Error lang =
   let
     d = (dict lang).${lower}
+    common = (dict lang).common
   in
-    container "max-w-3xl" "py-16"
-       [ sectionHeader { eyebrow: Nothing, title: d.heading, subtitle: Just (dict lang).common.error500, align: Left } ]
+    Ui.feedPage
+      { category: Nothing
+      , title: d.heading
+      , subtitle: Nothing
+      , items: []
+      , empty:
+          Just
+            { title: common.error500
+            , description: d.heading
+            , action: Nothing
+            }
+      }
 `
   );
 

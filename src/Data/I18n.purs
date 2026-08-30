@@ -86,12 +86,15 @@ type Dictionary =
   , contact ::
       { title :: String
       , subtitle :: String
+      , issuesTag :: String
       , issuesTitle :: String
       , issuesText :: String
       , issuesButton :: String
+      , discussionsTag :: String
       , discussionsTitle :: String
       , discussionsText :: String
       , discussionsButton :: String
+      , sourceTag :: String
       , sourceTitle :: String
       , sourceText :: String
       , sourceButton :: String
@@ -99,6 +102,7 @@ type Dictionary =
   , posts ::
       { listTitle :: String
       , detailTitle :: String
+      , articleTagPrefix :: String
       , readMore :: String
       , backToList :: String
       , loadingError :: String
@@ -189,12 +193,15 @@ en =
   , contact:
       { title: "Community & Contributing"
       , subtitle: "Pohjola is open source software. Report issues, join discussions, or inspect the codebase directly on GitHub."
+      , issuesTag: "Issues"
       , issuesTitle: "Bug Reports & Issues"
       , issuesText: "Found a bug, edge case, or unexpected behaviour? Open an issue on GitHub with reproduction steps."
       , issuesButton: "Open an Issue"
+      , discussionsTag: "Community"
       , discussionsTitle: "Discussions & Q&A"
       , discussionsText: "Have architectural questions, design proposals, or want to discuss PureScript and Bun?"
       , discussionsButton: "Join Discussions"
+      , sourceTag: "Source"
       , sourceTitle: "Source Code & Invariants"
       , sourceText: "Explore the codebase, inspect verified safety invariants, or submit a pull request on GitHub."
       , sourceButton: "View Repository"
@@ -202,6 +209,7 @@ en =
   , posts:
       { listTitle: "Engineering Notes & Architecture"
       , detailTitle: "Article"
+      , articleTagPrefix: "Article #"
       , readMore: "Read article"
       , backToList: "Back to articles"
       , loadingError: "Failed to load articles. Please check your connection."
@@ -288,12 +296,15 @@ fr =
   , contact:
       { title: "Communauté & Contribution"
       , subtitle: "Pohjola est un projet open source. Signalez des bugs, échangez ou explorez le code directement sur GitHub."
+      , issuesTag: "Issues"
       , issuesTitle: "Bugs & Problèmes techniques"
       , issuesText: "Un problème, un bug ou un comportement inattendu ? Ouvrez une issue avec les étapes de reproduction."
       , issuesButton: "Ouvrir une issue"
+      , discussionsTag: "Communauté"
       , discussionsTitle: "Discussions & Échanges"
       , discussionsText: "Des questions d'architecture, des propositions ou envie d'échanger autour de PureScript et Bun ?"
       , discussionsButton: "Rejoindre les discussions"
+      , sourceTag: "Code"
       , sourceTitle: "Code source & Invariants"
       , sourceText: "Explorez le dépôt, inspectez les garanties mécaniques ou proposez une contribution sur GitHub."
       , sourceButton: "Voir le dépôt"
@@ -301,6 +312,7 @@ fr =
   , posts:
       { listTitle: "Notes d'ingénierie et architecture"
       , detailTitle: "Article"
+      , articleTagPrefix: "Article n°"
       , readMore: "Lire l'article"
       , backToList: "Retour aux articles"
       , loadingError: "Impossible de charger les articles. Veuillez vérifier votre connexion."

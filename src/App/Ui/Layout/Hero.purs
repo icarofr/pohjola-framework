@@ -1,5 +1,9 @@
--- | Pure DaisyUI Hero section template
-module App.Ui.Layout.Hero where
+-- | Landing hero — frozen DaisyUI recipe (research/daisyui hero + DESIGN.md)
+module App.Ui.Layout.Hero
+  ( HeroAction
+  , HeroProps
+  , hero
+  ) where
 
 import Prelude
 
@@ -24,24 +28,44 @@ type HeroProps =
   , secondaryAction :: Maybe HeroAction
   }
 
--- | Render a Hero section using DaisyUI hero component classes
+-- | Frozen class recipe — do not vary per feature (eval 07 / UiSpec).
+heroSectionClass :: String
+heroSectionClass = "hero bg-base-100 border-b border-base-300 min-h-0 py-20 sm:py-28"
+
+heroContentClass :: String
+heroContentClass = "hero-content text-center"
+
+heroInnerClass :: String
+heroInnerClass = "max-w-3xl"
+
+heroTitleClass :: String
+heroTitleClass = "text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight"
+
+heroBodyClass :: String
+heroBodyClass = "text-lg py-6 " <> toneClass Copy
+
+heroActionsClass :: String
+heroActionsClass = "flex flex-wrap justify-center gap-3"
+
 hero :: HeroProps -> Html
 hero props =
-  el "section" [ class_ "hero bg-base-200 py-16 sm:py-24 border-b border-base-300" ]
-    [ el "div" [ class_ "hero-content text-center max-w-3xl flex-col space-y-6" ]
-        [ case props.eyebrow of
-            Just eb -> Badge.badge BadgePrimary eb
-            Nothing -> text ""
-        , el "h1" [ class_ "text-4xl sm:text-6xl font-black tracking-tight leading-tight text-base-content" ]
-            [ text props.title ]
-        , el "p" [ class_ ("text-lg sm:text-xl max-w-2xl mx-auto leading-relaxed " <> toneClass Copy) ]
-            [ text props.body ]
-        , el "div" [ class_ "flex flex-wrap items-center justify-center gap-4 pt-2" ]
-            [ renderHeroButton ButtonPrimary props.primaryAction
-            , case props.secondaryAction of
-                Just sec -> renderHeroButton ButtonOutline sec
-                Nothing -> text ""
-            ]
+  el "section" [ class_ heroSectionClass ]
+    [ el "div" [ class_ heroContentClass ]
+        [ el "div" [ class_ heroInnerClass ]
+            ( [ case props.eyebrow of
+                  Just eb -> Badge.badge BadgeTertiary eb
+                  Nothing -> text ""
+              , el "h1" [ class_ heroTitleClass ] [ text props.title ]
+              , el "p" [ class_ heroBodyClass ] [ text props.body ]
+              , el "div" [ class_ heroActionsClass ]
+                  ( [ renderHeroButton ButtonPrimary props.primaryAction
+                    , case props.secondaryAction of
+                        Just sec -> renderHeroButton ButtonOutline sec
+                        Nothing -> text ""
+                    ]
+                  )
+              ]
+            )
         ]
     ]
 
@@ -49,6 +73,6 @@ renderHeroButton :: ButtonVariant -> HeroAction -> Html
 renderHeroButton variant action =
   case action.target of
     Internal t ->
-      buttonLink { variant, size: Lg, lang: t.lang, route: t.route, extraClass: "shadow-sm" } action.label
+      buttonLink { variant, size: Lg, lang: t.lang, route: t.route, extraClass: "" } action.label
     External t ->
-      buttonLinkExternal { variant, size: Lg, href: t.href, extraClass: "shadow-sm" } action.label
+      buttonLinkExternal { variant, size: Lg, href: t.href, extraClass: "" } action.label

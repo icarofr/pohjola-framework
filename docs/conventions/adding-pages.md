@@ -11,7 +11,7 @@ Every feature follows this structure — no variations:
 src/App/Features/<Name>/
   Page.purs              # Orchestrator: calls data fetch, composes children
   View.purs              # Page-level rendering, imports from Components/
-  Components/            # Feature-local presentational components (one per file)
+  Components/            # Optional — extract when a second visual unit appears
     <ComponentName>.purs
   Types.purs             # Data-backed features only
   Service.purs           # Data-backed features only
@@ -30,17 +30,20 @@ src/App/Features/<Name>/
    second feature needs it. `App/Ui/` modules must never import from
    `App/Features/`.
 
-**Container**: all width-constrained wrappers go through `App.Ui.Container.container`:
+**Container**: width-constrained sections go through `App.Ui.Container.container`:
 
 ```purescript
 container :: String -> String -> Array Html -> Html
-container maxWidth extra inner
--- Produces: <div class="mx-auto w-full {maxWidth} px-4 sm:px-6 lg:px-8 {extra}">{inner}</div>
+container maxW extraClass children
+-- Produces: <div class="container mx-auto px-4 sm:px-6 lg:px-8 {maxW} {extraClass}">{children}</div>
 ```
 
-Never hand-write `mx-auto max-w-*` in a view — the `w-full` is load-bearing
-(`<main>` is a flex column; without `w-full`, `margin: auto` shrinks children
-to content width). `container` centralises the fix.
+DaisyUI's `container` class handles full-width inside flex parents. Never
+hand-write `mx-auto max-w-*` in a feature view.
+
+**Page layouts**: prefer `App.Ui` slot templates (`landingPage`, `editorialPage`,
+`pageLayout` + `pageHeader`, `grid3`, `actionCard`) over raw `container` in
+feature views. Home and Contact are the reference implementations.
 
 **Cross-feature imports are forbidden** (enforced by ContractSpec). Features
 compose through shared `App/Ui/` primitives and `App.Data.Fetch`, never by
@@ -54,8 +57,10 @@ importing a sibling feature's modules.
 4. Update `pageRenderer` in `Main.purs`
 5. `src/App/Features/<Name>/Page.purs` :: `render :: Lang -> Aff (Either AppError Html)`
    (wrap pure Html in `pure (Right ...)`)
-6. `src/App/Features/<Name>/View.purs` — page-level rendering via `container`
-7. `src/App/Features/<Name>/Components/` — extract distinct visual units (one per file)
+6. `src/App/Features/<Name>/View.purs` — compose via `App.Ui.Layout.*` (or
+   `container` + `sectionHeader` for minimal pages)
+7. `src/App/Features/<Name>/Components/` — optional; extract when you have a
+   distinct reusable visual unit (card, sidebar, etc.)
 8. i18n keys in `Data.I18n.purs` (both languages)
 9. Add to `navItems` if it belongs in navigation
 10. Venom assertions in `venom/01_routes.yml` + unit route tests
@@ -74,8 +79,9 @@ and `/fr/<route>` with localized titles.
 7. Create `src/App/Features/<Name>/Service.purs` — `fetchX :: Aff (Either AppError a)`
    via `App.Data.Fetch.fetchJson`
 8. Create `src/App/Features/<Name>/Page.purs` — `render :: Lang -> Aff (Either AppError Html)`
-9. Create `src/App/Features/<Name>/View.purs` — page-level rendering via `container`
-10. Create `src/App/Features/<Name>/Components/` — extract cards/items as components
+9. Create `src/App/Features/<Name>/View.purs` — compose via `App.Ui.Layout.*`
+10. Create `src/App/Features/<Name>/Components/` — optional; extract list
+    items/cards when the view grows
 11. i18n keys in `Data.I18n.purs` (both languages)
 12. Add the LIST route to `allRoutes` (for sitemap) — omit detail routes
     (dynamic IDs)

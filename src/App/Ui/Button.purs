@@ -1,4 +1,5 @@
--- | Button primitive — DaisyUI semantic component classes
+-- | Button intents — map to Daisy classes in this module only (ADR-012).
+-- | ButtonSecondary is a neutral/outline CTA, not Daisy accent secondary.
 module App.Ui.Button where
 
 import Prelude
@@ -8,7 +9,7 @@ import App.Html (Html, class_, el, href, rel_, target_, text)
 import Data.I18n (Lang)
 import Data.Route (Route)
 
-data ButtonVariant = ButtonPrimary | ButtonSecondary | ButtonOutline | ButtonGhost | ButtonInverted
+data ButtonVariant = ButtonPrimary | ButtonSecondary | ButtonOutline | ButtonGhost | ButtonInverted | ButtonLink
 type Variant = ButtonVariant
 
 data Size = Sm | Md | Lg
@@ -16,10 +17,11 @@ data Size = Sm | Md | Lg
 renderVariant :: ButtonVariant -> String
 renderVariant = case _ of
   ButtonPrimary -> "btn-primary"
-  ButtonSecondary -> "btn-secondary"
+  ButtonSecondary -> "btn-outline"
   ButtonOutline -> "btn-outline"
   ButtonGhost -> "btn-ghost"
-  ButtonInverted -> "btn-accent"
+  ButtonInverted -> "btn-neutral"
+  ButtonLink -> "btn-link"
 
 renderSize :: Size -> String
 renderSize = case _ of

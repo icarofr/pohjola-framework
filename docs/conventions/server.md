@@ -94,7 +94,7 @@ applies headers with `Headers.set` in iteration order, so a caller-supplied
   way to request a fragment (curl, integration tests, non-header clients) and a
   cache key that does not depend on `Vary`. Fragment responses carry
   `Vary: x-alpine-request`. Fragments never stream (small, already fast).
-- **Static routes** (`Home`, `About`, `Contact`, `Legal`) and `PostDetail`
+- **Static routes** (`Home`, `About`, `Contact`) and `PostDetail`
   (can 404) use `StringBody` — no streaming.
 
 The data layer uses Bun's native `fetch` (`App.FetchBun`) — `Affjax.Node`'s

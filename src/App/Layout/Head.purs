@@ -83,7 +83,7 @@ seoDescription lang route =
 
 -- | JSON-LD structured data for a route. Exhaustive on Route — each route
 -- | type has its own schema. Returns Maybe because not every route has
--- | structured data (About, Contact, Legal don't).
+-- | structured data (About, Contact don't).
 renderJsonLd :: String -> String -> Lang -> Route -> Maybe Html
 renderJsonLd baseUrl nonce lang route = case route of
   Home -> Just $ jsonLdScript nonce

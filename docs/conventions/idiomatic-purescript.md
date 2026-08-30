@@ -2,8 +2,9 @@
 
 The project docs cover architecture and runtime safety. This doc fills the
 gap: general FP idioms that keep PureScript code clean and correct. Drawn
-from the two reference books (`research/book.txt`, `research/purescript-book/`).
-Every rule here would have prevented a real bug or review finding in this repo.
+from general FP idioms that keep PureScript code clean and correct. Optional
+local clones of the PureScript book (`research/` — gitignored) informed some
+rules; the repo does not require them.
 
 ## Errors and effects
 
@@ -47,7 +48,8 @@ Every rule here would have prevented a real bug or review finding in this repo.
   states become unrepresentable at the type level.
 - **Closed ADTs for known sums; exhaustive pattern match.** `AppError`,
   `FormStatus`, `Html` are closed sums — adding a variant breaks every
-  handler until updated. `make gate` enforces exhaustiveness.
+  handler until updated. Exhaustiveness is enforced by the compiler
+  (`spago build`), not `make gate`.
 - **Derive `Eq`/`Ord`/`Show` when free.** `derive instance eqX :: Eq X` costs
   nothing and enables test assertions. Don't hand-write what the compiler
   derives — except for learning (see `docs/examples/`).

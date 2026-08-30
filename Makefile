@@ -79,6 +79,10 @@ gate:
 	@if grep -rn 'text "[A-Za-z0-9]' src/App/Features/*/View.purs; then echo "ERROR: Hardcoded text string found in feature view — text must come from Data.I18n (Content Firewall)"; exit 1; else echo "Content Firewall OK"; fi
 	@echo "Checking text tone policy (no raw text-base-content/N outside App.Ui.TextTone)..."
 	@if grep -rn 'text-base-content/' src/ | grep -v '^src/App/Ui/TextTone\.purs:'; then echo "ERROR: Raw text-base-content opacity found — use App.Ui.TextTone (ADR-008)"; exit 1; else echo "Text tone policy OK"; fi
+	@echo "Checking UI contract (no class_ in feature views or components — ADR-012)..."
+	@if grep -rn 'class_' src/App/Features/*/View.purs src/App/Features/*/Components/*.purs 2>/dev/null; then echo "ERROR: class_ found in feature view/component — compose App.Ui blueprints only (ADR-012)"; exit 1; else echo "UI contract OK"; fi
+	@echo "Checking button intent policy (no btn-secondary in App.Ui)..."
+	@if grep -rn '"btn-secondary' src/App/Ui/ src/App/Layout/ 2>/dev/null; then echo "ERROR: btn-secondary class in App.Ui — use ButtonVariant intents"; exit 1; else echo "Button intent policy OK"; fi
 
 ## generator-policy: validate the canonical generator and App.Ui boundary
 .PHONY: generator-policy design-policy
@@ -86,6 +90,7 @@ generator-policy:
 	@bash scripts/verify-generator-fixture.sh
 
 design-policy: generator-policy
+	bash scripts/verify-theme.sh
 
 # ==================================================================================== #
 # DEPENDENCIES

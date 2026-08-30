@@ -17,7 +17,7 @@ render lang currentRoute =
     d = dict lang
   in
     el "footer"
-      [ class_ "bg-base-200 text-base-content border-t border-base-300 transition-colors" ]
+      [ class_ "bg-base-100 text-base-content border-t border-base-300 transition-colors" ]
       [ el "div" [ class_ "max-w-5xl mx-auto px-4 py-12 sm:px-6 lg:px-8 space-y-8" ]
           [ el "div" [ class_ "grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4" ]
               [ -- Brand Block

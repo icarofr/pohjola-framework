@@ -7,7 +7,7 @@ Data-backed pages fetch and may return `Left AppError`.
 
 ## The two feature templates
 
-- **STATIC** (Contact, About, Legal, Home): `Page.purs` + `View.purs`
+- **STATIC** (Contact, About, Home): `Page.purs` + `View.purs`
 - **DATA-BACKED** (Posts): `Types.purs` + `Service.purs` + `Page.purs` +
   `View.purs`
 
@@ -40,11 +40,12 @@ for your CMS — the pattern stays the same.
 
 ## Database — App.Data.SQL (ADR-009)
 
-For PostgreSQL-backed features, the target is `App.Data.SQL` (Bun.SQL bindings)
+For PostgreSQL-backed features, use `App.Data.SQL` (Bun.SQL bindings)
 instead of HTTP fetching. The same `Aff (Either AppError a)` pattern
 applies — map SQL errors to `AppError` at the feature boundary.
-The current SQL/auth integration is legacy scaffolding; the production
-application-lifetime lifecycle and repository wiring remain pending.
+`App.Data.SQL`, `App.Migration`, and `make migrate` are implemented (ADR-009
+Phase 3A). What remains pending is the application-lifetime connection pool
+(Phase 3B) and production auth/session wiring — not the SQL module itself.
 
 ### Connection
 

@@ -1,18 +1,29 @@
--- | Closed Editorial Page Blueprint — enforces typography, reading rhythm, and article geometry
+-- | Editorial page — DaisyUI pageSection + prose-lg (long-form, no card box)
 module App.Ui.Layout.EditorialPage
   ( EditorialPageBlueprint
   , editorialPage
+  , editorialParagraphs
+  , editorialContentClass
   ) where
 
 import Prelude
 
 import App.Html (Html, class_, el, text)
 import App.Ui.Button (ButtonVariant, Size(..), buttonLink, buttonLinkExternal)
-import App.Ui.Container (container)
-import App.Ui.Layout.SectionHeader (Align(..), sectionHeader)
+import App.Ui.Divider as Divider
+import App.Ui.Layout.PageSection (pageSection)
+import App.Ui.Layout.SectionHeader (Align(..))
 import App.Ui.Layout.Types (ActionTarget(..))
-import App.Ui.TextTone (TextTone(..), toneClass)
+import App.Ui.Prose (proseLg)
 import Data.Maybe (Maybe(..))
+
+editorialParagraphs :: Array String -> Html
+editorialParagraphs paragraphs =
+  proseLg (map (\p -> el "p" [] [ text p ]) paragraphs)
+
+-- | Frozen content width — do not vary per feature (UiSpec).
+editorialContentClass :: String
+editorialContentClass = "space-y-8 max-w-3xl"
 
 type EditorialPageBlueprint =
   { category :: Maybe String
@@ -22,26 +33,30 @@ type EditorialPageBlueprint =
   , action :: Maybe { label :: String, variant :: ButtonVariant, target :: ActionTarget }
   }
 
--- | Render an editorial document page blueprint
 editorialPage :: EditorialPageBlueprint -> Html
 editorialPage page =
-  container "max-w-4xl" "py-16 sm:py-24 space-y-12"
-    [ sectionHeader
+  pageSection
+    { header:
         { eyebrow: page.category
         , title: page.title
         , subtitle: page.subtitle
-        , align: Center
+        , align: Left
         }
-    , el "div" [ class_ "card bg-base-100 shadow-md border border-base-200" ]
-        [ el "div" [ class_ ("card-body p-8 sm:p-10 space-y-6 text-base sm:text-lg leading-relaxed font-normal " <> toneClass Copy) ]
-            [ page.body ]
-        ]
-    , case page.action of
-        Just act ->
-          el "div" [ class_ "flex justify-end pt-2" ]
-            [ case act.target of
-                Internal t -> buttonLink { variant: act.variant, size: Lg, lang: t.lang, route: t.route, extraClass: "shadow-sm" } act.label
-                External t -> buttonLinkExternal { variant: act.variant, size: Lg, href: t.href, extraClass: "shadow-sm" } act.label
+    , content:
+        el "div" [ class_ editorialContentClass ]
+          ( [ page.body
+            , case page.action of
+                Just act ->
+                  el "div" [ class_ "space-y-6 not-prose" ]
+                    [ Divider.divider
+                    , case act.target of
+                        Internal t ->
+                          buttonLink { variant: act.variant, size: Lg, lang: t.lang, route: t.route, extraClass: "" } act.label
+                        External t ->
+                          buttonLinkExternal { variant: act.variant, size: Lg, href: t.href, extraClass: "" } act.label
+                    ]
+                Nothing -> text ""
             ]
-        Nothing -> text ""
-    ]
+          )
+    , banded: false
+    }

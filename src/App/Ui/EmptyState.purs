@@ -1,5 +1,10 @@
--- | DaisyUI EmptyState primitive
-module App.Ui.EmptyState where
+-- | DaisyUI empty state — frozen centered card recipe (no hero slab)
+module App.Ui.EmptyState
+  ( EmptyStateProps
+  , emptyState
+  , emptyStateCardClass
+  , emptyStateSectionClass
+  ) where
 
 import Prelude
 
@@ -13,14 +18,27 @@ type EmptyStateProps =
   , action :: Maybe Html
   }
 
+-- | Frozen class recipes — do not vary per feature (eval 07 / UiSpec).
+emptyStateSectionClass :: String
+emptyStateSectionClass = "py-16 sm:py-20"
+
+emptyStateCardClass :: String
+emptyStateCardClass = "card bg-base-100 card-border max-w-lg mx-auto text-center"
+
+emptyStateTitleClass :: String
+emptyStateTitleClass = "card-title justify-center text-2xl"
+
 emptyState :: EmptyStateProps -> Html
 emptyState props =
-  el "div" [ class_ "hero bg-base-200 rounded-box p-8 text-center border border-base-300" ]
-    [ el "div" [ class_ "hero-content flex-col max-w-md space-y-4" ]
-        [ el "h3" [ class_ "text-xl font-bold text-base-content" ] [ text props.title ]
-        , el "p" [ class_ ("text-sm " <> toneClass Copy) ] [ text props.description ]
-        , case props.action of
-            Just act -> el "div" [ class_ "pt-2" ] [ act ]
-            Nothing -> text ""
+  el "section" [ class_ emptyStateSectionClass ]
+    [ el "div" [ class_ emptyStateCardClass ]
+        [ el "div" [ class_ "card-body items-center" ]
+            ( [ el "h3" [ class_ emptyStateTitleClass ] [ text props.title ]
+              , el "p" [ class_ ("text-base " <> toneClass Copy) ] [ text props.description ]
+              , case props.action of
+                  Just act -> el "div" [ class_ "card-actions justify-center" ] [ act ]
+                  Nothing -> text ""
+              ]
+            )
         ]
     ]

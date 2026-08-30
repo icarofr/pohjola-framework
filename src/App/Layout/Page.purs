@@ -17,7 +17,10 @@ import App.Layout.Header (render) as Header
 import App.Layout.Footer (render) as Footer
 import App.Layout.Scripts (HeadScript(..), renderHeadScript)
 import App.Layout.Styles (stylesCss)
+import App.Ui.Alert as Alert
+import App.Ui.Alert (AlertVariant(..))
 import App.Ui.Container (container)
+import App.Ui.TextTone (TextTone(..), toneClass)
 import Data.Either (Either(..))
 import Data.Foldable (foldMap)
 import Data.I18n (Lang, langTag, dict)
@@ -43,18 +46,15 @@ staticPage = pure <<< Right
 maybeStatusBanner :: Lang -> Maybe FormStatus -> Html
 maybeStatusBanner lang = maybe (text "") \status ->
   let
-    statusClass = case status of
-      FormSuccess -> "rounded-md bg-emerald-50 p-4 border border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 shadow-2xs font-mono text-xs"
-      FormError -> "rounded-md bg-red-50 p-4 border border-red-200 dark:bg-red-950/40 dark:border-red-800 text-red-900 dark:text-red-200 shadow-2xs font-mono text-xs"
-      FormSubscribed -> "rounded-md bg-emerald-50 p-4 border border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 shadow-2xs font-mono text-xs"
+    alertVariant = case status of
+      FormSuccess -> AlertSuccess
+      FormError -> AlertError
+      FormSubscribed -> AlertSuccess
   in
     container "max-w-7xl" "pt-6"
       [ el "div"
-          [ attr "role" "status"
-          , attr "data-form-status" (formStatusQuery status)
-          , class_ statusClass
-          ]
-          [ text (statusText lang status) ]
+          [ attr "data-form-status" (formStatusQuery status) ]
+          [ Alert.alert alertVariant (statusText lang status) ]
       ]
 
 -- | Full HTML page — for normal (non-AJAX) requests.
@@ -112,10 +112,10 @@ errorContent lang status =
       404 -> d.common.error404
       _ -> d.common.error500
   in
-    container "max-w-3xl" "py-24 sm:py-32 text-center"
-      [ el "p" [ class_ "text-base font-semibold text-emerald-600 dark:text-emerald-400" ] [ text (show status) ]
-      , el "h1" [ class_ "mt-2 font-display text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl dark:text-white" ] [ text (show status) ]
-      , el "p" [ class_ "mt-4 text-base/7 text-gray-600 dark:text-gray-300" ] [ text message ]
+    container "max-w-3xl" "py-24 sm:py-32 text-center space-y-4"
+      [ el "p" [ class_ "text-sm font-mono font-semibold text-primary" ] [ text (show status) ]
+      , el "h1" [ class_ "text-4xl sm:text-5xl font-extrabold tracking-tight" ] [ text (show status) ]
+      , el "p" [ class_ ("text-lg " <> toneClass Copy) ] [ text message ]
       ]
 
 -- | Error response for an Alpine AJAX fragment request.
