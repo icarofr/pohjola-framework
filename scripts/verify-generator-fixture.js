@@ -78,8 +78,10 @@ async function runCopy(copy) {
   run(["bun", "x", "spago", "build", "--pure", "--strict"], { cwd: copy });
 }
 
-const tmp = await mkdtemp("pohjola-generator.");
-const tmpSecond = await mkdtemp("pohjola-generator.");
+const tmpParent = await mkdtemp("pohjola-generator.");
+const tmpSecondParent = await mkdtemp("pohjola-generator.");
+const tmp = join(tmpParent, "copy");
+const tmpSecond = join(tmpSecondParent, "copy");
 
 try {
   await cpRecursive(ROOT, tmp);
@@ -126,6 +128,6 @@ try {
     "Generator policy OK (static/data clean-copy fixtures, strict build, idempotence)",
   );
 } finally {
-  await rmRecursive(tmp);
-  await rmRecursive(tmpSecond);
+  await rmRecursive(tmpParent);
+  await rmRecursive(tmpSecondParent);
 }
