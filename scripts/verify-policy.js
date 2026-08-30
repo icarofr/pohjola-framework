@@ -120,6 +120,31 @@ for (const pattern of manifest.forbiddenInFeatureViews) {
 }
 ok("feature view UI contract");
 
+// Feature view import allowlist — primitives stay inside App.Ui / Layout
+const forbiddenImports = manifest.forbiddenImportsInFeatureViews ?? [];
+for (const mod of forbiddenImports) {
+  for (const file of featureFiles) {
+    const content = await readText(file);
+    if (content.includes(`import ${mod}`)) {
+      console.error(`${rel(file)}: import ${mod}`);
+      fail(`forbidden import in feature views: ${mod}`);
+    }
+  }
+}
+ok("feature view import contract");
+
+// Feature view call allowlist — compose blueprints, not primitive soup
+const forbiddenCalls = manifest.forbiddenCallsInFeatureViews ?? [];
+for (const call of forbiddenCalls) {
+  for (const file of featureFiles) {
+    if ((await readText(file)).includes(call)) {
+      console.error(`${rel(file)}: ${call}`);
+      fail(`forbidden call in feature views: ${call}`);
+    }
+  }
+}
+ok("feature view blueprint contract");
+
 // App.Ui forbidden patterns
 const uiLayoutFiles = [
   ...globSync("src/App/Ui/**/*.purs"),

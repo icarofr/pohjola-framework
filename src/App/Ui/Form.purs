@@ -1,4 +1,4 @@
--- | Form controls — DaisyUI fieldset/input/textarea (research/daisyui fieldset docs)
+-- | DaisyUI fieldset + input — research/daisyui-llms.txt Fieldset.
 module App.Ui.Form
   ( FormConfig
   , InputProps
@@ -7,7 +7,6 @@ module App.Ui.Form
   , formContainer
   , honeypotField
   , langField
-  , renderStatusBanner
   , submitButton
   , textField
   , textareaField
@@ -15,19 +14,9 @@ module App.Ui.Form
 
 import Prelude
 
-import App.Form (FormStatus(..))
-import App.Html (Html, action_, attr, class_, el, empty, flag, for_, id_, method_, name_, placeholder_, rows_, text, type_)
+import App.Html (Html, action_, attr, class_, el, flag, for_, id_, method_, name_, placeholder_, rows_, text, type_)
 import Data.I18n (Lang, langTag)
 import Data.Maybe (Maybe(..))
-
-inputClass :: String
-inputClass = "input w-full"
-
-labelClass :: String
-labelClass = "fieldset-label"
-
-buttonClass :: String
-buttonClass = "btn btn-primary"
 
 type FormConfig =
   { action :: String
@@ -57,8 +46,7 @@ type TextareaProps =
 honeypotField :: String -> Html
 honeypotField name =
   el "div" [ class_ "absolute -left-[9999px]", attr "aria-hidden" "true" ]
-    [ el "label" [ for_ ("form-" <> name), class_ labelClass ]
-        [ text "Website" ]
+    [ el "label" [ for_ ("form-" <> name), class_ "label" ] [ text "Website" ]
     , el "input"
         [ type_ "text"
         , id_ ("form-" <> name)
@@ -71,33 +59,7 @@ honeypotField name =
 
 langField :: Lang -> Html
 langField lang =
-  el "input"
-    [ type_ "hidden"
-    , name_ "lang"
-    , attr "value" (langTag lang)
-    ]
-    []
-
-inputFieldWith :: String -> InputProps -> Html
-inputFieldWith typ props =
-  let
-    baseAttrs =
-      [ type_ typ
-      , id_ props.id
-      , name_ props.name
-      , class_ inputClass
-      ]
-    reqAttrs = if props.required then [ flag "required" ] else []
-    phAttrs = case props.placeholder of
-      Just ph -> [ placeholder_ ph ]
-      Nothing -> []
-    inputAttrs = baseAttrs <> reqAttrs <> phAttrs
-  in
-    el "fieldset" [ class_ "fieldset" ]
-      [ el "label" [ for_ props.id, class_ labelClass ]
-          [ text props.label ]
-      , el "input" inputAttrs []
-      ]
+  el "input" [ type_ "hidden", name_ "lang", attr "value" (langTag lang) ] []
 
 textField :: InputProps -> Html
 textField = inputFieldWith "text"
@@ -105,48 +67,39 @@ textField = inputFieldWith "text"
 emailField :: InputProps -> Html
 emailField = inputFieldWith "email"
 
+inputFieldWith :: String -> InputProps -> Html
+inputFieldWith typ props =
+  el "fieldset" [ class_ "fieldset" ]
+    [ el "legend" [ class_ "fieldset-legend" ] [ text props.label ]
+    , el "input"
+        ( [ type_ typ, id_ props.id, name_ props.name, class_ "input" ]
+            <> (if props.required then [ flag "required" ] else [])
+            <> case props.placeholder of
+              Just ph -> [ placeholder_ ph ]
+              Nothing -> []
+        )
+        []
+    ]
+
 textareaField :: TextareaProps -> Html
 textareaField props =
-  let
-    baseAttrs =
-      [ id_ props.id
-      , name_ props.name
-      , rows_ props.rows
-      , class_ "textarea w-full"
-      ]
-    reqAttrs = if props.required then [ flag "required" ] else []
-    phAttrs = case props.placeholder of
-      Just ph -> [ placeholder_ ph ]
-      Nothing -> []
-    attrs = baseAttrs <> reqAttrs <> phAttrs
-  in
-    el "fieldset" [ class_ "fieldset" ]
-      [ el "label" [ for_ props.id, class_ labelClass ]
-          [ text props.label ]
-      , el "textarea" attrs []
-      ]
+  el "fieldset" [ class_ "fieldset" ]
+    [ el "legend" [ class_ "fieldset-legend" ] [ text props.label ]
+    , el "textarea"
+        ( [ id_ props.id, name_ props.name, rows_ props.rows, class_ "textarea" ]
+            <> (if props.required then [ flag "required" ] else [])
+            <> case props.placeholder of
+              Just ph -> [ placeholder_ ph ]
+              Nothing -> []
+        )
+        []
+    ]
 
 submitButton :: String -> Html
 submitButton label =
-  el "button"
-    [ type_ "submit"
-    , class_ buttonClass
-    ]
-    [ text label ]
-
-renderStatusBanner :: Maybe FormStatus -> String -> String -> Html
-renderStatusBanner status successMsg errorMsg = case status of
-  Just FormSuccess ->
-    el "div" [ class_ "alert alert-success mb-6", attr "role" "status" ]
-      [ text successMsg ]
-  Just FormError ->
-    el "div" [ class_ "alert alert-error mb-6", attr "role" "alert" ]
-      [ text errorMsg ]
-  _ -> empty
+  el "button" [ type_ "submit", class_ "btn btn-primary" ] [ text label ]
 
 formContainer :: FormConfig -> Array Html -> Html
 formContainer cfg children =
-  let
-    formChildren = [ langField cfg.lang, honeypotField cfg.honeypotName ] <> children
-  in
-    el "form" [ action_ cfg.action, method_ cfg.method, class_ "space-y-4" ] formChildren
+  el "form" [ action_ cfg.action, method_ cfg.method ]
+    ([ langField cfg.lang, honeypotField cfg.honeypotName ] <> children)

@@ -1,5 +1,4 @@
--- | Button intents — map to Daisy classes in this module only (ADR-012).
--- | ButtonSecondary is a neutral/outline CTA, not Daisy accent secondary.
+-- | DaisyUI button — research/daisyui-llms.txt Button (`btn` + one color/style/size).
 module App.Ui.Button where
 
 import Prelude
@@ -9,43 +8,44 @@ import App.Html (Html, class_, el, href, rel_, target_, text)
 import Data.I18n (Lang)
 import Data.Route (Route)
 
-data ButtonVariant = ButtonPrimary | ButtonSecondary | ButtonOutline | ButtonGhost | ButtonInverted | ButtonLink
-type Variant = ButtonVariant
+data ButtonVariant
+  = ButtonPrimary
+  | ButtonNeutral
+  | ButtonOutline
+  | ButtonGhost
+  | ButtonLink
 
 data Size = Sm | Md | Lg
 
 renderVariant :: ButtonVariant -> String
 renderVariant = case _ of
   ButtonPrimary -> "btn-primary"
-  ButtonSecondary -> "btn-outline"
+  ButtonNeutral -> "btn-neutral"
   ButtonOutline -> "btn-outline"
   ButtonGhost -> "btn-ghost"
-  ButtonInverted -> "btn-neutral"
   ButtonLink -> "btn-link"
 
 renderSize :: Size -> String
 renderSize = case _ of
-  Sm -> "btn-sm text-xs"
-  Md -> "btn-md text-sm"
-  Lg -> "btn-lg text-base"
+  Sm -> "btn-sm"
+  Md -> "btn-md"
+  Lg -> "btn-lg"
 
-baseClass :: String
-baseClass = "btn"
+btnClass :: ButtonVariant -> Size -> String
+btnClass v s = "btn " <> renderVariant v <> " " <> renderSize s
 
--- | Internal link styled as a button
 buttonLink :: { variant :: ButtonVariant, size :: Size, lang :: Lang, route :: Route } -> String -> Html
 buttonLink props label =
   spaLink props.lang props.route
-    [ class_ (baseClass <> " " <> renderVariant props.variant <> " " <> renderSize props.size) ]
+    [ class_ (btnClass props.variant props.size) ]
     [ text label ]
 
--- | Render an external link styled as a button
 buttonLinkExternal :: { variant :: ButtonVariant, size :: Size, href :: String } -> String -> Html
 buttonLinkExternal props label =
   el "a"
     [ href props.href
     , target_ "_blank"
     , rel_ "noopener noreferrer"
-    , class_ (baseClass <> " " <> renderVariant props.variant <> " " <> renderSize props.size)
+    , class_ (btnClass props.variant props.size)
     ]
     [ text label ]

@@ -146,23 +146,32 @@ fetch${name}s cfg = fetchJson (cfg.postsApiBase <> "/posts")
 
   await writeText(
     `${featureDir}/Components/${name}Card.purs`,
-    `-- | ${name} card — App.Ui primitives only
+    `-- | ${name} card — maps domain into Ui.teaserCard
 module App.Features.${name}.Components.${name}Card where
 
 import App.Features.${name}.Types (${name})
 import App.Html (Html)
-import App.Ui.Card (card, cardBody, cardTitle, cardText, defaultCardOptions)
-import Data.I18n (Lang)
+import App.Ui as Ui
+import Data.I18n (Lang, dict)
+import Data.Maybe (Maybe(..))
 import Data.Newtype (unwrap)
+import Data.Route (Route(..))
 
 render${name}Card :: Lang -> ${name} -> Html
-render${name}Card _ item =
-  card defaultCardOptions
-    [ cardBody
-        [ cardTitle (unwrap item).title
-        , cardText (unwrap item).body
-        ]
-    ]
+render${name}Card lang item =
+  let
+    d = (dict lang).${lower}
+    row = unwrap item
+  in
+    Ui.teaserCard
+      { meta: Nothing
+      , title: row.title
+      , excerpt: row.body
+      , action:
+          { label: d.heading
+          , target: Ui.Internal { lang, route: Home }
+          }
+      }
 `
   );
 

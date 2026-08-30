@@ -4,7 +4,7 @@ test.describe("Theme switcher (Light / Dark / System)", () => {
   async function openDesktopThemeMenu(page) {
     const themeMenu = page.locator("#header-theme-menu");
     const themeToggle = page.getByRole("button", {
-      name: /Select theme \(Light \/ Dark \/ System\)/,
+      name: /Select theme|Sélectionner le thème/,
     });
     if (!(await themeMenu.isVisible())) {
       await themeToggle.click();
@@ -24,7 +24,7 @@ test.describe("Theme switcher (Light / Dark / System)", () => {
     await expect(langMenu).toBeHidden();
 
     await page
-      .getByRole("button", { name: /Select theme \(Light \/ Dark \/ System\)/ })
+      .getByRole("button", { name: /Select theme|Sélectionner le thème/ })
       .click();
     await expect(themeMenu).toBeVisible();
     await outside.click();
@@ -87,11 +87,11 @@ test.describe("Theme switcher (Light / Dark / System)", () => {
     await page.goto("/en");
     await page.setViewportSize({ width: 375, height: 667 });
 
-    await page.getByRole("button", { name: "Toggle navigation menu" }).click();
-    const mobileMenu = page.locator("header#header .mobile-drawer");
+    await page.getByLabel("Open menu").click();
+    const mobileMenu = page.locator(".drawer-side .menu");
     await expect(mobileMenu).toBeVisible();
 
-    await mobileMenu.getByRole("button", { name: "Dark" }).click();
+    await page.getByRole("button", { name: "Dark", exact: true }).click();
 
     await expect(mobileMenu).toBeVisible();
     await expect(page.locator("html")).toHaveClass(/dark/);

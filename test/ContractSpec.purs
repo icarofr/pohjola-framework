@@ -512,12 +512,11 @@ spec = do
       renderExpr cycleTheme `StrAssert.shouldContain` "classList.add('dark')"
       renderExpr cycleTheme `StrAssert.shouldContain` "classList.remove('dark')"
       renderExpr cycleTheme `StrAssert.shouldContain` "prefers-color-scheme: dark"
-    it "aria-expanded is bound to the same flag x-show reads" do
-      -- Drift between these renders fine but reports a collapsed menu to
-      -- screen readers while it is visibly open.
+    it "mobile nav uses DaisyUI drawer-toggle" do
+      -- Checkbox drawer is Daisy's HTML method; do not reimplement with Alpine x-show.
       html <- renderStaticPage Home En
-      html `StrAssert.shouldContain` "x-show=\"menuOpen\""
-      html `StrAssert.shouldContain` ":aria-expanded=\"menuOpen.toString()\""
+      html `StrAssert.shouldContain` "drawer-toggle"
+      html `StrAssert.shouldContain` "id=\"nav-drawer\""
     it "language and theme menus use DaisyUI popover dropdowns" do
       html <- renderStaticPage Home En
       html `StrAssert.shouldContain` "popovertarget=\"header-lang-menu\""

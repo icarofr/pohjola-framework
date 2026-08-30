@@ -21,53 +21,46 @@ Pohjola uses a 3-tier architecture with **Slot-Based Layout Archetypes** to guid
 ## 2. Core Design Rules
 
 * **DaisyUI boundary**: `App.Ui` owns semantic component recipes and their Tailwind/DaisyUI classes. Feature views consume those recipes; Tailwind layout utilities are allowed only inside `App.Ui`.
-* **Single Primary Action Rule**: Every screen/view must have at most ONE primary button (`Button.Primary`). All secondary actions must use `Button.Secondary`, `Button.Outline`, or `Button.Ghost`.
+* **Single Primary Action Rule**: Every screen/view must have at most ONE primary button (`ButtonPrimary`). All other actions use `ButtonOutline`, `ButtonGhost`, or `ButtonLink`.
 * **At Most One Eyebrow**: Section headers and cards may have at most ONE single eyebrow tag. Chaining multiple badges above a title is strictly forbidden.
 * **Contrast Floor**: Aim for at least 4.5:1 contrast against the background (WCAG AA); verify this through manual review until automated tooling is available.
 * **Target Size**: All interactive click targets must be $\ge 40\times 40\text{px}$ on desktop and $\ge 44\times 44\text{px}$ on mobile.
 
 ---
 
-## 3. Slot-Based Layout Archetypes (`src/App/Ui/Layout/`)
+## 3. Page composition — closed blueprints only
 
-| Module | Template Function | Role |
+Feature views **must not** compose primitives (`hero`, `card`, `page`, `grid3`, …). Pick **one** blueprint and pass a record. Slot builders (`actionCard`, `teaserCard`, `grid3`, `editorialParagraphs`) are allowed only inside blueprint slot fields.
+
+| Page purpose | Blueprint | Exemplar |
 |---|---|---|
-| [`App.Ui.Layout.Hero`](file:///Users/user/projects/pohjola-framework/src/App/Ui/Layout/Hero.purs) | `hero HeroProps` | Frozen landing masthead (`bg-base-100`, hairline border, `max-w-3xl`, one `btn-primary`). |
-| [`App.Ui.Layout.SectionHeader`](file:///Users/user/projects/pohjola-framework/src/App/Ui/Layout/SectionHeader.purs) | `sectionHeader SectionHeaderProps` | Unbreakable section title with max 1 eyebrow tag, proportional subtitle line height, and matched container width. |
-| [`App.Ui.Layout.Grid`](file:///Users/user/projects/pohjola-framework/src/App/Ui/Layout/Grid.purs) | `grid2`, `grid3`, `grid4` | Responsive grid containers with fixed 24px/32px gaps and full-height `items-stretch` alignment. |
-| [`App.Ui.Layout.ActionCard`](file:///Users/user/projects/pohjola-framework/src/App/Ui/Layout/ActionCard.purs) | `actionCard` | Marketing/hub card: optional image, badge, CTA button. |
-| [`App.Ui.Layout.TeaserCard`](file:///Users/user/projects/pohjola-framework/src/App/Ui/Layout/TeaserCard.purs) | `teaserCard` | Content-feed item: meta line, clamped title + excerpt, read link. |
-| [`App.Ui.Layout.LandingPage`](file:///Users/user/projects/pohjola-framework/src/App/Ui/Layout/LandingPage.purs) | `landingPage` | Closed landing blueprint (hero + sections + CTA). |
-| [`App.Ui.Layout.HubPage`](file:///Users/user/projects/pohjola-framework/src/App/Ui/Layout/HubPage.purs) | `hubPage` | Link/resource hub (Contact-style grid of hub cards). |
-| [`App.Ui.Layout.PageSection`](file:///Users/user/projects/pohjola-framework/src/App/Ui/Layout/PageSection.purs) | `pageSection`, `conversionSection` | Vertical section rhythm (not `hero`). |
-| [`App.Ui.Layout.EditorialPage`](file:///Users/user/projects/pohjola-framework/src/App/Ui/Layout/EditorialPage.purs) | `editorialPage`, `editorialParagraphs` | Long-form editorial content with optional action. |
-| [`App.Ui.Layout.ArticlePage`](file:///Users/user/projects/pohjola-framework/src/App/Ui/Layout/ArticlePage.purs) | `articlePage` | Article detail with back nav, meta tag, author strip, body. |
-| [`App.Ui`](file:///Users/user/projects/pohjola-framework/src/App/Ui.purs) | `pageLayout`, `pageHeader` | Standard inner pages with header + content slots. |
-| [`App.Ui.Layout.ConversionCta`](file:///Users/user/projects/pohjola-framework/src/App/Ui/Layout/ConversionCta.purs) | `conversionCta` | High-contrast conversion banner. |
+| Marketing landing | `landingPage` | `Home/View.purs` |
+| Hub / link grid | `hubPage` + `actionCard` records | `Contact/View.purs` |
+| Long-form editorial | `editorialPage` + `editorialParagraphs` | `About/View.purs` |
+| Content feed / list | `feedPage` + `teaserCard` items | `Posts/View.purs` (list) |
+| Article detail | `articlePage` | `Posts/View.purs` (detail) |
+| Generic static (scaffold default) | `editorialPage` | `make new-feature` |
 
-**ADR-012:** feature `View.purs` and `Components/` must not call `class_` — enforced by `make gate`.
+**ADR-012:** feature `View.purs` and `Components/` must not call `class_` or import `App.Ui.Card` / `App.Ui.Prose` / … — enforced by `make gate` (`policy/manifest.json`).
+
+Full agent recipe: `docs/superpowers/specs/2026-08-30-ui-blueprint-recipe.md`.
 
 ---
 
-## 4. Component Dictionary (`src/App/Ui/`)
+## 4. Component dictionary (`src/App/Ui/`)
 
-| Module | Constructor / Type | Usage |
+| Module | Constructor | Daisy |
 |---|---|---|
-| [`App.Ui.Button`](file:///Users/user/projects/pohjola-framework/src/App/Ui/Button.purs) | `buttonLink`, `buttonLinkExternal` | `Primary`, `Secondary`, `Outline`, `Ghost`, `Inverted` |
-| [`App.Ui.Card`](file:///Users/user/projects/pohjola-framework/src/App/Ui/Card.purs) | `card`, `cardBody`, `cardTitle`, `cardText`, `cardActions` | DaisyUI card recipe (`card bg-base-100 shadow-sm card-border`) — see `research/daisyui` |
-| [`App.Ui.Avatar`](file:///Users/user/projects/pohjola-framework/src/App/Ui/Avatar.purs) | `avatarPlaceholder` | DaisyUI `avatar avatar-placeholder` |
-| [`App.Ui.Prose`](file:///Users/user/projects/pohjola-framework/src/App/Ui/Prose.purs) | `prose` | DaisyUI typography utility for long-form copy |
-| [`App.Ui.Badge`](file:///Users/user/projects/pohjola-framework/src/App/Ui/Badge.purs) | `badge Variant String` | Monospace status indicators (`Primary`, `Secondary`, `Tertiary`, `Success`, `Warning`, `Error`, `Neutral`) |
-| [`App.Ui.Alert`](file:///Users/user/projects/pohjola-framework/src/App/Ui/Alert.purs) | `alert Variant String` | Accessible feedback banners with `role="status"` / `role="alert"` (`Info`, `Success`, `Warning`, `Error`) |
-| [`App.Ui.Stat`](file:///Users/user/projects/pohjola-framework/src/App/Ui/Stat.purs) | `statCard`, `statGrid` | Telemetry metric cards for dashboards and landing pages |
-| [`App.Ui.EmptyState`](file:///Users/user/projects/pohjola-framework/src/App/Ui/EmptyState.purs) | `emptyState` | Actionable empty state panels with guidance and CTA |
-| [`App.Ui.TextTone`](file:///Users/user/projects/pohjola-framework/src/App/Ui/TextTone.purs) | `toneClass`, `interactiveSoftClass` | Semantic foreground tones (`Ink`, `Copy`, `Meta`) — raw `text-base-content/N` is forbidden outside this module |
-| [`App.Ui.Modal`](file:///Users/user/projects/pohjola-framework/src/App/Ui/Modal.purs) | `renderModal` | DaisyUI `modal` / `modal-box` dialog with Alpine open state |
-| [`App.Ui.Tabs`](file:///Users/user/projects/pohjola-framework/src/App/Ui/Tabs.purs) | `renderTabs` | DaisyUI `tabs tabs-box` with ARIA tablist/panels |
-| [`App.Ui.Accordion`](file:///Users/user/projects/pohjola-framework/src/App/Ui/Accordion.purs) | `renderAccordion` | DaisyUI `collapse collapse-arrow` disclosure group |
-| [`App.Ui.Form`](file:///Users/user/projects/pohjola-framework/src/App/Ui/Form.purs) | `textField`, `formContainer`, … | DaisyUI `fieldset`, `input`, `textarea`, `btn` |
-| [`App.Ui.Toast`](file:///Users/user/projects/pohjola-framework/src/App/Ui/Toast.purs) | `renderToast` | DaisyUI `toast` + `alert` flash |
-| [`App.Ui.Social`](file:///Users/user/projects/pohjola-framework/src/App/Ui/Social.purs) | `renderSocial` | DaisyUI `btn btn-circle btn-outline` icon links |
+| `App.Ui.Button` | `buttonLink`, `buttonLinkExternal` | `btn` + `btn-primary` / `btn-outline` / `btn-ghost` / `btn-neutral` / `btn-link` |
+| `App.Ui.Card` | `card`, `cardBody`, `cardTitle`, `cardText`, `cardActions` | `card` + `card-border` + parts |
+| `App.Ui.Hero` | `hero` | `hero` + `hero-content` |
+| `App.Ui.Badge` | `badge` | `badge` + color |
+| `App.Ui.Alert` | `alert` | `alert` + color, `role="alert"` |
+| `App.Ui.Prose` | `prose`, `proseLg` | `prose` |
+| `App.Ui.Form` | `textField`, `formContainer`, … | `fieldset` + `input` / `textarea` |
+| `App.Ui.Container` | `container` | `container` + width utilities |
+| `App.Ui.TextTone` | `toneClass` | `text-base-content` opacities only here |
+| Shell | `App.Layout.Header` / `Footer` / `Page` | `navbar`, popover `dropdown`, `drawer`, `footer` |
 
 ---
 

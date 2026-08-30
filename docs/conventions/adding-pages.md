@@ -41,9 +41,7 @@ container maxW extraClass children
 DaisyUI's `container` class handles full-width inside flex parents. Never
 hand-write `mx-auto max-w-*` in a feature view.
 
-**Page layouts**: prefer `App.Ui` slot templates (`landingPage`, `editorialPage`,
-`pageLayout` + `pageHeader`, `grid3`, `actionCard`) over raw `container` in
-feature views. Home and Contact are the reference implementations.
+**Page layouts**: compose `App.Ui.hero` / `App.Ui.page` / `App.Ui.card` (Daisy HTML). Do not add `class_` in feature views.
 
 **Cross-feature imports are forbidden** (enforced by ContractSpec). Features
 compose through shared `App/Ui/` primitives and `App.Data.Fetch`, never by

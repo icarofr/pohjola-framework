@@ -143,12 +143,8 @@ Shapes are engineered and crisp:
 ## Components
 
 All views MUST use typed primitives from `App.Ui`:
-* `App.Ui.Button`: High-contrast, tactile buttons (`Primary`, `Secondary`, `Outline`, `Ghost`, `Inverted`).
-* `App.Ui.Card`: Structured architectural cards with razor-thin borders.
-* `App.Ui.Badge`: Monospace pill/tag indicators.
-* `App.Ui.Stat`: Hairline metric blocks for telemetry and invariant guarantees.
-* `App.Ui.Alert`: Structured ARIA status banners.
-* `App.Ui.EmptyState`: Technical blueprint empty states.
+* `App.Ui.Button` / `Card` / `Hero` / `Badge` / `Alert` / `Prose` — DaisyUI class names 1:1.
+* Feature views must not call `class_`.
 
 ## Do's and Don'ts
 

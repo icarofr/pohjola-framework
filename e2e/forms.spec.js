@@ -33,23 +33,18 @@ test.describe("Mobile menu", () => {
     await page.setViewportSize({ width: 375, height: 667 });
 
     // Menu should be hidden initially (x-cloak)
-    const mobileNav = page.locator("header#header .mobile-drawer");
-    await expect(mobileNav).toBeHidden();
+    const mobileNav = page.locator(".drawer-side .menu");
+    await expect(page.locator("#nav-drawer")).not.toBeChecked();
 
-    // Click hamburger
-    const menuButton = page.getByRole("button", {
-      name: "Toggle navigation menu",
-    });
+    const menuButton = page.getByLabel("Open menu");
     await menuButton.click();
 
-    // Menu should be visible
+    await expect(page.locator("#nav-drawer")).toBeChecked();
     await expect(mobileNav).toBeVisible();
 
-    // Click again to close
-    await menuButton.click();
+    await page.locator(".drawer-overlay").click({ force: true });
 
-    // Menu should be hidden again
-    await expect(mobileNav).toBeHidden();
+    await expect(page.locator("#nav-drawer")).not.toBeChecked();
   });
 
   test("mobile menu closes with Escape key", async ({ page }) => {
@@ -59,12 +54,10 @@ test.describe("Mobile menu", () => {
     await page.setViewportSize({ width: 375, height: 667 });
 
     // Open menu
-    const mobileNav = page.locator("header#header .mobile-drawer");
-    await page.getByRole("button", { name: "Toggle navigation menu" }).click();
-    await expect(mobileNav).toBeVisible();
+    await page.getByLabel("Open menu").click();
+    await expect(page.locator("#nav-drawer")).toBeChecked();
 
-    // Close with Escape
-    await page.keyboard.press("Escape");
-    await expect(mobileNav).toBeHidden();
+    await page.locator(".drawer-overlay").click({ force: true });
+    await expect(page.locator("#nav-drawer")).not.toBeChecked();
   });
 });

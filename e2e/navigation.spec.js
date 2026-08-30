@@ -9,11 +9,13 @@ test.describe("Alpine AJAX navigation", () => {
     await expect(page.locator("main#content[data-page-title]")).toBeVisible();
     expect(
       await page.locator("body").evaluate((body) => {
-        const children = [...body.children];
+        const drawer = body.querySelector(".drawer");
+        const content = drawer?.querySelector(".drawer-content");
+        const children = content ? [...content.children] : [];
         return {
-          headerIndex: children.indexOf(body.querySelector("header#header")),
-          mainIndex: children.indexOf(body.querySelector("main#content")),
-          footerCount: body.querySelectorAll("footer").length,
+          headerIndex: children.indexOf(content.querySelector("header#header")),
+          mainIndex: children.indexOf(content.querySelector("main#content")),
+          footerCount: content.querySelectorAll("footer").length,
           scriptCount: body.querySelectorAll("script").length,
         };
       }),
@@ -61,9 +63,7 @@ test.describe("Alpine AJAX navigation", () => {
       page.locator('header#header .navbar-center a[href="/en/about"]'),
     ).toHaveCount(1);
     await expect(
-      page.locator(
-        'header#header .mobile-drawer > .space-y-1 a[href="/en/about"]',
-      ),
+      page.locator('.drawer-side a[href="/en/about"]'),
     ).toHaveCount(1);
 
     // Marker should still be 1 (no reload occurred)
@@ -242,19 +242,16 @@ test.describe("Alpine AJAX navigation", () => {
         );
         return {
           status: response.status,
-          children: [...parsed.body.children].map((node) => ({
-            name: `${node.tagName.toLowerCase()}#${node.id}`,
-            sync: node.getAttribute("x-sync"),
-            title: node.getAttribute("data-page-title"),
-          })),
+          hasDrawer: parsed.body.children.length === 1 && parsed.body.children[0].classList.contains("drawer"),
+          hasHeader: Boolean(parsed.body.querySelector("header#header[x-sync]")),
+          hasMain: Boolean(parsed.body.querySelector("main#content[data-page-title]")),
           forbidden: parsed.body.querySelectorAll("html,body,script,link,style")
             .length,
         };
       }, path);
-      expect(result.children, path).toEqual([
-        { name: "header#header", sync: "", title: null },
-        { name: "main#content", sync: null, title: expect.any(String) },
-      ]);
+      expect(result.hasDrawer, path).toBe(true);
+      expect(result.hasHeader, path).toBe(true);
+      expect(result.hasMain, path).toBe(true);
       expect(result.forbidden, path).toBe(0);
       expect(result.status, path).toBe(path.includes("definitely") ? 404 : 200);
     }
