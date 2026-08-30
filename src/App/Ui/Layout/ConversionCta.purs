@@ -1,10 +1,13 @@
 -- | Pure DaisyUI Conversion CTA banner layout template — unboxed, clean editorial section
 module App.Ui.Layout.ConversionCta where
 
+import Prelude
+
 import App.Html (Html, class_, el, text)
 import App.Ui.Button (ButtonVariant(..), Size(..), buttonLink, buttonLinkExternal)
 import App.Ui.Container (container)
 import App.Ui.Layout.Types (ActionTarget(..))
+import App.Ui.TextTone (TextTone(..), toneClass)
 
 type ConversionCtaProps =
   { heading :: String
@@ -22,7 +25,7 @@ conversionCta props =
     [ container "max-w-3xl" "text-center space-y-6"
         [ el "h2" [ class_ "text-3xl sm:text-4xl font-extrabold tracking-tight text-base-content leading-tight" ]
             [ text props.heading ]
-        , el "p" [ class_ "text-base sm:text-lg text-base-content/75 max-w-xl mx-auto leading-relaxed font-normal" ]
+        , el "p" [ class_ ("text-base sm:text-lg max-w-xl mx-auto leading-relaxed font-normal " <> toneClass Copy) ]
             [ text props.body ]
         , el "div" [ class_ "pt-3 flex justify-center" ]
             [ case props.action.target of

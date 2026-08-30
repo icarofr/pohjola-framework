@@ -77,6 +77,8 @@ gate:
 	@if grep -rn 'Node.Process\|lookupEnv' src/ | grep -v '^src/App/Env.purs:'; then echo "ERROR: env read outside App/Env.purs"; exit 1; else echo "No env reads outside App/Env.purs"; fi
 	@echo "Checking Content Firewall (no raw text literals in feature views)..."
 	@if grep -rn 'text "[A-Za-z0-9]' src/App/Features/*/View.purs; then echo "ERROR: Hardcoded text string found in feature view — text must come from Data.I18n (Content Firewall)"; exit 1; else echo "Content Firewall OK"; fi
+	@echo "Checking text tone policy (no raw text-base-content/N outside App.Ui.TextTone)..."
+	@if grep -rn 'text-base-content/' src/ | grep -v '^src/App/Ui/TextTone\.purs:'; then echo "ERROR: Raw text-base-content opacity found — use App.Ui.TextTone (ADR-008)"; exit 1; else echo "Text tone policy OK"; fi
 
 ## generator-policy: validate the canonical generator and App.Ui boundary
 .PHONY: generator-policy design-policy

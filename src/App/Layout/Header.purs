@@ -6,6 +6,7 @@ import Prelude
 import App.Alpine (Flag(..), ThemeMode(..), ariaExpandedFlag, navLink, onClick, onClickOutside, onKeydownEscapeWindow, setFlag, toggleFlag, xCloak, xDataFlag, xDataTheme, xDataThemeWithFlag, xSetTheme, xSetThemeAndClose, xShowFlag, xShowTheme, xSync)
 import App.Html (Html, attr, class_, el, href, id_, text, type_)
 import App.Layout.Icons (globeIcon, pohjolaLogo)
+import App.Ui.TextTone (TextTone(..), interactiveSoftClass, toneClass)
 import Data.Content (siteInfo)
 import Data.I18n (Lang(..), dict)
 import Data.Route (Route(..), routeUrl)
@@ -57,7 +58,7 @@ render lang currentRoute =
                   [ el "button"
                       [ type_ "button"
                       , onClick (toggleFlag LangMenuOpen)
-                      , class_ "btn btn-ghost btn-sm gap-1 px-2 text-xs font-mono font-medium text-base-content/80 hover:text-base-content"
+                      , class_ ("btn btn-ghost btn-sm gap-1 px-2 text-xs font-mono font-medium " <> interactiveSoftClass)
                       , attr "aria-label" "Select language"
                       , ariaExpandedFlag LangMenuOpen
                       ]
@@ -100,7 +101,7 @@ render lang currentRoute =
                   [ el "button"
                       [ type_ "button"
                       , onClick (toggleFlag ThemeMenuOpen)
-                      , class_ "btn btn-ghost btn-sm btn-circle text-base-content/80 hover:text-base-content"
+                      , class_ ("btn btn-ghost btn-sm btn-circle " <> interactiveSoftClass)
                       , attr "aria-label" (d.common.themeLabel <> " (Light / Dark / System)")
                       , ariaExpandedFlag ThemeMenuOpen
                       ]
@@ -157,7 +158,7 @@ render lang currentRoute =
 
               -- Mobile Menu Hamburger Trigger (clean, isolated on mobile top bar)
               , el "button"
-                  [ class_ "btn btn-ghost btn-sm btn-square md:hidden text-base-content/80 hover:text-base-content"
+                  [ class_ ("btn btn-ghost btn-sm btn-square md:hidden " <> interactiveSoftClass)
                   , onClick (toggleFlag MenuOpen)
                   , ariaExpandedFlag MenuOpen
                   , attr "aria-label" "Toggle navigation menu"
@@ -188,19 +189,19 @@ render lang currentRoute =
               ]
               [ -- Language Segmented Control
                 el "div" [ class_ "space-y-1.5" ]
-                  [ el "div" [ class_ "text-[11px] font-mono font-semibold uppercase tracking-wider text-base-content/60 px-1" ]
+                  [ el "div" [ class_ ("text-[11px] font-mono font-semibold uppercase tracking-wider px-1 " <> toneClass Meta) ]
                       [ text "Language" ]
                   , el "div" [ class_ "grid grid-cols-2 gap-2" ]
                       [ el "a"
                           [ href (routeUrl En currentRoute)
                           , onClick (setFlag MenuOpen false)
-                          , class_ ("btn btn-sm justify-center text-xs " <> if lang == En then "btn-primary font-bold shadow-sm" else "btn-ghost bg-base-200/70 font-normal text-base-content/80")
+                          , class_ ("btn btn-sm justify-center text-xs " <> if lang == En then "btn-primary font-bold shadow-sm" else "btn-ghost bg-base-200/70 font-normal " <> toneClass Copy)
                           ]
                           [ text "English (EN)" ]
                       , el "a"
                           [ href (routeUrl Fr currentRoute)
                           , onClick (setFlag MenuOpen false)
-                          , class_ ("btn btn-sm justify-center text-xs " <> if lang == Fr then "btn-primary font-bold shadow-sm" else "btn-ghost bg-base-200/70 font-normal text-base-content/80")
+                          , class_ ("btn btn-sm justify-center text-xs " <> if lang == Fr then "btn-primary font-bold shadow-sm" else "btn-ghost bg-base-200/70 font-normal " <> toneClass Copy)
                           ]
                           [ text "Français (FR)" ]
                       ]
@@ -208,7 +209,7 @@ render lang currentRoute =
 
               -- Theme Mode Selector
               , el "div" [ class_ "space-y-1.5" ]
-                  [ el "div" [ class_ "text-[11px] font-mono font-semibold uppercase tracking-wider text-base-content/60 px-1" ]
+                  [ el "div" [ class_ ("text-[11px] font-mono font-semibold uppercase tracking-wider px-1 " <> toneClass Meta) ]
                       [ text d.common.themeLabel ]
                   , el "div" [ class_ "grid grid-cols-3 gap-2" ]
                       [ el "button"
@@ -248,7 +249,7 @@ renderNavItem :: Lang -> Route -> Route -> String -> Html
 renderNavItem lang currentRoute targetRoute label =
   let
     isActive = currentRoute == targetRoute
-    activeClass = if isActive then "btn btn-sm btn-ghost font-semibold text-primary" else "btn btn-sm btn-ghost font-normal text-base-content/80 hover:text-base-content"
+    activeClass = if isActive then "btn btn-sm btn-ghost font-semibold text-primary" else "btn btn-sm btn-ghost font-normal " <> interactiveSoftClass
   in
     navLink { lang, current: currentRoute, target: targetRoute }
       [ class_ activeClass ]
@@ -258,7 +259,7 @@ renderMobileNavItem :: Lang -> Route -> Route -> String -> Html
 renderMobileNavItem lang currentRoute targetRoute label =
   let
     isActive = currentRoute == targetRoute
-    activeClass = if isActive then "block px-3.5 py-2.5 rounded-lg text-base font-semibold bg-base-200 text-primary" else "block px-3.5 py-2.5 rounded-lg text-base font-normal text-base-content/80 hover:bg-base-200"
+    activeClass = if isActive then "block px-3.5 py-2.5 rounded-lg text-base font-semibold bg-base-200 text-primary" else "block px-3.5 py-2.5 rounded-lg text-base font-normal " <> toneClass Copy <> " hover:bg-base-200"
   in
     navLink { lang, current: currentRoute, target: targetRoute }
       [ class_ activeClass

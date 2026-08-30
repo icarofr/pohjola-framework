@@ -1,11 +1,14 @@
 -- | Pure DaisyUI ActionCard layout template
 module App.Ui.Layout.ActionCard where
 
+import Prelude
+
 import App.Html (Html, alt, class_, decoding_, el, height_, loading_, src, text, width_)
 import App.Ui.Badge (BadgeVariant)
 import App.Ui.Badge as Badge
 import App.Ui.Button (ButtonVariant(..), Size(..), buttonLink, buttonLinkExternal)
 import App.Ui.Layout.Types (ActionTarget(..))
+import App.Ui.TextTone (TextTone(..), toneClass)
 import Data.Maybe (Maybe(..))
 
 type ActionCardProps =
@@ -45,7 +48,7 @@ actionCard props =
                 Nothing -> text ""
             , el "h3" [ class_ "card-title text-lg font-bold text-base-content" ]
                 [ text props.title ]
-            , el "p" [ class_ "text-sm text-base-content/75 leading-relaxed font-normal" ]
+            , el "p" [ class_ ("text-sm leading-relaxed font-normal " <> toneClass Copy) ]
                 [ text props.description ]
             ]
         , el "div" [ class_ "card-actions justify-end pt-4 border-t border-base-200" ]

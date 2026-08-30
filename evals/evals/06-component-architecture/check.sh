@@ -43,6 +43,9 @@ check "no hand-written mx-auto max-w-* in any feature" "! grep -r 'mx-auto max-w
 # No cross-feature imports (Team must not import Posts, Home, etc.)
 check "no cross-feature imports" "! grep -r 'import App.Features.Posts\|import App.Features.Home\|import App.Features.About\|import App.Features.Contact\|import App.Features.Legal' src/App/Features/Team/ 2>/dev/null"
 
+# Semantic text tones: no raw opacity modifiers in features (ADR-008)
+check "no raw text-base-content/N in features" "! grep -r 'text-base-content/' src/App/Features/ 2>/dev/null"
+
 echo ""
 echo "$pass passed, $fail failed"
 exit $fail

@@ -13,6 +13,7 @@ module App.Ui
   , module App.Ui.Alert
   , module App.Ui.Stat
   , module App.Ui.EmptyState
+  , module App.Ui.TextTone
   , pageLayout
   , pageHeader
   ) where
@@ -32,6 +33,7 @@ import App.Ui.Layout.LandingPage (LandingPageBlueprint, LandingPageSection, land
 import App.Ui.Layout.SectionHeader (Align(..), SectionHeaderProps, sectionHeader)
 import App.Ui.Layout.Types (ActionTarget(..))
 import App.Ui.Stat (StatItem, statCard, statGrid)
+import App.Ui.TextTone
 import Data.Maybe (Maybe)
 
 type PageHeaderProps =

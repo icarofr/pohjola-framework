@@ -4,6 +4,7 @@ module App.Ui.Stat where
 import Prelude
 
 import App.Html (Html, class_, el, text)
+import App.Ui.TextTone (TextTone(..), toneClass)
 import Data.Maybe (Maybe(..))
 
 type StatItem =
@@ -15,10 +16,10 @@ type StatItem =
 statCard :: StatItem -> Html
 statCard props =
   el "div" [ class_ "stat" ]
-    [ el "div" [ class_ "stat-title text-base-content/70 font-mono text-xs" ] [ text props.label ]
+    [ el "div" [ class_ ("stat-title font-mono text-xs " <> toneClass Copy) ] [ text props.label ]
     , el "div" [ class_ "stat-value text-primary text-3xl font-black" ] [ text props.value ]
     , case props.description of
-        Just desc -> el "div" [ class_ "stat-desc text-base-content/60 text-xs" ] [ text desc ]
+        Just desc -> el "div" [ class_ ("stat-desc text-xs " <> toneClass Meta) ] [ text desc ]
         Nothing -> text ""
     ]
 

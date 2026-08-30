@@ -1,11 +1,14 @@
 -- | Pure DaisyUI Hero section template
 module App.Ui.Layout.Hero where
 
+import Prelude
+
 import App.Html (Html, class_, el, text)
 import App.Ui.Badge (BadgeVariant(..))
 import App.Ui.Badge as Badge
 import App.Ui.Button (ButtonVariant(..), Size(..), buttonLink, buttonLinkExternal)
 import App.Ui.Layout.Types (ActionTarget(..))
+import App.Ui.TextTone (TextTone(..), toneClass)
 import Data.Maybe (Maybe(..))
 
 type HeroAction =
@@ -31,7 +34,7 @@ hero props =
             Nothing -> text ""
         , el "h1" [ class_ "text-4xl sm:text-6xl font-black tracking-tight leading-tight text-base-content" ]
             [ text props.title ]
-        , el "p" [ class_ "text-lg sm:text-xl text-base-content/80 max-w-2xl mx-auto leading-relaxed" ]
+        , el "p" [ class_ ("text-lg sm:text-xl max-w-2xl mx-auto leading-relaxed " <> toneClass Copy) ]
             [ text props.body ]
         , el "div" [ class_ "flex flex-wrap items-center justify-center gap-4 pt-2" ]
             [ renderHeroButton ButtonPrimary props.primaryAction

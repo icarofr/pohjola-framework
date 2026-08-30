@@ -1,9 +1,12 @@
 -- | Site footer — DaisyUI semantic footer component
 module App.Layout.Footer where
 
+import Prelude
+
 import App.Alpine (navLink)
 import App.Html (Html, attr, class_, el, href, rel_, target_, text)
 import App.Layout.Icons (githubIcon, pohjolaLogo)
+import App.Ui.TextTone (TextTone(..), toneClass)
 import Data.Content (siteInfo)
 import Data.I18n (Lang, dict)
 import Data.Route (Route(..))
@@ -24,7 +27,7 @@ render lang currentRoute =
                           [ pohjolaLogo ]
                       , el "h3" [ class_ "font-mono text-sm font-bold tracking-tight text-base-content" ] [ text siteInfo.title ]
                       ]
-                  , el "p" [ class_ "text-sm leading-relaxed text-base-content/80 max-w-sm font-normal" ] [ text siteInfo.description ]
+                  , el "p" [ class_ ("text-sm leading-relaxed max-w-sm font-normal " <> toneClass Copy) ] [ text siteInfo.description ]
                   , el "div" [ class_ "pt-2 flex space-x-3" ]
                       [ el "a"
                           [ href "https://github.com/icarofr/pohjola-framework"
@@ -60,7 +63,7 @@ render lang currentRoute =
               ]
 
           -- Bottom strip
-          , el "div" [ class_ "pt-8 border-t border-base-300 text-xs font-mono text-base-content/60 flex flex-col sm:flex-row justify-between gap-4" ]
+          , el "div" [ class_ ("pt-8 border-t border-base-300 text-xs font-mono flex flex-col sm:flex-row justify-between gap-4 " <> toneClass Meta) ]
               [ el "p" [] [ text "© 2026 Pohjola Framework. Open source software." ]
               , el "p" [] [ text "PureScript & Bun • MIT License" ]
               ]

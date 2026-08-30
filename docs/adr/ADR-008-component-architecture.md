@@ -103,3 +103,46 @@ The `w-full` is load-bearing — it lives in one place, not 14.
   `Components/<Name>Card.purs` and uses `container` in `View.purs` templates.
 - **Eval 06** asserts: `container` usage, no hand-written `mx-auto max-w-*`,
   no cross-feature imports.
+
+## Amendment: Semantic text tones (`App.Ui.TextTone`)
+
+**Date:** 2026-08-30  
+**Status:** Accepted
+
+### Context
+
+StyleX-style agent ergonomics depend on **semantic styling contracts**, not
+just compile-time property names. Pohjola already enforces DaisyUI recipes
+through `App.Ui`, but muted foreground text still drifted: `text-base-content/60`,
+`/70`, `/75`, `/80`, and `/85` appeared interchangeably for similar roles across
+`App.Ui`, `App.Layout`, and feature views. All compiled; agents could invent a
+sixth opacity without feedback.
+
+### Decision
+
+Introduce `App.Ui.TextTone` as the **only** module that may emit
+`text-base-content/N` opacity modifiers:
+
+| Variant | Class | Role |
+|---|---|---|
+| `Ink` | `text-base-content` | Headings, primary labels (often bare DaisyUI token) |
+| `Copy` | `text-base-content/80` | Supporting paragraphs, subtitles, descriptions |
+| `Meta` | `text-base-content/60` | Timestamps, legal, section labels, telemetry |
+
+`interactiveSoftClass` covers toolbar/icon controls (`Copy` + hover to `Ink`).
+
+`make gate` forbids `text-base-content/` outside `App.Ui/TextTone.purs`.
+Feature views, layout shell, and `App.Ui` consumers import `toneClass` or
+`interactiveSoftClass` — never raw opacity strings.
+
+This is Pohjola's StyleX-analogue layer: typed semantic tokens, deterministic
+roles, build-time enforcement — without adopting React or another CSS compiler.
+
+### Consequences
+
+- **Agent loop**: hallucinated opacities fail `make gate`; repair is "pick a
+  `TextTone` variant."
+- **Token drift**: new muted roles require extending the ADT, not freestyle `/N`.
+- **Visual stability**: existing opacities are preserved one-to-one; consolidation
+  is a separate design pass.
+- **Eval 06** extended: no `text-base-content/` in `src/App/Features/`.

@@ -6,6 +6,7 @@ import Prelude
 import App.Html (Html, class_, el, text)
 import App.Ui.Badge (BadgeVariant(..))
 import App.Ui.Badge as Badge
+import App.Ui.TextTone (TextTone(..), toneClass)
 import Data.Maybe (Maybe(..))
 
 data Align = Left | Center
@@ -34,6 +35,6 @@ sectionHeader props =
       , el "h2" [ class_ "text-3xl sm:text-4xl font-extrabold tracking-tight text-base-content leading-tight" ]
           [ text props.title ]
       , case props.subtitle of
-          Just sub -> el "p" [ class_ "text-base sm:text-lg text-base-content/75 font-normal leading-relaxed max-w-2xl" ] [ text sub ]
+          Just sub -> el "p" [ class_ ("text-base sm:text-lg font-normal leading-relaxed max-w-2xl " <> toneClass Copy) ] [ text sub ]
           Nothing -> text ""
       ]

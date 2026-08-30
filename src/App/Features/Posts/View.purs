@@ -9,6 +9,7 @@ import App.Features.Posts.Types (Post, postBody, postId, postTitle)
 import App.Html (Html, attr, class_, el, text)
 import App.Ui as Ui
 import App.Ui.Container (container)
+import App.Ui.TextTone (TextTone(..), toneClass)
 import Data.Array (null)
 import Data.I18n (Lang, dict)
 import Data.Maybe (Maybe(..))
@@ -57,7 +58,7 @@ renderPostDetail lang post =
           ]
       , el "article" [ class_ "card bg-base-100 shadow-md border border-base-200" ]
           [ el "div" [ class_ "card-body p-8 sm:p-12 space-y-6" ]
-              [ el "div" [ class_ "flex items-center gap-x-3 text-xs font-mono text-base-content/60" ]
+              [ el "div" [ class_ ("flex items-center gap-x-3 text-xs font-mono " <> toneClass Meta) ]
                   [ el "span" [] [ text ("#" <> show idNum) ]
                   ]
               , el "h1" [ class_ "text-3xl sm:text-4xl font-extrabold tracking-tight text-base-content leading-tight capitalize" ]
@@ -69,11 +70,11 @@ renderPostDetail lang post =
                       ]
                   , el "div" [ class_ "text-xs" ]
                       [ el "p" [ class_ "font-semibold text-base-content" ] [ text d.unknownAuthor ]
-                      , el "p" [ class_ "text-base-content/60 font-mono text-[11px] uppercase" ] [ text common.siteTitle ]
+                      , el "p" [ class_ ("font-mono text-[11px] uppercase " <> toneClass Meta) ] [ text common.siteTitle ]
                       ]
                   ]
               , el "div" [ class_ "pt-2" ]
-                  [ el "p" [ class_ "text-base sm:text-lg text-base-content/85 leading-relaxed font-normal whitespace-pre-line" ]
+                  [ el "p" [ class_ ("text-base sm:text-lg leading-relaxed font-normal whitespace-pre-line " <> toneClass Copy) ]
                       [ text (postBody post) ]
                   ]
               ]

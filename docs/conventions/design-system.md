@@ -51,6 +51,7 @@ Pohjola uses a 3-tier architecture with **Slot-Based Layout Archetypes** to guid
 | [`App.Ui.Alert`](file:///Users/user/projects/pohjola-framework/src/App/Ui/Alert.purs) | `alert Variant String` | Accessible feedback banners with `role="status"` / `role="alert"` (`Info`, `Success`, `Warning`, `Error`) |
 | [`App.Ui.Stat`](file:///Users/user/projects/pohjola-framework/src/App/Ui/Stat.purs) | `statCard`, `statGrid` | Telemetry metric cards for dashboards and landing pages |
 | [`App.Ui.EmptyState`](file:///Users/user/projects/pohjola-framework/src/App/Ui/EmptyState.purs) | `emptyState` | Actionable empty state panels with guidance and CTA |
+| [`App.Ui.TextTone`](file:///Users/user/projects/pohjola-framework/src/App/Ui/TextTone.purs) | `toneClass`, `interactiveSoftClass` | Semantic foreground tones (`Ink`, `Copy`, `Meta`) — raw `text-base-content/N` is forbidden outside this module |
 | [`App.Ui.Modal`](file:///Users/user/projects/pohjola-framework/src/App/Ui/Modal.purs) | `renderModal` | Accessible dialogs with focus trap and escape dismiss |
 | [`App.Ui.Tabs`](file:///Users/user/projects/pohjola-framework/src/App/Ui/Tabs.purs) | `renderTabs` | Accessible tablist and tabpanels |
 | [`App.Ui.Accordion`](file:///Users/user/projects/pohjola-framework/src/App/Ui/Accordion.purs) | `renderAccordion` | Expandable disclosure items with ARIA controls |
@@ -71,3 +72,4 @@ Before finalizing any UI feature, verify these hard gates:
 5. [ ] All click targets meet the $44\times 44\text{px}$ touch target minimum.
 6. [ ] Keyboard focus states and ARIA roles are present on interactive elements.
 7. [ ] Empty and error states are handled gracefully via typed primitives.
+8. [ ] Muted foreground text uses `App.Ui.TextTone` variants — no raw `text-base-content/N` opacity strings.
