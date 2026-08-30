@@ -20,6 +20,7 @@ dist/
 *.swo
 *~
 .DS_Store
+.cursor/
 
 # Playwright
 playwright-report/
