@@ -92,7 +92,7 @@ Feature logic lives in isolated domain modules. Asynchronous effects compose cle
 In loosely typed stacks, AI coding assistants frequently hallucinate missing properties, drop edge cases, forget localized translation keys, or produce inconsistent "utility soup" layouts.
 - **Mechanical Logic Enforcement:** An agent cannot declare a route without completing its bidirectional codec, sitemap entry, and bilingual dictionaries.
 - **Visual Drift Prevention (daisyUI + Slot Archetypes):** Raw layout utility soup in views is forbidden by the supported generator/boundary. `App.Ui` is authoritative: it owns semantic recipes and slot archetypes (`App.Ui.Layout.*`) built on **daisyUI 5 semantic components**, and agents consume those recipes through typed data records (`title`, `description`, `action`). This limits structural drift; existing code may still require migration, and the type system does not guarantee visual layout, CSS behavior, or intent.
-- **Fast Guardrails:** `make gate` and `ContractSpec` verify selected FFI boundaries, CSP nonces, and feature isolation; these gates reduce risk but do not cover runtime, infrastructure, or intent.
+- **Fast Guardrails:** `policy/manifest.json` is the single source of truth. `make gate` (`scripts/verify-policy.sh`) enforces structural policy; `PolicySpec` (`make test`) adds behavioral scans and reference-page archetypes; `ContractSpec` pins CSP, Alpine seams, and security headers.
 
 ---
 
@@ -130,10 +130,11 @@ Pohjola makes a deliberate architectural choice: the **PureScript application ow
 
 Pohjola's guarantees are not documentation conventions. They are mechanically verified on every commit:
 
-- [x] **Closed `Html` ADT**: General-purpose or untrusted HTML escape hatches and raw string concatenation are forbidden (`make gate`). The explicitly reviewed experimental streaming shell is a scoped exception; buffered SSR remains the default.
+- [x] **Closed `Html` ADT**: General-purpose or untrusted HTML escape hatches and raw string concatenation are forbidden (`make gate` via `policy/manifest.json`). The explicitly reviewed experimental streaming shell is a scoped exception; buffered SSR remains the default.
 - [x] **Errors as Values**: Async data boundaries strictly return `Aff (Either AppError a)`.
-- [x] **Scrutinized FFI Floor**: Foreign JavaScript imports are restricted to four allowlisted modules (`App.ServerBun`, `App.FetchBun`, `App.Bun`, `App.Data.SQL`).
+- [x] **Scrutinized FFI Floor**: Foreign JavaScript imports are restricted to four allowlisted modules in `policy/manifest.json` (`App.ServerBun`, `App.FetchBun`, `App.Bun`, `App.Data.SQL`).
 - [x] **Pinned Security Policy (CSP)**: Nonce-based Content Security Policy verified byte-exact in `test/ContractSpec.purs`.
+- [x] **UI Archetype Policy**: Feature views consume `App.Ui` blueprints only — no `class_` in feature views (`policy/manifest.json` + `PolicySpec`).
 - [x] **Total Bilingual Routing**: Derived via `routing-duplex`; missing translations or routes fail at compile time.
 
 > For an in-depth breakdown of guarantees, see [`docs/GUARANTEES.md`](docs/GUARANTEES.md).
@@ -175,29 +176,37 @@ Visit [`http://localhost:3000/en`](http://localhost:3000/en) locally, or view th
 
 ## Verification and Quality Gates
 
+Policy is defined once in [`policy/manifest.json`](policy/manifest.json):
+
+| Tier | Command | What it checks |
+|:---|:---|:---|
+| Structural (fast) | `make gate` | Banned unsafe imports, FFI allowlist, content firewall, feature-view UI contract, theme names |
+| Design | `make design-policy` | Generator/`App.Ui` boundary + compiled CSS primary token |
+| Behavioral | `make test` | `PolicySpec` (manifest scans + reference pages) + `ContractSpec` (CSP, Alpine seam, security headers) |
+
 ```bash
-# Run structural invariants & security gate checks (~2s)
+# Structural policy from policy/manifest.json (~2s)
 make gate
 
-# Run unit, property, and exact contract tests
+# Unit, property, PolicySpec, and ContractSpec tests
 make test
 
-# Run cheap policy and formatting checks
+# Cheap policy and formatting checks
 make fast
 
-# Run fast checks plus the normal local build
+# Fast checks plus the normal local build
 make local
 
-# Run complete local validation (does not include integration or E2E)
+# Complete local validation (gate, design-policy, build, test, assets, format)
 make check                 # equivalent to make full
 
-# Run integration tests against test containers
+# Integration tests against test containers
 make test/integration
 
-# Run full end-to-end browser test suite (Playwright)
+# Full end-to-end browser test suite (Playwright)
 make test/e2e
 
-# Run the canonical CI-equivalent validation (integration/E2E remain separate)
+# Canonical CI-equivalent validation (integration/E2E remain separate)
 make ci-equivalent
 ```
 

@@ -11,10 +11,10 @@ check fails loudly — on every push, in CI.
 
 | # | Guarantee | Enforced by | Verify with |
 |---|-----------|-------------|-------------|
-| 1 | No partial functions — `fromJust`, `Data.Maybe.Unsafe`, `Data.Array.Unsafe`, `Data.String.CodePoint.Unsafe` cannot appear in `src/` | Makefile gate | `make gate` |
-| 2 | No `unsafeCoerce` / `unsafePerformEffect` / `unsafePartial` | Makefile gate | `make gate` |
-| 3 | No unapproved FFI — `foreign import` in `src/` fails the build unless the module is allowlisted (default: none) | Makefile gate (`FFI_ALLOWLIST_GREP`) | `make gate` |
-| 4 | No general-purpose unescaped HTML constructor — the `Html` ADT has no `raw`/`Raw` escape hatch; script/style and JSON-LD contexts are explicit | Makefile gate + ContractSpec (filesystem scan) | `make gate`, `make test` |
+| 1 | No partial functions — `fromJust`, `Data.Maybe.Unsafe`, `Data.Array.Unsafe`, `Data.String.CodePoint.Unsafe` cannot appear in `src/` | `policy/manifest.json` → `make gate` | `make gate` |
+| 2 | No `unsafeCoerce` / `unsafePerformEffect` / `unsafePartial` | `policy/manifest.json` → `make gate` | `make gate` |
+| 3 | No unapproved FFI — `foreign import` in `src/` fails the build unless the module is allowlisted (default: none) | `policy/manifest.json` (`ffiAllowlist`) → `make gate` | `make gate` |
+| 4 | No general-purpose unescaped HTML constructor — the `Html` ADT has no `raw`/`Raw` escape hatch; script/style and JSON-LD contexts are explicit | `make gate` + PolicySpec (filesystem scan) | `make gate`, `make test` |
 | 5 | Every handler failure is a typed value — `Aff (Either AppError a)` at every boundary | Compiler (types) + convention | `spago build` |
 | 6 | Exhaustive pattern matching — adding a route, i18n key, or error variant breaks the build until every site is updated | Compiler | `spago build` |
 | 7 | Bilingual completeness — `en` and `fr` share one record type; a missing key in either is a compile error | Compiler | `spago build` |

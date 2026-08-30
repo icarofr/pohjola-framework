@@ -1,8 +1,13 @@
 # Agent Evals
 
 Agent evals for Pohjola. Each eval is a prompt + assertion pair: a
-user-shaped task in `PROMPT.md`, and grep-based checks in `check.sh` that verify
-the agent followed our conventions.
+user-shaped task in `PROMPT.md`, and checks in `check.sh` that verify the agent
+followed our conventions.
+
+Structural policy lives in `policy/manifest.json` and is enforced by
+`make gate` (`scripts/verify-policy.sh`) and `Test.PolicySpec` (`make test`).
+Eval `check.sh` scripts should delegate to those tiers instead of duplicating
+grep rules.
 
 The point: find places where agents get the conventions wrong, then fix it by
 improving the docs in `docs/conventions/` and `docs/AGENT_CONTEXT.md`.
@@ -14,7 +19,7 @@ Each eval is a directory under `evals/evals/`:
 ```
 evals/evals/01-add-page/
 ├── PROMPT.md   # what you'd type into the agent (user-shaped, not "use X")
-└── check.sh    # grep assertions against the files the agent should produce
+└── check.sh    # assertions — delegate to make gate/test when possible
 ```
 
 The runner is `evals/run-eval.sh`. It shows the prompt, lets the agent work,
@@ -63,8 +68,16 @@ Then edit two files:
 `staticPage` from `App.Layout.Page`" is not — you're testing whether the agent
 knows the convention, not whether it can pattern-match a name you handed it.
 
-**`check.sh`** — bash grep assertions against the files the agent should
-produce. Check for the convention, not the implementation:
+**`check.sh`** — verify the agent followed conventions. Prefer delegating to
+canonical enforcement instead of duplicating grep rules:
+
+```bash
+# Structural + behavioral policy (see evals/evals/10-ui-archetypes/check.sh)
+make gate
+make test
+```
+
+For task-specific checks (route wired, module exists), targeted greps are fine:
 
 ```bash
 check "uses Layout.Page" "grep -q 'App.Layout.Page' src/App/Features/Team/Page.purs"

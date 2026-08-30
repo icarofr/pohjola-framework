@@ -17,6 +17,7 @@ import Test.LangDetectSpec as LangDetectSpec
 import Test.LoggerSpec as LoggerSpec
 import Test.ServerSpec as ServerSpec
 import Test.UiSpec as UiSpec
+import Test.PolicySpec as PolicySpec
 import Test.Spec.Reporter (consoleReporter)
 import Test.Spec.Runner.Node (runSpecAndExitProcess)
 
@@ -34,4 +35,5 @@ main = runSpecAndExitProcess [ consoleReporter ] do
   LoggerSpec.spec
   RateLimitSpec.spec
   ServerSpec.spec
+  PolicySpec.spec
   UiSpec.spec

@@ -36,23 +36,7 @@ help:
 	@echo 'Usage:'
 	@sed -n 's/^##//p' ${MAKEFILE_LIST} | column -t -s ':' | sed -e 's/^/ /'
 
-# `raw` is banned entirely — the Html ADT has no Raw constructor. Script and
-# style content is handled by context-aware rendering (unescaped text elements
-# per the HTML spec). DOCTYPE has its own Doctype constructor.
-# The gate catches any `raw`/`Raw` word in src/ (including comments).
-
-# Banned anywhere in src/: unsafe functions + partial-function modules
-# (Data.Maybe.Unsafe, Data.Array.Unsafe, Data.String.CodePoint.Unsafe,
-# fromJust). Partial modules erase the compiler's totality guarantees.
-GATE_BANNED := unsafeCoerce|unsafePerformEffect|unsafePartial|unsafeCompare|unsafeIndex|Data\.Maybe\.Unsafe|Data\.Array\.Unsafe|Data\.String\.CodePoint\.Unsafe|Data\.String\.Unsafe|Data\.Unsafe|fromJust|throwException|catchException|Effect\.Unsafe|\bPartial\b
-
-# FFI modules allowed in src/. Empty by default — every `foreign import`
-# in src/ fails the gate (the `$$` is Make's escape for a literal `$`, so
-# the grep pattern is `^$` = empty lines only, i.e. nothing is excluded).
-# Tamed modules get added here with justification.
-FFI_ALLOWLIST_GREP := ^src/App/ServerBun\.purs|^src/App/FetchBun\.purs|^src/App/Bun\.purs|^src/App/Data/SQL\.purs
-
-## format: purs-tidy format-in-place (src/ + test/)
+# Paths
 .PHONY: format
 format:
 	bun x purs-tidy format-in-place 'src/**/*.purs' 'test/**/*.purs'
@@ -62,27 +46,10 @@ format:
 format-check:
 	bun x purs-tidy check 'src/**/*.purs' 'test/**/*.purs'
 
-## gate: check for banned functions, FFI, and raw usage
+## gate: structural policy checks (policy/manifest.json)
 .PHONY: gate
 gate:
-	@echo "Checking for banned functions..."
-	@if grep -rnE '$(GATE_BANNED)' src/; then echo "ERROR: Banned functions found in source code"; exit 1; else echo "No banned functions found"; fi
-	@echo "Checking for FFI outside allowlist..."
-	@if grep -rn 'foreign import' src/ | grep -vE '$(FFI_ALLOWLIST_GREP)'; then echo "ERROR: foreign import used outside allowlist"; exit 1; else echo "No FFI outside allowlist"; fi
-	@echo "Checking for raw usage..."
-	@if grep -rnE "\braw\b|\bRaw\b" src/; then echo "ERROR: raw/Raw found in source — the Html ADT has no Raw constructor"; exit 1; else echo "No raw usage"; fi
-	@echo "Checking for script elements outside App/Layout..."
-	@if grep -rn 'el "script"' src/ | grep -v '^src/App/Layout/Scripts\.purs:' | grep -v '^src/App/Layout/Page\.purs:'; then echo "ERROR: script elements are restricted to App.Layout.Scripts and App.Layout.Page (ADR-000)"; exit 1; else echo "No unauthorized script elements found"; fi
-	@echo "Checking for env reads outside App/Env.purs..."
-	@if grep -rn 'Node.Process\|lookupEnv' src/ | grep -v '^src/App/Env.purs:'; then echo "ERROR: env read outside App/Env.purs"; exit 1; else echo "No env reads outside App/Env.purs"; fi
-	@echo "Checking Content Firewall (no raw text literals in feature views)..."
-	@if grep -rn 'text "[A-Za-z0-9]' src/App/Features/*/View.purs; then echo "ERROR: Hardcoded text string found in feature view — text must come from Data.I18n (Content Firewall)"; exit 1; else echo "Content Firewall OK"; fi
-	@echo "Checking text tone policy (no raw text-base-content/N outside App.Ui.TextTone)..."
-	@if grep -rn 'text-base-content/' src/ | grep -v '^src/App/Ui/TextTone\.purs:'; then echo "ERROR: Raw text-base-content opacity found — use App.Ui.TextTone (ADR-008)"; exit 1; else echo "Text tone policy OK"; fi
-	@echo "Checking UI contract (no class_ in feature views or components — ADR-012)..."
-	@if grep -rn 'class_' src/App/Features/*/View.purs src/App/Features/*/Components/*.purs 2>/dev/null; then echo "ERROR: class_ found in feature view/component — compose App.Ui blueprints only (ADR-012)"; exit 1; else echo "UI contract OK"; fi
-	@echo "Checking button intent policy (no btn-secondary in App.Ui)..."
-	@if grep -rn '"btn-secondary' src/App/Ui/ src/App/Layout/ 2>/dev/null; then echo "ERROR: btn-secondary class in App.Ui — use ButtonVariant intents"; exit 1; else echo "Button intent policy OK"; fi
+	@bash scripts/verify-policy.sh
 
 ## generator-policy: validate the canonical generator and App.Ui boundary
 .PHONY: generator-policy design-policy
@@ -90,7 +57,7 @@ generator-policy:
 	@bash scripts/verify-generator-fixture.sh
 
 design-policy: generator-policy
-	bash scripts/verify-theme.sh
+	@bash scripts/verify-theme.sh
 
 # ==================================================================================== #
 # DEPENDENCIES
@@ -241,13 +208,13 @@ check: full
 	@echo "All checks passed."
 
 ## fast: cheap local policy and formatting checks
-fast: gate generator-policy format-check
+fast: gate format-check
 
 ## local: fast checks plus the normal local build
 local: fast build
 
 ## full: complete local validation (build, tests, assets, formatting)
-full: gate generator-policy build test assets-check format-check
+full: gate design-policy build test assets-check format-check
 
 ## ci-equivalent: canonical CI validation target (excluding integration/e2e jobs)
 ci-equivalent: full

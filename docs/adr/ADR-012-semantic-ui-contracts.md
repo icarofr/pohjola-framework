@@ -46,16 +46,17 @@ routes into `App.Ui` blueprints only.
   **only** inside `App.Ui` and `App.Layout` (shell).
 - `css/input.css` defines custom DaisyUI themes `pohjola` / `pohjola-dark` from
   `DESIGN.md` tokens. `scripts/verify-theme.sh` fails if compiled CSS omits primary
-  `#047857` or if `btn-secondary` appears in `App.Ui`.
+  `#047857`. `forbiddenInAppUi` in `policy/manifest.json` bans `btn-secondary` in
+  `App.Ui` / `App.Layout`.
 
 ### Reference feature implementations
 
 | Pattern | Exemplar | Blueprint |
 |---|---|---|
 | Landing | `Home/View.purs` | `landingPage` |
-| Hub / links | `Contact/View.purs` | `pageLayout` + `actionCard` grid |
+| Hub / links | `Contact/View.purs` | `hubPage` + `actionCard` grid |
 | Editorial | `About/View.purs` | `editorialPage` + `editorialParagraphs` |
-| List + teasers | `Posts/View.purs` (list) | `pageLayout` + `teaserCard` |
+| List + teasers | `Posts/View.purs` (list) | `feedPage` + `teaserCard` |
 | Article detail | `Posts/View.purs` (detail) | `articlePage` |
 
 ### Enforcement ladder
@@ -63,9 +64,12 @@ routes into `App.Ui` blueprints only.
 | Level | Mechanism | What it covers |
 |---|---|---|
 | Compiler | Closed ADTs (`TextTone`, `ButtonVariant`, blueprint records) | Invalid variant names |
-| `make gate` | Grep: no `class_` in `src/App/Features/*/View.purs` or `Components/`; no `text-base-content/` outside `TextTone` | Feature utility soup, opacity drift |
-| ContractSpec | CSP, Alpine seam, cross-feature imports | Security + architecture |
-| Eval 06 | Scaffold + layout policy after agent tasks | Agent regression |
+| `policy/manifest.json` | Single source of truth for structural policy lists | FFI, banned fns, feature-view forbidden patterns, theme names |
+| `make gate` | `scripts/verify-policy.sh` reads the manifest | Fast pre-compile structural checks (same rules as PolicySpec scans) |
+| `make test` → `PolicySpec` | Manifest-driven scans + rendered reference-page archetypes | Behavioral UI policy, cross-feature imports, theme script strings |
+| `make design-policy` | `generator-policy` + `scripts/verify-theme.sh` | Generator/`App.Ui` boundary + compiled CSS primary token |
+| `ContractSpec` | CSP, Alpine seam, cache, security headers | Security + runtime contracts only |
+| Eval 10 | Thin wrapper: `make gate` + `verify-theme.sh` + `make test` | Agent regression after UI tasks |
 | Convention | `design-system.md` scorecard (primary CTA, contrast) | UX — not yet automated |
 
 `make generator-policy` validates generator wiring and compile; it is **not**

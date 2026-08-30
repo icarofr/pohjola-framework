@@ -20,8 +20,7 @@ import App.Main (pageRenderer)
 import App.Server (RedirectKind(..), Response, cspWithNonce, errorStatusCode, fileResponse, htmlErrorResponse, internalError, methodNotAllowed, notFound, notModified, ok, okText, okWith, redirect, redirectVary, securityHeaders, tooManyRequests)
 import App.Cache (insertDynamic, lookupDynamic, maxEntries, mkDynamicCache)
 import App.Html (render, text)
-import Data.Array (concat, find, last, length, mapMaybe, nub, range, uncons)
-import Data.Char (toCharCode)
+import Data.Array (find, last, length, mapMaybe, nub, range)
 import Data.Content (services)
 import Data.Either (Either(..))
 import Data.Foldable (any, for_)
@@ -29,15 +28,13 @@ import Data.I18n (Lang(..), dict)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Route (Route(..), allLangs, allRoutes, routeUrl, staticRoutes)
 import Data.Email (EmailAddress(..), mkEmailAddress)
-import Data.String.CodeUnits (fromCharArray, stripPrefix, toCharArray) as CodeUnits
-import Data.String.Common (split, replaceAll) as Common
-import Data.String.Pattern (Pattern(..), Replacement(..))
-import Data.Traversable (for)
+import Data.String.CodeUnits (stripPrefix) as CodeUnits
+import Data.String.Pattern (Pattern(..))
 import Data.Tuple (Tuple(..), snd)
-import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
-import App.Bun (glob, readTextFile)
+import App.Bun (readTextFile)
+import Test.Policy.Scan as PolicyScan
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldEqual, shouldNotEqual, shouldSatisfy)
 import Test.Spec.Assertions.String as StrAssert
@@ -117,183 +114,6 @@ expectedCspSuffix =
 expectedFallbackCsp :: String
 expectedFallbackCsp =
   "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-eval'"
-
--- | Recursively collect every .purs file under a directory.
-pursFilesUnder :: String -> Effect (Array String)
-pursFilesUnder dir = glob (dir <> "/**/*.purs")
-
--- | Mirror of the Makefile gate's `grep \braw\b`: true when "raw" appears as
--- | a whole word (bounded by non-word chars or string edges). ASCII word
--- | chars are enough — the source is ASCII.
-containsRawWord :: String -> Boolean
-containsRawWord str =
-  let
-    spaced = CodeUnits.fromCharArray (map spaceOut (CodeUnits.toCharArray str))
-  in
-    any (\w -> w == "raw" || w == "Raw") (Common.split (Pattern " ") spaced)
-  where
-  spaceOut c = if isWordChar c then c else ' '
-
-isWordChar :: Char -> Boolean
-isWordChar c =
-  let
-    n = toCharCode c
-  in
-    (n >= 48 && n <= 57) -- 0-9
-
-      || (n >= 65 && n <= 90) -- A-Z
-      || (n >= 97 && n <= 122) -- a-z
-      || n == 95 -- _
-
--- | True when a string contains any of the banned patterns.
-containsBanned :: String -> Boolean
-containsBanned str =
-  let
-    banned = [ "unsafeCoerce", "unsafePerformEffect", "unsafePartial", "unsafeCompare", "unsafeIndex", "fromJust", "throwException", "catchException", "Data.Maybe.Unsafe", "Data.Array.Unsafe", "Data.String.CodePoint.Unsafe", "Data.String.Unsafe", "Data.Unsafe", "Effect.Unsafe", "Partial" ]
-  in
-    any (\b -> length (Common.split (Pattern b) str) > 1) banned
-
--- | True when a string contains raw Alpine attribute patterns.
-containsRawAlpine :: String -> Boolean
-containsRawAlpine str =
-  let
-    banned = [ "attr \"x-", "attr \"@", "attr \":", "flag \"x-" ]
-  in
-    any (\b -> length (Common.split (Pattern b) str) > 1) banned
-
--- | True when a string contains "foreign import".
-containsForeignImport :: String -> Boolean
-containsForeignImport str =
-  length (Common.split (Pattern "foreign import") str) > 1
-
--- | Files in src/ containing a forbidden raw/Raw word.
-findRawInSrc :: String -> Aff (Array String)
-findRawInSrc root = do
-  files <- liftEffect $ pursFilesUnder root
-  results <- for files \file -> do
-    content <- readTextFile file
-    pure
-      ( case content of
-          Right c -> if containsRawWord c then Just file else Nothing
-          Left _ -> Nothing
-      )
-  pure (mapMaybe identity results)
-
--- | Files in src/ containing banned functions.
-findBannedInSrc :: String -> Aff (Array String)
-findBannedInSrc root = do
-  files <- liftEffect $ pursFilesUnder root
-  results <- for files \file -> do
-    content <- readTextFile file
-    pure
-      ( case content of
-          Right c -> if containsBanned c then Just file else Nothing
-          Left _ -> Nothing
-      )
-  pure (mapMaybe identity results)
-
--- | Files in src/ containing foreign imports outside allowlist.
-findForeignImportsOutsideAllowlist :: String -> Aff (Array String)
-findForeignImportsOutsideAllowlist root = do
-  files <- liftEffect $ pursFilesUnder root
-  results <- for files \file -> do
-    if any (_ == file) ffiAllowlist then pure Nothing
-    else do
-      content <- readTextFile file
-      pure
-        ( case content of
-            Right c -> if containsForeignImport c then Just file else Nothing
-            Left _ -> Nothing
-        )
-  pure (mapMaybe identity results)
-
-scriptAllowlist :: Array String
-scriptAllowlist = [ "src/App/Layout/Scripts.purs", "src/App/Layout/Page.purs" ]
-
--- | Files in src/ containing `el "script"` outside Layout allowlist.
-findScriptsOutsideAllowlist :: String -> Aff (Array String)
-findScriptsOutsideAllowlist root = do
-  files <- liftEffect $ pursFilesUnder root
-  results <- for files \file -> do
-    if any (_ == file) scriptAllowlist then pure Nothing
-    else do
-      content <- readTextFile file
-      pure
-        ( case content of
-            Right c -> if length (Common.split (Pattern "el \"script\"") c) > 1 then Just file else Nothing
-            Left _ -> Nothing
-        )
-  pure (mapMaybe identity results)
-
--- | Modules permitted to carry `foreign import`.
--- |
--- | This list is duplicated in the Makefile's `FFI_ALLOWLIST_GREP`, because the
--- | gate runs as grep before the compiler exists. Two sources of truth is a
--- | drift risk, so "the FFI allowlist matches the Makefile gate" below asserts
--- | they agree — adding a module to one and not the other fails the suite.
-ffiAllowlist :: Array String
-ffiAllowlist = [ "src/App/ServerBun.purs", "src/App/FetchBun.purs", "src/App/Bun.purs", "src/App/Data/SQL.purs" ]
-
--- | The Makefile's allowlist pattern, escaped the way Make writes it:
--- | `src/App/Bun.purs` → `^src/App/Bun\.purs`
-makefilePattern :: String -> String
-makefilePattern path = "^" <> Common.replaceAll (Pattern ".") (Replacement "\\.") path
-
--- | Files in src/ (excluding App.Alpine) containing raw Alpine attribute strings.
-findRawAlpineOutsideAlpine :: String -> Aff (Array String)
-findRawAlpineOutsideAlpine root = do
-  files <- liftEffect $ pursFilesUnder root
-  results <- for files \file -> do
-    if file == "src/App/Alpine.purs" then pure Nothing
-    else do
-      content <- readTextFile file
-      pure
-        ( case content of
-            Right c -> if containsRawAlpine c then Just file else Nothing
-            Left _ -> Nothing
-        )
-  pure (mapMaybe identity results)
-
--- | Feature name from a module path, e.g. "App.Features.Posts.Types" → "Posts".
-featureOfModule :: String -> Maybe String
-featureOfModule modName = do
-  rest <- CodeUnits.stripPrefix (Pattern "App.Features.") modName
-  map (_.head) (uncons (Common.split (Pattern ".") rest))
-
--- | Feature name from a file path, e.g. "src/App/Features/Posts/Service.purs"
--- | → "Posts".
-featureOfPath :: String -> Maybe String
-featureOfPath path = do
-  rest <- CodeUnits.stripPrefix (Pattern "src/App/Features/") path
-  map (_.head) (uncons (Common.split (Pattern "/") rest))
-
--- | Cross-feature imports: a feature module importing a sibling feature's
--- | module. Returns "<file>: <import line>" for each violation.
-findCrossFeatureImports :: String -> Aff (Array String)
-findCrossFeatureImports featuresRoot = do
-  files <- liftEffect $ pursFilesUnder featuresRoot
-  offenders <- for files \file -> do
-    content <- readTextFile file
-    pure $ case content of
-      Left _ -> []
-      Right c -> map (\imp -> file <> ": " <> imp) (crossFeatureImports file c)
-  pure (concat offenders)
-  where
-  crossFeatureImports :: String -> String -> Array String
-  crossFeatureImports file content =
-    case featureOfPath file of
-      Nothing -> []
-      Just ownFeature ->
-        mapMaybe (siblingImport ownFeature) (Common.split (Pattern "\n") content)
-
-  -- | An "import App.Features.X.Y …" line is a violation when X ≠ ownFeature.
-  siblingImport :: String -> String -> Maybe String
-  siblingImport ownFeature line =
-    case CodeUnits.stripPrefix (Pattern "import App.Features.") line of
-      Nothing -> Nothing
-      Just rest ->
-        if featureOfModule ("App.Features." <> rest) == Just ownFeature then Nothing
-        else Just line
 
 -- ============================================================================
 -- Specs
@@ -379,26 +199,17 @@ spec = do
       html `StrAssert.shouldContain` "x-target.push=\"content\""
 
   describe "FFI allowlist has one meaning" do
-    -- The gate greps the Makefile pattern; this spec scans with its own list.
-    -- Two representations of one contract drift silently unless something
-    -- compares them, and a module allowlisted in only one place is either an
-    -- unchecked foreign import or a false gate failure.
-    it "every allowlisted module appears in the Makefile gate pattern" do
-      mk <- readTextFile "Makefile"
-      case mk of
-        Left err -> StrAssert.shouldContain "" ("expected Makefile to be readable: " <> err)
-        Right content -> for_ ffiAllowlist \path ->
-          content `StrAssert.shouldContain` makefilePattern path
-    it "the Makefile gate pattern allows nothing beyond this list" do
-      mk <- readTextFile "Makefile"
-      case mk of
-        Left err -> StrAssert.shouldContain "" ("expected Makefile to be readable: " <> err)
+    -- policy/manifest.json is the single source of truth; PolicySpec scans src/
+    -- against the same list. This test only guards manifest ↔ docs drift.
+    it "policy manifest lists the four FFI modules" do
+      raw <- readTextFile "policy/manifest.json"
+      case raw of
+        Left err -> StrAssert.shouldContain "" ("expected policy/manifest.json: " <> err)
         Right content -> do
-          let
-            gateLine = fromMaybe "" $ find (\l -> length (Common.split (Pattern "FFI_ALLOWLIST_GREP :=") l) > 1)
-              (Common.split (Pattern "\n") content)
-            entries = length (Common.split (Pattern "^src/") gateLine) - 1
-          entries `shouldEqual` length ffiAllowlist
+          content `StrAssert.shouldContain` "src/App/ServerBun.purs"
+          content `StrAssert.shouldContain` "src/App/FetchBun.purs"
+          content `StrAssert.shouldContain` "src/App/Bun.purs"
+          content `StrAssert.shouldContain` "src/App/Data/SQL.purs"
 
   describe "SQL migration affinity (ADR-009 Phase 3A)" do
     it "App.Data.SQL exposes reserve and release at the FFI boundary" do
@@ -710,7 +521,7 @@ spec = do
 
   describe "Alpine seam — typed constructors" do
     it "no raw Alpine attribute strings outside App.Alpine" do
-      offenders <- findRawAlpineOutsideAlpine "src"
+      offenders <- PolicyScan.findRawAlpineOutsideAlpine "src"
       offenders `shouldEqual` []
 
   describe "serviceCopy non-fallback coverage" do
@@ -754,73 +565,46 @@ spec = do
           html `StrAssert.shouldContain` "<!DOCTYPE html"
           html `StrAssert.shouldContain` "<footer"
 
-    it "no raw/Raw words appear in src/" do
-      -- Mirror of the Makefile's total source ban.
-      offenders <- findRawInSrc "src"
-      offenders `shouldEqual` []
+  describe "Bun.serve migration invariants" do
+    it "spaLink includes @mouseenter fragment prefetch with $el (not this)" do
+      let html = render (spaLink En Home [] [])
+      -- Single quotes are escaped to &#x27; in the attribute value;
+      -- the browser un-escapes them before Alpine executes the expression.
+      html `StrAssert.shouldContain` "@mouseenter=\"fetch($el.href, {headers: {&#x27;x-alpine-request&#x27;: &#x27;true&#x27;}})\""
+      html `StrAssert.shouldNotContain` "fetch(this.href)"
 
-    it "no banned functions in src/" do
-      offenders <- findBannedInSrc "src"
-      offenders `shouldEqual` []
+    it "renderPrefetch emits <link rel=\"prefetch\">" do
+      let html = render (renderPrefetch En [ PostList ])
+      html `StrAssert.shouldContain` "rel=\"prefetch\""
+      html `StrAssert.shouldContain` "/en/posts"
 
-    it "no foreign import outside allowlist" do
-      offenders <- findForeignImportsOutsideAllowlist "src"
-      offenders `shouldEqual` []
+    it "renderJsonLd returns Just for data-backed routes" do
+      isJust (renderJsonLd "https://example.com" "test-nonce" En PostList) `shouldEqual` true
+      isJust (renderJsonLd "https://example.com" "test-nonce" En Home) `shouldEqual` true
+      isJust (renderJsonLd "https://example.com" "test-nonce" En About) `shouldEqual` false
 
-    it "no script elements outside App.Layout.Scripts and App.Layout.Page" do
-      offenders <- findScriptsOutsideAllowlist "src"
-      offenders `shouldEqual` []
+    it "JSON-LD is XSS-safe" do
+      -- The security invariant: < must be escaped as \u003c in JSON-LD
+      -- content to prevent </script> injection. Test the actual rendered
+      -- output, not just the escapeJson helper.
+      escapeJson "<" `shouldEqual` "\\u003c"
+      escapeJson "</script>" `shouldEqual` "\\u003c/script>"
 
-  describe "feature isolation" do
-    it "no feature module imports a sibling feature" do
-      -- Features are self-contained (own Types/Service/Page/View): a
-      -- feature may import its own submodules (e.g. Posts.Service →
-      -- Posts.Types) but never another feature's modules. Cross-feature
-      -- imports are hidden coupling — the shared data boundary lives in
-      -- App.Data.Fetch instead.
-      offenders <- findCrossFeatureImports "src/App/Features"
-      offenders `shouldEqual` []
+    it "renderShellOpen produces valid HTML structure" do
+      let html = renderShellOpen "https://example.com" "test-nonce-123" En Home
+      html `StrAssert.shouldContain` "<!DOCTYPE html"
+      html `StrAssert.shouldContain` "<main id=\"content\""
+      html `StrAssert.shouldNotContain` "</main>"
 
-    describe "Bun.serve migration invariants" do
-      it "spaLink includes @mouseenter fragment prefetch with $el (not this)" do
-        let html = render (spaLink En Home [] [])
-        -- Single quotes are escaped to &#x27; in the attribute value;
-        -- the browser un-escapes them before Alpine executes the expression.
-        html `StrAssert.shouldContain` "@mouseenter=\"fetch($el.href, {headers: {&#x27;x-alpine-request&#x27;: &#x27;true&#x27;}})\""
-        html `StrAssert.shouldNotContain` "fetch(this.href)"
+    it "renderShellClose closes the document" do
+      let html = renderShellClose "test-nonce-123" En Home
+      html `StrAssert.shouldContain` "</main>"
+      html `StrAssert.shouldContain` "</body></html>"
 
-      it "renderPrefetch emits <link rel=\"prefetch\">" do
-        let html = render (renderPrefetch En [ PostList ])
-        html `StrAssert.shouldContain` "rel=\"prefetch\""
-        html `StrAssert.shouldContain` "/en/posts"
-
-      it "renderJsonLd returns Just for data-backed routes" do
-        isJust (renderJsonLd "https://example.com" "test-nonce" En PostList) `shouldEqual` true
-        isJust (renderJsonLd "https://example.com" "test-nonce" En Home) `shouldEqual` true
-        isJust (renderJsonLd "https://example.com" "test-nonce" En About) `shouldEqual` false
-
-      it "JSON-LD is XSS-safe" do
-        -- The security invariant: < must be escaped as \u003c in JSON-LD
-        -- content to prevent </script> injection. Test the actual rendered
-        -- output, not just the escapeJson helper.
-        escapeJson "<" `shouldEqual` "\\u003c"
-        escapeJson "</script>" `shouldEqual` "\\u003c/script>"
-
-      it "renderShellOpen produces valid HTML structure" do
-        let html = renderShellOpen "https://example.com" "test-nonce-123" En Home
-        html `StrAssert.shouldContain` "<!DOCTYPE html"
-        html `StrAssert.shouldContain` "<main id=\"content\""
-        html `StrAssert.shouldNotContain` "</main>"
-
-      it "renderShellClose closes the document" do
-        let html = renderShellClose "test-nonce-123" En Home
-        html `StrAssert.shouldContain` "</main>"
-        html `StrAssert.shouldContain` "</body></html>"
-
-      it "escapeJson escapes in correct order" do
-        -- Backslash must be escaped before quotes to avoid malformed JSON
-        escapeJson "\\" `shouldEqual` "\\\\"
-        escapeJson "\"" `shouldEqual` "\\\""
+    it "escapeJson escapes in correct order" do
+      -- Backslash must be escaped before quotes to avoid malformed JSON
+      escapeJson "\\" `shouldEqual` "\\\\"
+      escapeJson "\"" `shouldEqual` "\\\""
 
 isJust :: forall a. Maybe a -> Boolean
 isJust (Just _) = true

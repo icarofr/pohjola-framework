@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "ffiAllowlist": [
+    "src/App/ServerBun.purs",
+    "src/App/FetchBun.purs",
+    "src/App/Bun.purs",
+    "src/App/Data/SQL.purs"
+  ],
+  "scriptAllowlist": [
+    "src/App/Layout/Scripts.purs",
+    "src/App/Layout/Page.purs"
+  ],
+  "bannedSubstrings": [
+    "unsafeCoerce",
+    "unsafePerformEffect",
+    "unsafePartial",
+    "unsafeCompare",
+    "unsafeIndex",
+    "Data.Maybe.Unsafe",
+    "Data.Array.Unsafe",
+    "Data.String.CodePoint.Unsafe",
+    "Data.String.Unsafe",
+    "Data.Unsafe",
+    "fromJust",
+    "throwException",
+    "catchException",
+    "Effect.Unsafe",
+    "Partial"
+  ],
+  "featureViewPaths": [
+    "src/App/Features/*/View.purs",
+    "src/App/Features/*/Components/*.purs"
+  ],
+  "forbiddenInFeatureViews": [
+    "class_",
+    "mx-auto max-w-",
+    "text-base-content/"
+  ],
+  "forbiddenInAppUi": [
+    "\"btn-secondary"
+  ],
+  "textTone": {
+    "pattern": "text-base-content/",
+    "allowlist": ["src/App/Ui/TextTone.purs"]
+  },
+  "envReadAllowlist": [
+    "src/App/Env.purs"
+  ],
+  "contentFirewall": {
+    "paths": ["src/App/Features/*/View.purs"],
+    "pattern": "text \"[A-Za-z0-9]"
+  },
+  "theme": {
+    "cssPrimaryHex": "047857",
+    "daisyLight": "pohjola",
+    "daisyDark": "pohjola-dark",
+    "forbiddenDataThemeLiterals": [
+      "setAttribute('data-theme', 'light')",
+      "setAttribute('data-theme', 'dark')"
+    ],
+    "themeModule": "src/App/Theme.purs"
+  }
+}
