@@ -4,6 +4,7 @@
  */
 import { dirname, join, resolve, relative } from "node:path";
 import { tmpdir } from "node:os";
+import { cp } from "node:fs/promises";
 import { file, write, spawnSync, Glob, $ } from "bun";
 
 const ROOT_MARKER = "spago.yaml";
@@ -91,10 +92,9 @@ export async function mkdtemp(prefix = "pohjola-") {
 }
 
 export async function cpRecursive(src, dest) {
-  const proc = await $`cp -R ${src} ${dest}`.quiet().nothrow();
-  if (proc.exitCode !== 0) {
-    throw new Error(`cp failed: ${src} -> ${dest}`);
-  }
+  // `cp -R src dest` into an existing directory nests as dest/basename(src).
+  // Generator fixtures mkdtemp first, so copy the tree itself (Node/Bun fs.cp).
+  await cp(src, dest, { recursive: true });
 }
 
 export async function rmRecursive(target) {
