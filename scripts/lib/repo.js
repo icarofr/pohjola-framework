@@ -3,6 +3,7 @@
  * Use `node:path` for paths and `bun` for I/O/spawn — not a Bun shim.
  */
 import { dirname, join, resolve, relative } from "node:path";
+import { tmpdir } from "node:os";
 import { file, write, spawnSync, Glob, $ } from "bun";
 
 const ROOT_MARKER = "spago.yaml";
@@ -79,9 +80,12 @@ export function run(cmd, options = {}) {
 }
 
 export async function mkdtemp(prefix = "pohjola-") {
-  const proc = await $`mktemp -d -t ${prefix}`.quiet().nothrow();
+  // GNU mktemp treats -t as --tmpdir; macOS -t is a name prefix. Use an
+  // explicit TEMPLATE with XXXXXX so both accept the same invocation.
+  const template = join(tmpdir(), `${prefix}XXXXXX`);
+  const proc = await $`mktemp -d ${template}`.quiet().nothrow();
   if (proc.exitCode !== 0) {
-    throw new Error("mktemp failed");
+    throw new Error(`mktemp failed: ${proc.stderr.toString()}`);
   }
   return proc.stdout.toString().trim();
 }
