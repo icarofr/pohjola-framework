@@ -80,21 +80,29 @@ export function run(cmd, options = {}) {
 }
 
 export async function mkdtemp(prefix = "pohjola-") {
-  // GNU mktemp treats -t as --tmpdir; macOS -t is a name prefix. Use an
-  // explicit TEMPLATE with XXXXXX so both accept the same invocation.
-  const template = join(tmpdir(), `${prefix}XXXXXX`);
-  const proc = await $`mktemp -d ${template}`.quiet().nothrow();
-  if (proc.exitCode !== 0) {
-    throw new Error(`mktemp failed: ${proc.stderr.toString()}`);
-  }
-  return proc.stdout.toString().trim();
+  const dir = join(tmpdir(), `${prefix}${crypto.randomUUID()}`);
+  await write(join(dir, ".keep"), "");
+  await file(join(dir, ".keep")).delete();
+  return dir;
 }
 
+const COPY_BATCH = 64;
+
+/** Copy a file tree with Glob + Bun.write(Bun.file) — clonefile/copy_file_range. */
 export async function cpRecursive(src, dest) {
-  const proc = await $`cp -R ${src} ${dest}`.quiet().nothrow();
-  if (proc.exitCode !== 0) {
-    throw new Error(`cp failed: ${src} -> ${dest}: ${proc.stderr.toString()}`);
+  const pending = [];
+  for (const relPath of new Glob("**/*").scanSync({
+    cwd: src,
+    dot: true,
+    onlyFiles: true,
+  })) {
+    pending.push(write(join(dest, relPath), file(join(src, relPath))));
+    if (pending.length >= COPY_BATCH) {
+      await Promise.all(pending);
+      pending.length = 0;
+    }
   }
+  await Promise.all(pending);
 }
 
 export async function rmRecursive(target) {
