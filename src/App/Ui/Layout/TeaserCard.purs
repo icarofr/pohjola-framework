@@ -1,4 +1,4 @@
--- | Content-feed teaser — DaisyUI linked card-body recipe (card docs)
+-- | Content-feed teaser — DaisyUI linked card-body recipe
 module App.Ui.Layout.TeaserCard
   ( TeaserCardProps
   , teaserCard
@@ -27,7 +27,6 @@ type TeaserCardProps =
       }
   }
 
--- | Frozen linked-card recipe — do not vary per feature (UiSpec).
 teaserCardBodyClass :: String
 teaserCardBodyClass = "card-body gap-3 transition-colors hover:bg-base-200/50"
 

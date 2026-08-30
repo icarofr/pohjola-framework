@@ -1,4 +1,4 @@
--- | Marketing/hub card — DaisyUI card + figure recipe (research/daisyui card docs)
+-- | Marketing/hub card — DaisyUI card + figure recipe
 module App.Ui.Layout.ActionCard
   ( ActionCardProps
   , actionCard
@@ -15,7 +15,6 @@ import App.Ui.Layout.Types (ActionTarget(..))
 import Data.Array (catMaybes)
 import Data.Maybe (Maybe(..))
 
--- | Frozen CTA intent — do not vary per feature (eval 07 / UiSpec).
 actionCardCtaVariant :: ButtonVariant
 actionCardCtaVariant = ButtonOutline
 

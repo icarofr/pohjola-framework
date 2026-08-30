@@ -12,7 +12,6 @@ import Data.I18n (Lang, dict)
 import Data.Maybe (Maybe(..))
 import Data.Route (Route(..))
 
--- | Render list of posts
 renderPostList :: Lang -> Array Post -> Html
 renderPostList lang posts =
   let
@@ -35,7 +34,6 @@ renderPostList lang posts =
             Nothing
       }
 
--- | Render a single post detail view
 renderPostDetail :: Lang -> Post -> Html
 renderPostDetail lang post =
   let
@@ -51,7 +49,6 @@ renderPostDetail lang post =
       , body: postBody post
       }
 
--- | Error state — shown when the API fetch fails.
 renderPostsError :: Lang -> Html
 renderPostsError lang =
   let

@@ -1,4 +1,4 @@
--- | Home page view — strictly rendered via closed LandingPage blueprint
+-- | Home page view — closed LandingPage blueprint
 module App.Features.Home.View where
 
 import Prelude

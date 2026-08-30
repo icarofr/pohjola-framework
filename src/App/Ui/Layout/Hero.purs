@@ -1,4 +1,4 @@
--- | Landing hero — frozen DaisyUI recipe (research/daisyui hero + DESIGN.md)
+-- | Landing hero — frozen DaisyUI recipe (DESIGN.md)
 module App.Ui.Layout.Hero
   ( HeroAction
   , HeroProps
@@ -28,7 +28,6 @@ type HeroProps =
   , secondaryAction :: Maybe HeroAction
   }
 
--- | Frozen class recipe — do not vary per feature (eval 07 / UiSpec).
 heroSectionClass :: String
 heroSectionClass = "hero bg-base-100 border-b border-base-300 min-h-0 py-20 sm:py-28"
 

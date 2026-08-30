@@ -1,4 +1,4 @@
--- | Editorial page — DaisyUI pageSection + prose-lg (long-form, no card box)
+-- | Editorial page — pageSection + prose-lg
 module App.Ui.Layout.EditorialPage
   ( EditorialPageBlueprint
   , editorialPage
@@ -21,7 +21,6 @@ editorialParagraphs :: Array String -> Html
 editorialParagraphs paragraphs =
   proseLg (map (\p -> el "p" [] [ text p ]) paragraphs)
 
--- | Frozen content width — do not vary per feature (UiSpec).
 editorialContentClass :: String
 editorialContentClass = "space-y-8 max-w-3xl"
 

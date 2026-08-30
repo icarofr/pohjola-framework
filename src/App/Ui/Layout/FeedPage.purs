@@ -1,4 +1,4 @@
--- | Feed page — list archetype with optional empty state (Posts, data features)
+-- | Feed page — list archetype with optional empty state
 module App.Ui.Layout.FeedPage
   ( FeedPageBlueprint
   , feedPage
@@ -21,7 +21,6 @@ type FeedPageBlueprint =
   , empty :: Maybe EmptyStateProps
   }
 
--- | Frozen section padding — matches pageSection (eval 07 / UiSpec).
 feedPageContainerClass :: String
 feedPageContainerClass = "py-16 sm:py-24"
 

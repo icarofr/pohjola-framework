@@ -1,4 +1,4 @@
--- | Article detail — semantic article + prose-lg (DaisyUI typography recipe)
+-- | Article detail — semantic article + prose-lg
 module App.Ui.Layout.ArticlePage
   ( ArticlePageBlueprint
   , articlePage
@@ -30,7 +30,6 @@ type ArticlePageBlueprint =
   , body :: String
   }
 
--- | Frozen article header recipe — do not vary per feature (eval 07 / UiSpec).
 articleTitleClass :: String
 articleTitleClass = "text-3xl sm:text-4xl font-bold tracking-tight"
 

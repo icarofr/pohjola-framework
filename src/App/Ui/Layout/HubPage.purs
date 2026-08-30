@@ -1,4 +1,4 @@
--- | Hub page — link grid archetype (Contact, resource hubs)
+-- | Hub page — actionCard grid archetype
 module App.Ui.Layout.HubPage
   ( HubPageBlueprint
   , hubPage

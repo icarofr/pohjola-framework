@@ -11,9 +11,14 @@ import App.Features.About.View as About
 import App.Features.Contact.View as Contact
 import App.Features.Home.View as Home
 import App.Features.Posts.View as Posts
+import App.Layout.Footer as Footer
+import App.Layout.Header as Header
 import App.Html (render)
 import App.Theme (daisyThemeDark, daisyThemeLight, darkModeInitScript)
 import App.Ui.Layout.SectionHeader (innerPageHeaderClass)
+import App.Ui.Shell.SiteFooter (siteFooterClass)
+import App.Ui.Shell.SiteHeader (siteHeaderClass)
+import Data.Route (Route(..))
 import Data.Array (concat)
 import Data.Either (Either(..))
 import Data.I18n (Lang(..))
@@ -125,6 +130,17 @@ spec = do
         let html = render (Posts.renderPostList En [])
         html `StrAssert.shouldContain` innerPageHeaderClass
         html `StrAssert.shouldContain` "card "
+
+    describe "reference shell (behavioral)" do
+      it "header renders frozen shell navbar" do
+        let html = render (Header.render En Home)
+        html `StrAssert.shouldContain` siteHeaderClass
+        html `StrAssert.shouldContain` "theme-controller"
+
+      it "footer renders frozen dock grid" do
+        let html = render (Footer.render En Home)
+        html `StrAssert.shouldContain` siteFooterClass
+        html `shouldSatisfy` (\h -> not $ String.contains (Pattern "footer sm:footer-horizontal") h)
 
 requireManifest :: Aff PolicyManifest
 requireManifest = do

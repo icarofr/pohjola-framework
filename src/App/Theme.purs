@@ -1,26 +1,28 @@
--- | DaisyUI theme names — single source of truth for css/input.css + runtime JS.
--- | Alpine click handlers and head init must use these, not bare "light"/"dark".
+-- | Theme init — head script + theme-controller checkbox sync (Daisy docs).
 module App.Theme
   ( daisyThemeLight
   , daisyThemeDark
   , darkModeInitScript
+  , siteThemeToggleId
   ) where
 
 import Prelude
 
--- | Must match @plugin "daisyui/theme" { name: "pohjola" } in css/input.css.
+siteThemeToggleId :: String
+siteThemeToggleId = "site-theme-toggle"
+
 daisyThemeLight :: String
 daisyThemeLight = "pohjola"
 
--- | Must match @plugin "daisyui/theme" { name: "pohjola-dark" } in css/input.css.
 daisyThemeDark :: String
 daisyThemeDark = "pohjola-dark"
 
--- | Inline head script — runs before paint to avoid theme flash.
 darkModeInitScript :: String
 darkModeInitScript =
-  "if(localStorage.getItem('theme')==='dark'||((!localStorage.getItem('theme')||localStorage.getItem('theme')==='system')&&matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');document.documentElement.setAttribute('data-theme','"
-    <> daisyThemeDark
-    <> "')}else{document.documentElement.classList.remove('dark');document.documentElement.setAttribute('data-theme','"
+  "(function(){var light='"
     <> daisyThemeLight
-    <> "')}"
+    <> "',dark='"
+    <> daisyThemeDark
+    <> "',toggleId='"
+    <> siteThemeToggleId
+    <> "';function apply(isDark){document.documentElement.setAttribute('data-theme',isDark?dark:light);document.documentElement.classList.toggle('dark',isDark);localStorage.setItem('theme',isDark?'dark':'light')}var stored=localStorage.getItem('theme');var prefersDark=matchMedia('(prefers-color-scheme:dark)').matches;var isDark=stored==='dark'||(stored!=='light'&&prefersDark);apply(isDark);document.addEventListener('DOMContentLoaded',function(){var el=document.getElementById(toggleId);if(!el)return;el.checked=isDark;el.addEventListener('change',function(){apply(el.checked)})})})();"

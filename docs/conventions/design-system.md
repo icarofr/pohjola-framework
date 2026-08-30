@@ -43,7 +43,7 @@ Feature views **must not** compose primitives (`hero`, `card`, `page`, `grid3`, 
 
 **ADR-012:** feature `View.purs` and `Components/` must not call `class_` or import `App.Ui.Card` / `App.Ui.Prose` / … — enforced by `make gate` (`policy/manifest.json`).
 
-Full agent recipe: `docs/superpowers/specs/2026-08-30-ui-blueprint-recipe.md`.
+Full recipes: `docs/superpowers/specs/2026-08-30-shell-recipe.md` (chrome) and `docs/superpowers/specs/2026-08-30-ui-blueprint-recipe.md` (pages).
 
 ---
 
@@ -60,7 +60,7 @@ Full agent recipe: `docs/superpowers/specs/2026-08-30-ui-blueprint-recipe.md`.
 | `App.Ui.Form` | `textField`, `formContainer`, … | `fieldset` + `input` / `textarea` |
 | `App.Ui.Container` | `container` | `container` + width utilities |
 | `App.Ui.TextTone` | `toneClass` | `text-base-content` opacities only here |
-| Shell | `App.Layout.Header` / `Footer` / `Page` | `navbar`, popover `dropdown`, `drawer`, `footer` |
+| Shell | `App.Ui.Shell.*` via `App.Layout.Header` / `Footer` | navbar, theme-controller swap, popover lang, DESIGN footer |
 
 ---
 

@@ -1,4 +1,4 @@
--- | Responsive card grids — Tailwind layout inside App.Ui (no DaisyUI grid primitive)
+-- | Responsive card grids — Tailwind inside App.Ui.Layout only
 module App.Ui.Layout.Grid where
 
 import App.Html (Html, class_, el)

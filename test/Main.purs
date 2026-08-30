@@ -16,6 +16,7 @@ import Test.SitemapSpec as SitemapSpec
 import Test.LangDetectSpec as LangDetectSpec
 import Test.LoggerSpec as LoggerSpec
 import Test.ServerSpec as ServerSpec
+import Test.ShellSpec as ShellSpec
 import Test.UiSpec as UiSpec
 import Test.PolicySpec as PolicySpec
 import Test.Spec.Reporter (consoleReporter)
@@ -36,4 +37,5 @@ main = runSpecAndExitProcess [ consoleReporter ] do
   RateLimitSpec.spec
   ServerSpec.spec
   PolicySpec.spec
+  ShellSpec.spec
   UiSpec.spec

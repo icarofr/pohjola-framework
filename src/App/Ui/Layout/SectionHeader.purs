@@ -1,4 +1,4 @@
--- | Section header — frozen inner-page title block (stable across AJAX nav)
+-- | Section header — frozen inner-page title block
 module App.Ui.Layout.SectionHeader
   ( Align(..)
   , SectionHeaderProps
@@ -26,7 +26,6 @@ type SectionHeaderProps =
   , align :: Align
   }
 
--- | Frozen inner-page header — left aligned, reserved eyebrow/subtitle slots (UiSpec).
 innerPageHeaderClass :: String
 innerPageHeaderClass = "flex flex-col gap-3 items-start text-left"
 

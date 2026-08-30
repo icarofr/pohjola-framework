@@ -1,4 +1,4 @@
--- | Page section — vertical rhythm without hero grid (DESIGN.md layout)
+-- | Page section — vertical rhythm (DESIGN.md layout)
 module App.Ui.Layout.PageSection
   ( PageSectionProps
   , pageSection

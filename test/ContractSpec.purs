@@ -11,7 +11,7 @@ module Test.ContractSpec where
 import Prelude
 
 import App.Alpine (Flag(..), ThemeMode(..), contentTarget, cycleTheme, flagName, navLink, renderExpr, setFlag, setTheme, spaLink, themeToggle, toggleFlag)
-import App.Theme (darkModeInitScript, daisyThemeDark, daisyThemeLight)
+import App.Theme (darkModeInitScript, daisyThemeDark, daisyThemeLight, siteThemeToggleId)
 import App.Config (Config)
 import App.Form (contactFields, newsletterFields)
 import App.Layout.Head (renderJsonLd, escapeJson)
@@ -517,13 +517,16 @@ spec = do
       html <- renderStaticPage Home En
       html `StrAssert.shouldContain` "drawer-toggle"
       html `StrAssert.shouldContain` "id=\"nav-drawer\""
-    it "language and theme menus use DaisyUI popover dropdowns" do
+    it "language menu uses DaisyUI popover dropdown" do
       html <- renderStaticPage Home En
       html `StrAssert.shouldContain` "popovertarget=\"header-lang-menu\""
-      html `StrAssert.shouldContain` "popovertarget=\"header-theme-menu\""
       html `StrAssert.shouldContain` "id=\"header-lang-menu\""
-      html `StrAssert.shouldContain` "id=\"header-theme-menu\""
       html `StrAssert.shouldContain` "popover"
+    it "theme control uses DaisyUI theme-controller swap" do
+      html <- renderStaticPage Home En
+      html `StrAssert.shouldContain` "theme-controller"
+      html `StrAssert.shouldContain` "swap-rotate"
+      html `StrAssert.shouldContain` ("id=\"" <> siteThemeToggleId <> "\"")
 
   describe "Alpine seam — typed constructors" do
     it "no raw Alpine attribute strings outside App.Alpine" do
@@ -553,7 +556,9 @@ spec = do
       for_ staticRoutes \route ->
         for_ allLangs \lang -> do
           html <- renderStaticPage route lang
-          StrAssert.shouldContain html "if(localStorage.getItem('theme')==='dark'"
+          StrAssert.shouldContain html "site-theme-toggle"
+          StrAssert.shouldContain html "getElementById(toggleId)"
+          StrAssert.shouldContain html "localStorage.setItem('theme',isDark?'dark':'light')"
           StrAssert.shouldContain html "document.addEventListener('ajax:merged',sync);"
           StrAssert.shouldContain html "window.addEventListener('popstate',restore,true);"
           StrAssert.shouldContain html "function restore(event){event.stopImmediatePropagation();fetch(location.href"
