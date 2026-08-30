@@ -12,6 +12,7 @@ import Prelude
 import App.Alpine (navLink)
 import App.Html (Html, class_, el, href, rel_, target_, text)
 import App.Ui.Container (container)
+import App.Ui.TextTone (TextTone(..), toneClass)
 import Data.I18n (Lang)
 import Data.Route (Route(..))
 
@@ -36,7 +37,7 @@ siteFooterGridClass :: String
 siteFooterGridClass = "grid grid-cols-1 gap-8 py-12 md:grid-cols-3"
 
 siteFooterLabelClass :: String
-siteFooterLabelClass = "text-xs font-mono uppercase tracking-widest text-base-content/60"
+siteFooterLabelClass = "text-xs font-mono uppercase tracking-widest"
 
 siteFooter :: SiteFooterProps -> Html
 siteFooter props =
@@ -44,17 +45,17 @@ siteFooter props =
     [ container "max-w-7xl" "px-4 sm:px-6 lg:px-8 w-full"
         [ el "div" [ class_ siteFooterGridClass ]
             [ el "div" [ class_ "flex flex-col gap-3" ]
-                [ el "p" [ class_ siteFooterLabelClass ] [ text props.siteTitle ]
+                [ el "p" [ class_ (siteFooterLabelClass <> " " <> toneClass Meta) ] [ text props.siteTitle ]
                 , el "p" [ class_ "text-sm" ] [ text props.siteDescription ]
                 ]
             , el "nav" [ class_ "flex flex-col gap-2" ]
-                [ el "p" [ class_ siteFooterLabelClass ] [ text props.exploreLabel ]
+                [ el "p" [ class_ (siteFooterLabelClass <> " " <> toneClass Meta) ] [ text props.exploreLabel ]
                 , navLink { lang: props.lang, current: props.currentRoute, target: About } [ class_ "link link-hover text-sm" ] [ text props.aboutLabel ]
                 , navLink { lang: props.lang, current: props.currentRoute, target: Contact } [ class_ "link link-hover text-sm" ] [ text props.contactLabel ]
                 , navLink { lang: props.lang, current: props.currentRoute, target: PostList } [ class_ "link link-hover text-sm" ] [ text props.postsLabel ]
                 ]
             , el "nav" [ class_ "flex flex-col gap-2" ]
-                [ el "p" [ class_ siteFooterLabelClass ] [ text props.resourcesLabel ]
+                [ el "p" [ class_ (siteFooterLabelClass <> " " <> toneClass Meta) ] [ text props.resourcesLabel ]
                 , el "a"
                     [ href "https://github.com/icarofr/pohjola-framework"
                     , target_ "_blank"

@@ -85,6 +85,7 @@ spec = do
             )
       html `shouldContain` siteFooterClass
       html `shouldContain` siteFooterLabelClass
+      html `shouldContain` "text-base-content/50"
       html `shouldContain` "max-w-7xl"
       html `shouldSatisfy` (\h -> not $ String.contains (Pattern "footer sm:footer-horizontal") h)
       html `shouldSatisfy` (\h -> not $ String.contains (Pattern "footer-title") h)
