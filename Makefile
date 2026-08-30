@@ -20,7 +20,7 @@ export PATH := $(CURDIR)/node_modules/.bin:$(PATH)
 
 SPAGO := bun x spago
 
-.PHONY: all help deps assets assets-check dev watch css css-watch bundle build sync-static run test test/integration test/integration/down test/e2e check image up down clean gate generator-policy design-policy fast local full ci-equivalent format format-check gen-sql new-feature evals eval
+.PHONY: all help deps assets assets-check dev watch css css-watch bundle build sync-static run test test/integration test/integration/down test/e2e check deploy image up down clean gate generator-policy design-policy fast local full ci-equivalent format format-check gen-sql new-feature evals eval
 
 # ==================================================================================== #
 # HELPERS
@@ -293,6 +293,37 @@ up:
 .PHONY: down
 down:
 	docker compose down
+
+# ==================================================================================== #
+# DEPLOY (homelab quadlet)
+# ==================================================================================== #
+#
+# Auto-deploy on push: homelab poll timer runs rebuild-if-changed every 2 min.
+# Manual deploy: make deploy (rebuild image + restart container + reload Caddy).
+#
+# Prerequisites (one-time):
+#   1. ~/projects/homelab cloned alongside this repo
+#   2. cd ~/projects/homelab && ./podman/scripts/install.sh
+
+SERVICE := pohjola-framework
+
+## deploy: check + rebuild image + restart container + reload Caddy + verify
+.PHONY: deploy
+deploy: check
+	@echo "==> Rebuilding image via quadlet build unit..."
+	systemctl --user restart $(SERVICE)-build.service
+	@echo "==> Restarting container..."
+	systemctl --user restart $(SERVICE).service
+	@echo "==> Reloading Caddy..."
+	systemctl --user restart caddy.service
+	@echo "==> Verifying..."
+	@sleep 3
+	@curl -sf -o /dev/null -w "  healthz:  %{http_code}\n" http://127.0.0.1:3003/healthz \
+		|| (echo "  healthz: FAILED" && exit 1)
+	@curl -sf -o /dev/null -w "  public:  %{http_code}\n" https://pohjola.icaro.fr/healthz \
+		|| (echo "  public:  FAILED (may need a few seconds for Caddy)" && exit 1)
+	@echo ""
+	@echo "Deployed. Status: systemctl --user status $(SERVICE).service"
 
 # ==================================================================================== #
 # CLEAN
