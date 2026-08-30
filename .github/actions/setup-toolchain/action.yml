@@ -1,13 +1,9 @@
-# Pinned CI toolchain — no curl-to-CDN install scripts.
+# Pinned CI toolchain — Bun only.
 #
-# Previous CI curled bun.sh/install and GitHub release tarballs on every job.
-# When those endpoints returned 504, jobs failed for infrastructure reasons
-# unrelated to the codebase. This action installs via:
-#   - oven-sh/setup-bun (cached GitHub release download)
-#   - npm registry purescript@0.15.16 (same channel as local `bun add -g`)
-#   - actions/cache for .spago + output (keyed on spago.lock)
+# PureScript (purs) is a devDependency; `bun install` provides node_modules/.bin/purs.
+# Spago output is cached keyed on spago.lock.
 name: Setup Pohjola toolchain
-description: Bun canary + PureScript 0.15.16 + Spago output cache
+description: Bun (latest stable) + Spago output cache
 inputs:
   cache-spago:
     description: Restore/save .spago and output caches
@@ -16,21 +12,10 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Install Bun (canary, cached)
+    - name: Install Bun (latest stable, cached)
       uses: oven-sh/setup-bun@v2
       with:
         bun-version-file: .bun-version
-
-    - name: Install PureScript compiler (npm registry, pinned)
-      shell: bash
-      run: bun install --global purescript@0.15.16
-
-    - name: Verify toolchain pins
-      shell: bash
-      run: |
-        set -euo pipefail
-        echo "bun $(bun --version) revision $(bun --revision)"
-        echo "purs $(purs --version)"
 
     - name: Cache Spago packages and compiler output
       if: inputs.cache-spago == 'true'

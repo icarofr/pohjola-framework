@@ -56,7 +56,7 @@ jobs:
         run: make gate
 
       # Run the compiled suite under Bun for runtime parity with production
-      # (Bun canary — required for Bun.serve routes). `spago test`
+      # (Bun stable — required for Bun.serve routes). `spago test`
       # hardcodes the Node runner (no flag/env override), so compile with
       # `bun x spago build` (already includes test modules) and invoke the compiled
       # Test.Main entry with Bun directly.

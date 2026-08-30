@@ -36,8 +36,10 @@ test.describe("Alpine AJAX navigation", () => {
       window.__marker = 1;
     });
 
-    // Click the About link
-    await page.click('a[href="/en/about"]');
+    // Click the desktop nav About link (not hero CTA or lang switcher).
+    await page
+      .locator('header#header .navbar-center a[href="/en/about"]')
+      .click();
 
     // URL should update
     await expect(page).toHaveURL(/\/en\/about/);
@@ -50,14 +52,17 @@ test.describe("Alpine AJAX navigation", () => {
       "About",
     );
     await expect(page.locator("header#header[x-sync]")).toHaveCount(1);
-    // Desktop navbar + mobile drawer both render the About link (mobile is
-    // CSS-hidden on md+ but remains in the DOM).
+    // Desktop navbar + mobile primary nav each render one About link. Language
+    // switcher links also point at the current URL (/en/about) — scope to nav
+    // regions, not href alone (mobile drawer utility footer reuses the URL).
     await expect(
       page.locator('header#header .navbar-center a[href="/en/about"]'),
     ).toHaveCount(1);
-    await expect(page.locator('header#header a[href="/en/about"]')).toHaveCount(
-      2,
-    );
+    await expect(
+      page
+        .locator("header#header .mobile-drawer > .space-y-1")
+        .getByRole("link", { name: "About", exact: true }),
+    ).toHaveCount(1);
 
     // Marker should still be 1 (no reload occurred)
     expect(await page.evaluate(() => window.__marker)).toBe(1);

@@ -6,23 +6,20 @@
 # ---------------------------------------------------------------------------
 # Build stage — Bun + PureScript toolchain
 # ---------------------------------------------------------------------------
-FROM oven/bun:canary-debian AS build
+FROM oven/bun:debian AS build
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends git ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
-# PureScript compiler — npm registry (pinned), same as CI setup-toolchain action.
-# Avoid curling GitHub release tarballs during docker build (504-prone, uncached).
-ARG PURESCRIPT_VERSION=0.15.16
-RUN bun install --global purescript@${PURESCRIPT_VERSION}
-
 WORKDIR /app/pohjola-framework
 
-# Install dependencies (Spago, Tailwind, esbuild) with Bun (applies patches automatically)
 COPY package.json bun.lock ./
 COPY patches ./patches
-RUN bun install --frozen-lockfile
+# purescript postinstall races when lifecycle scripts run in parallel; serialize them.
+RUN bun install --frozen-lockfile --concurrent-scripts=1
+
+ENV PATH="/app/pohjola-framework/node_modules/.bin:${PATH}"
 
 # Copy project source
 COPY . .
@@ -53,8 +50,8 @@ ENV STATIC_ROOT=/app/dist
 
 WORKDIR /app
 
-# Bun runtime (canary — required for Bun.serve routes; 1.3.x crashes)
-COPY --from=oven/bun:canary-debian /usr/local/bin/bun /usr/local/bin/bun
+# Bun runtime (latest stable — Bun.serve routes; see ADR-007)
+COPY --from=oven/bun:debian /usr/local/bin/bun /usr/local/bin/bun
 
 # Bundled app: private server.js + public static assets under dist/
 # (FFI routes use relative paths ./dist/assets, ./dist/css, etc.)

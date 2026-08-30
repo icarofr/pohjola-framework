@@ -8,23 +8,24 @@ test.describe("Theme switcher (Light / Dark / System)", () => {
     await expect(page.locator("html")).not.toHaveClass(/dark/);
 
     const dropdown = page.locator("header#header .dropdown").nth(1);
+    const themeMenu = dropdown.locator("ul.dropdown-content");
     const themeToggle = dropdown.getByRole("button", {
       name: /Select theme \(Light \/ Dark \/ System\)/,
     });
     await themeToggle.click();
-    await dropdown.getByRole("button", { name: "Dark" }).click();
+    await themeMenu.getByRole("button", { name: "Dark", exact: true }).click();
     await expect(page.locator("html")).toHaveClass(/dark/);
     expect(await page.evaluate(() => localStorage.getItem("theme"))).toBe(
       "dark",
     );
     await themeToggle.click();
-    await dropdown.getByRole("button", { name: "Light" }).click();
+    await themeMenu.getByRole("button", { name: "Light", exact: true }).click();
     await expect(page.locator("html")).not.toHaveClass(/dark/);
     expect(await page.evaluate(() => localStorage.getItem("theme"))).toBe(
       "light",
     );
     await themeToggle.click();
-    await dropdown.getByRole("button", { name: "System" }).click();
+    await themeMenu.getByRole("button", { name: "System", exact: true }).click();
     expect(await page.evaluate(() => localStorage.getItem("theme"))).toBe(
       "system",
     );
@@ -34,11 +35,12 @@ test.describe("Theme switcher (Light / Dark / System)", () => {
     await page.goto("/en");
 
     const dropdown = page.locator("header#header .dropdown").nth(1);
+    const themeMenu = dropdown.locator("ul.dropdown-content");
     const themeToggle = dropdown.getByRole("button", {
       name: /Select theme \(Light \/ Dark \/ System\)/,
     });
     await themeToggle.click();
-    await dropdown.getByRole("button", { name: "Dark" }).click();
+    await themeMenu.getByRole("button", { name: "Dark", exact: true }).click();
     await expect(page.locator("html")).toHaveClass(/dark/);
 
     // Reload — dark mode should persist via localStorage
@@ -50,15 +52,18 @@ test.describe("Theme switcher (Light / Dark / System)", () => {
     await page.goto("/en");
 
     const dropdown = page.locator("header#header .dropdown").nth(1);
+    const themeMenu = dropdown.locator("ul.dropdown-content");
     const themeToggle = dropdown.getByRole("button", {
       name: /Select theme \(Light \/ Dark \/ System\)/,
     });
     await themeToggle.click();
-    await dropdown.getByRole("button", { name: "Dark" }).click();
+    await themeMenu.getByRole("button", { name: "Dark", exact: true }).click();
     await expect(page.locator("html")).toHaveClass(/dark/);
 
-    // Navigate via AJAX
-    await page.click('a[href="/en/about"]');
+    // Navigate via AJAX (desktop nav link, not lang switcher on same URL)
+    await page
+      .locator('header#header .navbar-center a[href="/en/about"]')
+      .click();
     await expect(page).toHaveURL(/\/en\/about/);
 
     // Dark mode should still be present

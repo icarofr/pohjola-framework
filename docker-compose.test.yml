@@ -10,7 +10,7 @@ services:
     # healthcheck driven by Dockerfile HEALTHCHECK
 
   posts-fixture:
-    image: oven/bun:canary-debian
+    image: oven/bun:debian
     volumes:
       - ./venom/fixtures/posts-server.js:/fixture/server.js:ro
     command: ["bun", "run", "/fixture/server.js"]
