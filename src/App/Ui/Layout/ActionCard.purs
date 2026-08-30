@@ -61,7 +61,6 @@ actionCard props =
                                     , size: Sm
                                     , lang: t.lang
                                     , route: t.route
-                                    , extraClass: ""
                                     }
                                     props.action.label
                                 External t ->
@@ -69,7 +68,6 @@ actionCard props =
                                     { variant: actionCardCtaVariant
                                     , size: Sm
                                     , href: t.href
-                                    , extraClass: ""
                                     }
                                     props.action.label
                             ]

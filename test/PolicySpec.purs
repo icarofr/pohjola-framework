@@ -1,8 +1,8 @@
 -- | Policy enforcement — manifest-driven scans + behavioral reference-page checks.
 -- |
 -- | Single test suite for conventions that were previously split across Makefile
--- | grep, verify-theme.sh string checks, and eval grep scripts. Fast structural
--- | checks also run via scripts/verify-policy.sh (same manifest).
+-- | Theme/string checks in PolicySpec. Fast structural checks run via
+-- | scripts/verify-policy.js (same manifest).
 module Test.PolicySpec (spec) where
 
 import Prelude
@@ -82,6 +82,11 @@ spec = do
         files <- liftGlob [ "src/App/Ui/**/*.purs", "src/App/Layout/**/*.purs" ]
         offenders <- Scan.findForbiddenInFiles manifest.forbiddenInAppUi files
         offenders `shouldEqual` []
+
+      it "App.Ui class tokens stay on the closed allowlist" do
+        manifest <- requireManifest
+        unknown <- Scan.findUnknownUiClassTokens manifest.uiClassPolicy.allowedTokens manifest.uiClassPolicy.scanRoot
+        unknown `shouldEqual` []
 
       it "no cross-feature imports" do
         offenders <- Scan.findCrossFeatureImports "src/App/Features"

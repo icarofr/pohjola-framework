@@ -17,7 +17,7 @@ contracts below. `docs/GUARANTEES.md` lists every guarantee and its check.
    enforces).
 5. `src/Data/I18n.purs` — dictionary. Update BOTH languages (compiler
    enforces).
-6. `policy/manifest.json` + `scripts/verify-policy.sh` (`make gate`) — what's
+6. `policy/manifest.json` + `scripts/verify-policy.js` (`make gate`) — what's
    banned: `unsafeCoerce`/`unsafePerformEffect`/`unsafePartial`, partial-function
    modules, `fromJust`, FFI outside `ffiAllowlist`, and any general-purpose HTML
    escape constructor.

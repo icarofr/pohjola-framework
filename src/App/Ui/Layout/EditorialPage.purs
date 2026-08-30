@@ -51,9 +51,9 @@ editorialPage page =
                     [ Divider.divider
                     , case act.target of
                         Internal t ->
-                          buttonLink { variant: act.variant, size: Lg, lang: t.lang, route: t.route, extraClass: "" } act.label
+                          buttonLink { variant: act.variant, size: Lg, lang: t.lang, route: t.route } act.label
                         External t ->
-                          buttonLinkExternal { variant: act.variant, size: Lg, href: t.href, extraClass: "" } act.label
+                          buttonLinkExternal { variant: act.variant, size: Lg, href: t.href } act.label
                     ]
                 Nothing -> text ""
             ]

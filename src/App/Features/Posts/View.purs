@@ -74,7 +74,6 @@ renderPostsError lang =
                       , size: Ui.Sm
                       , lang
                       , route: PostList
-                      , extraClass: ""
                       }
                       d.backToList
                   )

@@ -34,7 +34,6 @@ type FormConfig =
   , method :: String
   , lang :: Lang
   , honeypotName :: String
-  , classNames :: Maybe String
   }
 
 type InputProps =
@@ -148,9 +147,6 @@ renderStatusBanner status successMsg errorMsg = case status of
 formContainer :: FormConfig -> Array Html -> Html
 formContainer cfg children =
   let
-    cls = case cfg.classNames of
-      Just c -> c
-      Nothing -> "space-y-4"
     formChildren = [ langField cfg.lang, honeypotField cfg.honeypotName ] <> children
   in
-    el "form" [ action_ cfg.action, method_ cfg.method, class_ cls ] formChildren
+    el "form" [ action_ cfg.action, method_ cfg.method, class_ "space-y-4" ] formChildren

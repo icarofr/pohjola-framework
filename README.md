@@ -92,7 +92,7 @@ Feature logic lives in isolated domain modules. Asynchronous effects compose cle
 In loosely typed stacks, AI coding assistants frequently hallucinate missing properties, drop edge cases, forget localized translation keys, or produce inconsistent "utility soup" layouts.
 - **Mechanical Logic Enforcement:** An agent cannot declare a route without completing its bidirectional codec, sitemap entry, and bilingual dictionaries.
 - **Visual Drift Prevention (daisyUI + Slot Archetypes):** Raw layout utility soup in views is forbidden by the supported generator/boundary. `App.Ui` is authoritative: it owns semantic recipes and slot archetypes (`App.Ui.Layout.*`) built on **daisyUI 5 semantic components**, and agents consume those recipes through typed data records (`title`, `description`, `action`). This limits structural drift; existing code may still require migration, and the type system does not guarantee visual layout, CSS behavior, or intent.
-- **Fast Guardrails:** `policy/manifest.json` is the single source of truth. `make gate` (`scripts/verify-policy.sh`) enforces structural policy; `PolicySpec` (`make test`) adds behavioral scans and reference-page archetypes; `ContractSpec` pins CSP, Alpine seams, and security headers.
+- **Fast Guardrails:** `policy/manifest.json` is the single source of truth. `make gate` (`scripts/verify-policy.js`) enforces structural policy; `PolicySpec` (`make test`) adds behavioral scans and reference-page archetypes; `ContractSpec` pins CSP, Alpine seams, and security headers.
 
 ---
 

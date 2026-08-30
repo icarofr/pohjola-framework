@@ -2,8 +2,8 @@
 
 ## Scaffold a new feature
 
-`scripts/auto-scaffold.js` is the canonical feature generator. The shell script is
-legacy compatibility tooling and must not be used for new generator behavior.
+`scripts/auto-scaffold.js` is the canonical feature generator (Bun). Invoke it via
+`make new-feature` — do not add parallel shell generators.
 
 ```bash
 make new-feature NAME=Team                    # static page (default)
@@ -22,6 +22,9 @@ contract. It is not a full proof of the CSS/type system; existing feature views
 may still require migration to current recipes.
 
 ## Generate PureScript types from SQL Schema
+
+`src/App/Cli/GenSql.purs` is the canonical SQL codegen entrypoint. `make gen-sql`
+builds it and runs the CLI under Bun:
 
 ```bash
 make gen-sql                                  # generate from migrations/ directory

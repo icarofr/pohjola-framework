@@ -15,21 +15,23 @@ module Test.Policy.Scan
   , findRawAlpineOutsideAlpine
   , findRawInSrc
   , findScriptsOutsideAllowlist
+  , findUnknownUiClassTokens
   , pursFilesUnder
   ) where
 
 import Prelude
 
 import App.Bun (glob, readTextFile)
-import Data.Array (concat, length, mapMaybe, uncons)
+import Data.Array (concat, elem, filter, last, length, mapMaybe, mapWithIndex, nub, uncons)
 import Data.Char (toCharCode)
 import Data.Either (Either(..))
-import Data.Foldable (any)
+import Data.Foldable (all, any)
 import Data.Maybe (Maybe(..))
 import Data.String.CodeUnits (fromCharArray, stripPrefix, toCharArray) as CodeUnits
 import Data.String.Common (split) as Common
 import Data.String.Pattern (Pattern(..))
 import Data.Traversable (for)
+import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
@@ -181,3 +183,131 @@ findCrossFeatureImports featuresRoot = do
       Just rest ->
         if featureOfModule ("App.Features." <> rest) == Just ownFeature then Nothing
         else Just line
+
+-- | Class tokens in App.Ui quoted strings that are not on the closed allowlist.
+findUnknownUiClassTokens :: Array String -> String -> Aff (Array String)
+findUnknownUiClassTokens allowlist root = do
+  files <- liftEffect $ pursFilesUnder root
+  results <- for files \file -> do
+    content <- readTextFile file
+    pure case content of
+      Right c -> filter (\tok -> not (elem tok allowlist)) (classTokensInSource c)
+      Left _ -> []
+  pure (nub (concat results))
+
+quotedStrings :: String -> Array String
+quotedStrings source =
+  mapMaybe
+    ( \(Tuple i s) ->
+        if i `mod` 2 == 1 && s /= "" then
+          Just s
+        else
+          Nothing
+    )
+    (mapWithIndex Tuple (Common.split (Pattern "\"") source))
+
+classTokensInSource :: String -> Array String
+classTokensInSource source =
+  nub (concat (map tokensFromQuoted (quotedStrings source)))
+
+tokensFromQuoted :: String -> Array String
+tokensFromQuoted quoted =
+  let
+    parts = filter (_ /= "") (Common.split (Pattern " ") quoted)
+  in
+    if all isExtractedClassToken parts then
+      parts
+    else
+      []
+
+isExtractedClassToken :: String -> Boolean
+isExtractedClassToken tok =
+  not (startsWith "aria-" tok)
+    && not (endsWithDash tok)
+    && isClassCharset tok
+    && hasLetter tok
+    &&
+      ( containsSubstring "-" tok
+          || containsSubstring ":" tok
+          || containsSubstring "/" tok
+          || containsSubstring "[" tok
+          || elem tok unhyphenatedClassWords
+      )
+
+hasLetter :: String -> Boolean
+hasLetter s =
+  any
+    ( \c ->
+        let
+          n = toCharCode c
+        in
+          n >= 97 && n <= 122
+    )
+    (CodeUnits.toCharArray s)
+
+unhyphenatedClassWords :: Array String
+unhyphenatedClassWords =
+  [ "absolute"
+  , "alert"
+  , "avatar"
+  , "badge"
+  , "block"
+  , "border"
+  , "btn"
+  , "card"
+  , "collapse"
+  , "container"
+  , "contents"
+  , "divider"
+  , "fieldset"
+  , "fixed"
+  , "flex"
+  , "grid"
+  , "grow"
+  , "hero"
+  , "hidden"
+  , "inline"
+  , "input"
+  , "menu"
+  , "modal"
+  , "navbar"
+  , "prose"
+  , "shrink"
+  , "stat"
+  , "stats"
+  , "sticky"
+  , "tab"
+  , "tabs"
+  , "textarea"
+  , "toast"
+  , "truncate"
+  , "uppercase"
+  ]
+
+startsWith :: String -> String -> Boolean
+startsWith prefix s =
+  case CodeUnits.stripPrefix (Pattern prefix) s of
+    Just _ -> true
+    Nothing -> false
+
+endsWithDash :: String -> Boolean
+endsWithDash s =
+  last (CodeUnits.toCharArray s) == Just '-'
+
+isClassCharset :: String -> Boolean
+isClassCharset tok =
+  tok /= ""
+    && all isClassChar (CodeUnits.toCharArray tok)
+
+isClassChar :: Char -> Boolean
+isClassChar c =
+  let
+    n = toCharCode c
+  in
+    (n >= 48 && n <= 57)
+      || (n >= 97 && n <= 122)
+      || n == 45
+      || n == 58
+      || n == 47
+      || n == 91
+      || n == 93

@@ -244,7 +244,7 @@ grep -rn 'App.Alpine' src/App/Layout/Header.purs
 | `docs/conventions/server.md` | Shell detection, cache policy for shell responses |
 | `AGENTS.md` / `CLAUDE.md` | Task→doc map, architecture blurb |
 | `README.md` | Stack description |
-| `scripts/new-feature.sh` / `auto-scaffold.js` | `App.Htmx`, `shellLink` |
+| `scripts/auto-scaffold.js` | `App.Htmx`, `shellLink` |
 | `Makefile` header comment | PureScript + HTMX 4 |
 
 ### 6h. Makefile gate additions

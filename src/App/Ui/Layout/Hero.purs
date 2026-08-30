@@ -73,6 +73,6 @@ renderHeroButton :: ButtonVariant -> HeroAction -> Html
 renderHeroButton variant action =
   case action.target of
     Internal t ->
-      buttonLink { variant, size: Lg, lang: t.lang, route: t.route, extraClass: "" } action.label
+      buttonLink { variant, size: Lg, lang: t.lang, route: t.route } action.label
     External t ->
-      buttonLinkExternal { variant, size: Lg, href: t.href, extraClass: "" } action.label
+      buttonLinkExternal { variant, size: Lg, href: t.href } action.label

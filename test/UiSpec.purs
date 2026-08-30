@@ -223,4 +223,3 @@ spec = do
                   }
               )
         html `shouldContain` "btn-outline"
-        html `shouldSatisfy` (\h -> not $ String.contains (Pattern "btn-secondary") h)

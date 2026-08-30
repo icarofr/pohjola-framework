@@ -49,15 +49,15 @@ format-check:
 ## gate: structural policy checks (policy/manifest.json)
 .PHONY: gate
 gate:
-	@bash scripts/verify-policy.sh
+	@bun scripts/verify-policy.js
 
 ## generator-policy: validate the canonical generator and App.Ui boundary
 .PHONY: generator-policy design-policy
 generator-policy:
-	@bash scripts/verify-generator-fixture.sh
+	@bun scripts/verify-generator-fixture.js
 
 design-policy: generator-policy
-	@bash scripts/verify-theme.sh
+	@bun scripts/verify-theme.js
 
 # ==================================================================================== #
 # DEPENDENCIES
@@ -240,12 +240,12 @@ gen-sql:
 ## evals: list available agent evals
 .PHONY: evals
 evals:
-	@./evals/run-eval.sh
+	@bun evals/run-eval.js
 
 ## eval: run an agent eval (usage: make eval EVAL=01-add-page --check)
 .PHONY: eval
 eval:
-	@./evals/run-eval.sh $(EVAL) $(ARGS)
+	@bun evals/run-eval.js $(EVAL) $(ARGS)
 
 # ==================================================================================== #
 # DOCKER

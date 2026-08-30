@@ -59,7 +59,6 @@ conversionSection props =
                   , size: Lg
                   , lang: t.lang
                   , route: t.route
-                  , extraClass: ""
                   }
                   props.action.label
               External t ->
@@ -67,7 +66,6 @@ conversionSection props =
                   { variant: ButtonPrimary
                   , size: Lg
                   , href: t.href
-                  , extraClass: ""
                   }
                   props.action.label
           ]

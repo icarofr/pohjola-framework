@@ -9,8 +9,7 @@
  *   bun scripts/auto-scaffold.js --name=Team [--type=static|data] [--slug-fr=equipe] [--wire]
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { execSync } from "node:child_process";
+import { exists, readText, run, writeText } from "./lib/repo.js";
 
 const args = process.argv.slice(2);
 let name = "";
@@ -41,18 +40,17 @@ const lower = name.toLowerCase();
 if (!slugEn) slugEn = lower;
 if (!slugFr) slugFr = slugEn;
 
+async function main() {
 const featureDir = `src/App/Features/${name}`;
-if (existsSync(featureDir)) {
+if (await exists(featureDir)) {
   console.error(`Error: Feature directory already exists: ${featureDir}`);
   process.exit(1);
 }
 
-mkdirSync(featureDir, { recursive: true });
-
 // --- 1. Generate Feature Files ----------------------------------------------
 
 if (type === "static") {
-  writeFileSync(
+  await writeText(
     `${featureDir}/Page.purs`,
     `-- | ${name} page — entry point
 module App.Features.${name}.Page where
@@ -70,7 +68,7 @@ render lang = staticPage (render${name} lang)
 `
   );
 
-  writeFileSync(
+  await writeText(
     `${featureDir}/View.purs`,
     `-- | ${name} page view — App.Ui blueprints only
 module App.Features.${name}.View where
@@ -96,7 +94,7 @@ render${name} lang =
   );
 } else {
   // Data-backed feature
-  writeFileSync(
+  await writeText(
     `${featureDir}/Types.purs`,
     `-- | ${name} domain type + JSON decoding.
 module App.Features.${name}.Types where
@@ -127,7 +125,7 @@ instance decodeJson${name} :: DecodeJson ${name} where
 `
   );
 
-  writeFileSync(
+  await writeText(
     `${featureDir}/Service.purs`,
     `-- | ${name} data fetching via HTTP.
 module App.Features.${name}.Service where
@@ -146,8 +144,7 @@ fetch${name}s cfg = fetchJson (cfg.postsApiBase <> "/posts")
 `
   );
 
-  mkdirSync(`${featureDir}/Components`, { recursive: true });
-  writeFileSync(
+  await writeText(
     `${featureDir}/Components/${name}Card.purs`,
     `-- | ${name} card — App.Ui primitives only
 module App.Features.${name}.Components.${name}Card where
@@ -169,7 +166,7 @@ render${name}Card _ item =
 `
   );
 
-  writeFileSync(
+  await writeText(
     `${featureDir}/View.purs`,
     `-- | ${name} view — list rendering via App.Ui blueprints
 module App.Features.${name}.View where
@@ -226,7 +223,7 @@ render${name}Error lang =
 `
   );
 
-  writeFileSync(
+  await writeText(
     `${featureDir}/Page.purs`,
     `-- | ${name} page — fetches data and renders via View.
 module App.Features.${name}.Page where
@@ -260,7 +257,7 @@ if (wire) {
   console.log(`⚡ Auto-wiring ${name} across Data.Route, App.Main, and Data.I18n...`);
 
   // A. Update src/Data/Route.purs
-  let routeContent = readFileSync("src/Data/Route.purs", "utf-8");
+  let routeContent = await readText("src/Data/Route.purs");
 
   const requireMarker = (content, marker, file, description) => {
     if (!content.includes(marker)) {
@@ -342,7 +339,7 @@ if (wire) {
     }
   );
 
-  writeFileSync("src/Data/Route.purs", routeContent, "utf-8");
+  await writeText("src/Data/Route.purs", routeContent);
   for (const marker of [
     `| ${name}`,
     `${name} -> "${name}"`,
@@ -362,7 +359,7 @@ if (wire) {
   console.log("  ✓ Updated src/Data/Route.purs");
 
   // B. Update src/App/Main.purs
-  let mainContent = readFileSync("src/App/Main.purs", "utf-8");
+  let mainContent = await readText("src/App/Main.purs");
 
   const importLine =
     type === "data"
@@ -404,14 +401,14 @@ if (wire) {
     );
   }
 
-  writeFileSync("src/App/Main.purs", mainContent, "utf-8");
+  await writeText("src/App/Main.purs", mainContent);
   requireMarker(mainContent, importLine, "src/App/Main.purs", "feature import");
   requireMarker(mainContent, renderCase, "src/App/Main.purs", "pageRenderer case");
   requireMarker(mainContent, handleRouteCase, "src/App/Main.purs", "handleRoute case");
   console.log("  ✓ Updated src/App/Main.purs");
 
   // C. Update src/Data/I18n.purs
-  let i18nContent = readFileSync("src/Data/I18n.purs", "utf-8");
+  let i18nContent = await readText("src/Data/I18n.purs");
 
   // 1. Dictionary nav
   i18nContent = i18nContent.replace(
@@ -467,7 +464,7 @@ if (wire) {
     }
   );
 
-  writeFileSync("src/Data/I18n.purs", i18nContent, "utf-8");
+  await writeText("src/Data/I18n.purs", i18nContent);
   for (const marker of [
     `      , ${lower} :: String`,
     `  , ${lower} ::\n      { heading :: String`,
@@ -485,7 +482,7 @@ if (wire) {
   console.log("  ✓ Updated src/Data/I18n.purs");
 
   // D. Update src/App/Layout/Head.purs (seoDescription)
-  let headContent = readFileSync("src/App/Layout/Head.purs", "utf-8");
+  let headContent = await readText("src/App/Layout/Head.purs");
 
   // seoDescription has one language-polymorphic case expression. Insert the
   // route once and use the generated dictionary section for both languages.
@@ -501,15 +498,23 @@ if (wire) {
     }
   }
 
-  writeFileSync("src/App/Layout/Head.purs", headContent, "utf-8");
+  await writeText("src/App/Layout/Head.purs", headContent);
   requireMarker(headContent, headMarker, "src/App/Layout/Head.purs", "seoDescription route case");
   console.log("  ✓ Updated src/App/Layout/Head.purs");
 
   // Format code
   try {
-    execSync("bun x purs-tidy format-in-place 'src/**/*.purs' 'test/**/*.purs'", {
-      stdio: "inherit",
-    });
+    run(
+      [
+        "bun",
+        "x",
+        "purs-tidy",
+        "format-in-place",
+        "src/**/*.purs",
+        "test/**/*.purs",
+      ],
+      { throwOnError: true },
+    );
     console.log("  ✓ Formatted with purs-tidy");
   } catch (error) {
     console.error("✘ Formatting failed; refusing to complete auto-wiring.");
@@ -518,10 +523,13 @@ if (wire) {
 
   console.log("\n⚡ Auto-wiring complete! Validating with Spago build...");
   try {
-    execSync("bun x spago build --strict", { stdio: "inherit" });
+    run(["bun", "x", "spago", "build", "--strict"], { throwOnError: true });
     console.log("✓ Built successfully with zero compiler errors!");
   } catch (error) {
     console.error("✘ Build check failed. Inspect generated changes.");
     throw error;
   }
 }
+}
+
+await main();

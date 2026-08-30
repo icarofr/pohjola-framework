@@ -33,19 +33,19 @@ baseClass :: String
 baseClass = "btn"
 
 -- | Internal link styled as a button
-buttonLink :: { variant :: ButtonVariant, size :: Size, lang :: Lang, route :: Route, extraClass :: String } -> String -> Html
+buttonLink :: { variant :: ButtonVariant, size :: Size, lang :: Lang, route :: Route } -> String -> Html
 buttonLink props label =
   spaLink props.lang props.route
-    [ class_ (baseClass <> " " <> renderVariant props.variant <> " " <> renderSize props.size <> " " <> props.extraClass) ]
+    [ class_ (baseClass <> " " <> renderVariant props.variant <> " " <> renderSize props.size) ]
     [ text label ]
 
 -- | Render an external link styled as a button
-buttonLinkExternal :: { variant :: ButtonVariant, size :: Size, href :: String, extraClass :: String } -> String -> Html
+buttonLinkExternal :: { variant :: ButtonVariant, size :: Size, href :: String } -> String -> Html
 buttonLinkExternal props label =
   el "a"
     [ href props.href
     , target_ "_blank"
     , rel_ "noopener noreferrer"
-    , class_ (baseClass <> " " <> renderVariant props.variant <> " " <> renderSize props.size <> " " <> props.extraClass)
+    , class_ (baseClass <> " " <> renderVariant props.variant <> " " <> renderSize props.size)
     ]
     [ text label ]

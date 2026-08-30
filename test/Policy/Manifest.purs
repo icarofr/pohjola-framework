@@ -2,6 +2,7 @@
 module Test.Policy.Manifest
   ( PolicyManifest
   , ThemePolicy
+  , UiClassPolicy
   , loadManifest
   ) where
 
@@ -21,6 +22,11 @@ type ThemePolicy =
   , themeModule :: String
   }
 
+type UiClassPolicy =
+  { allowedTokens :: Array String
+  , scanRoot :: String
+  }
+
 type PolicyManifest =
   { version :: Int
   , ffiAllowlist :: Array String
@@ -31,6 +37,7 @@ type PolicyManifest =
   , forbiddenInAppUi :: Array String
   , envReadAllowlist :: Array String
   , theme :: ThemePolicy
+  , uiClassPolicy :: UiClassPolicy
   }
 
 loadManifest :: Aff (Either String PolicyManifest)

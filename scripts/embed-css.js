@@ -1,12 +1,14 @@
-import fs from "node:fs";
-import path from "node:path";
+#!/usr/bin/env bun
+import { join } from "node:path";
+import { file } from "bun";
+import { ROOT, readText, writeText } from "./lib/repo.js";
 
-const cssPath = path.resolve("dist/css/styles.css");
-const outPath = path.resolve("src/App/Layout/Styles.purs");
+const cssPath = join(ROOT, "dist/css/styles.css");
+const outPath = join(ROOT, "src/App/Layout/Styles.purs");
 
 let css = "";
-if (fs.existsSync(cssPath)) {
-  css = fs.readFileSync(cssPath, "utf8").trim();
+if (await file(cssPath).exists()) {
+  css = (await readText(cssPath)).trim();
 }
 
 const escaped = JSON.stringify(css);
@@ -18,5 +20,5 @@ stylesCss :: String
 stylesCss = ${escaped}
 `;
 
-fs.writeFileSync(outPath, purs, "utf8");
+await writeText(outPath, purs);
 console.log(`[embed-css] Embedded ${css.length} bytes into ${outPath}`);

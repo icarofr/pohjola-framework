@@ -6,7 +6,7 @@
 - `dist/` → public static root; `dist-server/` → private server bundle (never serve from `dist/`).
 - Interactivity via Alpine typed constructors in `App.Alpine` only — no custom JavaScript (ADR-000).
 - Server FFI is restricted to 4 allowlisted modules (ADR-003/007). See `policy/manifest.json` (`ffiAllowlist`).
-- `make gate` runs `scripts/verify-policy.sh` against `policy/manifest.json` (banned unsafe imports, FFI allowlist, content firewall, text-tone policy, theme names, **no `class_` in feature views** — ADR-012).
+- `make gate` runs `scripts/verify-policy.js` against `policy/manifest.json` (banned unsafe imports, FFI allowlist, content firewall, text-tone policy, theme names, **no `class_` in feature views** — ADR-012).
 - CSP is pinned byte-exact in `test/ContractSpec.purs`. Widening demands justification.
 
 ### Commands (daily use)
@@ -16,10 +16,10 @@
 |`make dev`|Tailwind + static sync + Spago build |
 |`make run`|Build and run with Bun |
 |`make build`|Produce production CSS & bundle (output to `dist-server/`) |
-|`make test`|Unit + property + ContractSpec + PolicySpec (runs under Bun) |
+|`make test`|Unit + property + ContractSpec (runs under Bun) |
 |`make test/integration`|Venom integration tests |
 |`make test/e2e`|Playwright end-to-end |
-|`make gate`|Structural policy (`policy/manifest.json` via `scripts/verify-policy.sh`) |
+|`make gate`|Structural policy (`policy/manifest.json` via `scripts/verify-policy.js`) |
 |`make fast`|Local policy + formatting checks |
 |`make generator-policy`|Canonical generator/`App.Ui` boundary check (not a full CSS/type-system proof) |
 |`make local`|Fast checks + build |
@@ -64,7 +64,8 @@
 - Before adding a feature, read the relevant convention doc (task→doc map above). **If you skip this, state why.**
 - Before adding UI/styles, read `DESIGN.md` and `docs/conventions/design-system.md`. Compose views with `App.Ui.Layout.*` slot templates and `App.Ui` primitives (never raw layout utility soup).
 - DaisyUI is the semantic component layer: `App.Ui` owns recipes, feature views consume them, and Tailwind layout utilities are allowed only inside `App.Ui`.
-- Use `scripts/auto-scaffold.js` (via `make new-feature`) as the canonical feature generator; `scripts/new-feature.sh` is legacy.
+- Use `scripts/auto-scaffold.js` (via `make new-feature`) as the canonical feature generator.
+- SQL codegen runs via `App.Cli.GenSql` (`make gen-sql`) — no standalone JS script.
 - Before adding FFI, read `docs/ffi-taming-guide.md`. **If you skip this, state why.**
 - Before proposing auth, read `docs/adr/ADR-002-auth-shape.md`. **If you skip this, state why.**
 - Before committing, run `make check`. **If you skip this, state why.**
@@ -87,4 +88,4 @@
 - Output bundles to `dist-server/` — `dist/` is the public static root only.
 - Keep CSP at the pinned policy — widenings need an ADR (ContractSpec exact-string assertion).
 - The `Html` ADT has no general-purpose unescaped constructor; script/style contexts and `doctype` are explicit (`make gate`).
-- Express interactivity through `App.Alpine` constructors — raw Alpine strings fail PolicySpec.
+- Express interactivity through `App.Alpine` constructors — raw Alpine strings fail ContractSpec.

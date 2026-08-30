@@ -5,8 +5,8 @@ user-shaped task in `PROMPT.md`, and checks in `check.sh` that verify the agent
 followed our conventions.
 
 Structural policy lives in `policy/manifest.json` and is enforced by
-`make gate` (`scripts/verify-policy.sh`) and `Test.PolicySpec` (`make test`).
-Eval `check.sh` scripts should delegate to those tiers instead of duplicating
+`make gate` (`scripts/verify-policy.js`) and `Test.PolicySpec` (`make test`).
+Eval `check.js` / `check.sh` scripts should delegate to those tiers instead of duplicating
 grep rules.
 
 The point: find places where agents get the conventions wrong, then fix it by
@@ -22,7 +22,7 @@ evals/evals/01-add-page/
 └── check.sh    # assertions — delegate to make gate/test when possible
 ```
 
-The runner is `evals/run-eval.sh`. It shows the prompt, lets the agent work,
+The runner is `evals/run-eval.js`. It shows the prompt, lets the agent work,
 then runs the assertions:
 
 ```bash
@@ -36,8 +36,8 @@ make eval EVAL=01-add-page --check
 Or directly:
 
 ```bash
-./evals/run-eval.sh 01-add-page          # show prompt
-./evals/run-eval.sh 01-add-page --check  # run assertions
+bun evals/run-eval.js 01-add-page          # show prompt
+bun evals/run-eval.js 01-add-page --check  # run assertions
 ```
 
 ## Workflow
@@ -72,7 +72,7 @@ knows the convention, not whether it can pattern-match a name you handed it.
 canonical enforcement instead of duplicating grep rules:
 
 ```bash
-# Structural + behavioral policy (see evals/evals/10-ui-archetypes/check.sh)
+# Structural + behavioral policy (see evals/evals/10-ui-archetypes/check.js)
 make gate
 make test
 ```
@@ -89,7 +89,7 @@ check "route added" "grep -q 'Team' src/Data/Route.purs"
 ```
 evals/
 ├── evals/          # eval fixtures (PROMPT.md + check.sh each)
-├── run-eval.sh     # runner
+├── run-eval.js     # runner
 └── README.md       # this file
 ```
 

@@ -45,9 +45,12 @@ routes into `App.Ui` blueprints only.
 - Tailwind layout utilities (`space-y-*`, `flex`, `grid`, …) are allowed
   **only** inside `App.Ui` and `App.Layout` (shell).
 - `css/input.css` defines custom DaisyUI themes `pohjola` / `pohjola-dark` from
-  `DESIGN.md` tokens. `scripts/verify-theme.sh` fails if compiled CSS omits primary
-  `#047857`. `forbiddenInAppUi` in `policy/manifest.json` bans `btn-secondary` in
-  `App.Ui` / `App.Layout`.
+  `DESIGN.md` tokens. `scripts/verify-theme.js` fails if compiled CSS omits primary
+  `#047857`.
+- **Closed class vocabulary in `App.Ui`:** `policy/manifest.json`
+  `uiClassPolicy.allowedTokens` is the only set of class tokens `App.Ui` may
+  quote. New utilities require a manifest edit (review), not a silent string.
+- **No `extraClass` on `buttonLink`.** Button chrome is variant + size only.
 
 ### Reference feature implementations
 
@@ -65,11 +68,11 @@ routes into `App.Ui` blueprints only.
 |---|---|---|
 | Compiler | Closed ADTs (`TextTone`, `ButtonVariant`, blueprint records) | Invalid variant names |
 | `policy/manifest.json` | Single source of truth for structural policy lists | FFI, banned fns, feature-view forbidden patterns, theme names |
-| `make gate` | `scripts/verify-policy.sh` reads the manifest | Fast pre-compile structural checks (same rules as PolicySpec scans) |
+| `make gate` | `scripts/verify-policy.js` reads the manifest | Fast pre-compile structural checks (same rules as PolicySpec scans) |
 | `make test` → `PolicySpec` | Manifest-driven scans + rendered reference-page archetypes | Behavioral UI policy, cross-feature imports, theme script strings |
-| `make design-policy` | `generator-policy` + `scripts/verify-theme.sh` | Generator/`App.Ui` boundary + compiled CSS primary token |
+| `make design-policy` | `generator-policy` + `scripts/verify-theme.js` | Generator/`App.Ui` boundary + compiled CSS primary token |
 | `ContractSpec` | CSP, Alpine seam, cache, security headers | Security + runtime contracts only |
-| Eval 10 | Thin wrapper: `make gate` + `verify-theme.sh` + `make test` | Agent regression after UI tasks |
+| Eval 10 | Thin wrapper: `make gate` + `verify-theme.js` + `make test` | Agent regression after UI tasks |
 | Convention | `design-system.md` scorecard (primary CTA, contrast) | UX — not yet automated |
 
 `make generator-policy` validates generator wiring and compile; it is **not**

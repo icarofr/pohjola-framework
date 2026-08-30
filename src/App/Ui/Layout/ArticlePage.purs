@@ -67,7 +67,6 @@ articlePage page =
           , size: Sm
           , lang: page.back.lang
           , route: page.back.route
-          , extraClass: ""
           }
           ("← " <> page.back.label)
       , el "article" [ class_ "max-w-3xl space-y-6" ]
