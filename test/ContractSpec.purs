@@ -518,6 +518,13 @@ spec = do
       html <- renderStaticPage Home En
       html `StrAssert.shouldContain` "x-show=\"menuOpen\""
       html `StrAssert.shouldContain` ":aria-expanded=\"menuOpen.toString()\""
+    it "language and theme menus use DaisyUI popover dropdowns" do
+      html <- renderStaticPage Home En
+      html `StrAssert.shouldContain` "popovertarget=\"header-lang-menu\""
+      html `StrAssert.shouldContain` "popovertarget=\"header-theme-menu\""
+      html `StrAssert.shouldContain` "id=\"header-lang-menu\""
+      html `StrAssert.shouldContain` "id=\"header-theme-menu\""
+      html `StrAssert.shouldContain` "popover"
 
   describe "Alpine seam — typed constructors" do
     it "no raw Alpine attribute strings outside App.Alpine" do
@@ -525,16 +532,13 @@ spec = do
       offenders `shouldEqual` []
 
   describe "serviceCopy non-fallback coverage" do
-    it "every service has a non-empty description in both languages" do
-      for_ services \service ->
-        for_ allLangs \lang -> do
-          let copy = (dict lang).services.serviceCopy service.id
-          copy.description `shouldNotEqual` ""
-    it "every service has a non-empty title in both languages" do
+    it "every service has non-empty title, description, and action label in both languages" do
       for_ services \service ->
         for_ allLangs \lang -> do
           let copy = (dict lang).services.serviceCopy service.id
           copy.title `shouldNotEqual` ""
+          copy.description `shouldNotEqual` ""
+          copy.actionLabel `shouldNotEqual` ""
 
   describe "no external script src" do
     -- PostList/PostDetail are data-backed (network fetch at render time)

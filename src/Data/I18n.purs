@@ -55,6 +55,7 @@ defaultLang = En
 type ServiceCopy =
   { title :: String
   , description :: String
+  , actionLabel :: String
   }
 
 type Dictionary =
@@ -67,10 +68,10 @@ type Dictionary =
       { headline :: String
       , body :: String
       , ctaLabel :: String
+      , secondaryLabel :: String
       }
   , services ::
       { sectionTitle :: String
-      , bookButton :: String
       -- | Localized card copy by service id — pairs with Data.Content.services
       , serviceCopy :: ServiceId -> ServiceCopy
       }
@@ -158,29 +159,32 @@ en =
       { headline: "The Type-Safe Functional Web Framework for Bun"
       , body: "MPA simplicity with a seamless SPA experience. Built in PureScript with Bun runtime speed, Alpine.js micro-interactivity, and zero runtime exceptions."
       , ctaLabel: "About Pohjola"
+      , secondaryLabel: "Browse notes"
       }
   , services:
       { sectionTitle: "Architectural Highlights"
-      , bookButton: "GitHub"
       , serviceCopy: \sid -> case sid of
           ServiceId "service-1" ->
             { title: "PureScript Type Safety"
             , description: "Total pattern matching, no nulls, and an XSS-safe Html ADT that guarantees correctness at compile time."
+            , actionLabel: "See the stack"
             }
           ServiceId "service-2" ->
             { title: "Sub-Millisecond SSR on Bun"
             , description: "Native Bun server runtime delivering sub-millisecond route responses, lightweight streaming SSR, and instant dev server restarts."
+            , actionLabel: "Read the notes"
             }
           ServiceId "service-3" ->
             { title: "Alpine.js Reactive Seams"
             , description: "Client-side micro-interactivity with typed Alpine constructors. Zero ad-hoc JavaScript scripts, seamless AJAX fragment swaps."
+            , actionLabel: "Contribute"
             }
-          _ -> { title: "", description: "" }
+          _ -> { title: "", description: "", actionLabel: "" }
       }
   , cta:
       { heading: "Start building with `make dev`"
       , body: "Clone the repository, run `make dev`, and experience full-stack functional web development with instant hot reload."
-      , ctaLabel: "About Pohjola"
+      , ctaLabel: "View the repository"
       }
   , about:
       { heading: "About Pohjola"
@@ -261,29 +265,32 @@ fr =
       { headline: "Le framework web fonctionnel et typé pour Bun"
       , body: "La simplicité d'une MPA avec la fluidité d'une SPA. Conçu en PureScript avec la vitesse de Bun, la réactivité d'Alpine.js et zéro exception à l'exécution."
       , ctaLabel: "En savoir plus"
+      , secondaryLabel: "Lire les articles"
       }
   , services:
       { sectionTitle: "Points clés de l'architecture"
-      , bookButton: "GitHub"
       , serviceCopy: \sid -> case sid of
           ServiceId "service-1" ->
             { title: "Sécurité de typage PureScript"
             , description: "Filtrage total par motif, aucun null, et un ADT Html typé sans faille XSS qui garantit la correction à la compilation."
+            , actionLabel: "Voir l'approche"
             }
           ServiceId "service-2" ->
             { title: "SSR instantané sous Bun"
             , description: "Moteur d'exécution Bun natif offrant des temps de réponse sous la milliseconde, du streaming SSR et un rechargement instantané."
+            , actionLabel: "Lire les notes"
             }
           ServiceId "service-3" ->
             { title: "Interactivité Alpine.js typée"
             , description: "Micro-interactivité côté client avec des constructeurs Alpine typés. Zéro JavaScript ad-hoc et transitions AJAX fluides."
+            , actionLabel: "Contribuer"
             }
-          _ -> { title: "", description: "" }
+          _ -> { title: "", description: "", actionLabel: "" }
       }
   , cta:
       { heading: "Commencez avec `make dev`"
       , body: "Clonez le dépôt, lancez `make dev` et découvrez le développement web full-stack fonctionnel avec rechargement instantané."
-      , ctaLabel: "En savoir plus"
+      , ctaLabel: "Voir le dépôt"
       }
   , about:
       { heading: "À propos de Pohjola"

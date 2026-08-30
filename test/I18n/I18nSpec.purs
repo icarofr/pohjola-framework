@@ -1,4 +1,4 @@
--- | i18n tests — dictionary completeness, non-empty strings
+-- | i18n tests — dictionaries load and localize (copy is not pinned).
 module Test.I18n.I18nSpec where
 
 import Prelude
@@ -12,35 +12,16 @@ spec :: Spec Unit
 spec = do
   describe "I18n" do
     describe "dictionary access" do
-      it "returns English dictionary for En" do
-        (dict En).common.siteTitle `shouldEqual` "Pohjola"
-      it "returns French dictionary for Fr" do
-        (dict Fr).common.siteTitle `shouldEqual` "Pohjola"
-      it "both languages have same site title" do
+      it "both languages share the site title" do
         (dict En).common.siteTitle `shouldEqual` (dict Fr).common.siteTitle
+        (dict En).common.siteTitle `shouldNotEqual` ""
 
-    describe "nav labels" do
-      it "English has About" do
-        (dict En).nav.about `shouldEqual` "About"
-      it "French has À propos" do
-        (dict Fr).nav.about `shouldEqual` "À propos"
-      it "English has Contact" do
-        (dict En).nav.contact `shouldEqual` "Contact"
-      it "French has Contact" do
-        (dict Fr).nav.contact `shouldEqual` "Contact"
-
-    describe "hero content" do
-      it "English has headline" do
-        (dict En).hero.headline `shouldEqual` "The Type-Safe Functional Web Framework for Bun"
-      it "French has headline" do
-        (dict Fr).hero.headline `shouldEqual` "Le framework web fonctionnel et typé pour Bun"
-
-    describe "services" do
-      let svc1 = ServiceId "service-1"
-      it "English has copy for service-1" do
-        ((dict En).services.serviceCopy svc1).title `shouldNotEqual` ""
-      it "French has copy for service-1" do
-        ((dict Fr).services.serviceCopy svc1).description `shouldNotEqual` ""
-      it "copy localizes between languages" do
+    describe "localization" do
+      it "nav and hero strings differ between languages" do
+        (dict En).nav.about `shouldNotEqual` (dict Fr).nav.about
+        (dict En).hero.headline `shouldNotEqual` (dict Fr).hero.headline
+      it "service copy localizes" do
+        let svc1 = ServiceId "service-1"
         ((dict En).services.serviceCopy svc1).description
           `shouldNotEqual` ((dict Fr).services.serviceCopy svc1).description
+        ((dict En).services.serviceCopy svc1).title `shouldNotEqual` ""

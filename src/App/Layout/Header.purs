@@ -3,8 +3,8 @@ module App.Layout.Header where
 
 import Prelude
 
-import App.Alpine (Flag(..), ThemeMode(..), ariaExpandedFlag, navLink, onClick, onClickOutside, onKeydownEscapeWindow, setFlag, toggleFlag, xCloak, xDataFlag, xDataTheme, xDataThemeWithFlag, xSetTheme, xSetThemeAndClose, xShowFlag, xShowTheme, xSync)
-import App.Html (Html, attr, class_, el, href, id_, text, type_)
+import App.Alpine (Flag(..), ThemeMode(..), ariaExpandedFlag, navLink, onClick, onClickOutside, onKeydownEscapeWindow, setFlag, toggleFlag, xCloak, xDataFlag, xDataTheme, xSetTheme, xShowFlag, xShowTheme, xSync)
+import App.Html (Html, attr, class_, el, flag, href, id_, style_, text, type_)
 import App.Layout.Icons (globeIcon, pohjolaLogo)
 import App.Ui.TextTone (TextTone(..), interactiveSoftClass, toneClass)
 import Data.Content (siteInfo)
@@ -48,19 +48,15 @@ render lang currentRoute =
 
           -- Navbar End: Desktop Dropdowns + Mobile Hamburger Trigger
           , el "div" [ class_ "navbar-end w-auto flex items-center gap-1.5" ]
-              [ -- Desktop Language Dropdown (hidden on mobile)
+              [ -- Desktop language menu — DaisyUI popover (native light-dismiss)
                 el "div"
-                  [ class_ "dropdown dropdown-end hidden md:block"
-                  , xDataFlag LangMenuOpen false
-                  , onClickOutside (setFlag LangMenuOpen false)
-                  , onKeydownEscapeWindow (setFlag LangMenuOpen false)
-                  ]
+                  [ class_ "hidden md:block" ]
                   [ el "button"
                       [ type_ "button"
-                      , onClick (toggleFlag LangMenuOpen)
+                      , attr "popovertarget" "header-lang-menu"
+                      , style_ "anchor-name:--header-lang"
                       , class_ ("btn btn-ghost btn-sm gap-1 px-2 text-xs font-mono font-medium " <> interactiveSoftClass)
-                      , attr "aria-label" "Select language"
-                      , ariaExpandedFlag LangMenuOpen
+                      , attr "aria-label" d.common.langToggleLabel
                       ]
                       [ globeIcon
                       , el "span" [ class_ "font-semibold" ] [ text currentLangLabel ]
@@ -68,14 +64,14 @@ render lang currentRoute =
                           [ el "path" [ attr "stroke-linecap" "round", attr "stroke-linejoin" "round", attr "d" "M19.5 8.25l-7.5 7.5-7.5-7.5" ] [] ]
                       ]
                   , el "ul"
-                      [ xShowFlag LangMenuOpen
-                      , xCloak
-                      , class_ "dropdown-content menu menu-sm bg-base-100 rounded-box z-50 w-36 p-1 border border-base-300 text-xs mt-1 block"
+                      [ class_ "dropdown dropdown-end menu menu-sm bg-base-100 rounded-box z-50 w-36 p-1 border border-base-300 text-xs shadow-sm"
+                      , flag "popover"
+                      , id_ "header-lang-menu"
+                      , style_ "position-anchor:--header-lang"
                       ]
                       [ el "li" []
                           [ el "a"
                               [ href (routeUrl En currentRoute)
-                              , onClick (setFlag LangMenuOpen false)
                               , class_ (if lang == En then "active font-bold" else "")
                               ]
                               [ text "English" ]
@@ -83,7 +79,6 @@ render lang currentRoute =
                       , el "li" []
                           [ el "a"
                               [ href (routeUrl Fr currentRoute)
-                              , onClick (setFlag LangMenuOpen false)
                               , class_ (if lang == Fr then "active font-bold" else "")
                               ]
                               [ text "Français" ]
@@ -91,40 +86,36 @@ render lang currentRoute =
                       ]
                   ]
 
-              -- Desktop Theme Controller Dropdown (hidden on mobile)
+              -- Desktop theme menu — DaisyUI popover (native light-dismiss)
               , el "div"
-                  [ class_ "dropdown dropdown-end hidden md:block"
-                  , xDataThemeWithFlag ThemeMenuOpen false
-                  , onClickOutside (setFlag ThemeMenuOpen false)
-                  , onKeydownEscapeWindow (setFlag ThemeMenuOpen false)
+                  [ class_ "hidden md:block"
+                  , xDataTheme
                   ]
                   [ el "button"
                       [ type_ "button"
-                      , onClick (toggleFlag ThemeMenuOpen)
+                      , attr "popovertarget" "header-theme-menu"
+                      , style_ "anchor-name:--header-theme"
                       , class_ ("btn btn-ghost btn-sm btn-circle " <> interactiveSoftClass)
                       , attr "aria-label" (d.common.themeLabel <> " (Light / Dark / System)")
-                      , ariaExpandedFlag ThemeMenuOpen
                       ]
-                      [ -- Sun icon for Light
-                        el "svg" [ class_ "size-4", xShowTheme ThemeLight, attr "fill" "none", attr "viewBox" "0 0 24 24", attr "stroke-width" "2", attr "stroke" "currentColor" ]
+                      [ el "svg" [ class_ "size-4", xShowTheme ThemeLight, attr "fill" "none", attr "viewBox" "0 0 24 24", attr "stroke-width" "2", attr "stroke" "currentColor" ]
                           [ el "path" [ attr "stroke-linecap" "round", attr "stroke-linejoin" "round", attr "d" "M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" ] [] ]
-                      -- Moon icon for Dark
                       , el "svg" [ class_ "size-4", xShowTheme ThemeDark, attr "fill" "none", attr "viewBox" "0 0 24 24", attr "stroke-width" "2", attr "stroke" "currentColor" ]
                           [ el "path" [ attr "stroke-linecap" "round", attr "stroke-linejoin" "round", attr "d" "M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" ] [] ]
-                      -- Monitor icon for System
                       , el "svg" [ class_ "size-4", xShowTheme ThemeSystem, attr "fill" "none", attr "viewBox" "0 0 24 24", attr "stroke-width" "2", attr "stroke" "currentColor" ]
                           [ el "path" [ attr "stroke-linecap" "round", attr "stroke-linejoin" "round", attr "d" "M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" ] [] ]
                       ]
                   , el "ul"
-                      [ xShowFlag ThemeMenuOpen
-                      , xCloak
-                      , class_ "dropdown-content menu menu-sm bg-base-100 rounded-box z-50 w-32 p-1 border border-base-300 text-xs font-mono mt-1 whitespace-nowrap block"
+                      [ class_ "dropdown dropdown-end menu menu-sm bg-base-100 rounded-box z-50 w-32 p-1 border border-base-300 text-xs font-mono whitespace-nowrap shadow-sm"
+                      , flag "popover"
+                      , id_ "header-theme-menu"
+                      , style_ "position-anchor:--header-theme"
                       ]
                       [ el "li" []
                           [ el "button"
                               [ type_ "button"
                               , class_ "flex items-center gap-2"
-                              , xSetThemeAndClose ThemeLight ThemeMenuOpen
+                              , xSetTheme ThemeLight
                               ]
                               [ el "svg" [ class_ "size-3.5", attr "fill" "none", attr "viewBox" "0 0 24 24", attr "stroke-width" "2", attr "stroke" "currentColor" ]
                                   [ el "path" [ attr "stroke-linecap" "round", attr "stroke-linejoin" "round", attr "d" "M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" ] [] ]
@@ -135,7 +126,7 @@ render lang currentRoute =
                           [ el "button"
                               [ type_ "button"
                               , class_ "flex items-center gap-2"
-                              , xSetThemeAndClose ThemeDark ThemeMenuOpen
+                              , xSetTheme ThemeDark
                               ]
                               [ el "svg" [ class_ "size-3.5", attr "fill" "none", attr "viewBox" "0 0 24 24", attr "stroke-width" "2", attr "stroke" "currentColor" ]
                                   [ el "path" [ attr "stroke-linecap" "round", attr "stroke-linejoin" "round", attr "d" "M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" ] [] ]
@@ -146,7 +137,7 @@ render lang currentRoute =
                           [ el "button"
                               [ type_ "button"
                               , class_ "flex items-center gap-2"
-                              , xSetThemeAndClose ThemeSystem ThemeMenuOpen
+                              , xSetTheme ThemeSystem
                               ]
                               [ el "svg" [ class_ "size-3.5", attr "fill" "none", attr "viewBox" "0 0 24 24", attr "stroke-width" "2", attr "stroke" "currentColor" ]
                                   [ el "path" [ attr "stroke-linecap" "round", attr "stroke-linejoin" "round", attr "d" "M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" ] [] ]

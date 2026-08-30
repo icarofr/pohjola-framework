@@ -28,10 +28,9 @@ test.describe("Internationalization", () => {
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
 
     // Click language toggle to switch to French
-    await page.getByRole("button", { name: "Select language" }).click();
+    await page.getByRole("button", { name: /Switch language|Changer de langue/ }).click();
     await page
-      .locator("header#header .dropdown")
-      .first()
+      .locator("#header-lang-menu")
       .getByRole("link", { name: /Français|French/i })
       .click();
     await expect(page).toHaveURL(/\/fr$/);

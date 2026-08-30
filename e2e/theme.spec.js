@@ -1,30 +1,54 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Theme switcher (Light / Dark / System)", () => {
+  async function openDesktopThemeMenu(page) {
+    const themeMenu = page.locator("#header-theme-menu");
+    const themeToggle = page.getByRole("button", {
+      name: /Select theme \(Light \/ Dark \/ System\)/,
+    });
+    if (!(await themeMenu.isVisible())) {
+      await themeToggle.click();
+    }
+    return { themeMenu, themeToggle };
+  }
+
+  test("desktop dropdowns close on click outside", async ({ page }) => {
+    await page.goto("/en");
+    const langMenu = page.locator("#header-lang-menu");
+    const themeMenu = page.locator("#header-theme-menu");
+    const outside = page.locator("main h1").first();
+
+    await page.getByRole("button", { name: /Switch language|Changer de langue/ }).click();
+    await expect(langMenu).toBeVisible();
+    await outside.click();
+    await expect(langMenu).toBeHidden();
+
+    await page
+      .getByRole("button", { name: /Select theme \(Light \/ Dark \/ System\)/ })
+      .click();
+    await expect(themeMenu).toBeVisible();
+    await outside.click();
+    await expect(themeMenu).toBeHidden();
+  });
+
   test("desktop dropdown selects each theme", async ({ page }) => {
     await page.goto("/en");
 
-    // Initial state: default system (no dark class in standard light mode test env)
     await expect(page.locator("html")).not.toHaveClass(/dark/);
 
-    const dropdown = page.locator("header#header .dropdown").nth(1);
-    const themeMenu = dropdown.locator("ul.dropdown-content");
-    const themeToggle = dropdown.getByRole("button", {
-      name: /Select theme \(Light \/ Dark \/ System\)/,
-    });
-    await themeToggle.click();
+    let { themeMenu } = await openDesktopThemeMenu(page);
     await themeMenu.getByRole("button", { name: "Dark", exact: true }).click();
     await expect(page.locator("html")).toHaveClass(/dark/);
     expect(await page.evaluate(() => localStorage.getItem("theme"))).toBe(
       "dark",
     );
-    await themeToggle.click();
+    ({ themeMenu } = await openDesktopThemeMenu(page));
     await themeMenu.getByRole("button", { name: "Light", exact: true }).click();
     await expect(page.locator("html")).not.toHaveClass(/dark/);
     expect(await page.evaluate(() => localStorage.getItem("theme"))).toBe(
       "light",
     );
-    await themeToggle.click();
+    ({ themeMenu } = await openDesktopThemeMenu(page));
     await themeMenu.getByRole("button", { name: "System", exact: true }).click();
     expect(await page.evaluate(() => localStorage.getItem("theme"))).toBe(
       "system",
@@ -34,16 +58,10 @@ test.describe("Theme switcher (Light / Dark / System)", () => {
   test("dark mode persists on reload", async ({ page }) => {
     await page.goto("/en");
 
-    const dropdown = page.locator("header#header .dropdown").nth(1);
-    const themeMenu = dropdown.locator("ul.dropdown-content");
-    const themeToggle = dropdown.getByRole("button", {
-      name: /Select theme \(Light \/ Dark \/ System\)/,
-    });
-    await themeToggle.click();
+    const { themeMenu } = await openDesktopThemeMenu(page);
     await themeMenu.getByRole("button", { name: "Dark", exact: true }).click();
     await expect(page.locator("html")).toHaveClass(/dark/);
 
-    // Reload — dark mode should persist via localStorage
     await page.reload();
     await expect(page.locator("html")).toHaveClass(/dark/);
   });
@@ -51,22 +69,15 @@ test.describe("Theme switcher (Light / Dark / System)", () => {
   test("dark mode survives AJAX nav", async ({ page }) => {
     await page.goto("/en");
 
-    const dropdown = page.locator("header#header .dropdown").nth(1);
-    const themeMenu = dropdown.locator("ul.dropdown-content");
-    const themeToggle = dropdown.getByRole("button", {
-      name: /Select theme \(Light \/ Dark \/ System\)/,
-    });
-    await themeToggle.click();
+    const { themeMenu } = await openDesktopThemeMenu(page);
     await themeMenu.getByRole("button", { name: "Dark", exact: true }).click();
     await expect(page.locator("html")).toHaveClass(/dark/);
 
-    // Navigate via AJAX (desktop nav link, not lang switcher on same URL)
     await page
       .locator('header#header .navbar-center a[href="/en/about"]')
       .click();
     await expect(page).toHaveURL(/\/en\/about/);
 
-    // Dark mode should still be present
     await expect(page.locator("html")).toHaveClass(/dark/);
   });
 
@@ -76,19 +87,11 @@ test.describe("Theme switcher (Light / Dark / System)", () => {
     await page.goto("/en");
     await page.setViewportSize({ width: 375, height: 667 });
 
-    // Open mobile menu
     await page.getByRole("button", { name: "Toggle navigation menu" }).click();
     const mobileMenu = page.locator("header#header .mobile-drawer");
     await expect(mobileMenu).toBeVisible();
 
-    // Click the theme switcher inside the mobile menu
-    const mobileThemeToggle = mobileMenu
-      .getByRole("button", { name: /^(Light|Dark|System)$/ })
-      .first();
     await mobileMenu.getByRole("button", { name: "Dark" }).click();
-
-    // Mobile menu must still be visible
-    await expect(mobileMenu).toBeVisible();
 
     await expect(mobileMenu).toBeVisible();
     await expect(page.locator("html")).toHaveClass(/dark/);

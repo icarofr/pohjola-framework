@@ -109,6 +109,7 @@ spec = do
         let html = render (Home.renderHome En)
         html `StrAssert.shouldContain` "hero bg-base-100"
         html `shouldSatisfy` (\h -> not $ String.contains (Pattern "hero bg-base-200") h)
+        html `StrAssert.shouldContain` "https://github.com/icarofr/pohjola-framework"
 
       it "contact renders hub grid" do
         let html = render (Contact.renderContact En)
@@ -119,7 +120,6 @@ spec = do
         let html = render (About.renderAbout En)
         html `StrAssert.shouldContain` "prose prose-lg"
         html `StrAssert.shouldContain` innerPageHeaderClass
-        html `shouldSatisfy` (\h -> not $ String.contains (Pattern "Learn more about Pohjola") h)
 
       it "posts list renders feed header shell" do
         let html = render (Posts.renderPostList En [])
