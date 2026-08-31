@@ -23,6 +23,9 @@ spec = do
     it "detects English when first token is en" do
       detectLang "en;q=0.9,fr;q=0.8" `shouldEqual` En
 
+    it "detects Portuguese from pt-BR,pt;q=0.9" do
+      detectLang "pt-BR,pt;q=0.9" `shouldEqual` Pt
+
     it "returns default for empty input" do
       detectLang "" `shouldEqual` defaultLang
 

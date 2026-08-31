@@ -64,6 +64,7 @@ hreflangTag baseUrl route lang =
 ogLocale :: Lang -> String
 ogLocale En = "en_US"
 ogLocale Fr = "fr_FR"
+ogLocale Pt = "pt_PT"
 
 seoDescription :: Lang -> Route -> String
 seoDescription lang route =

@@ -60,3 +60,4 @@ contactBreadcrumbs lang =
 homeCrumbLabel :: Lang -> String
 homeCrumbLabel En = "Home"
 homeCrumbLabel Fr = "Accueil"
+homeCrumbLabel Pt = "Início"

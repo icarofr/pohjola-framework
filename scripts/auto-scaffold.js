@@ -6,7 +6,7 @@
  * Data.Route, App.Main, and Data.I18n with zero manual edits.
  *
  * Usage:
- *   bun scripts/auto-scaffold.js --name=Team [--type=static|data] [--slug-fr=equipe] [--wire]
+ *   bun scripts/auto-scaffold.js --name=Team [--type=static|data] [--slug-fr=equipe] [--slug-pt=equipe] [--wire]
  */
 
 import { exists, readText, run, writeText } from "./lib/repo.js";
@@ -16,6 +16,7 @@ let name = "";
 let type = "static";
 let slugEn = "";
 let slugFr = "";
+let slugPt = "";
 let wire = false;
 let chrome = false;
 
@@ -24,6 +25,7 @@ for (const arg of args) {
   else if (arg.startsWith("--type=")) type = arg.slice(7);
   else if (arg.startsWith("--slug-en=")) slugEn = arg.slice(10);
   else if (arg.startsWith("--slug-fr=")) slugFr = arg.slice(10);
+  else if (arg.startsWith("--slug-pt=")) slugPt = arg.slice(10);
   else if (arg === "--wire" || arg === "-w") wire = true;
   else if (arg === "--chrome" || arg === "-c") chrome = true;
 }
@@ -41,6 +43,7 @@ if (type !== "static" && type !== "data") {
 const lower = name.toLowerCase();
 if (!slugEn) slugEn = lower;
 if (!slugFr) slugFr = slugEn;
+if (!slugPt) slugPt = slugEn;
 
 async function main() {
 const featureDir = `src/App/Features/${name}`;
@@ -292,6 +295,15 @@ if (wire) {
     }
   );
 
+  // routeCodec Pt
+  routeContent = routeContent.replace(
+    /routeCodec Pt = root \$ prefix "pt" \$ G\.sum\s*\n\s*\{([\s\S]*?)\}/,
+    (match, p1) => {
+      if (p1.includes(`"${name}":`)) return match;
+      return `routeCodec Pt = root $ prefix "pt" $ G.sum\n  {${p1}  , "${name}": "${slugPt}" / G.noArgs\n  }`;
+    }
+  );
+
   // prefetchFor
   routeContent = routeContent.replace(
     /prefetchFor :: Route -> Array Route\s*\n([\s\S]*?)(-- ==)/,
@@ -336,6 +348,7 @@ if (wire) {
     `${name} -> "${name}"`,
     `"${name}": "${slugEn}"`,
     `"${name}": "${slugFr}"`,
+    `"${name}": "${slugPt}"`,
     `prefetchFor ${name} =`,
     `allRoutes = [`,
     `routeTitle lang route =`,
@@ -455,6 +468,24 @@ if (wire) {
     }
   );
 
+  // 7. pt nav
+  i18nContent = i18nContent.replace(
+    /(pt\s*::\s*Dictionary\s*\npt\s*=\s*\{\s*nav:\s*\{[\s\S]*?)(\n\s*\})/,
+    (match, p1, p2) => {
+      if (p1.includes(`      , ${lower}:`)) return match;
+      return `${p1}\n      , ${lower}: "${name}"${p2}`;
+    }
+  );
+
+  // 8. pt section
+  i18nContent = i18nContent.replace(
+    /(pt\s*::\s*Dictionary\s*\npt\s*=\s*\{[\s\S]*?)(\n\s*,\s*common:)/,
+    (match, p1, p2) => {
+      if (p1.includes(`  , ${lower}:\n      { heading:`)) return match;
+      return `${p1}\n  , ${lower}:\n      { heading: "${name}"\n      , body: "Explore o ${name}."\n      }${p2}`;
+    }
+  );
+
   await writeText("src/Data/I18n.purs", i18nContent);
   for (const marker of [
     `      , ${lower} :: String`,
@@ -462,10 +493,10 @@ if (wire) {
     `      , ${lower}: "${name}"`,
     `  , ${lower}:\n      { heading: "${name}"`,
   ]) requireMarker(i18nContent, marker, "src/Data/I18n.purs", `I18n field ${marker}`);
-  // The same field names occur in both language dictionaries; verify each one
+  // The same field names occur in each language dictionary; verify each one
   // in its own section rather than accepting an English-only replacement.
-  for (const lang of ["en", "fr"]) {
-    const section = i18nContent.match(new RegExp(`${lang}\\s*::\\s*Dictionary\\s*\\n${lang}\\s*=([\\s\\S]*?)(?=\\n\\n(?:en|fr)\\s*::|$)`));
+  for (const lang of ["en", "fr", "pt"]) {
+    const section = i18nContent.match(new RegExp(`${lang}\\s*::\\s*Dictionary\\s*\\n${lang}\\s*=([\\s\\S]*?)(?=\\n\\n(?:en|fr|pt|dict)\\s*::|$)`));
     if (!section || !section[1].includes(`  , ${lower}:`) || !section[1].includes(`      , ${lower}:`)) {
       throw new Error(`Auto-wiring failed: ${lang} I18n fields were not inserted in src/Data/I18n.purs.`);
     }

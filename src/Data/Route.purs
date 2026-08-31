@@ -69,6 +69,14 @@ routeCodec Fr = root $ prefix "fr" $ G.sum
   , "PostList": "articles" / G.noArgs
   , "PostDetail": "articles" / int segment
   }
+-- | Temporary Pt stub (Task 2): English path segments under /pt. Task 3 refines.
+routeCodec Pt = root $ prefix "pt" $ G.sum
+  { "Home": G.noArgs
+  , "About": "about" / G.noArgs
+  , "Contact": "contact" / G.noArgs
+  , "PostList": "posts" / G.noArgs
+  , "PostDetail": "posts" / int segment
+  }
 
 -- ============================================================================
 -- URL generation (derived from codec)
@@ -127,9 +135,9 @@ allRoutes = [ Home, About, Contact, PostList ]
 staticRoutes :: Array Route
 staticRoutes = [ Home, About, Contact ]
 
--- | All languages
+-- | All languages (keep in sync with Data.I18n.allLangs)
 allLangs :: Array Lang
-allLangs = [ En, Fr ]
+allLangs = [ En, Fr, Pt ]
 
 -- | Page title for a route + language (for <title> tag)
 routeTitle :: Lang -> Route -> String

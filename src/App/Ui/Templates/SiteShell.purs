@@ -88,6 +88,7 @@ shellLabels lang =
 homeLabelText :: Lang -> String
 homeLabelText En = "Home"
 homeLabelText Fr = "Accueil"
+homeLabelText Pt = "Início"
 
 sitePage :: Lang -> Route -> ShellLabels -> Html -> Html
 sitePage lang route labels content =

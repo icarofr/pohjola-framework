@@ -30,6 +30,7 @@ async function runFixture(cwd, name, type, slug) {
       `--type=${type}`,
       `--slug-en=${slug}`,
       `--slug-fr=${slug}`,
+      `--slug-pt=${slug}`,
       "--wire",
     ],
     { cwd },
@@ -50,8 +51,8 @@ async function runFixture(cwd, name, type, slug) {
   }
 
   const codecCount = route.split(`"${name}": "${slug}"`).length - 1;
-  if (codecCount < 2) {
-    console.error(`Missing one Route codec insertion: ${name}`);
+  if (codecCount < 3) {
+    console.error(`Missing Route codec insertion(s): ${name} (expected 3 langs, got ${codecCount})`);
     process.exit(1);
   }
 
@@ -63,8 +64,8 @@ async function runFixture(cwd, name, type, slug) {
   assertIncludes(i18n, `${lower}: "${name}"`, `I18n English (${name})`);
 
   const i18nCount = i18n.split(`${lower}: "${name}"`).length - 1;
-  if (i18nCount < 2) {
-    console.error(`Missing I18n French insertion: ${name}`);
+  if (i18nCount < 3) {
+    console.error(`Missing I18n language insertion(s): ${name} (expected 3 langs, got ${i18nCount})`);
     process.exit(1);
   }
 

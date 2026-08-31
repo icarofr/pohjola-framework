@@ -77,7 +77,7 @@ spec = do
 
       it "covers all lang × route combinations" do
         let total = length allLangs * length allRoutes
-        total `shouldEqual` 8 -- 2 langs * 4 routes
+        total `shouldEqual` 12 -- 3 langs * 4 routes
 
 splitPath :: String -> Array String
 splitPath p = filter (_ /= "") (S.split (Pattern "/") p)

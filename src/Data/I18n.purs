@@ -24,7 +24,7 @@ import Data.Maybe (Maybe(..))
 -- Language type
 -- ============================================================================
 
-data Lang = En | Fr
+data Lang = En | Fr | Pt
 
 derive instance eqLang :: Eq Lang
 derive instance ordLang :: Ord Lang
@@ -32,18 +32,21 @@ derive instance ordLang :: Ord Lang
 instance showLang :: Show Lang where
   show En = "en"
   show Fr = "fr"
+  show Pt = "pt"
 
 langTag :: Lang -> String
 langTag En = "en"
 langTag Fr = "fr"
+langTag Pt = "pt"
 
 parseLang :: String -> Maybe Lang
 parseLang "en" = Just En
 parseLang "fr" = Just Fr
+parseLang "pt" = Just Pt
 parseLang _ = Nothing
 
 allLangs :: Array Lang
-allLangs = [ En, Fr ]
+allLangs = [ En, Fr, Pt ]
 
 defaultLang :: Lang
 defaultLang = En
@@ -429,7 +432,142 @@ fr =
       }
   }
 
+pt :: Dictionary
+pt =
+  { nav:
+      { about: "Sobre"
+      , contact: "Contacto"
+      , posts: "Artigos"
+      }
+  , hero:
+      { eyebrow: "PureScript · Bun · Alpine.js"
+      , headline: "O framework web funcional e tipado para Bun"
+      , body: "A simplicidade de uma MPA com a fluidez de uma SPA. Construído em PureScript com a velocidade do Bun, a micro-interatividade do Alpine.js e zero exceções em tempo de execução."
+      , ctaLabel: "Sobre o Pohjola"
+      , secondaryLabel: "Ver notas"
+      }
+  , services:
+      { sectionEyebrow: "Fundações"
+      , sectionHeadline: "Destaques da arquitetura"
+      , sectionIntro: "PureScript, Bun e Alpine.js — compostos de propósito e verificados mecanicamente."
+      , serviceCopy: \sid -> case sid of
+          ServiceId "service-1" ->
+            { title: "Segurança de tipos PureScript"
+            , description: "Correspondência de padrões total, sem nulls, e um ADT Html tipado que garante correção na compilação."
+            , actionLabel: "Ver a stack"
+            }
+          ServiceId "service-2" ->
+            { title: "SSR em submilissegundos no Bun"
+            , description: "Runtime Bun nativo com respostas de rota em submilissegundos, SSR em streaming leve e reinícios instantâneos do servidor de desenvolvimento."
+            , actionLabel: "Ler as notas"
+            }
+          ServiceId "service-3" ->
+            { title: "Costuras reativas Alpine.js"
+            , description: "Micro-interatividade no cliente com construtores Alpine tipados. Zero JavaScript ad hoc e trocas AJAX fluidas."
+            , actionLabel: "Contribuir"
+            }
+          _ -> { title: "", description: "", actionLabel: "" }
+      }
+  , cta:
+      { heading: "Comece com `make dev`"
+      , body: "Clone o repositório, execute `make dev` e experimente desenvolvimento web full-stack funcional com recarregamento instantâneo."
+      , ctaLabel: "Ver o repositório"
+      }
+  , about:
+      { heading: "Sobre o Pohjola"
+      , mission:
+          { heading: "A nossa missão"
+          , lead: "Pohjola toma o nome de Songs from the North de Swallow the Sun — o folclore finlandês onde pohja é ao mesmo tempo a base e a direção Norte. Construímos o framework sobre esse ethos: artesanato deliberado que aguenta produção."
+          , body: "Em vez de empilhar frameworks JavaScript transitórios, o Pohjola assenta numa base sólida. PureScript prova correção na compilação, Bun serve respostas em submilissegundos, e o servidor produz HTML semântico com costuras Alpine.js leves."
+          }
+      , values:
+          { heading: "Os nossos valores"
+          , intro: "Estes princípios guiam cada decisão arquitectónica do framework."
+          , items:
+              [ { title: "Base antes da moda"
+                , description: "Preferir fundações comprovadas — HTML tipado, erros explícitos e renderização server-first — em vez da moda da semana."
+                }
+              , { title: "Aberto por omissão"
+                , description: "Invariantes de segurança, portões de política e convenções são documentados e testáveis para que os contribuidores raciocinem sobre o sistema."
+                }
+              , { title: "Aprender sempre"
+                , description: "ADRs, evals e docs de convenção registam o que aprendemos para que a próxima mudança parta de contexto partilhado."
+                }
+              , { title: "Costuras de apoio"
+                , description: "A interatividade Alpine permanece tipada e mínima — polish de UX sem contrabandear um runtime de cliente."
+                }
+              , { title: "Assumir a responsabilidade"
+                , description: "Erros são valores, a CSP está fixa, e as caches são conservadoras porque surpresas em produção são o nosso problema, não do utilizador."
+                }
+              , { title: "Gostar da contenção"
+                , description: "Uma superfície pequena que cabe na cabeça vale mais do que uma caixa de ferramentas máxima a combater em cada feature."
+                }
+              ]
+          }
+      }
+  , contact:
+      { title: "Comunidade e contribuição"
+      , subtitle: "Pohjola é software open source. Reporte problemas, participe nas discussões ou inspecione o código diretamente no GitHub."
+      , issuesTag: "Issues"
+      , issuesTitle: "Relatórios de bugs e issues"
+      , issuesText: "Encontrou um bug, caso limite ou comportamento inesperado? Abra uma issue no GitHub com passos de reprodução."
+      , issuesButton: "Abrir uma issue"
+      , discussionsTag: "Comunidade"
+      , discussionsTitle: "Discussões e Q&A"
+      , discussionsText: "Tem perguntas de arquitetura, propostas de design, ou quer discutir PureScript e Bun?"
+      , discussionsButton: "Juntar-se às discussões"
+      , sourceTag: "Código"
+      , sourceTitle: "Código-fonte e invariantes"
+      , sourceText: "Explore o repositório, inspecione as garantias de segurança verificadas ou envie um pull request no GitHub."
+      , sourceButton: "Ver o repositório"
+      }
+  , posts:
+      { listTitle: "Notas de engenharia e arquitetura"
+      , detailTitle: "Artigo"
+      , articleTagPrefix: "Artigo n.º"
+      , readMore: "Ler artigo"
+      , backToList: "Voltar aos artigos"
+      , loadingError: "Falha ao carregar artigos. Verifique a sua ligação."
+      , notFound: "Artigo não encontrado."
+      , byAuthor: "Por"
+      , authorRole: "Engenharia"
+      , unknownAuthor: "Pohjola"
+      }
+  , footer:
+      { explore: "Navegação"
+      , resources: "Recursos"
+      , github: "Código-fonte"
+      , issues: "Rastreador de bugs"
+      , copyright: "© 2026 Pohjola Framework. Software open source."
+      }
+  , seo:
+      { homeDescription: "O framework web funcional e tipado para Bun, PureScript e Alpine.js"
+      , aboutDescription: "Saiba mais sobre o Pohjola."
+      , contactDescription: "Entre em contacto com a comunidade Pohjola."
+      , postsDescription: "Leia notas de engenharia e destaques de arquitetura do Pohjola."
+      , postDetailDescription: "Uma nota de engenharia sobre o Pohjola."
+      }
+  , common:
+      { siteTitle: "Pohjola"
+      , darkModeToggle: "Alternar modo escuro"
+      , themeLight: "Claro"
+      , themeDark: "Escuro"
+      , themeSystem: "Sistema"
+      , themeLabel: "Selecionar tema"
+      , newsletterEmailLabel: "Endereço de e-mail"
+      , formSuccess: "Obrigado! A sua mensagem foi recebida."
+      , formError: "Algo correu mal, tente novamente."
+      , formSubscribed: "Está subscrito às atualizações do Pohjola!"
+      , error404: "Página não encontrada"
+      , error500: "Algo correu mal"
+      , navAriaLabel: "Navegação principal"
+      , menuLabel: "Abrir menu"
+      , langToggleLabel: "Mudar de idioma"
+      }
+  }
+
 -- | Select the dictionary for a given language
 dict :: Lang -> Dictionary
 dict En = en
 dict Fr = fr
+dict Pt = pt
