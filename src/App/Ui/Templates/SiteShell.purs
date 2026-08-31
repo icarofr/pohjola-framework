@@ -193,7 +193,15 @@ renderDrawerSide lang route labels =
 desktopNavLink :: Lang -> Route -> Route -> String -> Html
 desktopNavLink lang current target label =
   navLink { lang, current, target }
-    [ class_ "btn btn-ghost btn-sm" ]
+    [ class_
+        ( "btn btn-ghost btn-sm"
+            <> if target == current then
+                " btn-active"
+
+              else
+                ""
+        )
+    ]
     [ text label ]
 
 renderLangJoin :: Lang -> Lang -> Route -> String -> Html
@@ -260,9 +268,17 @@ mobileNavLink :: Lang -> Route -> Route -> String -> Html
 mobileNavLink lang current target label =
   el "li" []
     [ navLink { lang, current, target }
-        [ class_ "btn btn-ghost justify-start"
-        , onClick closeSiteDrawer
-        ]
+        ( [ class_
+              ( "btn btn-ghost justify-start"
+                  <> if target == current then
+                      " menu-active"
+
+                    else
+                      ""
+              )
+          , onClick closeSiteDrawer
+          ]
+        )
         [ text label ]
     ]
 

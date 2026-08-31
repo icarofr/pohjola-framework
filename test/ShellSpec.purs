@@ -27,3 +27,25 @@ spec = do
       html `shouldContain` "data-template=\"site-footer\""
       html `shouldContain` "id=\"content\""
       html `shouldContain` "main class=\"flex-1\""
+    it "marks the current route in desktop nav with btn-active" do
+      let
+        html =
+          render
+            ( sitePage En About (shellLabels En)
+                (text "inner")
+            )
+      html
+        `shouldContain`
+          ( "href=\"/en/about\" x-target.push=\"content\" aria-current=\"page\" class=\"btn btn-ghost btn-sm btn-active\""
+          )
+    it "marks the current route in mobile drawer with menu-active" do
+      let
+        html =
+          render
+            ( sitePage En About (shellLabels En)
+                (text "inner")
+            )
+      html
+        `shouldContain`
+          ( "href=\"/en/about\" x-target.push=\"content\" aria-current=\"page\" class=\"btn btn-ghost justify-start menu-active\""
+          )

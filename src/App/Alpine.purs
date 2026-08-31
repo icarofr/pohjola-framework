@@ -326,6 +326,7 @@ navLink { lang, current, target } extraAttrs children =
     ( [ href (routeUrl lang target)
       , xTargetPush contentTarget
       ]
+        <> (if target == current then [ attr "aria-current" "page" ] else [])
         <> (if target == current then [] else [ prefetchHover ])
         <> extraAttrs
     )

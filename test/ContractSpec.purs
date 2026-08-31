@@ -468,6 +468,12 @@ spec = do
       let active = render (navLink { lang: En, current: About, target: About } [] [])
       active `StrAssert.shouldContain` "href=\"/en/about\""
       active `StrAssert.shouldContain` ("x-target.push=\"" <> contentTarget <> "\"")
+    it "the active nav link exposes aria-current=page" do
+      let
+        active = render (navLink { lang: En, current: About, target: About } [] [])
+        other = render (navLink { lang: En, current: About, target: Contact } [] [])
+      active `StrAssert.shouldContain` "aria-current=\"page\""
+      other `StrAssert.shouldNotContain` "aria-current"
     it "the rendered page does not prefetch its own route" do
       for_ staticRoutes \route ->
         for_ allLangs \lang -> do
