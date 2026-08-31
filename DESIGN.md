@@ -142,9 +142,9 @@ Shapes are engineered and crisp:
 
 ## Components
 
-All views MUST use typed primitives from `App.Ui`:
-* `App.Ui.Button` / `Card` / `Hero` / `Badge` / `Alert` / `Prose` — DaisyUI class names 1:1.
-* Feature views must not call `class_`.
+All views MUST use typed templates from `App.Ui.Templates`:
+* Feature views call `renderPage` with slot records only — no `class_`.
+* DaisyUI class names live in Templates and `App.Ui` primitives (Button, Card, Badge, …).
 
 ## Do's and Don'ts
 

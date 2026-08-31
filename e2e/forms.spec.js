@@ -28,36 +28,27 @@ test.describe("Community & Contributing Hub", () => {
 test.describe("Mobile menu", () => {
   test("mobile menu opens and closes", async ({ page }) => {
     await page.goto("/en");
-
-    // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
 
-    // Menu should be hidden initially (x-cloak)
-    const mobileNav = page.locator(".drawer-side .menu");
-    await expect(page.locator("#nav-drawer")).not.toBeChecked();
-
     const menuButton = page.getByLabel("Open menu");
+    await page.getByLabel("Close menu").waitFor({ state: "hidden" });
+
     await menuButton.click();
+    await expect(page.getByLabel("Close menu")).toBeVisible();
+    await expect(page.locator('div#content a[href="/en/about"]')).toBeVisible();
 
-    await expect(page.locator("#nav-drawer")).toBeChecked();
-    await expect(mobileNav).toBeVisible();
-
-    await page.locator(".drawer-overlay").click({ force: true });
-
-    await expect(page.locator("#nav-drawer")).not.toBeChecked();
+    await page.getByLabel("Close menu").click();
+    await expect(page.getByLabel("Close menu")).toBeHidden();
   });
 
   test("mobile menu closes with Escape key", async ({ page }) => {
     await page.goto("/en");
-
-    // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
 
-    // Open menu
     await page.getByLabel("Open menu").click();
-    await expect(page.locator("#nav-drawer")).toBeChecked();
+    await expect(page.getByLabel("Close menu")).toBeVisible();
 
-    await page.locator(".drawer-overlay").click({ force: true });
-    await expect(page.locator("#nav-drawer")).not.toBeChecked();
+    await page.keyboard.press("Escape");
+    await expect(page.getByLabel("Close menu")).toBeHidden();
   });
 });

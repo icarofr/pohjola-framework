@@ -28,6 +28,9 @@ module App.Alpine
   , ariaSelectedNotFlag
   , classWhenFlag
   , themeToggle
+  , siteDrawerId
+  , closeSiteDrawer
+  , classWhenTheme
   , onClick
   , onClickOutside
   , onKeydownEscapeWindow
@@ -42,7 +45,7 @@ module App.Alpine
 import Prelude
 
 import App.Html (Attr, Html, attr, el, flag, href)
-import App.Theme (daisyThemeDark, daisyThemeLight)
+import App.Theme as Theme
 import Data.I18n (Lang)
 import Data.Route (Route, routeUrl)
 
@@ -145,55 +148,71 @@ setFlag f value = Expr (flagName f <> " = " <> boolLit value)
 toggleFlag :: Flag -> Expr
 toggleFlag f = Expr (flagName f <> " = !" <> flagName f)
 
--- | Theme toggle: flip the `dark` class and `data-theme` on `<html>` and persist.
+siteDrawerId :: String
+siteDrawerId = "site-drawer"
+
+closeSiteDrawer :: Expr
+closeSiteDrawer =
+  Expr ("document.getElementById('" <> siteDrawerId <> "').checked = false")
+
+applyThemeJs :: String
+applyThemeJs =
+  "var r=document.documentElement;"
+    <> "if(theme==='light')r.setAttribute('data-theme','"
+    <> Theme.themeLightName
+    <> "');"
+    <> "else if(theme==='dark')r.setAttribute('data-theme','"
+    <> Theme.themeDarkName
+    <> "');"
+    <> "else r.removeAttribute('data-theme')"
+
+-- | Binary light/dark toggle via DaisyUI data-theme.
 themeToggle :: Expr
 themeToggle = Expr
-  ( "document.documentElement.classList.toggle('dark'); "
-      <> "document.documentElement.setAttribute('data-theme', document.documentElement.classList.contains('dark') ? '"
-      <> daisyThemeDark
-      <> "' : '"
-      <> daisyThemeLight
-      <> "'); "
-      <> "localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light')"
+  ( "var r=document.documentElement,d=r.getAttribute('data-theme')==='"
+      <> Theme.themeDarkName
+      <> "';"
+      <> "theme=d?'light':'dark';"
+      <> "localStorage.setItem('"
+      <> Theme.themeStorageKey
+      <> "',theme);"
+      <> applyThemeJs
   )
 
--- | Set explicit theme mode (Light, Dark, or System) for DaisyUI + Tailwind.
+-- | Set explicit theme preference (light, dark, or system) via data-theme.
 setTheme :: ThemeMode -> Expr
 setTheme = case _ of
   ThemeLight ->
     Expr
-      ( "theme = 'light'; localStorage.setItem('theme', 'light'); document.documentElement.setAttribute('data-theme', '"
-          <> daisyThemeLight
-          <> "'); document.documentElement.classList.remove('dark')"
+      ( "theme='light';localStorage.setItem('"
+          <> Theme.themeStorageKey
+          <> "','light');document.documentElement.setAttribute('data-theme','"
+          <> Theme.themeLightName
+          <> "')"
       )
   ThemeDark ->
     Expr
-      ( "theme = 'dark'; localStorage.setItem('theme', 'dark'); document.documentElement.setAttribute('data-theme', '"
-          <> daisyThemeDark
-          <> "'); document.documentElement.classList.add('dark')"
+      ( "theme='dark';localStorage.setItem('"
+          <> Theme.themeStorageKey
+          <> "','dark');document.documentElement.setAttribute('data-theme','"
+          <> Theme.themeDarkName
+          <> "')"
       )
   ThemeSystem ->
-    Expr "theme = 'system'; localStorage.setItem('theme', 'system'); document.documentElement.removeAttribute('data-theme'); (matchMedia('(prefers-color-scheme: dark)').matches ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark'))"
+    Expr
+      ( "theme='system';localStorage.setItem('"
+          <> Theme.themeStorageKey
+          <> "','system');document.documentElement.removeAttribute('data-theme')"
+      )
 
--- | Cycle theme through system -> light -> dark -> system for DaisyUI + Tailwind.
+-- | Cycle theme through system -> light -> dark -> system.
 cycleTheme :: Expr
 cycleTheme = Expr
-  ( "theme = (theme === 'system' ? 'light' : theme === 'light' ? 'dark' : 'system'); "
-      <> "localStorage.setItem('theme', theme); "
-      <> "if (theme === 'system') { "
-      <> "  document.documentElement.removeAttribute('data-theme'); "
-      <> "  (matchMedia('(prefers-color-scheme: dark)').matches ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark')); "
-      <> "} else if (theme === 'dark') { "
-      <> "  document.documentElement.setAttribute('data-theme', '"
-      <> daisyThemeDark
-      <> "'); "
-      <> "  document.documentElement.classList.add('dark'); "
-      <> "} else { "
-      <> "  document.documentElement.setAttribute('data-theme', '"
-      <> daisyThemeLight
-      <> "'); "
-      <> "  document.documentElement.classList.remove('dark'); "
-      <> "}"
+  ( "theme=(theme==='system'?'light':theme==='light'?'dark':'system');"
+      <> "localStorage.setItem('"
+      <> Theme.themeStorageKey
+      <> "',theme);"
+      <> applyThemeJs
   )
 
 -- ============================================================================
@@ -206,11 +225,23 @@ xDataFlag f value =
 
 xDataTheme :: Attr
 xDataTheme =
-  attr "x-data" "{ theme: (localStorage.getItem('theme') || 'system') }"
+  attr "x-data"
+    ( "{ theme: (localStorage.getItem('"
+        <> Theme.themeStorageKey
+        <> "') || 'system') }"
+    )
 
 xDataThemeWithFlag :: Flag -> Boolean -> Attr
 xDataThemeWithFlag f b =
-  attr "x-data" ("{ theme: (localStorage.getItem('theme') || 'system'), " <> flagName f <> ": " <> boolLit b <> " }")
+  attr "x-data"
+    ( "{ theme: (localStorage.getItem('"
+        <> Theme.themeStorageKey
+        <> "') || 'system'), "
+        <> flagName f
+        <> ": "
+        <> boolLit b
+        <> " }"
+    )
 
 xShowFlag :: Flag -> Attr
 xShowFlag f = attr "x-show" (flagName f)
@@ -239,6 +270,10 @@ ariaSelectedNotFlag f = attr ":aria-selected" ("(!" <> flagName f <> ").toString
 classWhenFlag :: String -> Flag -> Attr
 classWhenFlag className f =
   attr ":class" ("{ '" <> className <> "': " <> flagName f <> " }")
+
+classWhenTheme :: String -> ThemeMode -> Attr
+classWhenTheme className mode =
+  attr ":class" ("{ '" <> className <> "': theme === '" <> themeModeName mode <> "' }")
 
 xCloak :: Attr
 xCloak = flag "x-cloak"

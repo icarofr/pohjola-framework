@@ -7,6 +7,7 @@ import Effect (Effect)
 import Test.AuthSpec as AuthSpec
 import Test.ContractSpec as ContractSpec
 import Test.FormSpec as FormSpec
+import Test.TemplateContractSpec as TemplateContractSpec
 import Test.Html.HtmlSpec as HtmlSpec
 import Test.I18n.I18nSpec as I18nSpec
 import Test.PostsSpec as PostsSpec
@@ -17,7 +18,6 @@ import Test.LangDetectSpec as LangDetectSpec
 import Test.LoggerSpec as LoggerSpec
 import Test.ServerSpec as ServerSpec
 import Test.ShellSpec as ShellSpec
-import Test.UiSpec as UiSpec
 import Test.PolicySpec as PolicySpec
 import Test.Spec.Reporter (consoleReporter)
 import Test.Spec.Runner.Node (runSpecAndExitProcess)
@@ -27,6 +27,7 @@ main = runSpecAndExitProcess [ consoleReporter ] do
   AuthSpec.spec
   ContractSpec.spec
   FormSpec.spec
+  TemplateContractSpec.spec
   HtmlSpec.spec
   RouteSpec.spec
   I18nSpec.spec
@@ -38,4 +39,3 @@ main = runSpecAndExitProcess [ consoleReporter ] do
   ServerSpec.spec
   PolicySpec.spec
   ShellSpec.spec
-  UiSpec.spec

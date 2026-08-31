@@ -1,3 +1,3 @@
-# Eval 10: UI archetypes
+# Eval 10: UI templates
 
-Add a static "Team" page using the correct blueprint for its purpose (see `docs/superpowers/specs/2026-08-30-ui-blueprint-recipe.md`). Do not use `class_` or primitive soup (`Ui.page`, `Ui.card`, `import App.Ui.Card`) in the feature view.
+Add a static "Team" page using the correct `PageTemplate` for its purpose (see `docs/superpowers/specs/2026-08-30-ui-blueprint-recipe.md` — prefer `Editorial` for a simple static page). Do not use `class_` or primitive soup (`import App.Ui.Card`, etc.) in the feature view. Call `App.Ui.Templates.Render.renderPage` with slot records only.

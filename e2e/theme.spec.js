@@ -1,99 +1,85 @@
 import { test, expect } from "@playwright/test";
 
-test.describe("Theme switcher (Light / Dark / System)", () => {
-  async function openDesktopThemeMenu(page) {
-    const themeMenu = page.locator("#header-theme-menu");
-    const themeToggle = page.getByRole("button", {
-      name: /Select theme|Sélectionner le thème/,
-    });
-    if (!(await themeMenu.isVisible())) {
-      await themeToggle.click();
-    }
-    return { themeMenu, themeToggle };
-  }
+const themeDark = "pohjola-dark";
+const themeLight = "pohjola";
 
-  test("desktop dropdowns close on click outside", async ({ page }) => {
-    await page.goto("/en");
-    const langMenu = page.locator("#header-lang-menu");
-    const themeMenu = page.locator("#header-theme-menu");
-    const outside = page.locator("main h1").first();
-
-    await page.getByRole("button", { name: /Switch language|Changer de langue/ }).click();
-    await expect(langMenu).toBeVisible();
-    await outside.click();
-    await expect(langMenu).toBeHidden();
-
-    await page
-      .getByRole("button", { name: /Select theme|Sélectionner le thème/ })
-      .click();
-    await expect(themeMenu).toBeVisible();
-    await outside.click();
-    await expect(themeMenu).toBeHidden();
-  });
-
-  test("desktop dropdown selects each theme", async ({ page }) => {
-    await page.goto("/en");
-
-    await expect(page.locator("html")).not.toHaveClass(/dark/);
-
-    let { themeMenu } = await openDesktopThemeMenu(page);
-    await themeMenu.getByRole("button", { name: "Dark", exact: true }).click();
-    await expect(page.locator("html")).toHaveClass(/dark/);
-    expect(await page.evaluate(() => localStorage.getItem("theme"))).toBe(
-      "dark",
-    );
-    ({ themeMenu } = await openDesktopThemeMenu(page));
-    await themeMenu.getByRole("button", { name: "Light", exact: true }).click();
-    await expect(page.locator("html")).not.toHaveClass(/dark/);
-    expect(await page.evaluate(() => localStorage.getItem("theme"))).toBe(
-      "light",
-    );
-    ({ themeMenu } = await openDesktopThemeMenu(page));
-    await themeMenu.getByRole("button", { name: "System", exact: true }).click();
-    expect(await page.evaluate(() => localStorage.getItem("theme"))).toBe(
-      "system",
-    );
-  });
-
-  test("dark mode persists on reload", async ({ page }) => {
-    await page.goto("/en");
-
-    const { themeMenu } = await openDesktopThemeMenu(page);
-    await themeMenu.getByRole("button", { name: "Dark", exact: true }).click();
-    await expect(page.locator("html")).toHaveClass(/dark/);
-
-    await page.reload();
-    await expect(page.locator("html")).toHaveClass(/dark/);
-  });
-
-  test("dark mode survives AJAX nav", async ({ page }) => {
-    await page.goto("/en");
-
-    const { themeMenu } = await openDesktopThemeMenu(page);
-    await themeMenu.getByRole("button", { name: "Dark", exact: true }).click();
-    await expect(page.locator("html")).toHaveClass(/dark/);
-
-    await page
-      .locator('header#header .navbar-center a[href="/en/about"]')
-      .click();
-    await expect(page).toHaveURL(/\/en\/about/);
-
-    await expect(page.locator("html")).toHaveClass(/dark/);
-  });
-
-  test("clicking theme switcher in mobile menu changes theme without closing the menu", async ({
+test.describe("DaisyUI theme (data-theme)", () => {
+  test("defaults without forced dark theme when localStorage is cleared", async ({
     page,
   }) => {
     await page.goto("/en");
-    await page.setViewportSize({ width: 375, height: 667 });
+    await page.evaluate(() => localStorage.removeItem("theme"));
+    await page.reload();
+    await expect(page.locator("html")).not.toHaveAttribute(
+      "data-theme",
+      themeDark,
+    );
+  });
 
-    await page.getByLabel("Open menu").click();
-    const mobileMenu = page.locator(".drawer-side .menu");
-    await expect(mobileMenu).toBeVisible();
+  test("dark preference persists via data-theme on reload", async ({ page }) => {
+    await page.goto("/en");
+    await page.evaluate(
+      ([dark]) => {
+        localStorage.setItem("theme", "dark");
+        document.documentElement.setAttribute("data-theme", dark);
+      },
+      [themeDark],
+    );
+    await page.reload();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", themeDark);
+    expect(await page.evaluate(() => localStorage.getItem("theme"))).toBe(
+      "dark",
+    );
+  });
 
-    await page.getByRole("button", { name: "Dark", exact: true }).click();
+  test("dark theme survives AJAX nav", async ({ page }) => {
+    await page.goto("/en");
+    await page.evaluate(
+      ([dark]) => {
+        localStorage.setItem("theme", "dark");
+        document.documentElement.setAttribute("data-theme", dark);
+      },
+      [themeDark],
+    );
 
-    await expect(mobileMenu).toBeVisible();
-    await expect(page.locator("html")).toHaveClass(/dark/);
+    await page
+      .locator('header nav.hidden.md\\:flex a[href="/en/about"]')
+      .click();
+    await expect(page).toHaveURL(/\/en\/about/);
+    await expect(page.locator("html")).toHaveAttribute("data-theme", themeDark);
+  });
+
+  test("theme dropdown sets dark mode and persists", async ({ page }) => {
+    await page.goto("/en");
+    await page.evaluate(() => localStorage.removeItem("theme"));
+
+    await page.getByLabel("Select theme").click();
+    await page.getByRole("button", { name: "Dark" }).click();
+
+    await expect(page.locator("html")).toHaveAttribute("data-theme", themeDark);
+    expect(await page.evaluate(() => localStorage.getItem("theme"))).toBe(
+      "dark",
+    );
+  });
+
+  test("light preference sets pohjola data-theme", async ({ page }) => {
+    await page.goto("/en");
+    await page.getByLabel("Select theme").click();
+    await page.getByRole("button", { name: "Light" }).click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", themeLight);
+  });
+
+  test("system preference removes data-theme", async ({ page }) => {
+    await page.goto("/en");
+    await page.evaluate(() => {
+      localStorage.setItem("theme", "dark");
+      document.documentElement.setAttribute("data-theme", "pohjola-dark");
+    });
+    await page.getByLabel("Select theme").click();
+    await page.getByRole("button", { name: "System" }).click();
+    await expect(page.locator("html")).not.toHaveAttribute("data-theme");
+    expect(await page.evaluate(() => localStorage.getItem("theme"))).toBe(
+      "system",
+    );
   });
 });

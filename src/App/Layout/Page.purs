@@ -1,27 +1,24 @@
--- | Full page shell — DaisyUI drawer wraps navbar + main + footer.
+-- | Full page shell — feature views supply complete page templates.
 module App.Layout.Page where
 
 import Prelude
 
-import App.Alpine (contentTarget, navLink)
 import App.Error (AppError)
 import App.Form (FormStatus(..), formStatusQuery, statusText)
-import App.Html (Html, attr, class_, doctype, el, escape, flag, href, id_, name_, render, src, text, type_)
-import App.Layout.Footer (render) as Footer
+import App.Html (Html, attr, class_, doctype, el, flag, href, id_, name_, render, src, text)
 import App.Layout.Head (renderHead)
-import App.Layout.Header (render) as Header
 import App.Layout.Scripts (HeadScript(..), renderHeadScript)
 import App.Layout.Styles (stylesCss)
 import App.Ui.Alert (AlertVariant(..), alert)
 import Data.Either (Either(..))
 import Data.Foldable (foldMap)
 import Data.I18n (Lang, dict, langTag)
-import Data.Maybe (Maybe(..), maybe)
-import Data.Route (Route(..), prefetchFor, routeTitle, routeUrl)
+import Data.Maybe (Maybe, maybe)
+import Data.Route (Route, prefetchFor, routeUrl)
 import Effect.Aff (Aff)
 
 bodyClass :: String
-bodyClass = "min-h-screen"
+bodyClass = "bg-base-100 text-base-content"
 
 staticPage :: Html -> Aff (Either AppError Html)
 staticPage = pure <<< Right
@@ -37,27 +34,6 @@ maybeStatusBanner lang = maybe (text "") \status ->
     el "div" [ attr "data-form-status" (formStatusQuery status) ]
       [ alert variant (statusText lang status) ]
 
-shell :: Lang -> Route -> Html -> Array Html
-shell lang route inner =
-  let
-    d = dict lang
-  in
-    [ el "input" [ id_ "nav-drawer", type_ "checkbox", class_ "drawer-toggle" ] []
-    , el "div" [ class_ "drawer-content" ]
-        [ Header.render lang route
-        , inner
-        , Footer.render lang route
-        ]
-    , el "div" [ class_ "drawer-side" ]
-        [ el "label" [ attr "for" "nav-drawer", class_ "drawer-overlay", attr "aria-label" d.common.menuLabel ] []
-        , el "ul" [ class_ "menu bg-base-200 min-h-full w-80" ]
-            [ el "li" [] [ navLink { lang, current: route, target: About } [] [ text d.nav.about ] ]
-            , el "li" [] [ navLink { lang, current: route, target: Contact } [] [ text d.nav.contact ] ]
-            , el "li" [] [ navLink { lang, current: route, target: PostList } [] [ text d.nav.posts ] ]
-            ]
-        ]
-    ]
-
 renderPage :: String -> String -> Lang -> Route -> Maybe FormStatus -> Html -> String
 renderPage baseUrl nonce lang route maybeStatus content =
   render $
@@ -68,13 +44,8 @@ renderPage baseUrl nonce lang route maybeStatus content =
             , renderPrefetch lang (prefetchFor route)
             ]
         , el "body" [ class_ bodyClass ]
-            [ el "div" [ class_ "drawer" ]
-                ( shell lang route
-                    ( el "main"
-                        [ id_ contentTarget, attr "data-page-title" (routeTitle lang route) ]
-                        [ maybeStatusBanner lang maybeStatus, content ]
-                    )
-                )
+            [ maybeStatusBanner lang maybeStatus
+            , content
             , renderScripts nonce
             ]
         ]
@@ -85,15 +56,8 @@ renderScripts nonce =
     <> el "script" [ flag "defer", src "/assets/js/alpinejs.min.js", attr "nonce" nonce ] []
 
 renderFragment :: Lang -> Route -> Html -> String
-renderFragment lang route content =
-  render $
-    el "div" [ class_ "drawer" ]
-      ( shell lang route
-          ( el "main"
-              [ id_ contentTarget, attr "data-page-title" (routeTitle lang route) ]
-              [ maybeStatusBanner lang Nothing, content ]
-          )
-      )
+renderFragment _ _ content =
+  render content
 
 errorContent :: Lang -> Int -> Html
 errorContent lang status =
@@ -103,18 +67,17 @@ errorContent lang status =
       404 -> d.common.error404
       _ -> d.common.error500
   in
-    el "div" [ class_ "hero" ]
-      [ el "div" [ class_ "hero-content text-center" ]
-          [ el "div" []
-              [ el "h1" [ class_ "text-5xl font-bold" ] [ text (show status) ]
-              , el "p" [ class_ "py-6" ] [ text message ]
-              ]
+    el "div" [ class_ "bg-base-100 text-base-content", id_ "content" ]
+      [ el "div" [ class_ "mx-auto max-w-7xl px-6 py-32 text-center lg:px-8" ]
+          [ el "h1" [ class_ "text-5xl font-semibold tracking-tight text-base-content" ]
+              [ text (show status) ]
+          , el "p" [ class_ "mt-6 text-lg text-base-content opacity-70" ] [ text message ]
           ]
       ]
 
 renderErrorFragment :: Lang -> Route -> Int -> String
-renderErrorFragment lang route status =
-  renderFragment lang route (errorContent lang status)
+renderErrorFragment lang _ status =
+  render (errorContent lang status)
 
 renderErrorPage :: String -> Lang -> Int -> String
 renderErrorPage nonce lang status =
@@ -133,10 +96,7 @@ renderErrorPage nonce lang status =
               , renderHeadScript nonce DarkModeInit
               ]
           , el "body" [ class_ bodyClass ]
-              [ el "div" [ class_ "drawer" ]
-                  ( shell lang Home
-                      (el "main" [ id_ contentTarget ] [ errorContent lang status ])
-                  )
+              [ errorContent lang status
               , renderScripts nonce
               ]
           ]
@@ -155,31 +115,7 @@ renderShellOpen baseUrl nonce lang route =
     <> "<body class=\""
     <> bodyClass
     <> "\">"
-    <> "<div class=\"drawer\">"
-    <> render (el "input" [ id_ "nav-drawer", type_ "checkbox", class_ "drawer-toggle" ] [])
-    <> "<div class=\"drawer-content\">"
-    <> render (Header.render lang route)
-    <> "<main id=\""
-    <> contentTarget
-    <> "\" data-page-title=\""
-    <> escape (routeTitle lang route)
-    <> "\">"
 
 renderShellClose :: String -> Lang -> Route -> String
-renderShellClose nonce lang route =
-  "</main>"
-    <> render (Footer.render lang route)
-    <> "</div>"
-    <> render
-      ( el "div" [ class_ "drawer-side" ]
-          [ el "label" [ attr "for" "nav-drawer", class_ "drawer-overlay" ] []
-          , el "ul" [ class_ "menu bg-base-200 min-h-full w-80" ]
-              [ el "li" [] [ navLink { lang, current: route, target: About } [] [ text (dict lang).nav.about ] ]
-              , el "li" [] [ navLink { lang, current: route, target: Contact } [] [ text (dict lang).nav.contact ] ]
-              , el "li" [] [ navLink { lang, current: route, target: PostList } [] [ text (dict lang).nav.posts ] ]
-              ]
-          ]
-      )
-    <> "</div>"
-    <> render (renderScripts nonce)
-    <> "</body></html>"
+renderShellClose nonce _ _ =
+  render (renderScripts nonce) <> "</body></html>"

@@ -83,7 +83,7 @@ Hand-written `mx-auto max-w-*` in feature views is forbidden (enforced by eval 0
 - **Generic `Box`/`Stack`/`Flex` layout primitives.** Tailwind utilities are the
   vocabulary; wrapping them in unnamed semantic aliases adds indirection without
   leverage. `Container` earns its place because it fixes a real bug centrally.
-  **Named layout archetypes** (`App.Ui.Layout.*` — see amendment below) are
+  **Named page templates** (`App.Ui.Templates.*` — see ADR-012) are
   allowed because they are closed, agent-facing records — not open-ended flex
   wrappers.
 
@@ -152,30 +152,10 @@ roles, build-time enforcement — without adopting React or another CSS compiler
 ## Amendment: Layout slot templates (`App.Ui.Layout.*`)
 
 **Date:** 2026-08-30  
-**Status:** Accepted
+**Status:** Superseded (2026-08-31) by `App.Ui.Templates.*` — see ADR-012.
 
-### Context
+### Historical note
 
-Feature views were still accumulating Tailwind utility soup even with
-`Container` and DaisyUI primitives. Agents need a **typed page API** — records
-in, HTML out — not a second vocabulary of class strings.
-
-### Decision
-
-Add a third seam: **`App.Ui.Layout.*`** slot templates (`Hero`, `SectionHeader`,
-`Grid`, `ActionCard`, `ConversionCta`, `LandingPage`, `EditorialPage`,
-`pageLayout`, etc.). Feature `View.purs` modules compose these via typed
-records. Tailwind layout utilities belong inside `App.Ui` (primitives + layout
-templates), not in `App.Features.*`.
-
-`App.Ui` re-exports the common layout entry points (`landingPage`,
-`editorialPage`, `pageLayout`, `pageHeader`). Deeper primitives (`Card`,
-`Container`, `Form`, etc.) remain importable from their modules.
-
-### Consequences
-
-- **Agent API**: Home and Contact are the reference — no `class_` in feature views.
-- **Migration debt**: older features (e.g. Posts detail) may still carry soup;
-  new work must use slot templates.
-- **Enforcement**: convention + eval 06 (container, text tone) — not yet a
-  full `space-y-*` gate. See `docs/conventions/design-system.md`.
+This amendment introduced `App.Ui.Layout.*` page blueprints. Live pages now use
+`App.Ui.Templates.renderPage` and the closed `PageTemplate` ADT. The Layout
+modules were removed; do not resurrect them.

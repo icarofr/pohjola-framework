@@ -14,8 +14,8 @@ make new-feature NAME=Team SLUG_FR=equipe     # custom FR slug
 
 Creates `src/App/Features/<Name>/` with the standard file split. When `WIRE=1` is passed, it automatically wires the feature across `Data.Route`, `App.Main`, `Data.I18n`, and `App.Layout.Head` and validates compilation immediately.
 
-Generated views consume `App.Ui` component/layout recipes. Do not add raw Tailwind
-utility chains to feature views; layout utilities belong inside the UI boundary.
+Generated views consume `App.Ui.Templates` (`renderPage` + slot records). Do not add raw Tailwind
+utility chains to feature views; DaisyUI/layout utilities belong inside Templates / `App.Ui`.
 
 `make generator-policy` validates the canonical generator and its boundary
 contract. It is not a full proof of the CSS/type system; existing feature views

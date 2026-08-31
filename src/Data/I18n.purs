@@ -65,13 +65,16 @@ type Dictionary =
       , posts :: String
       }
   , hero ::
-      { headline :: String
+      { eyebrow :: String
+      , headline :: String
       , body :: String
       , ctaLabel :: String
       , secondaryLabel :: String
       }
   , services ::
-      { sectionTitle :: String
+      { sectionEyebrow :: String
+      , sectionHeadline :: String
+      , sectionIntro :: String
       -- | Localized card copy by service id — pairs with Data.Content.services
       , serviceCopy :: ServiceId -> ServiceCopy
       }
@@ -82,7 +85,16 @@ type Dictionary =
       }
   , about ::
       { heading :: String
-      , paragraphs :: Array String
+      , mission ::
+          { heading :: String
+          , lead :: String
+          , body :: String
+          }
+      , values ::
+          { heading :: String
+          , intro :: String
+          , items :: Array { title :: String, description :: String }
+          }
       }
   , contact ::
       { title :: String
@@ -109,6 +121,7 @@ type Dictionary =
       , loadingError :: String
       , notFound :: String
       , byAuthor :: String
+      , authorRole :: String
       , unknownAuthor :: String
       }
   , footer ::
@@ -156,13 +169,16 @@ en =
       , posts: "Posts"
       }
   , hero:
-      { headline: "The Type-Safe Functional Web Framework for Bun"
+      { eyebrow: "PureScript · Bun · Alpine.js"
+      , headline: "The Type-Safe Functional Web Framework for Bun"
       , body: "MPA simplicity with a seamless SPA experience. Built in PureScript with Bun runtime speed, Alpine.js micro-interactivity, and zero runtime exceptions."
       , ctaLabel: "About Pohjola"
       , secondaryLabel: "Browse notes"
       }
   , services:
-      { sectionTitle: "Architectural Highlights"
+      { sectionEyebrow: "Foundations"
+      , sectionHeadline: "Architectural Highlights"
+      , sectionIntro: "PureScript, Bun, and Alpine.js — composed deliberately and verified mechanically."
       , serviceCopy: \sid -> case sid of
           ServiceId "service-1" ->
             { title: "PureScript Type Safety"
@@ -188,11 +204,35 @@ en =
       }
   , about:
       { heading: "About Pohjola"
-      , paragraphs:
-          [ "Pohjola takes its name from Swallow the Sun's Songs from the North, echoing the legendary realm of Finnish lore. In Finnish, pohja is both the bedrock beneath everything and the root of the North: not just a place, but a direction and a foundation. It evokes an unforgiving world of winter and myth where the master smith Ilmarinen forged the Sampo on an anvil of stone, where fragility is fatal and only deliberate, uncompromising craft can endure."
-          , "We built Pohjola with that same ethos as an antidote to the fragility of modern web development: a true North for your applications. Rather than piling layers of transient JavaScript frameworks on top of one another, Pohjola rests on solid bedrock: PureScript proves correctness at compile time, Bun serves responses in sub-milliseconds, and the server renders clean, semantic HTML."
-          , "Client-side interactivity remains light and transparent through small, typed Alpine.js expressions. You get the fluid responsiveness of a modern application without bloated runtimes, fragile state synchronization, or surprises when the cold winds blow in production."
-          ]
+      , mission:
+          { heading: "Our mission"
+          , lead: "Pohjola takes its name from Swallow the Sun's Songs from the North — Finnish lore where pohja is both bedrock and the direction North. We built the framework on that ethos: deliberate craft that survives production."
+          , body: "Rather than piling transient JavaScript frameworks on top of one another, Pohjola rests on solid bedrock. PureScript proves correctness at compile time, Bun serves responses in sub-milliseconds, and the server renders clean, semantic HTML with light Alpine.js seams."
+          }
+      , values:
+          { heading: "Our values"
+          , intro: "These principles guide every architectural decision in the framework."
+          , items:
+              [ { title: "Bedrock over fashion"
+                , description: "Prefer proven foundations — typed HTML, explicit errors, and server-first rendering — over the framework churn of the week."
+                }
+              , { title: "Open by default"
+                , description: "Safety invariants, policy gates, and conventions are documented and testable so contributors can reason about the system."
+                }
+              , { title: "Always learning"
+                , description: "ADRs, evals, and convention docs encode what we learned so the next change starts from shared context."
+                }
+              , { title: "Supportive seams"
+                , description: "Alpine interactivity stays typed and minimal — enough UX polish without smuggling a client runtime through the back door."
+                }
+              , { title: "Take responsibility"
+                , description: "Errors are values, CSP is pinned, and caches are conservative because production surprises are our problem, not the user's."
+                }
+              , { title: "Enjoy restraint"
+                , description: "A small surface area you can hold in your head beats a maximal toolkit you have to fight on every feature."
+                }
+              ]
+          }
       }
   , contact:
       { title: "Community & Contributing"
@@ -219,6 +259,7 @@ en =
       , loadingError: "Failed to load articles. Please check your connection."
       , notFound: "Article not found."
       , byAuthor: "By"
+      , authorRole: "Engineering"
       , unknownAuthor: "Pohjola"
       }
   , footer:
@@ -262,13 +303,16 @@ fr =
       , posts: "Articles"
       }
   , hero:
-      { headline: "Le framework web fonctionnel et typé pour Bun"
+      { eyebrow: "PureScript · Bun · Alpine.js"
+      , headline: "Le framework web fonctionnel et typé pour Bun"
       , body: "La simplicité d'une MPA avec la fluidité d'une SPA. Conçu en PureScript avec la vitesse de Bun, la réactivité d'Alpine.js et zéro exception à l'exécution."
       , ctaLabel: "En savoir plus"
       , secondaryLabel: "Lire les articles"
       }
   , services:
-      { sectionTitle: "Points clés de l'architecture"
+      { sectionEyebrow: "Fondations"
+      , sectionHeadline: "Points clés de l'architecture"
+      , sectionIntro: "PureScript, Bun et Alpine.js — composés avec intention et vérifiés mécaniquement."
       , serviceCopy: \sid -> case sid of
           ServiceId "service-1" ->
             { title: "Sécurité de typage PureScript"
@@ -294,11 +338,35 @@ fr =
       }
   , about:
       { heading: "À propos de Pohjola"
-      , paragraphs:
-          [ "Pohjola tire son nom de l'album Songs from the North de Swallow the Sun, hommage au royaume légendaire de la mythologie finlandaise. En finnois, pohja désigne à la fois le socle fondamental sur lequel tout repose et la racine du Nord : pas seulement un lieu, mais une direction et une fondation. Il évoque un monde d'hiver et de légendes où le maître forgeron Ilmarinen façonna le Sampo sur une enclume de pierre, où la fragilité ne pardonne pas et où seule une conception sans compromis résiste au temps."
-          , "Nous avons conçu Pohjola selon cette même exigence pour répondre à la fragilité du web moderne : un cap clair pour vos applications. Au lieu d'empiler des couches d'abstractions éphémères, Pohjola s'établit sur un socle inébranlable : PureScript garantit la correction dès la compilation, Bun délivre chaque réponse en moins d'une milliseconde, et le serveur produit du HTML propre et sémantique."
-          , "L'interactivité côté client reste légère et transparente grâce à de courtes expressions Alpine.js typées. Vous profitez de la fluidité d'une application moderne sans la lourdeur des SPA, sans synchronisation d'état complexe, et sans mauvaise surprise en production."
-          ]
+      , mission:
+          { heading: "Notre mission"
+          , lead: "Pohjola tire son nom de Songs from the North de Swallow the Sun — la mythologie finnoise où pohja est à la fois le socle et la direction du Nord. Nous avons bâti le framework sur cette exigence : un artisanat délibéré qui tient en production."
+          , body: "Plutôt que d'empiler des frameworks JavaScript éphémères, Pohjola repose sur un socle solide. PureScript garantit la correction à la compilation, Bun répond en moins d'une milliseconde, et le serveur produit du HTML sémantique avec des coutures Alpine.js légères."
+          }
+      , values:
+          { heading: "Nos valeurs"
+          , intro: "Ces principes guident chaque décision architecturale du framework."
+          , items:
+              [ { title: "Le socle avant la mode"
+                , description: "HTML typé, erreurs explicites et rendu serveur d'abord — plutôt que la mode du moment."
+                }
+              , { title: "Ouvert par défaut"
+                , description: "Invariants, politiques et conventions documentés et testables pour que chacun puisse raisonner sur le système."
+                }
+              , { title: "Apprendre en continu"
+                , description: "ADRs, evals et docs de convention encodent ce que nous avons appris pour la prochaine évolution."
+                }
+              , { title: "Coutures bienveillantes"
+                , description: "L'interactivité Alpine reste typée et minimale — assez de polish sans runtime client déguisé."
+                }
+              , { title: "Assumer la responsabilité"
+                , description: "Les erreurs sont des valeurs, la CSP est figée, et les caches restent prudents : la production nous regarde."
+                }
+              , { title: "La retenue comme force"
+                , description: "Une surface maîtrisable vaut mieux qu'une boîte à outils maximale à combattre à chaque feature."
+                }
+              ]
+          }
       }
   , contact:
       { title: "Communauté & Contribution"
@@ -325,6 +393,7 @@ fr =
       , loadingError: "Impossible de charger les articles. Veuillez vérifier votre connexion."
       , notFound: "Article introuvable."
       , byAuthor: "Par"
+      , authorRole: "Ingénierie"
       , unknownAuthor: "Pohjola"
       }
   , footer:

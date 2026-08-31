@@ -1,91 +1,29 @@
--- | Frozen shell recipes — header, footer, theme, lang (DESIGN.md + Daisy docs).
+-- | Frozen site chrome — DaisyUI navbar/footer markers on SiteShell.
 module Test.ShellSpec (spec) where
 
 import Prelude
 
-import App.Html (render)
-import App.Theme (daisyThemeDark, siteThemeToggleId)
-import App.Ui.Shell.LangMenu (langMenu, langMenuPopoverId)
-import App.Ui.Shell.SiteFooter (siteFooter, siteFooterClass, siteFooterLabelClass)
-import App.Ui.Shell.SiteHeader (siteHeader, siteHeaderClass)
-import App.Ui.Shell.ThemeControl (themeControl, themeSwapClass)
+import App.Html (render, text)
+import App.Ui.Templates.SiteShell (shellLabels, sitePage)
 import Data.I18n (Lang(..))
 import Data.Route (Route(..))
-import Data.String as String
-import Data.String.Pattern (Pattern(..))
 import Test.Spec (Spec, describe, it)
-import Test.Spec.Assertions (shouldSatisfy)
 import Test.Spec.Assertions.String (shouldContain)
 
 spec :: Spec Unit
 spec = do
-  describe "App.Ui.Shell" do
-    it "siteHeader uses sticky blurred navbar recipe" do
+  describe "App.Ui.Templates.SiteShell" do
+    it "sitePage uses sticky header, main, and footer markers" do
       let
+        labels = shellLabels En
         html =
           render
-            ( siteHeader
-                { lang: En
-                , currentRoute: Home
-                , menuLabel: "Menu"
-                , siteTitle: "Pohjola"
-                , aboutLabel: "About"
-                , contactLabel: "Contact"
-                , postsLabel: "Posts"
-                , langToggleLabel: "Language"
-                , themeToggleLabel: "Theme"
-                }
+            ( sitePage En Home labels
+                (text "inner")
             )
-      html `shouldContain` siteHeaderClass
-      html `shouldContain` "navbar"
-      html `shouldContain` "border-b border-base-300"
-      html `shouldSatisfy` (\h -> not $ String.contains (Pattern "footer sm:footer-horizontal") h)
-
-    it "themeControl uses Daisy theme-controller swap recipe" do
-      let html = render (themeControl { ariaLabel: "Theme" })
-      html `shouldContain` themeSwapClass
-      html `shouldContain` "theme-controller"
-      html `shouldContain` ("id=\"" <> siteThemeToggleId <> "\"")
-      html `shouldContain` ("value=\"" <> daisyThemeDark <> "\"")
-      html `shouldContain` "swap-off"
-      html `shouldContain` "swap-on"
-      html `shouldSatisfy` (\h -> not $ String.contains (Pattern "header-theme-menu") h)
-
-    it "langMenu uses popover dropdown recipe" do
-      let
-        html =
-          render
-            ( langMenu
-                { currentLang: En
-                , currentRoute: Home
-                , ariaLabel: "Language"
-                , currentLangLabel: "EN"
-                }
-            )
-      html `shouldContain` ("popovertarget=\"" <> langMenuPopoverId <> "\"")
-      html `shouldContain` "dropdown menu"
-
-    it "siteFooter uses DESIGN dock grid, not Daisy footer demo" do
-      let
-        html =
-          render
-            ( siteFooter
-                { siteTitle: "Pohjola"
-                , siteDescription: "Framework"
-                , exploreLabel: "Explore"
-                , resourcesLabel: "Resources"
-                , aboutLabel: "About"
-                , contactLabel: "Contact"
-                , postsLabel: "Posts"
-                , githubLabel: "GitHub"
-                , issuesLabel: "Issues"
-                , lang: En
-                , currentRoute: Home
-                }
-            )
-      html `shouldContain` siteFooterClass
-      html `shouldContain` siteFooterLabelClass
-      html `shouldContain` "text-base-content/50"
-      html `shouldContain` "max-w-7xl"
-      html `shouldSatisfy` (\h -> not $ String.contains (Pattern "footer sm:footer-horizontal") h)
-      html `shouldSatisfy` (\h -> not $ String.contains (Pattern "footer-title") h)
+      html `shouldContain` "sticky top-0 z-50"
+      html `shouldContain` "max-w-6xl"
+      html `shouldContain` "data-template=\"site-header\""
+      html `shouldContain` "data-template=\"site-footer\""
+      html `shouldContain` "id=\"content\""
+      html `shouldContain` "main class=\"flex-1\""

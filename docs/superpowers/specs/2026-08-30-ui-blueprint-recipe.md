@@ -1,56 +1,44 @@
-# UI blueprint recipe (GLM-safe pages)
+# UI template recipe (agent-safe pages)
 
 **Status:** Active  
-**Date:** 2026-08-30
+**Date:** 2026-08-31
 
 **Prerequisite:** shell chrome per `docs/superpowers/specs/2026-08-30-shell-recipe.md`.
 
-## Two layers, one door
+## Layers
 
 | Layer | Location | Agent touches? |
 |---|---|---|
-| Primitives | `App.Ui.Button`, `Card`, … | No |
-| Page blueprints | `App.Ui.Layout.*` | No |
-| Shell blueprints | `App.Ui.Shell.*` | No |
-| Feature views | `App.Features/*/View.purs` | **Yes — records only** |
+| Primitives | `App.Ui.Button`, `Card`, … | No (inside Templates only) |
+| Page templates | `App.Ui.Templates.*` | No |
+| Slot types / markers | `Templates.Types`, `Templates.Contract` | Read only |
+| Feature views | `App.Features/*/View.purs` | **Yes — slot records only** |
 
-## Page-type → blueprint
+## Page-type → template
 
-| Page purpose | Blueprint | Slot builders |
+| Page purpose | Constructor | Slot builders |
 |---|---|---|
-| Marketing landing | `Ui.landingPage` | `Ui.grid3`, `Ui.actionCard` |
-| Hub / links | `Ui.hubPage` | `actionCard` records in `cards` |
-| Editorial | `Ui.editorialPage` | `Ui.editorialParagraphs` |
-| List + empty/error | `Ui.feedPage` | `Ui.teaserCard` in `Components/` |
-| Article detail | `Ui.articlePage` | — |
+| Marketing landing | `Landing` | `landingSlots`, `landingFeatures` |
+| Hub / links | `Hub` | `hubSlots`, `hubCardTriple` |
+| Editorial | `Editorial` | `editorialSlots`, `valuesSlotsFromArray` |
+| List | `Feed` | `feedSlots` + `FeedCard` array |
+| Article detail | `Article` | `articleSlots` |
+
+Entry point: `App.Ui.Templates.Render.renderPage`.
 
 ## Feature view rules (`make gate`)
 
 **Forbidden imports:** `App.Ui.Card`, `Container`, `Hero`, `Prose`, `Alert`, `Badge`, …  
-**Forbidden calls:** `Ui.page`, `Ui.hero`, `Ui.card`, `cardBody`, `pageLayout`, …  
-**Allowed:** `Ui.buttonLink` in `feedPage` empty `action` only; `import App.Ui.Button (ButtonVariant(..))` for editorial CTA.
+**Forbidden:** `class_`, layout utility soup, calling primitives from features.  
+**Allowed:** `renderPage`, `PageTemplate(…)`, slot helpers from `Templates.Types`, `ActionTarget`.
 
-## Exemplar shapes (copy structure, i18n from `dict lang`)
+## Exemplars
 
-- `Home/View.purs` → `landingPage`
-- `Contact/View.purs` → `hubPage`
-- `About/View.purs` → `editorialPage`
-- `Posts/View.purs` → `feedPage` / `articlePage`
-- `Posts/Components/PostCard.purs` → `teaserCard`
-
-## Ground-up rebuild
-
-```bash
-rm -rf src/App/Ui/Shell src/App/Ui/Layout \
-  src/App/Features/*/View.purs src/App/Features/*/Components
-```
-
-**Order:** Shell (`ShellSpec`) → Layout (`UiSpec`) → Header/Footer delegates → Features (`PolicySpec`).
-
-```bash
-make gate && make test
-```
+- `Home/View.purs` → `Landing`
+- `Contact/View.purs` → `Hub`
+- `About/View.purs` → `Editorial`
+- `Posts/View.purs` → `Feed` / `Article`
 
 ## Changing the look
 
-Edit frozen recipes in `App.Ui.Shell.*` / `App.Ui.Layout.*` and update `ShellSpec` / `UiSpec` / `PolicySpec`. Never widen layout in feature views.
+Edit frozen modules under `App.Ui.Templates.*` and update `TemplateContractSpec` / `PolicySpec` / e2e as needed. Never widen layout in feature views.

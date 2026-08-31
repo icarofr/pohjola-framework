@@ -1,38 +1,34 @@
--- | Posts feature views — list and detail via App.Ui blueprints
+-- | Posts feature views — Feed and Article templates.
 module App.Features.Posts.View where
 
 import Prelude
 
-import App.Features.Posts.Components.PostCard (renderPostCard)
-import App.Features.Posts.Types (Post, postBody, postId, postTitle)
+import App.Features.Posts.Types (Post, postBody, postExcerpt, postId, postTitle)
 import App.Html (Html)
-import App.Ui as Ui
-import Data.Array (null)
+import App.Ui.Templates.Render (renderPage)
+import App.Ui.Templates.Types
+  ( ActionTarget(..)
+  , FeedCard
+  , PageTemplate(..)
+  , articleSlots
+  , feedSlots
+  )
 import Data.I18n (Lang, dict)
-import Data.Maybe (Maybe(..))
 import Data.Route (Route(..))
 
 renderPostList :: Lang -> Array Post -> Html
 renderPostList lang posts =
   let
     d = (dict lang).posts
-    navDict = (dict lang).nav
   in
-    Ui.feedPage
-      { category: Just navDict.posts
-      , title: d.listTitle
-      , subtitle: Nothing
-      , items: map (renderPostCard lang) posts
-      , empty:
-          if null posts then
-            Just
-              { title: d.notFound
-              , description: d.loadingError
-              , action: Nothing
-              }
-          else
-            Nothing
-      }
+    renderPage lang PostList
+      ( Feed
+          ( feedSlots
+              d.listTitle
+              d.listTitle
+              (map (postToCard lang) posts)
+          )
+      )
 
 renderPostDetail :: Lang -> Post -> Html
 renderPostDetail lang post =
@@ -40,39 +36,35 @@ renderPostDetail lang post =
     d = (dict lang).posts
     idNum = postId post
   in
-    Ui.articlePage
-      { back: { label: d.backToList, lang, route: PostList }
-      , metaTag: d.articleTagPrefix <> show idNum
-      , title: postTitle post
-      , authorName: d.unknownAuthor
-      , authorSubtitle: Nothing
-      , body: postBody post
-      }
+    renderPage lang (PostDetail idNum)
+      ( Article
+          ( articleSlots
+              (d.articleTagPrefix <> show idNum)
+              (postTitle post)
+              d.unknownAuthor
+              (d.articleTagPrefix <> show idNum)
+              (postBody post)
+              d.backToList
+          )
+      )
 
 renderPostsError :: Lang -> Html
 renderPostsError lang =
+  renderPostList lang []
+
+postToCard :: Lang -> Post -> FeedCard
+postToCard lang post =
   let
     d = (dict lang).posts
-    navDict = (dict lang).nav
+    idNum = postId post
   in
-    Ui.feedPage
-      { category: Just navDict.posts
-      , title: d.listTitle
-      , subtitle: Nothing
-      , items: []
-      , empty:
-          Just
-            { title: d.loadingError
-            , description: d.notFound
-            , action:
-                Just
-                  ( Ui.buttonLink
-                      { variant: Ui.ButtonPrimary
-                      , size: Ui.Sm
-                      , lang
-                      , route: PostList
-                      }
-                      d.backToList
-                  )
-            }
-      }
+    { imageUrl: "/images/service-2.svg"
+    , imageAlt: postTitle post
+    , date: d.articleTagPrefix <> show idNum
+    , category: d.detailTitle
+    , title: postTitle post
+    , excerpt: postExcerpt post
+    , authorName: d.unknownAuthor
+    , authorRole: d.authorRole
+    , target: Internal { lang, route: PostDetail idNum }
+    }

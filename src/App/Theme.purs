@@ -1,28 +1,28 @@
--- | Theme init — head script + theme-controller checkbox sync (Daisy docs).
+-- | Theme init — DaisyUI data-theme on <html> before first paint.
 module App.Theme
-  ( daisyThemeLight
-  , daisyThemeDark
-  , darkModeInitScript
-  , siteThemeToggleId
+  ( themeInitScript
+  , themeLightName
+  , themeDarkName
+  , themeStorageKey
   ) where
 
 import Prelude
 
-siteThemeToggleId :: String
-siteThemeToggleId = "site-theme-toggle"
+themeStorageKey :: String
+themeStorageKey = "theme"
 
-daisyThemeLight :: String
-daisyThemeLight = "pohjola"
+themeLightName :: String
+themeLightName = "pohjola"
 
-daisyThemeDark :: String
-daisyThemeDark = "pohjola-dark"
+themeDarkName :: String
+themeDarkName = "pohjola-dark"
 
-darkModeInitScript :: String
-darkModeInitScript =
-  "(function(){var light='"
-    <> daisyThemeLight
-    <> "',dark='"
-    <> daisyThemeDark
-    <> "',toggleId='"
-    <> siteThemeToggleId
-    <> "';function apply(isDark){document.documentElement.setAttribute('data-theme',isDark?dark:light);document.documentElement.classList.toggle('dark',isDark);localStorage.setItem('theme',isDark?'dark':'light')}var stored=localStorage.getItem('theme');var prefersDark=matchMedia('(prefers-color-scheme:dark)').matches;var isDark=stored==='dark'||(stored!=='light'&&prefersDark);apply(isDark);document.addEventListener('DOMContentLoaded',function(){var el=document.getElementById(toggleId);if(!el)return;el.checked=isDark;el.addEventListener('change',function(){apply(el.checked)})})})();"
+themeInitScript :: String
+themeInitScript =
+  "(function(){var k='"
+    <> themeStorageKey
+    <> "',l='"
+    <> themeLightName
+    <> "',d='"
+    <> themeDarkName
+    <> "',r=document.documentElement,s=localStorage.getItem(k);if(s==='dark')r.setAttribute('data-theme',d);else if(s==='light')r.setAttribute('data-theme',l)})();"

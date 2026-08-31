@@ -70,26 +70,36 @@ render lang = staticPage (render${name} lang)
 
   await writeText(
     `${featureDir}/View.purs`,
-    `-- | ${name} page view — App.Ui blueprints only
+    `-- | ${name} page view — fills Editorial template slots only.
 module App.Features.${name}.View where
 
 import App.Html (Html)
-import App.Ui as Ui
+import App.Ui.Templates.Render (renderPage)
+import App.Ui.Templates.Types
+  ( EditorialSlots
+  , PageTemplate(..)
+  , editorialSlots
+  , valuesSlotsFromArray
+  )
 import Data.I18n (Lang, dict)
-import Data.Maybe (Maybe(..))
+import Data.Route (Route(..))
 
 render${name} :: Lang -> Html
 render${name} lang =
+  renderPage lang ${name} (Editorial (pageSlots lang))
+
+pageSlots :: Lang -> EditorialSlots
+pageSlots lang =
   let
     d = (dict lang).${lower}
   in
-    Ui.editorialPage
-      { category: Nothing
-      , title: d.heading
-      , subtitle: Just d.body
-      , body: Ui.editorialParagraphs []
-      , action: Nothing
+    editorialSlots
+      d.heading
+      { heading: d.heading
+      , lead: d.body
+      , body: d.body
       }
+      (valuesSlotsFromArray d.heading d.body [])
 `
   );
 } else {
@@ -145,90 +155,59 @@ fetch${name}s cfg = fetchJson (cfg.postsApiBase <> "/posts")
   );
 
   await writeText(
-    `${featureDir}/Components/${name}Card.purs`,
-    `-- | ${name} card — maps domain into Ui.teaserCard
-module App.Features.${name}.Components.${name}Card where
-
-import App.Features.${name}.Types (${name})
-import App.Html (Html)
-import App.Ui as Ui
-import Data.I18n (Lang, dict)
-import Data.Maybe (Maybe(..))
-import Data.Newtype (unwrap)
-import Data.Route (Route(..))
-
-render${name}Card :: Lang -> ${name} -> Html
-render${name}Card lang item =
-  let
-    d = (dict lang).${lower}
-    row = unwrap item
-  in
-    Ui.teaserCard
-      { meta: Nothing
-      , title: row.title
-      , excerpt: row.body
-      , action:
-          { label: d.heading
-          , target: Ui.Internal { lang, route: Home }
-          }
-      }
-`
-  );
-
-  await writeText(
     `${featureDir}/View.purs`,
-    `-- | ${name} view — list rendering via App.Ui blueprints
+    `-- | ${name} view — Feed template slots only.
 module App.Features.${name}.View where
 
 import Prelude
 
-import App.Features.${name}.Components.${name}Card (render${name}Card)
 import App.Features.${name}.Types (${name})
 import App.Html (Html)
-import App.Ui as Ui
-import Data.Array (null)
+import App.Ui.Templates.Render (renderPage)
+import App.Ui.Templates.Types
+  ( ActionTarget(..)
+  , FeedCard
+  , PageTemplate(..)
+  , feedSlots
+  )
 import Data.I18n (Lang, dict)
-import Data.Maybe (Maybe(..))
+import Data.Newtype (unwrap)
+import Data.Route (Route(..))
 
 render${name}List :: Lang -> Array ${name} -> Html
 render${name}List lang items =
   let
     d = (dict lang).${lower}
   in
-    Ui.feedPage
-      { category: Nothing
-      , title: d.heading
-      , subtitle: Nothing
-      , items: map (render${name}Card lang) items
-      , empty:
-          if null items then
-            Just
-              { title: d.heading
-              , description: d.heading
-              , action: Nothing
-              }
-          else
-            Nothing
-      }
+    renderPage lang ${name}
+      ( Feed
+          ( feedSlots
+              d.heading
+              d.body
+              (map (toCard lang) items)
+          )
+      )
 
 render${name}Error :: Lang -> Html
 render${name}Error lang =
+  render${name}List lang []
+
+toCard :: Lang -> ${name} -> FeedCard
+toCard lang item =
   let
     d = (dict lang).${lower}
-    common = (dict lang).common
+    row = unwrap item
   in
-    Ui.feedPage
-      { category: Nothing
-      , title: d.heading
-      , subtitle: Nothing
-      , items: []
-      , empty:
-          Just
-            { title: common.error500
-            , description: d.heading
-            , action: Nothing
-            }
-      }
+    { imageUrl: ""
+    , imageAlt: row.title
+    , date: ""
+    , category: d.heading
+    , title: row.title
+    , excerpt: row.body
+    , authorName: ""
+    , authorRole: ""
+    , target: Internal { lang, route: Home }
+    }
 `
   );
 

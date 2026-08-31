@@ -47,6 +47,7 @@
 - MPA rendered by PureScript server using the `Html` ADT.
 - Routes per language via `routing-duplex` codecs in `Data/Route.purs`.
 - Page view split: every feature has `Page.purs` (orchestrator) + `View.purs` (pure rendering). Data-backed features add `Types.purs` + `Service.purs` and fetch via `App.Data.Fetch`.
+- **UI contract**: feature views fill `App.Ui.Templates` slot records only (`renderPage` + `PageTemplate`). DaisyUI class strings live inside Templates and `App.Ui` primitives — never in features.
 - Forms follow `App.Form` contract with honeypot and same-origin checks.
 - Errors are values (`App.Error` → `Either`) never thrown.
 - Alpine.js provides client interactivity through typed constructors in `App.Alpine`.
@@ -62,8 +63,8 @@
 
 ### Default agent rules
 - Before adding a feature, read the relevant convention doc (task→doc map above). **If you skip this, state why.**
-- Before adding UI/styles, read `DESIGN.md` and `docs/conventions/design-system.md`. Compose views with `App.Ui.Layout.*` slot templates and `App.Ui` primitives (never raw layout utility soup).
-- DaisyUI is the semantic component layer: `App.Ui` owns recipes, feature views consume them, and Tailwind layout utilities are allowed only inside `App.Ui`.
+- Before adding UI/styles, read `DESIGN.md` and `docs/conventions/design-system.md`. Compose views with `App.Ui.Templates.*` (`renderPage` + slot records) — never raw layout utility soup, never `class_` in feature views.
+- DaisyUI is the semantic component layer: Templates and `App.Ui` primitives own recipes; feature views only pass typed slots.
 - Use `scripts/auto-scaffold.js` (via `make new-feature`) as the canonical feature generator.
 - SQL codegen runs via `App.Cli.GenSql` (`make gen-sql`) — no standalone JS script.
 - Before adding FFI, read `docs/ffi-taming-guide.md`. **If you skip this, state why.**
@@ -84,7 +85,7 @@
 
 ### Guardrails (each enforced by a check)
 - Build HTML through the `Html` ADT — string-concatenated HTML bypasses escaping (ADR-001, `make gate`).
-- Compose views via `App.Ui.Layout.*` slot templates — manual `space-y-*` / `flex-col justify-between` soup in feature views is forbidden.
+- Compose views via `App.Ui.Templates.renderPage` and slot records — manual `space-y-*` / `flex-col justify-between` soup in feature views is forbidden.
 - Output bundles to `dist-server/` — `dist/` is the public static root only.
 - Keep CSP at the pinned policy — widenings need an ADR (ContractSpec exact-string assertion).
 - The `Html` ADT has no general-purpose unescaped constructor; script/style contexts and `doctype` are explicit (`make gate`).

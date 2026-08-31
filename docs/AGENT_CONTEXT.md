@@ -25,7 +25,7 @@ contracts below. `docs/GUARANTEES.md` lists every guarantee and its check.
 ## When adding a page or feature
 
 7. `src/App/Features/Home/` and `src/App/Features/Contact/` — static templates
-   (`Page.purs` + `View.purs`, compose via `App.Ui.Layout.*`). Contact is a
+   (`Page.purs` + `View.purs`, compose via `App.Ui.Templates.renderPage`). Contact is a
    community hub, not a form page.
 8. `src/App/Features/Posts/` — the DATA template (`Types`/`Service`/`Page`/`View`)
 9. `src/App/Data/Fetch.purs` — all HTTP fetching goes through `fetchJson`.

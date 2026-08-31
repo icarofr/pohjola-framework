@@ -7,7 +7,7 @@ module App.Layout.Scripts
   ) where
 
 import App.Html (Html, attr, el, text)
-import App.Theme (darkModeInitScript)
+import App.Theme (themeInitScript)
 
 -- | Closed ADT — only these exact scripts can ever exist inline in <head>.
 data HeadScript
@@ -20,11 +20,11 @@ renderHeadScript :: String -> HeadScript -> Html
 renderHeadScript nonce = case _ of
   DarkModeInit ->
     el "script" [ attr "nonce" nonce ]
-      [ text darkModeInitScript ]
+      [ text themeInitScript ]
 
   TitleSync ->
     el "script" [ attr "nonce" nonce ]
-      [ text "(function(){function sync(){var m=document.getElementById('content');if(m&&m.dataset.pageTitle)document.title=m.dataset.pageTitle}function restore(event){event.stopImmediatePropagation();fetch(location.href,{headers:{'X-Alpine-Request':'true'}}).then(function(r){if(!r.ok)throw new Error('fragment restore failed');return r.text()}).then(function(h){var d=new DOMParser().parseFromString(h,'text/html'),c=d.body.children,nh=c[0],nm=c[1],oh=document.querySelector('header#header[x-sync]'),om=document.querySelector('main#content');if(c.length!==2||!nh||nh.tagName!=='HEADER'||nh.id!=='header'||!nh.hasAttribute('x-sync')||!nm||nm.tagName!=='MAIN'||nm.id!=='content'||!nm.hasAttribute('data-page-title'))throw new Error('invalid navigation fragment');if(oh&&om){oh.replaceWith(nh);om.replaceWith(nm);sync();document.dispatchEvent(new CustomEvent('ajax:merged',{detail:{url:location.href}}));window.scrollTo({top:0,left:0,behavior:'instant'})}})}if(!history.state)history.replaceState({__ajax:true},'',location.href);document.addEventListener('ajax:merged',sync);window.addEventListener('popstate',restore,true);sync()})();" ]
+      [ text "(function(){function sync(){var m=document.getElementById('content');if(m&&m.dataset.pageTitle)document.title=m.dataset.pageTitle}function restore(event){event.stopImmediatePropagation();fetch(location.href,{headers:{'X-Alpine-Request':'true'}}).then(function(r){if(!r.ok)throw new Error('fragment restore failed');return r.text()}).then(function(h){var d=new DOMParser().parseFromString(h,'text/html'),n=d.getElementById('content'),o=document.getElementById('content');if(!n||!o||n.tagName!=='DIV'||!n.hasAttribute('data-page-title'))throw new Error('invalid navigation fragment');o.replaceWith(n);sync();document.dispatchEvent(new CustomEvent('ajax:merged',{detail:{url:location.href}}));window.scrollTo({top:0,left:0,behavior:'instant'})})}if(!history.state)history.replaceState({__ajax:true},'',location.href);document.addEventListener('ajax:merged',sync);window.addEventListener('popstate',restore,true);sync()})();" ]
 
   DevLiveReload ->
     el "script" [ attr "nonce" nonce ]

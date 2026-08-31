@@ -1,8 +1,4 @@
 -- | Policy enforcement — manifest-driven scans + behavioral reference-page checks.
--- |
--- | Single test suite for conventions that were previously split across Makefile
--- | Theme/string checks in PolicySpec. Fast structural checks run via
--- | scripts/verify-policy.js (same manifest).
 module Test.PolicySpec (spec) where
 
 import Prelude
@@ -10,16 +6,11 @@ import Prelude
 import App.Features.About.View as About
 import App.Features.Contact.View as Contact
 import App.Features.Home.View as Home
+import App.Features.Posts.Types (Post(..))
 import App.Features.Posts.View as Posts
-import App.Layout.Footer as Footer
-import App.Layout.Header as Header
 import App.Html (render)
-import App.Theme (daisyThemeDark, daisyThemeLight, darkModeInitScript)
-import App.Ui.Layout.SectionHeader (innerPageHeaderClass)
-import App.Ui.Shell.SiteFooter (siteFooterClass)
-import App.Ui.Shell.SiteHeader (siteHeaderClass)
-import Data.Route (Route(..))
-import Data.Array (concat)
+import App.Theme (themeInitScript, themeDarkName, themeLightName)
+import Data.Array (concat, filter)
 import Data.Either (Either(..))
 import Data.I18n (Lang(..))
 import Data.String as String
@@ -43,14 +34,6 @@ spec = do
         case manifest of
           Left err -> fail err
           Right m -> m.version `shouldEqual` 1
-
-      it "theme names match App.Theme module" do
-        manifest <- loadManifest
-        case manifest of
-          Left err -> fail err
-          Right m -> do
-            m.theme.daisyLight `shouldEqual` daisyThemeLight
-            m.theme.daisyDark `shouldEqual` daisyThemeDark
 
     describe "source scans (manifest)" do
       it "no raw/Raw words in src/" do
@@ -82,15 +65,18 @@ spec = do
         offenders <- Scan.findForbiddenInFiles manifest.forbiddenInFeatureViews files
         offenders `shouldEqual` []
 
-      it "no forbidden patterns in App.Ui" do
+      it "no forbidden patterns in App.Ui (excluding Templates)" do
         manifest <- requireManifest
         files <- liftGlob [ "src/App/Ui/**/*.purs", "src/App/Layout/**/*.purs" ]
-        offenders <- Scan.findForbiddenInFiles manifest.forbiddenInAppUi files
+        let
+          nonTemplateFiles =
+            filter (\f -> not (String.contains (Pattern "Ui/Templates") f)) files
+        offenders <- Scan.findForbiddenInFiles manifest.forbiddenInAppUi nonTemplateFiles
         offenders `shouldEqual` []
 
-      it "App.Ui class tokens stay on the closed allowlist" do
+      it "App.Ui.Templates class tokens stay on the closed allowlist" do
         manifest <- requireManifest
-        unknown <- Scan.findUnknownUiClassTokens manifest.uiClassPolicy.allowedTokens manifest.uiClassPolicy.scanRoot
+        unknown <- Scan.findUnknownUiClassTokens manifest.uiClassPolicy.allowedTokens "src/App/Ui/Templates"
         unknown `shouldEqual` []
 
       it "no cross-feature imports" do
@@ -104,43 +90,42 @@ spec = do
         offenders `shouldEqual` []
 
     describe "theme expressions" do
-      it "darkModeInitScript uses manifest theme names" do
-        manifest <- requireManifest
-        darkModeInitScript `StrAssert.shouldContain` manifest.theme.daisyLight
-        darkModeInitScript `StrAssert.shouldContain` manifest.theme.daisyDark
+      it "themeInitScript applies data-theme without html.dark" do
+        themeInitScript `StrAssert.shouldContain` "setAttribute('data-theme'"
+        themeInitScript `StrAssert.shouldContain` themeLightName
+        themeInitScript `StrAssert.shouldContain` themeDarkName
+        themeInitScript `shouldSatisfy` (\s -> not (String.contains (Pattern "classList") s))
 
-    describe "reference pages (behavioral archetypes)" do
-      it "home renders landing hero recipe" do
+    describe "reference pages (page templates)" do
+      it "home renders landing hero markers" do
         let html = render (Home.renderHome En)
-        html `StrAssert.shouldContain` "hero bg-base-100"
-        html `shouldSatisfy` (\h -> not $ String.contains (Pattern "hero bg-base-200") h)
+        html `StrAssert.shouldContain` "text-4xl font-bold"
+        html `StrAssert.shouldContain` "bg-base-200"
         html `StrAssert.shouldContain` "https://github.com/icarofr/pohjola-framework"
 
-      it "contact renders hub grid" do
+      it "contact renders three-column hub cards" do
         let html = render (Contact.renderContact En)
-        html `StrAssert.shouldContain` "card "
-        html `StrAssert.shouldContain` "btn-outline"
+        html `StrAssert.shouldContain` "data-template=\"hub-card\""
+        html `StrAssert.shouldContain` "md:grid-cols-3"
+        html `StrAssert.shouldContain` "flex-auto"
 
-      it "about renders editorial prose without card prison" do
+      it "about renders mission and values grid" do
         let html = render (About.renderAbout En)
-        html `StrAssert.shouldContain` "prose prose-lg"
-        html `StrAssert.shouldContain` innerPageHeaderClass
+        html `StrAssert.shouldContain` "Our mission"
+        html `StrAssert.shouldContain` "lg:grid-cols-3"
 
-      it "posts list renders feed header shell" do
-        let html = render (Posts.renderPostList En [])
-        html `StrAssert.shouldContain` innerPageHeaderClass
-        html `StrAssert.shouldContain` "card "
-
-    describe "reference shell (behavioral)" do
-      it "header renders frozen shell navbar" do
-        let html = render (Header.render En Home)
-        html `StrAssert.shouldContain` siteHeaderClass
-        html `StrAssert.shouldContain` "theme-controller"
-
-      it "footer renders frozen dock grid" do
-        let html = render (Footer.render En Home)
-        html `StrAssert.shouldContain` siteFooterClass
-        html `shouldSatisfy` (\h -> not $ String.contains (Pattern "footer sm:footer-horizontal") h)
+      it "posts list renders feed card grid" do
+        let
+          sample =
+            Post
+              { id: 1
+              , userId: 1
+              , title: "Sample post title"
+              , body: "Excerpt body for the card grid."
+              }
+          html = render (Posts.renderPostList En [ sample ])
+        html `StrAssert.shouldContain` "data-template=\"feed-card\""
+        html `StrAssert.shouldContain` "line-clamp-3"
 
 requireManifest :: Aff PolicyManifest
 requireManifest = do

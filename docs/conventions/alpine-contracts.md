@@ -64,7 +64,7 @@ Every Alpine attribute is a named constructor in `App.Alpine`:
 |---|---|
 | `setFlag f b` | `menuOpen = true` / `menuOpen = false` |
 | `toggleFlag f` | `menuOpen = !menuOpen` |
-| `themeToggle` | flips the `dark` class on `<html>` and persists it |
+| `themeToggle` | flips `data-theme` between `pohjola` and `pohjola-dark` and persists |
 
 So a menu button is `onClick (toggleFlag MenuOpen)`, its panel is
 `xShowFlag MenuOpen` with `onClickOutside (setFlag MenuOpen false)`.

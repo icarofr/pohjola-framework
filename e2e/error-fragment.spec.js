@@ -12,11 +12,7 @@ test("upstream render failure still returns the exact fragment shell", async ({
     async (html) => {
       const document = new DOMParser().parseFromString(html, "text/html");
       return {
-        hasDrawer:
-          document.body.children.length === 1 &&
-          document.body.children[0].classList.contains("drawer"),
-        hasHeader: Boolean(document.body.querySelector("header#header[x-sync]")),
-        hasMain: Boolean(document.body.querySelector("main#content")),
+        hasContent: Boolean(document.body.querySelector("div#content")),
         wrappers: document.body.querySelectorAll("html,body,script,link,style")
           .length,
       };
@@ -24,8 +20,6 @@ test("upstream render failure still returns the exact fragment shell", async ({
     await response.text(),
   );
 
-  expect(parsed.hasDrawer).toBe(true);
-  expect(parsed.hasHeader).toBe(true);
-  expect(parsed.hasMain).toBe(true);
+  expect(parsed.hasContent).toBe(true);
   expect(parsed.wrappers).toBe(0);
 });

@@ -1,58 +1,68 @@
--- | Home page view — closed LandingPage blueprint
+-- | Home page view — fills Landing template slots only.
 module App.Features.Home.View where
 
 import Prelude
 
 import App.Html (Html)
-import App.Ui as Ui
-import Data.Content (Service, bookingUrl, services)
+import App.Ui.Templates.Render (renderPage)
+import App.Ui.Templates.Types
+  ( ActionTarget(..)
+  , FeatureTriple
+  , LandingSlots
+  , PageTemplate(..)
+  , ServiceFeature
+  , landingFeatures
+  , landingSlots
+  )
+import Data.Content (bookingUrl, services)
 import Data.I18n (Lang, dict)
-import Data.Maybe (Maybe(..))
-import Data.Newtype (unwrap)
 import Data.Route (Route(..))
 
 renderHome :: Lang -> Html
 renderHome lang =
+  renderPage lang Home (Landing (homeSlots lang))
+
+homeSlots :: Lang -> LandingSlots
+homeSlots lang =
   let
     d = dict lang
+    features = serviceFeatureTriple lang
   in
-    Ui.landingPage
-      { hero:
-          { eyebrow: Nothing
-          , title: d.hero.headline
-          , body: d.hero.body
-          , primaryAction: { label: d.hero.ctaLabel, target: Ui.Internal { lang, route: About } }
-          , secondaryAction: Just { label: d.hero.secondaryLabel, target: Ui.Internal { lang, route: PostList } }
-          }
-      , primarySection:
-          { title: d.services.sectionTitle
-          , subtitle: Nothing
-          , content: Ui.grid3 (map (renderServiceCard lang) services)
-          }
-      , secondarySection: Nothing
-      , conversion:
-          { heading: d.cta.heading
-          , body: d.cta.body
-          , action: { label: d.cta.ctaLabel, target: Ui.External { href: bookingUrl } }
-          }
+    landingSlots
+      { eyebrow: d.hero.eyebrow
+      , headline: d.hero.headline
+      , body: d.hero.body
+      , ctaLabel: d.hero.ctaLabel
+      , secondaryLabel: d.hero.secondaryLabel
+      , primaryTarget: Internal { lang, route: About }
+      , secondaryTarget: Internal { lang, route: PostList }
+      }
+      ( landingFeatures
+          d.services.sectionEyebrow
+          d.services.sectionHeadline
+          d.services.sectionIntro
+          features.one
+          features.two
+          features.three
+      )
+      { heading: d.cta.heading
+      , body: d.cta.body
+      , ctaLabel: d.cta.ctaLabel
+      , target: External { href: bookingUrl }
       }
 
-renderServiceCard :: Lang -> Service -> Html
-renderServiceCard lang service =
+serviceFeatureTriple :: Lang -> FeatureTriple
+serviceFeatureTriple lang =
   let
-    copy = (dict lang).services.serviceCopy service.id
+    copy = (dict lang).services.serviceCopy
+    toFeature service =
+      { title: (copy service.id).title, description: (copy service.id).description }
   in
-    Ui.actionCard
-      { tag: Nothing
-      , imageUrl: Just { url: service.imageUrl, alt: copy.title, width: service.imageWidth, height: service.imageHeight }
-      , title: copy.title
-      , description: copy.description
-      , action: { label: copy.actionLabel, target: serviceTarget lang service }
-      }
+    case map toFeature services of
+      [ one, two, three ] ->
+        { one, two, three }
+      _ ->
+        { one: emptyFeature, two: emptyFeature, three: emptyFeature }
 
-serviceTarget :: Lang -> Service -> Ui.ActionTarget
-serviceTarget lang service = case unwrap service.id of
-  "service-1" -> Ui.Internal { lang, route: About }
-  "service-2" -> Ui.Internal { lang, route: PostList }
-  "service-3" -> Ui.Internal { lang, route: Contact }
-  _ -> Ui.Internal { lang, route: About }
+emptyFeature :: ServiceFeature
+emptyFeature = { title: "", description: "" }

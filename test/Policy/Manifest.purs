@@ -16,8 +16,8 @@ import Effect.Aff (Aff)
 
 type ThemePolicy =
   { cssPrimaryHex :: String
-  , daisyDark :: String
-  , daisyLight :: String
+  , themeLightName :: String
+  , themeDarkName :: String
   , forbiddenDataThemeLiterals :: Array String
   , themeModule :: String
   }

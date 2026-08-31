@@ -1,6 +1,6 @@
 # Pohjola — Design System & UI Generation Guide
 
-Pohjola uses a 3-tier architecture with **Slot-Based Layout Archetypes** to guide AI-generated user interfaces toward brand consistency, accessible structure, and less "utility soup". These conventions are not a structural guarantee of every visual or accessibility outcome.
+Pohjola uses DaisyUI 5 + **closed page templates** so agents fill typed slots instead of inventing layout. These conventions guide consistency; they are not a pixel-perfect guarantee of every visual outcome.
 
 ---
 
@@ -8,42 +8,40 @@ Pohjola uses a 3-tier architecture with **Slot-Based Layout Archetypes** to guid
 
 1. **Tier 1: UX heuristics** (scorecard in §5 below):
    - Single primary CTA, scan time, recoverable form errors — manual review until automated.
-2. **Tier 2: Design Tokens & Single Source of Truth (`DESIGN.md`)**:
-   - Google Labs `DESIGN.md` format defines exact colors, typography scales, radii, and spacing in YAML.
-    - WCAG contrast is a design intent checked through manual review; automated token linting is pending.
-    - Direct export to Tailwind CSS v4 `@theme` is a planned integration, not current repository tooling.
-3. **Tier 3: DaisyUI semantic recipes & rigid templates (`App.Ui.Layout.*` & `App.Ui.*`)**:
-   - High-level layout archetypes (`Hero`, `SectionHeader`, `Grid`, `ActionCard`, `ConversionCta`) that enforce rigid slots.
-   - Encapsulates box model, margin rhythm, and baseline alignment so agents only pass typed data records.
+2. **Tier 2: Design Tokens (`DESIGN.md`)**:
+   - Colors, typography, radii, spacing. Daisy themes `pohjola` / `pohjola-dark` in `css/input.css` (primary `#047857`).
+3. **Tier 3: DaisyUI templates & primitives**:
+   - **Pages:** `App.Ui.Templates.*` — closed `PageTemplate` ADT + `renderPage`. Agents fill slot records only.
+   - **Primitives:** `App.Ui.Button`, `Card`, `Badge`, … — DaisyUI class recipes used *inside* Templates.
 
 ---
 
 ## 2. Core Design Rules
 
-* **DaisyUI boundary**: `App.Ui` owns semantic component recipes and their Tailwind/DaisyUI classes. Feature views consume those recipes; Tailwind layout utilities are allowed only inside `App.Ui`.
-* **Single Primary Action Rule**: Every screen/view must have at most ONE primary button (`ButtonPrimary`). All other actions use `ButtonOutline`, `ButtonGhost`, or `ButtonLink`.
-* **At Most One Eyebrow**: Section headers and cards may have at most ONE single eyebrow tag. Chaining multiple badges above a title is strictly forbidden.
-* **Contrast Floor**: Aim for at least 4.5:1 contrast against the background (WCAG AA); verify this through manual review until automated tooling is available.
-* **Target Size**: All interactive click targets must be $\ge 40\times 40\text{px}$ on desktop and $\ge 44\times 44\text{px}$ on mobile.
+* **DaisyUI boundary**: Templates and `App.Ui` primitives own class strings. Feature views pass slots only; no `class_`.
+* **Single Primary Action Rule**: At most ONE primary button (`ButtonPrimary`) per screen. Other actions use outline/ghost/link.
+* **At Most One Eyebrow**: At most one badge/eyebrow per section.
+* **Contrast Floor**: Aim for WCAG AA (4.5:1); manual review until automated.
+* **Target Size**: Interactive targets ≥ 44×44px on mobile.
 
 ---
 
-## 3. Page composition — closed blueprints only
+## 3. Page composition — Templates only
 
-Feature views **must not** compose primitives (`hero`, `card`, `page`, `grid3`, …). Pick **one** blueprint and pass a record. Slot builders (`actionCard`, `teaserCard`, `grid3`, `editorialParagraphs`) are allowed only inside blueprint slot fields.
+Feature views **must not** compose primitives. Call `renderPage` with one `PageTemplate` variant and a slot record.
 
-| Page purpose | Blueprint | Exemplar |
+| Page purpose | Template | Exemplar |
 |---|---|---|
-| Marketing landing | `landingPage` | `Home/View.purs` |
-| Hub / link grid | `hubPage` + `actionCard` records | `Contact/View.purs` |
-| Long-form editorial | `editorialPage` + `editorialParagraphs` | `About/View.purs` |
-| Content feed / list | `feedPage` + `teaserCard` items | `Posts/View.purs` (list) |
-| Article detail | `articlePage` | `Posts/View.purs` (detail) |
-| Generic static (scaffold default) | `editorialPage` | `make new-feature` |
+| Marketing landing | `Landing` | `Home/View.purs` |
+| Hub / link grid | `Hub` | `Contact/View.purs` |
+| Long-form editorial | `Editorial` | `About/View.purs` |
+| Content feed / list | `Feed` | `Posts/View.purs` (list) |
+| Article detail | `Article` | `Posts/View.purs` (detail) |
+| Scaffold default | `Editorial` | `make new-feature` |
 
-**ADR-012:** feature `View.purs` and `Components/` must not call `class_` or import `App.Ui.Card` / `App.Ui.Prose` / … — enforced by `make gate` (`policy/manifest.json`).
+**ADR-012:** feature `View.purs` / `Components/` must not call `class_` or import primitive modules — enforced by `make gate`.
 
-Full recipes: `docs/superpowers/specs/2026-08-30-shell-recipe.md` (chrome) and `docs/superpowers/specs/2026-08-30-ui-blueprint-recipe.md` (pages).
+Contract markers: `App.Ui.Templates.Contract` (`data-template="…"`). Shell chrome: `App.Ui.Templates.SiteShell`.
 
 ---
 
@@ -51,31 +49,25 @@ Full recipes: `docs/superpowers/specs/2026-08-30-shell-recipe.md` (chrome) and `
 
 | Module | Constructor | Daisy |
 |---|---|---|
-| `App.Ui.Button` | `buttonLink`, `buttonLinkExternal` | `btn` + `btn-primary` / `btn-outline` / `btn-ghost` / `btn-neutral` / `btn-link` |
-| `App.Ui.Card` | `card`, `cardBody`, `cardTitle`, `cardText`, `cardActions` | `card` + `card-border` + parts |
-| `App.Ui.Hero` | `hero` | `hero` + `hero-content` |
+| `App.Ui.Button` | `buttonLink`, `buttonLinkExternal` | `btn` + variant/size |
+| `App.Ui.Card` | `card`, `cardBody`, `cardTitle`, … | `card` + `card-border` |
 | `App.Ui.Badge` | `badge` | `badge` + color |
-| `App.Ui.Alert` | `alert` | `alert` + color, `role="alert"` |
+| `App.Ui.Alert` | `alert` | `alert` + color |
 | `App.Ui.Prose` | `prose`, `proseLg` | `prose` |
-| `App.Ui.Form` | `textField`, `formContainer`, … | `fieldset` + `input` / `textarea` |
+| `App.Ui.Form` | `textField`, … | `fieldset` + `input` / `textarea` |
 | `App.Ui.Container` | `container` | `container` + width utilities |
-| `App.Ui.TextTone` | `toneClass` | `text-base-content` opacities only here |
-| Shell | `App.Ui.Shell.*` via `App.Layout.Header` / `Footer` | navbar, theme-controller swap, popover lang, DESIGN footer |
+| `App.Ui.TextTone` | `toneClass` | `text-base-content` opacities |
+| Templates | `renderPage`, `PageTemplate`, slots | site shell + page sections |
 
 ---
 
-## 5. Pre-Ship UI Scorecard (Hard Gates)
+## 5. Pre-Ship UI Scorecard
 
-`make generator-policy` validates the canonical generator's `App.Ui` boundary;
-it is not a full CSS/type-system proof, and existing feature views may still
-require migration.
-
-Before finalizing any UI feature, verify these hard gates:
-1. [ ] Only ONE primary CTA exists on the screen.
-2. [ ] Views compose slot templates from `App.Ui.Layout.*` — **no `class_` in feature `View.purs` or `Components/`** (`make gate`, ADR-012).
-3. [ ] At most one eyebrow tag is present per section.
-4. [ ] Text contrast has been manually reviewed against WCAG AA standards (automated linting is pending).
-5. [ ] All click targets meet the $44\times 44\text{px}$ touch target minimum.
-6. [ ] Keyboard focus states and ARIA roles are present on interactive elements.
-7. [ ] Empty and error states are handled gracefully via typed primitives.
-8. [ ] Muted foreground text uses `App.Ui.TextTone` variants — no raw `text-base-content/N` opacity strings.
+1. [ ] Only ONE primary CTA on the screen.
+2. [ ] Views use `App.Ui.Templates.renderPage` — **no `class_`** (`make gate`).
+3. [ ] At most one eyebrow per section.
+4. [ ] Text contrast reviewed for WCAG AA.
+5. [ ] Click targets meet 44×44px minimum.
+6. [ ] Keyboard focus / ARIA on interactive elements.
+7. [ ] Empty and error states handled via typed slots/primitives.
+8. [ ] Muted text uses `App.Ui.TextTone` (or Daisy opacity utilities *inside* Templates) — no raw `text-base-content/N` in features.

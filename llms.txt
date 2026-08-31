@@ -1,0 +1,40 @@
+# Pohjola — LLM / agent quick reference
+
+> PureScript 0.15.16 + Bun SSR MPA + Alpine.js. DaisyUI 5 is the visual vocabulary.
+
+## Do
+
+- Fill `App.Ui.Templates` slots via `renderPage lang route (Landing|Editorial|Hub|Feed|Article slots)`.
+- Put copy in `Data.I18n` (both En and Fr). Put metadata in `Data.Content`.
+- Build HTML only through `App.Html`. Interactivity only through `App.Alpine`.
+- Run `make gate` before claiming UI work is done; `make check` before commit.
+
+## Do not
+
+- Call `class_` or assemble DaisyUI/Tailwind strings in `App.Features/*/View.purs` or `Components/`.
+- Import `App.Ui.Card`, `Container`, `Hero`, `Prose`, `Alert`, `Badge`, `Form`, … from feature views.
+- Invent layout: copy the exemplar for the page purpose (Home/About/Contact/Posts).
+- Maintain a parallel React/shadcn/Next app or JSON registry for production UI.
+- Serve `dist-server/` from the public static root (`dist/` only).
+
+## Page → template
+
+| Purpose | `PageTemplate` | Exemplar |
+|---|---|---|
+| Landing | `Landing` | `Home/View.purs` |
+| Hub / links | `Hub` | `Contact/View.purs` |
+| Editorial | `Editorial` | `About/View.purs` |
+| Feed / list | `Feed` | `Posts/View.purs` (list) |
+| Article | `Article` | `Posts/View.purs` (detail) |
+
+Markers: `App.Ui.Templates.Contract` (`data-template="…"`). Tests: `TemplateContractSpec`, `ShellSpec`, `PolicySpec`.
+
+## Where classes live
+
+- Primitives: `App.Ui.Button`, `Card`, `Badge`, `Hero`, … (DaisyUI 1:1).
+- Page chrome + sections: `App.Ui.Templates.*` (SiteShell, Landing, Editorial, Hub, Feed, Article).
+- Themes: `css/input.css` (`@plugin "daisyui"` + `pohjola` / `pohjola-dark`, primary `#047857`).
+
+## Full agent guide
+
+See `AGENTS.md`, `docs/conventions/design-system.md`, ADR-012.

@@ -120,7 +120,7 @@ for (const pattern of manifest.forbiddenInFeatureViews) {
 }
 ok("feature view UI contract");
 
-// Feature view import allowlist — primitives stay inside App.Ui / Layout
+// Feature view import allowlist — primitives stay inside App.Ui / Templates
 const forbiddenImports = manifest.forbiddenImportsInFeatureViews ?? [];
 for (const mod of forbiddenImports) {
   for (const file of featureFiles) {
@@ -187,12 +187,12 @@ for (const literal of manifest.theme.forbiddenDataThemeLiterals) {
 
 const themeModulePath = join(ROOT, manifest.theme.themeModule);
 const themeSource = await readText(themeModulePath);
-if (!themeSource.includes(manifest.theme.daisyLight)) {
-  fail(`${manifest.theme.themeModule} missing ${manifest.theme.daisyLight}`);
+if (!themeSource.includes("setAttribute('data-theme'")) {
+  fail(`${manifest.theme.themeModule} missing data-theme application`);
 }
-if (!themeSource.includes(manifest.theme.daisyDark)) {
-  fail(`${manifest.theme.themeModule} missing ${manifest.theme.daisyDark}`);
+if (themeSource.includes("classList.toggle('dark'")) {
+  fail(`${manifest.theme.themeModule} still uses html.dark`);
 }
-ok("theme module names");
+ok("theme module data-theme");
 
 console.log("Policy gate OK");

@@ -141,8 +141,8 @@ test("fragment signal matrix — header, query, both, neither (W2)", async ({
       `${c.name}: carries the swap target`,
     ).toBe(true);
     if (c.fragment) {
-      expect(body).toContain('<header id="header"');
-      expect(body).toContain("x-sync");
+      expect(body).toContain('data-page-title');
+      expect(body).toContain('data-template="site-header"');
       expect(body).not.toContain("<script");
     }
     expect(body.includes("<!DOCTYPE"), `${c.name}: document?`).toBe(
@@ -346,9 +346,5 @@ test("the click is served from cache, not the network", async ({
   expect(
     await page.locator("#content").count(),
     "exactly one swap target",
-  ).toBe(1);
-  expect(
-    await page.locator("header#header[x-sync]").count(),
-    "exactly one synchronized header",
   ).toBe(1);
 });

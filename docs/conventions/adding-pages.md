@@ -41,10 +41,11 @@ container maxW extraClass children
 DaisyUI's `container` class handles full-width inside flex parents. Never
 hand-write `mx-auto max-w-*` in a feature view.
 
-**Page layouts**: compose `App.Ui.hero` / `App.Ui.page` / `App.Ui.card` (Daisy HTML). Do not add `class_` in feature views.
+**Page layouts**: compose via `App.Ui.Templates.renderPage` and a `PageTemplate`
+slot record. Do not add `class_` in feature views.
 
 **Cross-feature imports are forbidden** (enforced by ContractSpec). Features
-compose through shared `App/Ui/` primitives and `App.Data.Fetch`, never by
+compose through shared `App.Ui.Templates` / primitives and `App.Data.Fetch`, never by
 importing a sibling feature's modules.
 
 ## Static page (no data fetching)
@@ -55,8 +56,8 @@ importing a sibling feature's modules.
 4. Update `pageRenderer` in `Main.purs`
 5. `src/App/Features/<Name>/Page.purs` :: `render :: Lang -> Aff (Either AppError Html)`
    (wrap pure Html in `pure (Right ...)`)
-6. `src/App/Features/<Name>/View.purs` — compose via `App.Ui.Layout.*` (or
-   `container` + `sectionHeader` for minimal pages)
+6. `src/App/Features/<Name>/View.purs` — `renderPage` + `PageTemplate` slots
+   (prefer `Editorial` for generic static pages; see design-system.md)
 7. `src/App/Features/<Name>/Components/` — optional; extract when you have a
    distinct reusable visual unit (card, sidebar, etc.)
 8. i18n keys in `Data.I18n.purs` (both languages)
@@ -77,7 +78,7 @@ and `/fr/<route>` with localized titles.
 7. Create `src/App/Features/<Name>/Service.purs` — `fetchX :: Aff (Either AppError a)`
    via `App.Data.Fetch.fetchJson`
 8. Create `src/App/Features/<Name>/Page.purs` — `render :: Lang -> Aff (Either AppError Html)`
-9. Create `src/App/Features/<Name>/View.purs` — compose via `App.Ui.Layout.*`
+9. Create `src/App/Features/<Name>/View.purs` — `renderPage` + `Feed` / `Article` slots
 10. Create `src/App/Features/<Name>/Components/` — optional; extract list
     items/cards when the view grows
 11. i18n keys in `Data.I18n.purs` (both languages)

@@ -22,13 +22,14 @@ module Test.Policy.Scan
 import Prelude
 
 import App.Bun (glob, readTextFile)
-import Data.Array (concat, elem, filter, last, length, mapMaybe, mapWithIndex, nub, uncons)
+import Data.Array (concat, drop, elem, filter, last, length, mapMaybe, mapWithIndex, nub, uncons)
 import Data.Char (toCharCode)
 import Data.Either (Either(..))
 import Data.Foldable (all, any)
 import Data.Maybe (Maybe(..))
-import Data.String.CodeUnits (fromCharArray, stripPrefix, toCharArray) as CodeUnits
+import Data.String as String
 import Data.String.Common (split) as Common
+import Data.String.CodeUnits (fromCharArray, stripPrefix, toCharArray) as CodeUnits
 import Data.String.Pattern (Pattern(..))
 import Data.Traversable (for)
 import Data.Tuple (Tuple(..))
@@ -208,7 +209,16 @@ quotedStrings source =
 
 classTokensInSource :: String -> Array String
 classTokensInSource source =
-  nub (concat (map tokensFromQuoted (quotedStrings source)))
+  let
+    chunks = drop 1 (Common.split (Pattern "class_ \"") source)
+  in
+    nub (concat (map classChunkTokens chunks))
+
+classChunkTokens :: String -> Array String
+classChunkTokens chunk =
+  case String.indexOf (Pattern "\"") chunk of
+    Nothing -> []
+    Just i -> tokensFromQuoted (String.take i chunk)
 
 tokensFromQuoted :: String -> Array String
 tokensFromQuoted quoted =

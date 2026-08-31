@@ -1,45 +1,32 @@
-# Shell recipe (GLM-safe chrome)
+# Shell recipe (DaisyUI site chrome)
 
-**Status:** Active  
-**Date:** 2026-08-30
+**Status:** Active (supersedes App.Ui.Shell / Layout Header delegates)  
+**Date:** 2026-08-31
 
-Chrome is **library code**, not page code. Agents never edit shell modules.
+Chrome is **template library code**, not feature code. Agents never invent navbar/footer markup.
 
-## Modules (`App.Ui.Shell.*`)
+## Module
 
-| Module | Daisy source | Frozen exports (ShellSpec) |
+| Module | Role | Markers (`Contract`) |
 |---|---|---|
-| `SiteHeader` | navbar + drawer toggle | `siteHeaderClass` — sticky, blur, `border-b border-base-300` |
-| `ThemeControl` | [theme-controller](https://daisyui.com/components/theme-controller/) + swap | `themeSwapClass`, `theme-controller`, `site-theme-toggle` |
-| `LangMenu` | popover dropdown | `header-lang-menu` popover (no Daisy locale widget) |
-| `SiteFooter` | custom DESIGN dock grid | `siteFooterClass`, `siteFooterLabelClass` — **not** `footer sm:footer-horizontal` |
+| `App.Ui.Templates.SiteShell` | Sticky navbar, mobile menu, footer | `site-header`, `site-footer` |
 
-`App.Layout.Header` / `Footer` are thin delegates: pass i18n + `Route` into shell blueprints only.
+`renderPage` always wraps body content in `sitePage`. Feature views do not call SiteShell directly.
 
 ## Theme
 
-- UI: Daisy **swap + theme-controller** checkbox, `value="pohjola-dark"` from `App.Theme`.
-- Persistence: `darkModeInitScript` in head syncs checkbox + `localStorage` (no Alpine theme popover).
-- Do **not** use `header-theme-menu` or Alpine `xSetTheme` in shell.
+- Themes: Daisy `pohjola` / `pohjola-dark` in `css/input.css` (`data-theme` on `<html>`).
+- Persistence: `themeInitScript` applies stored preference before paint; `system` omits `data-theme` (Daisy `prefersdark`).
+- Navbar switcher: DaisyUI `dropdown` + real `<button>` + Alpine `ThemeMenuOpen` (toggle, outside click, Escape) + `setTheme`.
 
-## Rebuild order (ground-up)
+## Changing chrome
 
-```bash
-rm -rf src/App/Ui/Shell src/App/Ui/Layout \
-  src/App/Features/*/View.purs src/App/Features/*/Components
-```
-
-1. Implement `App.Ui.Shell.*` until `make test` → `ShellSpec` passes.
-2. Implement `App.Ui.Layout.*` until `UiSpec` passes (see page recipe).
-3. Wire `App.Layout.Header` / `Footer` as delegates.
-4. Implement feature views until `PolicySpec` reference pages pass.
-5. `make gate && make test`.
+Edit `SiteShell.purs`, then update `ShellSpec` / e2e selectors if markers or structure change. Never put chrome in feature views.
 
 ## Tests
 
-- `test/ShellSpec.purs` — shell class recipes
-- `test/ContractSpec.purs` — rendered Home includes theme-controller + lang popover
-- `test/UiSpec.purs` — page blueprints
-- `test/PolicySpec.purs` — reference feature pages
+- `test/ShellSpec.purs` — header/main/footer markers
+- `test/ContractSpec.purs` — full page + fragment shell shape
+- `test/TemplateContractSpec.purs` — page section markers
 
-See also: `docs/superpowers/specs/2026-08-30-ui-blueprint-recipe.md`.
+See also: `docs/conventions/design-system.md`, ADR-012.

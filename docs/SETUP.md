@@ -47,7 +47,7 @@ ADRs are part of the deliverable — not the demo features they happen to cover.
     keep the "What NOT to do" table pointing at *your* enforcement.
 14. **First feature** — copy the Posts pattern (data-backed:
     `Types`/`Service`/`Page`/`View` + `App.Data.Fetch`) or the Home/Contact
-    pattern (static: `Page` + `View`, compose via `App.Ui.Layout.*`). Never
+    pattern (static: `Page` + `View`, compose via `App.Ui.Templates.renderPage`). Never
     invent a third shape; if one is genuinely needed, write the ADR first
     (backlog #14).
 

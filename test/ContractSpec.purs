@@ -11,8 +11,9 @@ module Test.ContractSpec where
 import Prelude
 
 import App.Alpine (Flag(..), ThemeMode(..), contentTarget, cycleTheme, flagName, navLink, renderExpr, setFlag, setTheme, spaLink, themeToggle, toggleFlag)
-import App.Theme (darkModeInitScript, daisyThemeDark, daisyThemeLight, siteThemeToggleId)
+import App.Theme (themeInitScript, themeDarkName, themeLightName)
 import App.Config (Config)
+import App.Features.Home.View as Home
 import App.Form (contactFields, newsletterFields)
 import App.Layout.Head (renderJsonLd, escapeJson)
 import App.Layout.Page (renderErrorFragment, renderErrorPage, renderFragment, renderPage, renderShellOpen, renderShellClose, renderPrefetch)
@@ -176,10 +177,12 @@ spec = do
           html <- renderStaticPage route lang
           html `StrAssert.shouldContain` ("id=\"" <> contentTarget <> "\"")
 
-    it "full documents carry the synchronized header and document shell" do
+    it "full documents carry the template page shell" do
       html <- renderStaticPage Home En
-      html `StrAssert.shouldContain` "<header id=\"header\""
-      html `StrAssert.shouldContain` "x-sync"
+      html `StrAssert.shouldContain` "data-template=\"site-header\""
+      html `StrAssert.shouldContain` "sticky top-0 z-50"
+      html `StrAssert.shouldContain` "id=\"content\""
+      html `StrAssert.shouldContain` "data-page-title"
       html `StrAssert.shouldContain` "<!DOCTYPE html"
       html `StrAssert.shouldContain` "<script"
 
@@ -258,11 +261,11 @@ spec = do
         frag `StrAssert.shouldNotContain` "nonce="
 
   describe "fragment responses are fragment-shaped" do
-    it "fragments contain the synchronized header and content only" do
-      let frag = renderFragment En Home (text "content")
-      frag `StrAssert.shouldContain` "<header id=\"header\""
-      frag `StrAssert.shouldContain` "x-sync"
-      frag `StrAssert.shouldContain` "<main id=\"content\""
+    it "fragments are full template page div#content" do
+      let frag = renderFragment En Home (Home.renderHome En)
+      frag `StrAssert.shouldContain` "id=\"content\""
+      frag `StrAssert.shouldContain` "data-template=\"site-header\""
+      frag `StrAssert.shouldContain` "sticky top-0 z-50"
       frag `StrAssert.shouldNotContain` "<!DOCTYPE"
       frag `StrAssert.shouldNotContain` "<html"
       frag `StrAssert.shouldNotContain` "<script"
@@ -488,45 +491,49 @@ spec = do
       -- A collision would silently wire two unrelated controls to one piece of
       -- state, which renders and tests fine until a user opens both.
       flagName MenuOpen `shouldNotEqual` flagName LangMenuOpen
-    it "themeToggle persists the resolved class, not the pre-toggle state" do
-      -- Reading classList back AFTER toggling is what keeps localStorage and
-      -- the DOM in agreement; deriving it from the prior state would invert
-      -- the theme on reload.
-      renderExpr themeToggle `StrAssert.shouldContain` "classList.toggle('dark'); "
-      renderExpr themeToggle `StrAssert.shouldContain` daisyThemeDark
-      renderExpr themeToggle `StrAssert.shouldContain` daisyThemeLight
-      renderExpr themeToggle `StrAssert.shouldContain` "classList.contains('dark') ? 'dark' : 'light'"
-    it "setTheme maps to DaisyUI theme names from css/input.css" do
-      renderExpr (setTheme ThemeLight) `StrAssert.shouldContain` daisyThemeLight
-      renderExpr (setTheme ThemeDark) `StrAssert.shouldContain` daisyThemeDark
-      renderExpr (setTheme ThemeLight) `StrAssert.shouldContain` "classList.remove('dark')"
-      renderExpr (setTheme ThemeDark) `StrAssert.shouldContain` "classList.add('dark')"
-      renderExpr (setTheme ThemeSystem) `StrAssert.shouldContain` "prefers-color-scheme: dark"
-    it "darkModeInitScript uses DaisyUI theme names" do
-      darkModeInitScript `StrAssert.shouldContain` daisyThemeDark
-      darkModeInitScript `StrAssert.shouldContain` daisyThemeLight
+    it "themeToggle flips data-theme and persists preference" do
+      renderExpr themeToggle `StrAssert.shouldContain` "getAttribute('data-theme')==='"
+      renderExpr themeToggle `StrAssert.shouldContain` themeDarkName
+      renderExpr themeToggle `StrAssert.shouldContain` "setAttribute('data-theme'"
+      renderExpr themeToggle `StrAssert.shouldContain` "localStorage.setItem('theme'"
+    it "setTheme maps to DaisyUI data-theme names" do
+      renderExpr (setTheme ThemeLight) `StrAssert.shouldContain` ("setAttribute('data-theme','" <> themeLightName <> "')")
+      renderExpr (setTheme ThemeDark) `StrAssert.shouldContain` ("setAttribute('data-theme','" <> themeDarkName <> "')")
+      renderExpr (setTheme ThemeSystem) `StrAssert.shouldContain` "removeAttribute('data-theme')"
+    it "themeInitScript applies stored data-theme before paint" do
+      themeInitScript `StrAssert.shouldContain` "setAttribute('data-theme'"
+      themeInitScript `StrAssert.shouldContain` themeLightName
+      themeInitScript `StrAssert.shouldContain` themeDarkName
+      themeInitScript `StrAssert.shouldNotContain` "classList"
     it "cycleTheme cycles between system, dark, and light" do
-      renderExpr cycleTheme `StrAssert.shouldContain` "localStorage.setItem('theme', theme)"
-      renderExpr cycleTheme `StrAssert.shouldContain` daisyThemeDark
-      renderExpr cycleTheme `StrAssert.shouldContain` daisyThemeLight
-      renderExpr cycleTheme `StrAssert.shouldContain` "classList.add('dark')"
-      renderExpr cycleTheme `StrAssert.shouldContain` "classList.remove('dark')"
-      renderExpr cycleTheme `StrAssert.shouldContain` "prefers-color-scheme: dark"
-    it "mobile nav uses DaisyUI drawer-toggle" do
-      -- Checkbox drawer is Daisy's HTML method; do not reimplement with Alpine x-show.
+      renderExpr cycleTheme `StrAssert.shouldContain` "localStorage.setItem('theme',theme)"
+      renderExpr cycleTheme `StrAssert.shouldContain` ("setAttribute('data-theme','" <> themeDarkName <> "')")
+      renderExpr cycleTheme `StrAssert.shouldContain` ("setAttribute('data-theme','" <> themeLightName <> "')")
+      renderExpr cycleTheme `StrAssert.shouldContain` "removeAttribute('data-theme')"
+    it "mobile nav uses DaisyUI drawer" do
       html <- renderStaticPage Home En
+      html `StrAssert.shouldContain` "drawer drawer-end"
       html `StrAssert.shouldContain` "drawer-toggle"
-      html `StrAssert.shouldContain` "id=\"nav-drawer\""
-    it "language menu uses DaisyUI popover dropdown" do
+      html `StrAssert.shouldContain` "drawer-side"
+      html `StrAssert.shouldContain` "id=\"site-drawer\""
+    it "theme switcher uses Alpine disclosure in navbar" do
       html <- renderStaticPage Home En
-      html `StrAssert.shouldContain` "popovertarget=\"header-lang-menu\""
-      html `StrAssert.shouldContain` "id=\"header-lang-menu\""
-      html `StrAssert.shouldContain` "popover"
-    it "theme control uses DaisyUI theme-controller swap" do
+      html `StrAssert.shouldContain` "themeOpen: false"
+      html `StrAssert.shouldContain` "aria-haspopup=\"menu\""
+      html `StrAssert.shouldContain` ":aria-expanded=\"themeOpen.toString()\""
+      html `StrAssert.shouldContain` "x-show=\"themeOpen\""
+      html `StrAssert.shouldContain` ("setAttribute(&#x27;data-theme&#x27;,&#x27;" <> themeLightName <> "&#x27;)")
+      html `StrAssert.shouldContain` "dropdown dropdown-end"
+    it "language switcher uses route links in marketing header" do
       html <- renderStaticPage Home En
-      html `StrAssert.shouldContain` "theme-controller"
-      html `StrAssert.shouldContain` "swap-rotate"
-      html `StrAssert.shouldContain` ("id=\"" <> siteThemeToggleId <> "\"")
+      html `StrAssert.shouldContain` "/en"
+      html `StrAssert.shouldContain` "/fr"
+      html `StrAssert.shouldContain` "English"
+      html `StrAssert.shouldContain` "Français"
+    it "template pages use bg-base-100 content wrapper" do
+      html <- renderStaticPage Home En
+      html `StrAssert.shouldContain` "bg-base-100"
+      html `StrAssert.shouldContain` "id=\"content\""
 
   describe "Alpine seam — typed constructors" do
     it "no raw Alpine attribute strings outside App.Alpine" do
@@ -556,9 +563,9 @@ spec = do
       for_ staticRoutes \route ->
         for_ allLangs \lang -> do
           html <- renderStaticPage route lang
-          StrAssert.shouldContain html "site-theme-toggle"
-          StrAssert.shouldContain html "getElementById(toggleId)"
-          StrAssert.shouldContain html "localStorage.setItem('theme',isDark?'dark':'light')"
+          StrAssert.shouldContain html "setAttribute('data-theme'"
+          StrAssert.shouldContain html themeLightName
+          StrAssert.shouldContain html themeDarkName
           StrAssert.shouldContain html "document.addEventListener('ajax:merged',sync);"
           StrAssert.shouldContain html "window.addEventListener('popstate',restore,true);"
           StrAssert.shouldContain html "function restore(event){event.stopImmediatePropagation();fetch(location.href"
@@ -601,12 +608,11 @@ spec = do
     it "renderShellOpen produces valid HTML structure" do
       let html = renderShellOpen "https://example.com" "test-nonce-123" En Home
       html `StrAssert.shouldContain` "<!DOCTYPE html"
-      html `StrAssert.shouldContain` "<main id=\"content\""
-      html `StrAssert.shouldNotContain` "</main>"
+      html `StrAssert.shouldContain` "bg-base-100"
+      html `StrAssert.shouldNotContain` "</body></html>"
 
     it "renderShellClose closes the document" do
       let html = renderShellClose "test-nonce-123" En Home
-      html `StrAssert.shouldContain` "</main>"
       html `StrAssert.shouldContain` "</body></html>"
 
     it "escapeJson escapes in correct order" do
