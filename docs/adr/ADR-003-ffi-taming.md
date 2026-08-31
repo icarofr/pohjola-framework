@@ -28,7 +28,7 @@ All FFI follows `docs/ffi-taming-guide.md`:
    exception exists — primitives produced by `Bun.serve` itself — bounded in
    `docs/GUARANTEES.md` § "FFI marshalling". It does not extend to library
    output or any third-party data.
-4. `ffiAllowlist` entry in `policy/manifest.json` (gate-enforced) + an ADR per tamed library.
+4. `ffiAllowlist` entry in `Policy.Contract` (gate-enforced) + an ADR per tamed library.
 
 ## Consequences
 

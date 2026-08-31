@@ -39,8 +39,8 @@ Inspects PostgreSQL DDL `CREATE TABLE` definitions and automatically generates t
 
 ## File layout
 
-- **Data-backed**: `Types.purs`, `Service.purs`, `Page.purs`, `View.purs`, `Components/`
-- **Static**: `Page.purs`, `View.purs`
+- **Data-backed**: `Types.purs`, `Page.purs` (fetch + view), optional `Components/`
+- **Static**: `Page.purs` only (handler + template slots)
 
 ContractSpec enforces feature isolation — see `test/ContractSpec.purs`.
 

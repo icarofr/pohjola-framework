@@ -9,25 +9,29 @@ module Test.Policy.Scan
   , featureOfPath
   , findBannedInSrc
   , findCrossFeatureImports
+  , findEnvReadsOutsideAllowlist
+  , findExtraFiles
   , findFilesMatching
+  , findForbiddenImportsInFiles
   , findForbiddenInFiles
   , findForeignImportsOutsideAllowlist
+  , findHardcodedTextInFiles
   , findRawAlpineOutsideAlpine
   , findRawInSrc
   , findScriptsOutsideAllowlist
-  , findUnknownUiClassTokens
+  , findTextToneViolations
   , pursFilesUnder
+  , withoutPolicyExclusions
   ) where
 
 import Prelude
 
 import App.Bun (glob, readTextFile)
-import Data.Array (concat, drop, elem, filter, last, length, mapMaybe, nub, uncons)
+import Data.Array (concat, elem, filter, length, mapMaybe, uncons)
 import Data.Char (toCharCode)
 import Data.Either (Either(..))
-import Data.Foldable (all, any)
+import Data.Foldable (any)
 import Data.Maybe (Maybe(..))
-import Data.String as String
 import Data.String.Common (split) as Common
 import Data.String.CodeUnits (fromCharArray, stripPrefix, toCharArray) as CodeUnits
 import Data.String.Pattern (Pattern(..))
@@ -41,6 +45,10 @@ pursFilesUnder dir = glob (dir <> "/**/*.purs")
 
 findFilesMatching :: String -> Effect (Array String)
 findFilesMatching pattern = glob pattern
+
+withoutPolicyExclusions :: Array String -> Array String -> Array String
+withoutPolicyExclusions exclusions files =
+  filter (\f -> not (elem f exclusions)) files
 
 containsSubstring :: String -> String -> Boolean
 containsSubstring needle haystack =
@@ -136,6 +144,66 @@ findRawAlpineOutsideAlpine root = do
         Left _ -> Nothing
   pure (mapMaybe identity results)
 
+findEnvReadsOutsideAllowlist :: Array String -> String -> Aff (Array String)
+findEnvReadsOutsideAllowlist allowlist root = do
+  files <- liftEffect $ pursFilesUnder root
+  results <- for files \file -> do
+    if any (_ == file) allowlist then pure Nothing
+    else do
+      content <- readTextFile file
+      pure case content of
+        Right c ->
+          if containsSubstring "Node.Process" c || containsSubstring "lookupEnv" c then
+            Just file
+          else
+            Nothing
+        Left _ -> Nothing
+  pure (mapMaybe identity results)
+
+findExtraFiles :: Array String -> String -> Aff (Array String)
+findExtraFiles allowed pattern = do
+  files <- liftEffect $ findFilesMatching pattern
+  pure (filter (\f -> not (elem f allowed)) files)
+
+findHardcodedTextInFiles :: String -> Array String -> Aff (Array String)
+findHardcodedTextInFiles needle files = do
+  results <- for files \file -> do
+    content <- readTextFile file
+    pure case content of
+      Right c ->
+        let
+          lines = Common.split (Pattern "\n") c
+          hits = filter (containsSubstring needle) lines
+        in
+          if length hits > 0 then Just file else Nothing
+      Left _ -> Nothing
+  pure (mapMaybe identity results)
+
+findForbiddenImportsInFiles :: Array String -> Array String -> Aff (Array String)
+findForbiddenImportsInFiles modules files = do
+  results <- for files \file -> do
+    content <- readTextFile file
+    pure case content of
+      Right c ->
+        if any (\mod -> containsSubstring ("import " <> mod) c) modules then
+          Just file
+        else
+          Nothing
+      Left _ -> Nothing
+  pure (mapMaybe identity results)
+
+findTextToneViolations :: String -> Array String -> String -> Aff (Array String)
+findTextToneViolations pattern allowlist root = do
+  files <- liftEffect $ pursFilesUnder root
+  results <- for files \file -> do
+    if any (_ == file) allowlist then pure Nothing
+    else do
+      content <- readTextFile file
+      pure case content of
+        Right c -> if containsSubstring pattern c then Just file else Nothing
+        Left _ -> Nothing
+  pure (mapMaybe identity results)
+
 findForbiddenInFiles :: Array String -> Array String -> Aff (Array String)
 findForbiddenInFiles patterns files = do
   results <- for files \file -> do
@@ -183,129 +251,3 @@ findCrossFeatureImports featuresRoot = do
       Just rest ->
         if featureOfModule ("App.Features." <> rest) == Just ownFeature then Nothing
         else Just line
-
--- | Class tokens in App.Ui quoted strings that are not on the closed allowlist.
-findUnknownUiClassTokens :: Array String -> String -> Aff (Array String)
-findUnknownUiClassTokens allowlist root = do
-  files <- liftEffect $ pursFilesUnder root
-  results <- for files \file -> do
-    content <- readTextFile file
-    pure case content of
-      Right c -> filter (\tok -> not (elem tok allowlist)) (classTokensInSource c)
-      Left _ -> []
-  pure (nub (concat results))
-
-classTokensInSource :: String -> Array String
-classTokensInSource source =
-  let
-    chunks = drop 1 (Common.split (Pattern "class_ \"") source)
-  in
-    nub (concat (map classChunkTokens chunks))
-
-classChunkTokens :: String -> Array String
-classChunkTokens chunk =
-  case String.indexOf (Pattern "\"") chunk of
-    Nothing -> []
-    Just i -> tokensFromQuoted (String.take i chunk)
-
-tokensFromQuoted :: String -> Array String
-tokensFromQuoted quoted =
-  let
-    parts = filter (_ /= "") (Common.split (Pattern " ") quoted)
-  in
-    if all isExtractedClassToken parts then
-      parts
-    else
-      []
-
-isExtractedClassToken :: String -> Boolean
-isExtractedClassToken tok =
-  not (startsWith "aria-" tok)
-    && not (endsWithDash tok)
-    && isClassCharset tok
-    && hasLetter tok
-    &&
-      ( containsSubstring "-" tok
-          || containsSubstring ":" tok
-          || containsSubstring "/" tok
-          || containsSubstring "[" tok
-          || elem tok unhyphenatedClassWords
-      )
-
-hasLetter :: String -> Boolean
-hasLetter s =
-  any
-    ( \c ->
-        let
-          n = toCharCode c
-        in
-          n >= 97 && n <= 122
-    )
-    (CodeUnits.toCharArray s)
-
-unhyphenatedClassWords :: Array String
-unhyphenatedClassWords =
-  [ "absolute"
-  , "alert"
-  , "avatar"
-  , "badge"
-  , "block"
-  , "border"
-  , "btn"
-  , "card"
-  , "collapse"
-  , "container"
-  , "contents"
-  , "divider"
-  , "fieldset"
-  , "fixed"
-  , "flex"
-  , "grid"
-  , "grow"
-  , "hero"
-  , "hidden"
-  , "inline"
-  , "input"
-  , "menu"
-  , "modal"
-  , "navbar"
-  , "prose"
-  , "shrink"
-  , "stat"
-  , "stats"
-  , "sticky"
-  , "tab"
-  , "tabs"
-  , "textarea"
-  , "toast"
-  , "truncate"
-  , "uppercase"
-  ]
-
-startsWith :: String -> String -> Boolean
-startsWith prefix s =
-  case CodeUnits.stripPrefix (Pattern prefix) s of
-    Just _ -> true
-    Nothing -> false
-
-endsWithDash :: String -> Boolean
-endsWithDash s =
-  last (CodeUnits.toCharArray s) == Just '-'
-
-isClassCharset :: String -> Boolean
-isClassCharset tok =
-  tok /= ""
-    && all isClassChar (CodeUnits.toCharArray tok)
-
-isClassChar :: Char -> Boolean
-isClassChar c =
-  let
-    n = toCharCode c
-  in
-    (n >= 48 && n <= 57)
-      || (n >= 97 && n <= 122)
-      || n == 45
-      || n == 58
-      || n == 47
-      || n == 91
-      || n == 93

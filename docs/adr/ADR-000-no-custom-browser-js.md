@@ -32,7 +32,7 @@ invisible to the PureScript type system and to the gate.
   reasoning. This line previously still described the pre-nonce policy and
   contradicted the addendum.)
 - ContractSpec asserts rendered pages never reference external `src="http…"`.
-- The gate bans `foreign import` outside `ffiAllowlist` in `policy/manifest.json`.
+- The gate bans `foreign import` outside `ffiAllowlist` in `Policy.Contract`.
 - If a behaviour can't be expressed in Alpine attributes, it moves to the
   server — it does not become a script tag.
 

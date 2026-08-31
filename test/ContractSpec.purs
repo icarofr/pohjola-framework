@@ -35,6 +35,7 @@ import Data.Tuple (Tuple(..), snd)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import App.Bun (readTextFile)
+import Policy.Contract as Policy
 import Test.Policy.Scan as PolicyScan
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldEqual, shouldNotEqual, shouldSatisfy)
@@ -202,17 +203,15 @@ spec = do
       html `StrAssert.shouldContain` "x-target.push=\"content\""
 
   describe "FFI allowlist has one meaning" do
-    -- policy/manifest.json is the single source of truth; PolicySpec scans src/
-    -- against the same list. This test only guards manifest ↔ docs drift.
-    it "policy manifest lists the four FFI modules" do
-      raw <- readTextFile "policy/manifest.json"
-      case raw of
-        Left err -> StrAssert.shouldContain "" ("expected policy/manifest.json: " <> err)
-        Right content -> do
-          content `StrAssert.shouldContain` "src/App/ServerBun.purs"
-          content `StrAssert.shouldContain` "src/App/FetchBun.purs"
-          content `StrAssert.shouldContain` "src/App/Bun.purs"
-          content `StrAssert.shouldContain` "src/App/Data/SQL.purs"
+    -- Policy.Contract is the single source of truth; Test.Gate scans src/
+    -- against the same list. This test only guards contract ↔ docs drift.
+    it "Policy.Contract lists the four FFI modules" do
+      Policy.ffiAllowlist `shouldEqual`
+        [ "src/App/ServerBun.purs"
+        , "src/App/FetchBun.purs"
+        , "src/App/Bun.purs"
+        , "src/App/Data/SQL.purs"
+        ]
 
   describe "SQL migration affinity (ADR-009 Phase 3A)" do
     it "App.Data.SQL exposes reserve and release at the FFI boundary" do

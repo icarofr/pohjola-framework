@@ -81,7 +81,7 @@ Bun-native task will fail it.
 
 ## Step 4 — Register
 
-- Add the module to `ffiAllowlist` in `policy/manifest.json`.
+- Add the module to `ffiAllowlist` in `Policy.Contract`.
 - Write `docs/adr/ADR-00N`: why this library, what's bounded, what state it
   holds, why not the alternatives.
 

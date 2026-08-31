@@ -46,10 +46,11 @@ format:
 format-check:
 	bun x purs-tidy check 'src/**/*.purs' 'test/**/*.purs'
 
-## gate: structural policy checks (policy/manifest.json)
+## gate: structural policy checks (Policy.Contract via Test.Gate)
 .PHONY: gate
 gate:
-	@bun scripts/verify-policy.js
+	$(SPAGO) build --pure
+	bun -e "import { main } from './output/Test.Gate/index.js'; main()"
 
 ## generator-policy: validate the canonical generator and App.Ui boundary
 .PHONY: generator-policy design-policy

@@ -57,28 +57,12 @@ if (await exists(featureDir)) {
 if (type === "static") {
   await writeText(
     `${featureDir}/Page.purs`,
-    `-- | ${name} page — entry point
+    `-- | ${name} page — handler + template slots (single module).
 module App.Features.${name}.Page where
 
 import App.Error (AppError)
-import App.Features.${name}.View (render${name})
 import App.Html (Html)
 import App.Layout.Page (staticPage)
-import Data.Either (Either)
-import Data.I18n (Lang)
-import Effect.Aff (Aff)
-
-render :: Lang -> Aff (Either AppError Html)
-render lang = staticPage (render${name} lang)
-`
-  );
-
-  await writeText(
-    `${featureDir}/View.purs`,
-    `-- | ${name} page view — fills Editorial template slots only.
-module App.Features.${name}.View where
-
-import App.Html (Html)
 import App.Ui.Templates.Render (renderPage)
 import App.Ui.Templates.Types
   ( EditorialSlots
@@ -86,11 +70,16 @@ import App.Ui.Templates.Types
   , editorialSlots
   , valuesSlotsFromArray
   )
+import Data.Either (Either)
 import Data.I18n (Lang, dict)
 import Data.Route (Route(..))
+import Effect.Aff (Aff)
 
-render${name} :: Lang -> Html
-render${name} lang =
+render :: Lang -> Aff (Either AppError Html)
+render lang = staticPage (view lang)
+
+view :: Lang -> Html
+view lang =
   renderPage lang ${name} (Editorial (pageSlots lang))
 
 pageSlots :: Lang -> EditorialSlots
@@ -142,31 +131,15 @@ instance decodeJson${name} :: DecodeJson ${name} where
   );
 
   await writeText(
-    `${featureDir}/Service.purs`,
-    `-- | ${name} data fetching via HTTP.
-module App.Features.${name}.Service where
+    `${featureDir}/Page.purs`,
+    `-- | ${name} page — fetch + Feed template slots (single handler module).
+module App.Features.${name}.Page where
 
 import Prelude
 
 import App.Config (Config)
 import App.Data.Fetch (fetchJson)
 import App.Error (AppError)
-import App.Features.${name}.Types (${name})
-import Data.Either (Either)
-import Effect.Aff (Aff)
-
-fetch${name}s :: Config -> Aff (Either AppError (Array ${name}))
-fetch${name}s cfg = fetchJson (cfg.postsApiBase <> "/posts")
-`
-  );
-
-  await writeText(
-    `${featureDir}/View.purs`,
-    `-- | ${name} view — Feed template slots only.
-module App.Features.${name}.View where
-
-import Prelude
-
 import App.Features.${name}.Types (${name})
 import App.Html (Html)
 import App.Ui.Templates.Render (renderPage)
@@ -176,12 +149,24 @@ import App.Ui.Templates.Types
   , PageTemplate(..)
   , feedSlots
   )
+import Data.Either (Either(..))
 import Data.I18n (Lang, dict)
 import Data.Newtype (unwrap)
 import Data.Route (Route(..))
+import Effect.Aff (Aff)
 
-render${name}List :: Lang -> Array ${name} -> Html
-render${name}List lang items =
+fetch${name}s :: Config -> Aff (Either AppError (Array ${name}))
+fetch${name}s cfg = fetchJson (cfg.postsApiBase <> "/posts")
+
+renderList :: Config -> Lang -> Aff (Either AppError Html)
+renderList cfg lang = do
+  result <- fetch${name}s cfg
+  pure case result of
+    Right items -> Right (viewList lang items)
+    Left _ -> Right (viewList lang [])
+
+viewList :: Lang -> Array ${name} -> Html
+viewList lang items =
   let
     d = (dict lang).${lower}
   in
@@ -193,10 +178,6 @@ render${name}List lang items =
               (map (toCard lang) items)
           )
       )
-
-render${name}Error :: Lang -> Html
-render${name}Error lang =
-  render${name}List lang []
 
 toCard :: Lang -> ${name} -> FeedCard
 toCard lang item =
@@ -214,31 +195,6 @@ toCard lang item =
     , authorRole: ""
     , target: Internal { lang, route: Home }
     }
-`
-  );
-
-  await writeText(
-    `${featureDir}/Page.purs`,
-    `-- | ${name} page — fetches data and renders via View.
-module App.Features.${name}.Page where
-
-import Prelude
-
-import App.Config (Config)
-import App.Error (AppError)
-import App.Features.${name}.Service (fetch${name}s)
-import App.Features.${name}.View (render${name}Error, render${name}List)
-import App.Html (Html)
-import Data.Either (Either(..))
-import Data.I18n (Lang)
-import Effect.Aff (Aff)
-
-renderList :: Config -> Lang -> Aff (Either AppError Html)
-renderList cfg lang = do
-  result <- fetch${name}s cfg
-  pure case result of
-    Right items -> Right (render${name}List lang items)
-    Left _ -> Right (render${name}Error lang)
 `
   );
 }

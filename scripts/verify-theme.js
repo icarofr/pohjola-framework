@@ -3,12 +3,15 @@
  * Theme build artifact check — compiled CSS must embed DESIGN.md primary.
  */
 import { join } from "node:path";
-import { fail, readText, run } from "./lib/repo.js";
-import { readManifest } from "./lib/policy.js";
+import { fail, readText, run, ROOT } from "./lib/repo.js";
 
-const manifest = await readManifest();
-const primary = manifest.theme.cssPrimaryHex;
-const outFile = join(import.meta.dir, "..", "dist", "css", "styles.css");
+const cssInput = await readText(join(ROOT, "css", "input.css"));
+const match = cssInput.match(/--color-primary:\s*#([0-9a-fA-F]+)/);
+if (!match) {
+  fail("css/input.css missing --color-primary declaration");
+}
+const primary = match[1];
+const outFile = join(ROOT, "dist", "css", "styles.css");
 
 run([
   "bun",

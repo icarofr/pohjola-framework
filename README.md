@@ -92,7 +92,7 @@ Feature logic lives in isolated domain modules. Asynchronous effects compose cle
 In loosely typed stacks, AI coding assistants frequently hallucinate missing properties, drop edge cases, forget localized translation keys, or produce inconsistent "utility soup" layouts.
 - **Mechanical Logic Enforcement:** An agent cannot declare a route without completing its bidirectional codec, sitemap entry, and bilingual dictionaries.
 - **Visual Drift Prevention (daisyUI + page templates):** Raw layout utility soup in views is forbidden. `App.Ui.Templates` owns page chrome and section recipes on **daisyUI 5**; agents fill typed slot records (`Landing`, `Hub`, `Editorial`, `Feed`, `Article`). This limits structural drift; the type system does not guarantee pixels or intent.
-- **Fast Guardrails:** `policy/manifest.json` is the single source of truth. `make gate` (`scripts/verify-policy.js`) enforces structural policy; `PolicySpec` (`make test`) adds behavioral scans and reference-page archetypes; `ContractSpec` pins CSP, Alpine seams, and security headers.
+- **Fast Guardrails:** `Policy.Contract` (`src/Policy/Contract.purs`) is the single source of truth. `make gate` (`Test.Gate`) enforces structural policy; `PolicySpec` (`make test`) adds reference-page archetypes; `ContractSpec` pins CSP, Alpine seams, and security headers.
 
 ---
 
@@ -130,11 +130,11 @@ Pohjola makes a deliberate architectural choice: the **PureScript application ow
 
 Pohjola's guarantees are not documentation conventions. They are mechanically verified on every commit:
 
-- [x] **Closed `Html` ADT**: General-purpose or untrusted HTML escape hatches and raw string concatenation are forbidden (`make gate` via `policy/manifest.json`). The explicitly reviewed experimental streaming shell is a scoped exception; buffered SSR remains the default.
+- [x] **Closed `Html` ADT**: General-purpose or untrusted HTML escape hatches and raw string concatenation are forbidden (`make gate` via `Policy.Contract`). The explicitly reviewed experimental streaming shell is a scoped exception; buffered SSR remains the default.
 - [x] **Errors as Values**: Async data boundaries strictly return `Aff (Either AppError a)`.
-- [x] **Scrutinized FFI Floor**: Foreign JavaScript imports are restricted to four allowlisted modules in `policy/manifest.json` (`App.ServerBun`, `App.FetchBun`, `App.Bun`, `App.Data.SQL`).
+- [x] **Scrutinized FFI Floor**: Foreign JavaScript imports are restricted to four allowlisted modules in `Policy.Contract` (`App.ServerBun`, `App.FetchBun`, `App.Bun`, `App.Data.SQL`).
 - [x] **Pinned Security Policy (CSP)**: Nonce-based Content Security Policy verified byte-exact in `test/ContractSpec.purs`.
-- [x] **UI Archetype Policy**: Feature views consume `App.Ui` blueprints only — no `class_` in feature views (`policy/manifest.json` + `PolicySpec`).
+- [x] **UI Archetype Policy**: Feature views consume `App.Ui.Templates` slot records only — no `class_` in feature views (`Policy.Contract` + `Test.Gate`).
 - [x] **Total Bilingual Routing**: Derived via `routing-duplex`; missing translations or routes fail at compile time.
 
 > For an in-depth breakdown of guarantees, see [`docs/GUARANTEES.md`](docs/GUARANTEES.md).
@@ -176,16 +176,16 @@ Visit [`http://localhost:3000/en`](http://localhost:3000/en) locally, or view th
 
 ## Verification and Quality Gates
 
-Policy is defined once in [`policy/manifest.json`](policy/manifest.json):
+Policy is defined once in [`src/Policy/Contract.purs`](src/Policy/Contract.purs) (ADR-013):
 
 | Tier | Command | What it checks |
 |:---|:---|:---|
-| Structural (fast) | `make gate` | Banned unsafe imports, FFI allowlist, content firewall, feature-view UI contract, theme names |
+| Structural (fast) | `make gate` | `Test.Gate` — banned unsafe imports, FFI allowlist, content firewall, closed Ui/Templates, feature-view contract |
 | Design | `make design-policy` | Generator/`App.Ui` boundary + compiled CSS primary token |
-| Behavioral | `make test` | `PolicySpec` (manifest scans + reference pages) + `ContractSpec` (CSP, Alpine seam, security headers) |
+| Behavioral | `make test` | `PolicySpec` (reference pages) + `ContractSpec` (CSP, Alpine seam, security headers) |
 
 ```bash
-# Structural policy from policy/manifest.json (~2s)
+# Structural policy from Policy.Contract (build + Test.Gate)
 make gate
 
 # Unit, property, PolicySpec, and ContractSpec tests

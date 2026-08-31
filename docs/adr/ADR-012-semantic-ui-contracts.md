@@ -41,8 +41,8 @@ routes into template slot records only.
 - `css/input.css` defines Daisy themes `pohjola` / `pohjola-dark` from
   `DESIGN.md` tokens. `scripts/verify-theme.js` fails if compiled CSS omits
   primary `#047857`.
-- **Closed class vocabulary:** `policy/manifest.json` `uiClassPolicy.allowedTokens`
-  is the only set of class tokens Templates/Ui may quote.
+- **Closed Ui surface:** new `App.Ui` primitives or `App.Ui.Templates` modules fail
+  `make gate` unless added to `Policy.Contract` (ADR-013).
 - **No parallel design app:** production UI is PureScript-only. A shadcn POC
   may live under optional local `research/` as evidence; it is not a build or gate input.
   DaisyUI reference: `vendor/daisyui` git submodule.
@@ -62,8 +62,8 @@ routes into template slot records only.
 | Level | Mechanism | What it covers |
 |---|---|---|
 | Compiler | Closed ADTs (`PageTemplate`, `ButtonVariant`, slot records) | Invalid shapes |
-| `policy/manifest.json` | Structural policy lists | FFI, banned fns, feature-view forbidden patterns |
-| `make gate` | `scripts/verify-policy.js` | Fast structural checks |
+| `Policy.Contract` | Typed structural policy lists | FFI, banned fns, feature-view forbidden patterns, closed Ui/Templates |
+| `make gate` | `Test.Gate` | Fast structural checks |
 | `make test` | `PolicySpec`, `TemplateContractSpec`, `ShellSpec` | Markers, reference pages, shell |
 | `make design-policy` | generator + `verify-theme.js` | Scaffold boundary + CSS primary |
 | `ContractSpec` | CSP, Alpine, security headers | Security / runtime |

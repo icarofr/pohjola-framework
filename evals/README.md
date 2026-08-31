@@ -4,8 +4,8 @@ Agent evals for Pohjola. Each eval is a prompt + assertion pair: a
 user-shaped task in `PROMPT.md`, and checks in `check.sh` that verify the agent
 followed our conventions.
 
-Structural policy lives in `policy/manifest.json` and is enforced by
-`make gate` (`scripts/verify-policy.js`) and `Test.PolicySpec` (`make test`).
+Structural policy lives in `src/Policy/Contract.purs` and is enforced by
+`make gate` (`Test.Gate`) and reference-page checks in `Test.PolicySpec` (`make test`).
 Eval `check.js` / `check.sh` scripts should delegate to those tiers instead of duplicating
 grep rules.
 

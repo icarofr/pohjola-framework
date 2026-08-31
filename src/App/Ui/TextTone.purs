@@ -1,4 +1,4 @@
--- | Sole emitter of `text-base-content/` (policy/manifest.json). Prefer Daisy
+-- | Sole emitter of `text-base-content/` (Policy.Contract). Prefer Daisy
 -- | default ink (`text-base-content`) in components; use these for muted copy.
 module App.Ui.TextTone where
 

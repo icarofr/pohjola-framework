@@ -5,8 +5,8 @@
 ### Safety floor
 - `dist/` → public static root; `dist-server/` → private server bundle (never serve from `dist/`).
 - Interactivity via Alpine typed constructors in `App.Alpine` only — no custom JavaScript (ADR-000).
-- Server FFI is restricted to 4 allowlisted modules (ADR-003/007). See `policy/manifest.json` (`ffiAllowlist`).
-- `make gate` runs `scripts/verify-policy.js` against `policy/manifest.json` (banned unsafe imports, FFI allowlist, content firewall, text-tone policy, theme names, **no `class_` in feature views** — ADR-012).
+- Server FFI is restricted to 4 allowlisted modules (ADR-003/007). See `Policy.Contract` (`ffiAllowlist`).
+- `make gate` runs `Test.Gate` against `Policy.Contract` (banned unsafe imports, FFI allowlist, content firewall, text-tone policy, closed Ui/Templates surface, **no `class_` in feature views** — ADR-012/013).
 - CSP is pinned byte-exact in `test/ContractSpec.purs`. Widening demands justification.
 
 ### Commands (daily use)
@@ -19,7 +19,7 @@
 |`make test`|Unit + property + ContractSpec (runs under Bun) |
 |`make test/integration`|Venom integration tests |
 |`make test/e2e`|Playwright end-to-end |
-|`make gate`|Structural policy (`policy/manifest.json` via `scripts/verify-policy.js`) |
+|`make gate`|Structural policy (`Policy.Contract` via `Test.Gate`) |
 |`make fast`|Local policy + formatting checks |
 |`make generator-policy`|Canonical generator/`App.Ui` boundary check (not a full CSS/type-system proof) |
 |`make local`|Fast checks + build |
