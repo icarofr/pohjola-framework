@@ -77,7 +77,7 @@ requires **in-page hypermedia without full shell navigation**, for example:
 **Not** triggered by: shell link clicks, theme/menu chrome, or “HTMX is popular.”
 
 When triggered: write ADR-011 amendment or ADR-012; follow deferred migration
-research in `docs/plans/htmx-4-migration.md` (planning artifact, not active).
+research in `docs/archive/htmx-4-migration.md` (planning artifact, not active).
 
 ### Agent rules (frozen)
 
@@ -120,6 +120,6 @@ Raw `x-target`, `x-alpine-request`, `fetch(` in feature views remain **banned**
 
 ## Related
 
-- [`docs/plans/htmx-4-migration.md`](../plans/htmx-4-migration.md) — deferred migration plan
+- [`docs/archive/htmx-4-migration.md`](../archive/htmx-4-migration.md) — deferred migration plan
 - [`docs/adr/ADR-007-bun-serve.md`](ADR-007-bun-serve.md) — fragment protocol
 - [`docs/adr/ADR-010-browser-island-integration.md`](ADR-010-browser-island-integration.md) — Datastar tier

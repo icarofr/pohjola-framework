@@ -63,9 +63,10 @@ design-policy: generator-policy
 # DEPENDENCIES
 # ==================================================================================== #
 
-## deps: install PureScript dependencies + Bun packages + Alpine JS assets
+## deps: install PureScript dependencies + Bun packages + Alpine JS assets + vendor submodules
 .PHONY: deps
 deps:
+	git submodule update --init --depth 1 vendor/daisyui
 	bun install
 	$(SPAGO) install
 	$(MAKE) assets

@@ -175,14 +175,14 @@ type ArticleSlots =
   , backLabel :: String
   }
 
-landingFeatures ::
-  String ->
-  String ->
-  String ->
-  ServiceFeature ->
-  ServiceFeature ->
-  ServiceFeature ->
-  LandingFeatureSlots
+landingFeatures
+  :: String
+  -> String
+  -> String
+  -> ServiceFeature
+  -> ServiceFeature
+  -> ServiceFeature
+  -> LandingFeatureSlots
 landingFeatures eyebrow headline body one two three =
   { eyebrow
   , headline
@@ -190,22 +190,22 @@ landingFeatures eyebrow headline body one two three =
   , items: { one, two, three }
   }
 
-landingSlots ::
-  LandingHeroSlots ->
-  LandingFeatureSlots ->
-  LandingCtaSlots ->
-  LandingSlots
+landingSlots
+  :: LandingHeroSlots
+  -> LandingFeatureSlots
+  -> LandingCtaSlots
+  -> LandingSlots
 landingSlots hero features cta =
   { hero, features, cta }
 
-valueSextuple ::
-  ValueItem ->
-  ValueItem ->
-  ValueItem ->
-  ValueItem ->
-  ValueItem ->
-  ValueItem ->
-  ValueSextuple
+valueSextuple
+  :: ValueItem
+  -> ValueItem
+  -> ValueItem
+  -> ValueItem
+  -> ValueItem
+  -> ValueItem
+  -> ValueSextuple
 valueSextuple one two three four five six =
   { one, two, three, four, five, six }
 
@@ -217,11 +217,11 @@ imageTriple :: String -> String -> String -> ImageTriple
 imageTriple one two three =
   { one, two, three }
 
-editorialSlots ::
-  String ->
-  MissionSlots ->
-  ValuesSlots ->
-  EditorialSlots
+editorialSlots
+  :: String
+  -> MissionSlots
+  -> ValuesSlots
+  -> EditorialSlots
 editorialSlots heading mission values =
   { heading, mission, values }
 
@@ -237,14 +237,14 @@ feedSlots :: String -> String -> Array FeedCard -> FeedSlots
 feedSlots title subtitle posts =
   { title, subtitle, posts }
 
-articleSlots ::
-  String ->
-  String ->
-  String ->
-  String ->
-  String ->
-  String ->
-  ArticleSlots
+articleSlots
+  :: String
+  -> String
+  -> String
+  -> String
+  -> String
+  -> String
+  -> ArticleSlots
 articleSlots metaTag title authorName date body backLabel =
   { metaTag, title, authorName, date, body, backLabel }
 

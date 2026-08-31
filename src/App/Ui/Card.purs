@@ -1,4 +1,4 @@
--- | DaisyUI card component — see research/daisyui card.css + card docs
+-- | DaisyUI card — vendor/daisyui/skills/daisyui/components/card.md
 module App.Ui.Card
   ( CardSize(..)
   , CardOptions

@@ -9,6 +9,7 @@ import Prelude
 
 import App.Alpine
   ( Flag(..)
+  , NavChrome(..)
   , ThemeMode(..)
   , ariaExpandedFlag
   , closeSiteDrawer
@@ -16,6 +17,7 @@ import App.Alpine
   , classWhenTheme
   , contentTarget
   , navLink
+  , navLinkClasses
   , onClick
   , onClickOutside
   , onKeydownEscapeWindow
@@ -193,15 +195,7 @@ renderDrawerSide lang route labels =
 desktopNavLink :: Lang -> Route -> Route -> String -> Html
 desktopNavLink lang current target label =
   navLink { lang, current, target }
-    [ class_
-        ( "btn btn-ghost btn-sm"
-            <> if target == current then
-                " btn-active"
-
-              else
-                ""
-        )
-    ]
+    [ class_ (navLinkClasses NavDesktop (target == current)) ]
     [ text label ]
 
 renderLangJoin :: Lang -> Lang -> Route -> String -> Html
@@ -210,7 +204,8 @@ renderLangJoin targetLang currentLang route label =
     [ href (routeUrl targetLang route)
     , class_
         ( "join-item btn btn-sm"
-            <> if targetLang == currentLang then
+            <>
+              if targetLang == currentLang then
                 " btn-active"
 
               else
@@ -255,7 +250,8 @@ themeMenuItem closeMenu mode label =
           , classWhenTheme "btn-active" mode
           , attrTypeButton
           ]
-            <> if closeMenu then
+            <>
+              if closeMenu then
                 [ xSetThemeAndClose mode ThemeMenuOpen ]
 
               else
@@ -268,14 +264,7 @@ mobileNavLink :: Lang -> Route -> Route -> String -> Html
 mobileNavLink lang current target label =
   el "li" []
     [ navLink { lang, current, target }
-        ( [ class_
-              ( "btn btn-ghost justify-start"
-                  <> if target == current then
-                      " menu-active"
-
-                    else
-                      ""
-              )
+        ( [ class_ (navLinkClasses NavMobile (target == current))
           , onClick closeSiteDrawer
           ]
         )
@@ -303,7 +292,7 @@ renderFooter lang route labels =
 footerLink :: Lang -> Route -> Route -> String -> Html
 footerLink lang current target label =
   navLink { lang, current, target }
-    [ class_ "link link-hover" ]
+    [ class_ (navLinkClasses NavFooter (target == current)) ]
     [ text label ]
 
 hamburgerIcon :: Html

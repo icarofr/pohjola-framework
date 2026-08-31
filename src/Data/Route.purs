@@ -131,17 +131,6 @@ staticRoutes = [ Home, About, Contact ]
 allLangs :: Array Lang
 allLangs = [ En, Fr ]
 
--- | Nav items with translated labels for a given language
-navItems :: Lang -> Array { label :: String, route :: Route }
-navItems lang =
-  let
-    d = dict lang
-  in
-    [ { label: d.nav.about, route: About }
-    , { label: d.nav.contact, route: Contact }
-    , { label: d.nav.posts, route: PostList }
-    ]
-
 -- | Page title for a route + language (for <title> tag)
 routeTitle :: Lang -> Route -> String
 routeTitle lang route =

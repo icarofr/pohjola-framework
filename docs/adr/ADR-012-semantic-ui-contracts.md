@@ -44,7 +44,8 @@ routes into template slot records only.
 - **Closed class vocabulary:** `policy/manifest.json` `uiClassPolicy.allowedTokens`
   is the only set of class tokens Templates/Ui may quote.
 - **No parallel design app:** production UI is PureScript-only. A shadcn POC
-  may live under `research/` as evidence; it is not a build or gate input.
+  may live under optional local `research/` as evidence; it is not a build or gate input.
+  DaisyUI reference: `vendor/daisyui` git submodule.
 
 ### Reference feature implementations
 

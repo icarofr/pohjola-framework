@@ -1,4 +1,4 @@
--- | DaisyUI Stats primitive (research/daisyui stat docs)
+-- | DaisyUI stats — vendor/daisyui/skills/daisyui/components/stat.md
 module App.Ui.Stat where
 
 import Prelude

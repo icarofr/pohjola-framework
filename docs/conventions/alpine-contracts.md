@@ -81,13 +81,18 @@ behaviour belongs on the server, not that the seam needs loosening.
 
 ## SPA navigation
 
+- **`navLink`** — route-aware internal link: `x-target.push`, `aria-current="page"` when
+  `target == current`, hover prefetch only when inactive. Use with
+  **`navLinkClasses`** for shell surfaces (`NavDesktop` → `btn-active`,
+  `NavMobile` → `menu-active`, `NavFooter` → `link link-hover`). See
+  `docs/conventions/chrome-checklist.md`.
 - **`spaLink`** — bakes `x-target.push` + `prefetchHover` + real href. The
   prefetch sends `alpineRequestHeader` so the server returns a fragment the
   browser caches; the click hits cache with zero round-trip. Degrades to a
   normal `<a>` without JS.
 - **Language toggles are plain anchors** — `<html lang>`, canonical/hreflang,
-  and head metadata require a full reload. See `Layout/Header.purs` module
-  header.
+  and head metadata require a full reload. Nav chrome lives in
+  `App.Ui.Templates.SiteShell`.
 - **`renderFragment`** — shared fragment builder (`Page.purs` + `Main.purs`).
   Fragments never stream (small, already fast).
 

@@ -33,8 +33,9 @@ dist-server/
 # Deepwork state (orchestrator session files)
 .slim/deepwork/
 
-# Cloned research repos (dependency source inspection — not part of the starter)
-research/
+# Optional local research clones (see research/README.md)
+research/*
+!research/README.md
 
 # venom upstream source (vendored for reference — our tests live in venom/*.yml + venom/fixtures/)
 venom/.build/

@@ -19,6 +19,13 @@ Chrome is **template library code**, not feature code. Agents never invent navba
 - Persistence: `themeInitScript` applies stored preference before paint; `system` omits `data-theme` (Daisy `prefersdark`).
 - Navbar switcher: DaisyUI `dropdown` + real `<button>` + Alpine `ThemeMenuOpen` (toggle, outside click, Escape) + `setTheme`.
 
+## Navigation links
+
+- Route-aware links: `App.Alpine.navLink` (SPA swap + prefetch guard + `aria-current="page"`).
+- Visual active state: `navLinkClasses NavDesktop | NavMobile | NavFooter` — **never** hand-roll `btn-active` / `menu-active` in `SiteShell`.
+- Agent checklist: `docs/conventions/chrome-checklist.md`.
+- Eval: `make eval EVAL=11-edit-chrome`.
+
 ## Changing chrome
 
 Edit `SiteShell.purs`, then update `ShellSpec` / e2e selectors if markers or structure change. Never put chrome in feature views.

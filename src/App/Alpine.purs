@@ -5,6 +5,8 @@ module App.Alpine
   , alpineRequestHeader
   , spaLink
   , navLink
+  , NavChrome(..)
+  , navLinkClasses
   , Flag(..)
   , flagName
   , ThemeMode(..)
@@ -319,6 +321,31 @@ spaLink lang route extraAttrs children =
       ] <> extraAttrs
     )
     children
+
+-- | Where a route-aware nav link is rendered in site chrome.
+-- | Active DaisyUI modifiers are centralized here so shell edits cannot forget them.
+data NavChrome = NavDesktop | NavMobile | NavFooter
+
+navLinkClasses :: NavChrome -> Boolean -> String
+navLinkClasses NavDesktop isActive =
+  "btn btn-ghost btn-sm"
+    <>
+      if isActive then
+        " btn-active"
+
+      else
+        ""
+
+navLinkClasses NavMobile isActive =
+  "btn btn-ghost justify-start"
+    <>
+      if isActive then
+        " menu-active"
+
+      else
+        ""
+
+navLinkClasses NavFooter _ = "link link-hover"
 
 navLink :: { lang :: Lang, current :: Route, target :: Route } -> Array Attr -> Array Html -> Html
 navLink { lang, current, target } extraAttrs children =

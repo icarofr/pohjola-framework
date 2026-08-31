@@ -1,4 +1,4 @@
--- | DaisyUI button — research/daisyui-llms.txt Button (`btn` + one color/style/size).
+-- | DaisyUI button — vendor/daisyui/skills/daisyui/components/button.md
 module App.Ui.Button where
 
 import Prelude

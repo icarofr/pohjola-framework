@@ -28,12 +28,12 @@ renderHero heading =
         ]
     ]
 
-renderMission ::
-  { heading :: String
-  , lead :: String
-  , body :: String
-  } ->
-  Html
+renderMission
+  :: { heading :: String
+     , lead :: String
+     , body :: String
+     }
+  -> Html
 renderMission mission =
   el "section"
     [ class_ "py-16 sm:py-20"

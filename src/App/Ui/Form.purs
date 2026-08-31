@@ -1,4 +1,4 @@
--- | DaisyUI fieldset + input — research/daisyui-llms.txt Fieldset.
+-- | DaisyUI fieldset + input — vendor/daisyui/skills/daisyui/components/fieldset.md
 module App.Ui.Form
   ( FormConfig
   , InputProps

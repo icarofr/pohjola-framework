@@ -510,6 +510,7 @@ if (wire) {
   }
 
   console.log("\n⚡ Auto-wiring complete! Validating with Spago build...");
+  console.log("  → Add nav links in App.Ui.Templates.SiteShell (see docs/conventions/chrome-checklist.md)");
   try {
     run(["bun", "x", "spago", "build", "--strict"], { throwOnError: true });
     console.log("✓ Built successfully with zero compiler errors!");

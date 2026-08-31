@@ -1,4 +1,4 @@
--- | DaisyUI alert — research/daisyui-llms.txt (`role="alert"` + `alert`).
+-- | DaisyUI alert — vendor/daisyui/skills/daisyui/components/alert.md
 module App.Ui.Alert
   ( AlertVariant(..)
   , alert

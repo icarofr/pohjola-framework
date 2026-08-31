@@ -1,0 +1,3 @@
+[submodule "vendor/daisyui"]
+	path = vendor/daisyui
+	url = https://github.com/saadeghi/daisyui.git

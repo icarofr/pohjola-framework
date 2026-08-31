@@ -36,6 +36,7 @@
 - Data fetching → `docs/conventions/data-layer.md`
 - Server internals → `docs/conventions/server.md`
 - Alpine seams → `docs/conventions/alpine-contracts.md`
+- Site chrome (navbar, nav, theme) → `docs/conventions/chrome-checklist.md`, `docs/superpowers/specs/2026-08-30-shell-recipe.md`
 - Writing tests → `docs/conventions/testing-recipes.md`
 - Scaffolding a feature → `docs/conventions/generators.md`
 - FFI → `docs/ffi-taming-guide.md`
@@ -81,9 +82,8 @@
 ### Agent evals
 - `evals/` contains prompt + assertion pairs that test whether an agent follows our conventions.
 - Run `make eval EVAL=01-add-page --check` after implementing an eval prompt to verify.
-- Before changing a convention doc, run the related eval to see what it asserts.
-
-### Guardrails (each enforced by a check)
+- Chrome / nav changes: `make eval EVAL=11-edit-chrome --check`.
+- Before changing a convention doc, run the related eval to see what it asserts. (each enforced by a check)
 - Build HTML through the `Html` ADT — string-concatenated HTML bypasses escaping (ADR-001, `make gate`).
 - Compose views via `App.Ui.Templates.renderPage` and slot records — manual `space-y-*` / `flex-col justify-between` soup in feature views is forbidden.
 - Output bundles to `dist-server/` — `dist/` is the public static root only.

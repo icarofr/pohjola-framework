@@ -1,4 +1,4 @@
--- | DaisyUI avatar — see research/daisyui avatar.css + avatar docs
+-- | DaisyUI avatar — vendor/daisyui/skills/daisyui/components/avatar.md
 module App.Ui.Avatar
   ( AvatarSize(..)
   , avatarPlaceholder

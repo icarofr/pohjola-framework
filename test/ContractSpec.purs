@@ -10,7 +10,7 @@ module Test.ContractSpec where
 
 import Prelude
 
-import App.Alpine (Flag(..), ThemeMode(..), contentTarget, cycleTheme, flagName, navLink, renderExpr, setFlag, setTheme, spaLink, themeToggle, toggleFlag)
+import App.Alpine (Flag(..), NavChrome(..), ThemeMode(..), contentTarget, cycleTheme, flagName, navLink, navLinkClasses, renderExpr, setFlag, setTheme, spaLink, themeToggle, toggleFlag)
 import App.Theme (themeInitScript, themeDarkName, themeLightName)
 import App.Config (Config)
 import App.Features.Home.View as Home
@@ -474,6 +474,20 @@ spec = do
         other = render (navLink { lang: En, current: About, target: Contact } [] [])
       active `StrAssert.shouldContain` "aria-current=\"page\""
       other `StrAssert.shouldNotContain` "aria-current"
+
+  describe "nav link chrome classes" do
+    it "desktop active uses btn-active" do
+      navLinkClasses NavDesktop true `shouldEqual` "btn btn-ghost btn-sm btn-active"
+    it "desktop inactive omits btn-active" do
+      navLinkClasses NavDesktop false `shouldEqual` "btn btn-ghost btn-sm"
+    it "mobile active uses menu-active" do
+      navLinkClasses NavMobile true `shouldEqual` "btn btn-ghost justify-start menu-active"
+    it "mobile inactive omits menu-active" do
+      navLinkClasses NavMobile false `shouldEqual` "btn btn-ghost justify-start"
+    it "footer uses link link-hover" do
+      navLinkClasses NavFooter true `shouldEqual` "link link-hover"
+      navLinkClasses NavFooter false `shouldEqual` "link link-hover"
+
     it "the rendered page does not prefetch its own route" do
       for_ staticRoutes \route ->
         for_ allLangs \lang -> do
