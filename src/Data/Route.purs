@@ -16,6 +16,7 @@ import Data.Array (concatMap, head)
 import Data.Either (Either(..))
 import Data.Generic.Rep (class Generic)
 import Data.I18n (Lang(..), dict, parseLang)
+import Data.I18n as I18n
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
@@ -69,7 +70,7 @@ routeCodec Fr = root $ prefix "fr" $ G.sum
   , "PostList": "articles" / G.noArgs
   , "PostDetail": "articles" / int segment
   }
--- | Temporary Pt stub (Task 2): English path segments under /pt. Task 3 refines.
+-- | Pt uses English path segments under /pt for the framework demo.
 routeCodec Pt = root $ prefix "pt" $ G.sum
   { "Home": G.noArgs
   , "About": "about" / G.noArgs
@@ -135,9 +136,9 @@ allRoutes = [ Home, About, Contact, PostList ]
 staticRoutes :: Array Route
 staticRoutes = [ Home, About, Contact ]
 
--- | All languages (keep in sync with Data.I18n.allLangs)
+-- | Re-export of Data.I18n.allLangs (single source of truth).
 allLangs :: Array Lang
-allLangs = [ En, Fr, Pt ]
+allLangs = I18n.allLangs
 
 -- | Page title for a route + language (for <title> tag)
 routeTitle :: Lang -> Route -> String

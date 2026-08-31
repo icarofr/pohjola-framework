@@ -548,8 +548,10 @@ spec = do
       html <- renderStaticPage Home En
       html `StrAssert.shouldContain` "/en"
       html `StrAssert.shouldContain` "/fr"
+      html `StrAssert.shouldContain` "/pt"
       html `StrAssert.shouldContain` "English"
       html `StrAssert.shouldContain` "Français"
+      html `StrAssert.shouldContain` "Português"
     it "template pages use bg-base-100 content wrapper" do
       html <- renderStaticPage Home En
       html `StrAssert.shouldContain` "bg-base-100"

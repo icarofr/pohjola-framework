@@ -56,6 +56,7 @@ type ShellLabels =
   , homeLabel :: String
   , langEn :: String
   , langFr :: String
+  , langPt :: String
   , langToggleLabel :: String
   , themeLight :: String
   , themeDark :: String
@@ -77,6 +78,7 @@ shellLabels lang =
     , homeLabel: homeLabelText lang
     , langEn: "English"
     , langFr: "Français"
+    , langPt: "Português"
     , langToggleLabel: d.common.langToggleLabel
     , themeLight: d.common.themeLight
     , themeDark: d.common.themeDark
@@ -140,6 +142,7 @@ renderHeader lang route labels =
                 , el "div" [ class_ "join join-horizontal" ]
                     [ renderLangJoin En lang route labels.langEn
                     , renderLangJoin Fr lang route labels.langFr
+                    , renderLangJoin Pt lang route labels.langPt
                     ]
                 ]
             , el "div" [ class_ "navbar-end md:hidden" ]
@@ -188,6 +191,7 @@ renderDrawerSide lang route labels =
                 [ el "div" [ class_ "join join-vertical w-full" ]
                     [ renderLangJoin En lang route labels.langEn
                     , renderLangJoin Fr lang route labels.langFr
+                    , renderLangJoin Pt lang route labels.langPt
                     ]
                 ]
             ]
