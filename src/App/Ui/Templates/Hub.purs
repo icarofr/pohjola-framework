@@ -6,22 +6,27 @@ module App.Ui.Templates.Hub
 import Prelude
 
 import App.Html (Html, attr, class_, el, text)
+import App.Ui.Breadcrumbs as Breadcrumbs
 import App.Ui.Button as Button
 import App.Ui.Button (Size(..))
 import App.Ui.Card as Card
 import App.Ui.Container as Container
 import App.Ui.Templates.ActionLink as ActionLink
 import App.Ui.Templates.Contract as Contract
-import App.Ui.Templates.Types (HubCard, HubSlots, hubCards)
+import App.Ui.Templates.Types (HubCard, HubSlots, BreadcrumbItem, hubCards)
+import Data.Array (length)
+import Data.I18n (Lang)
+import Data.Route (Route)
 
-renderHub :: HubSlots -> Html
-renderHub slots =
+renderHub :: Lang -> Route -> HubSlots -> Html
+renderHub lang route slots =
   el "section"
     [ class_ "py-16 sm:py-20"
     , attr Contract.marker Contract.hubPage
     ]
     [ Container.container "max-w-6xl" "px-4 sm:px-6"
-        [ el "div"
+        [ maybeBreadcrumbs lang route slots.breadcrumbs
+        , el "div"
             [ class_ "mx-auto max-w-2xl text-center"
             , attr Contract.marker Contract.hubHeader
             ]
@@ -35,6 +40,17 @@ renderHub slots =
             (map renderCard (hubCards slots.cards))
         ]
     ]
+
+maybeBreadcrumbs :: Lang -> Route -> Array BreadcrumbItem -> Html
+maybeBreadcrumbs lang route items =
+  if length items == 0 then
+    el "span" [] []
+  else
+    el "div"
+      [ class_ "my-4"
+      , attr Contract.marker Contract.hubBreadcrumbs
+      ]
+      [ Breadcrumbs.breadcrumbs lang route items ]
 
 renderCard :: HubCard -> Html
 renderCard card =

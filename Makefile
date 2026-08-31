@@ -224,10 +224,15 @@ ci-equivalent: full
 # SCAFFOLDING
 # ==================================================================================== #
 
-## new-feature: scaffold a feature (usage: make new-feature NAME=Team [TYPE=data] [SLUG_FR=equipe])
+## new-feature: scaffold a feature (usage: make new-feature NAME=Team [TYPE=data] [SLUG_FR=equipe] [WIRE=1] [CHROME=1])
 .PHONY: new-feature
 new-feature:
-	@bun scripts/auto-scaffold.js --name=$(NAME) $(if $(TYPE),--type=$(TYPE),) $(if $(SLUG_EN),--slug-en=$(SLUG_EN),) $(if $(SLUG_FR),--slug-fr=$(SLUG_FR),) $(if $(WIRE),--wire,)
+	@bun scripts/auto-scaffold.js --name=$(NAME) $(if $(TYPE),--type=$(TYPE),) $(if $(SLUG_EN),--slug-en=$(SLUG_EN),) $(if $(SLUG_FR),--slug-fr=$(SLUG_FR),) $(if $(WIRE),--wire,) $(if $(CHROME),--chrome,)
+
+## ui-coverage: regenerate App.Ui ↔ DaisyUI coverage map
+.PHONY: ui-coverage
+ui-coverage:
+	@bun scripts/gen-ui-coverage.js
 
 ## gen-sql: generate PureScript types & codecs from SQL migrations (usage: make gen-sql [FILE=migrations/001.sql] [TABLE=comments] [OUT=path])
 .PHONY: gen-sql

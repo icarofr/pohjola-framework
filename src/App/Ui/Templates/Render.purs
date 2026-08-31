@@ -22,9 +22,9 @@ renderPage lang route template =
       Landing slots ->
         Landing.renderLanding slots
       Editorial slots ->
-        Editorial.renderEditorial slots
+        Editorial.renderEditorial lang route slots
       Hub slots ->
-        Hub.renderHub slots
+        Hub.renderHub lang route slots
       Feed slots ->
         Feed.renderFeed slots
       Article slots ->

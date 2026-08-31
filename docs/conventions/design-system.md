@@ -53,6 +53,7 @@ Contract markers: `App.Ui.Templates.Contract` (`data-template="…"`). Shell chr
 | `App.Ui.Card` | `card`, `cardBody`, `cardTitle`, … | `card` + `card-border` |
 | `App.Ui.Badge` | `badge` | `badge` + color |
 | `App.Ui.Alert` | `alert` | `alert` + color |
+| `App.Ui.Breadcrumbs` | `breadcrumbs` | `breadcrumbs` |
 | `App.Ui.Prose` | `prose`, `proseLg` | `prose` |
 | `App.Ui.Form` | `textField`, … | `fieldset` + `input` / `textarea` |
 | `App.Ui.Container` | `container` | `container` + width utilities |

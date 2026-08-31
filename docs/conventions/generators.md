@@ -9,13 +9,13 @@
 make new-feature NAME=Team                    # static page (default)
 make new-feature NAME=Products TYPE=data      # data-backed page
 make new-feature NAME=Team WIRE=1             # auto-wire into Route, Main, I18n, and Head!
+make new-feature NAME=Team WIRE=1 CHROME=1    # also wire SiteShell nav (desktop, mobile, footer)
 make new-feature NAME=Team SLUG_FR=equipe     # custom FR slug
 ```
 
 Creates `src/App/Features/<Name>/` with the standard file split. When `WIRE=1` is passed, it automatically wires the feature across `Data.Route`, `App.Main`, `Data.I18n`, and `App.Layout.Head` and validates compilation immediately.
 
-**Navigation is separate:** `WIRE=1` does not edit `SiteShell`. Add header/footer/mobile
-links manually per [`chrome-checklist.md`](chrome-checklist.md).
+**Navigation:** use `CHROME=1` with `WIRE=1` to auto-wire `SiteShell` nav links, or add manually per [`chrome-checklist.md`](chrome-checklist.md).
 
 Generated views consume `App.Ui.Templates` (`renderPage` + slot records). Do not add raw Tailwind
 utility chains to feature views; DaisyUI/layout utilities belong inside Templates / `App.Ui`.

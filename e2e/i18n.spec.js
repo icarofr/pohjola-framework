@@ -38,7 +38,7 @@ test.describe("Internationalization", () => {
     await expect(drawerToggle).toBeChecked();
     await expect(page.locator(".drawer-side .menu")).toBeVisible();
 
-    await page.getByLabel("Close menu").first().click();
+    await page.getByLabel("Close menu").click();
     await expect(drawerToggle).not.toBeChecked();
   });
 

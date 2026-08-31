@@ -30,25 +30,34 @@ test.describe("Mobile menu", () => {
     await page.goto("/en");
     await page.setViewportSize({ width: 375, height: 667 });
 
+    const drawerToggle = page.locator("#site-drawer");
     const menuButton = page.getByLabel("Open menu");
-    await page.getByLabel("Close menu").waitFor({ state: "hidden" });
+    const closeButton = page.getByLabel("Close menu");
+    await expect(drawerToggle).not.toBeChecked();
 
     await menuButton.click();
-    await expect(page.getByLabel("Close menu")).toBeVisible();
+    await expect(drawerToggle).toBeChecked();
+    await expect(closeButton).toBeVisible();
     await expect(page.locator('div#content a[href="/en/about"]')).toBeVisible();
 
-    await page.getByLabel("Close menu").click();
-    await expect(page.getByLabel("Close menu")).toBeHidden();
+    await closeButton.click();
+    await expect(drawerToggle).not.toBeChecked();
+    await expect(closeButton).toBeHidden();
   });
 
   test("mobile menu closes with Escape key", async ({ page }) => {
     await page.goto("/en");
     await page.setViewportSize({ width: 375, height: 667 });
 
+    const drawerToggle = page.locator("#site-drawer");
+    const closeButton = page.getByLabel("Close menu");
+
     await page.getByLabel("Open menu").click();
-    await expect(page.getByLabel("Close menu")).toBeVisible();
+    await expect(drawerToggle).toBeChecked();
+    await expect(closeButton).toBeVisible();
 
     await page.keyboard.press("Escape");
-    await expect(page.getByLabel("Close menu")).toBeHidden();
+    await expect(drawerToggle).not.toBeChecked();
+    await expect(closeButton).toBeHidden();
   });
 });

@@ -17,6 +17,7 @@ module App.Ui.Templates.Types
   , ValueItem
   , HubSlots
   , HubCard
+  , BreadcrumbItem
   , FeedSlots
   , FeedCard
   , ArticleSlots
@@ -41,6 +42,7 @@ module App.Ui.Templates.Types
 import Prelude
 
 import Data.I18n (Lang)
+import Data.Maybe (Maybe)
 import Data.Route (Route)
 
 data ActionTarget
@@ -127,6 +129,7 @@ type EditorialSlots =
   { heading :: String
   , mission :: MissionSlots
   , values :: ValuesSlots
+  , breadcrumbs :: Array BreadcrumbItem
   }
 
 type HubCard =
@@ -134,6 +137,11 @@ type HubCard =
   , description :: String
   , buttonLabel :: String
   , target :: ActionTarget
+  }
+
+type BreadcrumbItem =
+  { label :: String
+  , target :: Maybe ActionTarget
   }
 
 type HubCardTriple =
@@ -146,6 +154,7 @@ type HubSlots =
   { title :: String
   , subtitle :: String
   , cards :: HubCardTriple
+  , breadcrumbs :: Array BreadcrumbItem
   }
 
 type FeedCard =
@@ -221,17 +230,18 @@ editorialSlots
   :: String
   -> MissionSlots
   -> ValuesSlots
+  -> Array BreadcrumbItem
   -> EditorialSlots
-editorialSlots heading mission values =
-  { heading, mission, values }
+editorialSlots heading mission values breadcrumbs =
+  { heading, mission, values, breadcrumbs }
 
 hubCardTriple :: HubCard -> HubCard -> HubCard -> HubCardTriple
 hubCardTriple one two three =
   { one, two, three }
 
-hubSlots :: String -> String -> HubCardTriple -> HubSlots
-hubSlots title subtitle cards =
-  { title, subtitle, cards }
+hubSlots :: String -> String -> HubCardTriple -> Array BreadcrumbItem -> HubSlots
+hubSlots title subtitle cards breadcrumbs =
+  { title, subtitle, cards, breadcrumbs }
 
 feedSlots :: String -> String -> Array FeedCard -> FeedSlots
 feedSlots title subtitle posts =

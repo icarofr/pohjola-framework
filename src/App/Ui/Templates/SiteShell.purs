@@ -158,7 +158,7 @@ renderDrawerSide lang route labels =
     [ el "label"
         [ for_ siteDrawerId
         , class_ "drawer-overlay"
-        , ariaLabel "Close menu"
+        , ariaLabel "Close sidebar"
         ]
         []
     , el "div"

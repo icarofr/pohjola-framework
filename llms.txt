@@ -34,6 +34,7 @@ Markers: `App.Ui.Templates.Contract` (`data-template="…"`). Tests: `TemplateCo
 - Primitives: `App.Ui.Button`, `Card`, `Badge`, `Hero`, … (DaisyUI 1:1).
 - Page chrome + sections: `App.Ui.Templates.*` (SiteShell, Landing, Editorial, Hub, Feed, Article).
 - Site nav/theme chrome: `SiteShell.purs` only; use `navLink` + `navLinkClasses` (`docs/conventions/chrome-checklist.md`).
+- DaisyUI primitives: `App.Ui.*` + Templates only — `docs/conventions/component-checklist.md`; coverage: `make ui-coverage`.
 - DaisyUI reference: `vendor/daisyui/skills/daisyui/components/` (git submodule — `make deps`).
 - Themes: `css/input.css` (`@plugin "daisyui"` + `pohjola` / `pohjola-dark`, primary `#047857`).
 

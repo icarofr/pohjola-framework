@@ -127,6 +127,12 @@ for (const mod of forbiddenImports) {
     const content = await readText(file);
     if (content.includes(`import ${mod}`)) {
       console.error(`${rel(file)}: import ${mod}`);
+      console.error(
+        "Hint: feature views compose via App.Ui.Templates.renderPage + slot records only.",
+      );
+      console.error(
+        "See: docs/conventions/component-checklist.md | eval: make eval EVAL=12-add-ui-component --check",
+      );
       fail(`forbidden import in feature views: ${mod}`);
     }
   }

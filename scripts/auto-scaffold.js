@@ -17,6 +17,7 @@ let type = "static";
 let slugEn = "";
 let slugFr = "";
 let wire = false;
+let chrome = false;
 
 for (const arg of args) {
   if (arg.startsWith("--name=")) name = arg.slice(7);
@@ -24,6 +25,7 @@ for (const arg of args) {
   else if (arg.startsWith("--slug-en=")) slugEn = arg.slice(10);
   else if (arg.startsWith("--slug-fr=")) slugFr = arg.slice(10);
   else if (arg === "--wire" || arg === "-w") wire = true;
+  else if (arg === "--chrome" || arg === "-c") chrome = true;
 }
 
 if (!name) {
@@ -100,6 +102,7 @@ pageSlots lang =
       , body: d.body
       }
       (valuesSlotsFromArray d.heading d.body [])
+      []
 `
   );
 } else {
@@ -239,6 +242,12 @@ renderList cfg lang = do
 
 console.log(`✓ Created feature ${featureDir} (${type})`);
 
+const requireMarker = (content, marker, file, description) => {
+  if (!content.includes(marker)) {
+    throw new Error(`Auto-wiring failed: ${description} was not inserted in ${file}.`);
+  }
+};
+
 // --- 2. Auto-wiring ---------------------------------------------------------
 
 if (wire) {
@@ -246,12 +255,6 @@ if (wire) {
 
   // A. Update src/Data/Route.purs
   let routeContent = await readText("src/Data/Route.purs");
-
-  const requireMarker = (content, marker, file, description) => {
-    if (!content.includes(marker)) {
-      throw new Error(`Auto-wiring failed: ${description} was not inserted in ${file}.`);
-    }
-  };
 
   // Sum type
   routeContent = routeContent.replace(
@@ -490,6 +493,59 @@ if (wire) {
   requireMarker(headContent, headMarker, "src/App/Layout/Head.purs", "seoDescription route case");
   console.log("  ✓ Updated src/App/Layout/Head.purs");
 
+  if (chrome) {
+    console.log(`⚡ Auto-wiring chrome for ${name} in SiteShell...`);
+    let shellContent = await readText("src/App/Ui/Templates/SiteShell.purs");
+    const labelField = `${lower}Label`;
+
+    if (!shellContent.includes(`${labelField} :: String`)) {
+      shellContent = shellContent.replace(
+        /(type ShellLabels\s*=\s*\{[\s\S]*?)(  , copyright :: String\n  \})/,
+        `$1  , ${labelField} :: String\n$2`,
+      );
+      shellContent = shellContent.replace(
+        /(shellLabels lang =[\s\S]*?)(    , copyright: d\.footer\.copyright\n  \})/,
+        `$1    , ${labelField}: d.nav.${lower}\n$2`,
+      );
+    }
+
+    const desktopLine = `                , desktopNavLink lang route ${name} labels.${labelField}`;
+    if (!shellContent.includes(desktopLine)) {
+      shellContent = shellContent.replace(
+        /(desktopNavLink lang route Contact labels\.contactLabel\n)/,
+        `$1${desktopLine}\n`,
+      );
+    }
+
+    const mobileLine = `            , mobileNavLink lang route ${name} labels.${labelField}`;
+    if (!shellContent.includes(mobileLine)) {
+      shellContent = shellContent.replace(
+        /(mobileNavLink lang route Contact labels\.contactLabel\n)/,
+        `$1${mobileLine}\n`,
+      );
+    }
+
+    const footerLine = `        , footerLink lang route ${name} labels.${labelField}`;
+    if (!shellContent.includes(footerLine)) {
+      shellContent = shellContent.replace(
+        /(footerLink lang route Contact labels\.contactLabel\n)/,
+        `$1${footerLine}\n`,
+      );
+    }
+
+    await writeText("src/App/Ui/Templates/SiteShell.purs", shellContent);
+    for (const marker of [
+      `${labelField} :: String`,
+      `${labelField}: d.nav.${lower}`,
+      desktopLine.trim(),
+      mobileLine.trim(),
+      footerLine.trim(),
+    ]) {
+      requireMarker(shellContent, marker, "src/App/Ui/Templates/SiteShell.purs", `chrome ${marker}`);
+    }
+    console.log("  ✓ Updated src/App/Ui/Templates/SiteShell.purs (chrome)");
+  }
+
   // Format code
   try {
     run(
@@ -510,7 +566,9 @@ if (wire) {
   }
 
   console.log("\n⚡ Auto-wiring complete! Validating with Spago build...");
-  console.log("  → Add nav links in App.Ui.Templates.SiteShell (see docs/conventions/chrome-checklist.md)");
+  if (!chrome) {
+    console.log("  → Add nav links: make new-feature NAME=... WIRE=1 CHROME=1 (or docs/conventions/chrome-checklist.md)");
+  }
   try {
     run(["bun", "x", "spago", "build", "--strict"], { throwOnError: true });
     console.log("✓ Built successfully with zero compiler errors!");
@@ -518,6 +576,9 @@ if (wire) {
     console.error("✘ Build check failed. Inspect generated changes.");
     throw error;
   }
+} else if (chrome) {
+  console.error("Error: --chrome requires --wire (CHROME=1 implies WIRE=1)");
+  process.exit(1);
 }
 }
 

@@ -1,0 +1,1 @@
+Add breadcrumb navigation to the About page (Home → About) on the Editorial template, matching the pattern already used on Contact. Do not add class_ or import App.Ui primitives in the About feature view — extend template slots if needed.

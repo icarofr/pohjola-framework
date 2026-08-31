@@ -14,10 +14,12 @@ module App.Ui.Templates.Contract
   , editorialHero
   , editorialMission
   , editorialValues
+  , editorialBreadcrumbs
   , hubPage
   , hubHeader
   , hubCards
   , hubCard
+  , hubBreadcrumbs
   , feedPage
   , feedGrid
   , feedCard
@@ -62,6 +64,9 @@ editorialMission = "editorial-mission"
 editorialValues :: String
 editorialValues = "editorial-values"
 
+editorialBreadcrumbs :: String
+editorialBreadcrumbs = "editorial-breadcrumbs"
+
 hubPage :: String
 hubPage = "hub-page"
 
@@ -73,6 +78,9 @@ hubCards = "hub-cards"
 
 hubCard :: String
 hubCard = "hub-card"
+
+hubBreadcrumbs :: String
+hubBreadcrumbs = "hub-breadcrumbs"
 
 feedPage :: String
 feedPage = "feed-page"
