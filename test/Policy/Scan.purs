@@ -22,7 +22,7 @@ module Test.Policy.Scan
 import Prelude
 
 import App.Bun (glob, readTextFile)
-import Data.Array (concat, drop, elem, filter, last, length, mapMaybe, mapWithIndex, nub, uncons)
+import Data.Array (concat, drop, elem, filter, last, length, mapMaybe, nub, uncons)
 import Data.Char (toCharCode)
 import Data.Either (Either(..))
 import Data.Foldable (all, any)
@@ -32,7 +32,6 @@ import Data.String.Common (split) as Common
 import Data.String.CodeUnits (fromCharArray, stripPrefix, toCharArray) as CodeUnits
 import Data.String.Pattern (Pattern(..))
 import Data.Traversable (for)
-import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
@@ -195,17 +194,6 @@ findUnknownUiClassTokens allowlist root = do
       Right c -> filter (\tok -> not (elem tok allowlist)) (classTokensInSource c)
       Left _ -> []
   pure (nub (concat results))
-
-quotedStrings :: String -> Array String
-quotedStrings source =
-  mapMaybe
-    ( \(Tuple i s) ->
-        if i `mod` 2 == 1 && s /= "" then
-          Just s
-        else
-          Nothing
-    )
-    (mapWithIndex Tuple (Common.split (Pattern "\"") source))
 
 classTokensInSource :: String -> Array String
 classTokensInSource source =
