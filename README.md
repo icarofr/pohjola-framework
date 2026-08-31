@@ -227,6 +227,14 @@ E2E jobs are required; run `make test/integration` and `make test/e2e` separatel
 
 ---
 
+## Apps workspace
+
+Local layout: `~/projects/pohjola/{framework,apps/*}`.
+Apps are private clones with `upstream` → this public repo.
+Pull framework improvements with: `git fetch upstream && git merge upstream/master`.
+
+---
+
 ## Licence
 
 Distributed under the [AGPL Licence](LICENCE.md).
