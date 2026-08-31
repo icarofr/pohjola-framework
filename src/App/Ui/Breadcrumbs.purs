@@ -6,8 +6,7 @@ module App.Ui.Breadcrumbs
 import Prelude
 
 import App.Alpine (navLink)
-import App.Html (Html, attr, class_, el, href, text)
-import App.Ui.Templates.Contract as Contract
+import App.Html (Html, class_, el, href, text)
 import App.Ui.Templates.Types (ActionTarget(..), BreadcrumbItem)
 import Data.I18n (Lang)
 import Data.Maybe (Maybe(..))
@@ -16,10 +15,7 @@ import Data.Route (Route)
 breadcrumbs :: Lang -> Route -> Array BreadcrumbItem -> Html
 breadcrumbs _ _ [] = el "span" [] []
 breadcrumbs lang current items =
-  el "nav"
-    [ class_ "breadcrumbs text-sm"
-    , attr Contract.marker Contract.hubBreadcrumbs
-    ]
+  el "nav" [ class_ "breadcrumbs text-sm" ]
     [ el "ul" [] (map (renderItem lang current) items) ]
 
 renderItem :: Lang -> Route -> BreadcrumbItem -> Html

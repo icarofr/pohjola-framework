@@ -85,8 +85,8 @@ renderFinalCta cta =
     ]
     [ Container.container "max-w-3xl" "px-4 py-16 text-center sm:px-6"
         [ el "h2" [ class_ "text-3xl font-bold sm:text-4xl" ] [ text cta.heading ]
-        , el "p" [ class_ "mt-4 opacity-80" ] [ text cta.body ]
+        , el "p" [ class_ "mt-4" ] [ text cta.body ]
         , el "div" [ class_ "mt-8" ]
-            [ ActionLink.actionTarget Button.ButtonOutline Md cta.target cta.ctaLabel ]
+            [ ActionLink.actionTarget Button.ButtonNeutral Md cta.target cta.ctaLabel ]
         ]
     ]

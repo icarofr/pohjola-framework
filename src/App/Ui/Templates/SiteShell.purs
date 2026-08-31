@@ -96,6 +96,7 @@ sitePage lang route labels content =
     , id_ contentTarget
     , attr "data-page-title" (routeTitle lang route)
     , xDataThemeWithFlag ThemeMenuOpen false
+    , onKeydownEscapeWindow closeSiteDrawer
     ]
     [ el "input"
         [ type_ "checkbox"

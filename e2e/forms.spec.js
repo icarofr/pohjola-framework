@@ -38,7 +38,9 @@ test.describe("Mobile menu", () => {
     await menuButton.click();
     await expect(drawerToggle).toBeChecked();
     await expect(closeButton).toBeVisible();
-    await expect(page.locator('div#content a[href="/en/about"]')).toBeVisible();
+    await expect(
+      page.locator('.drawer-side .menu a[href="/en/about"]'),
+    ).toBeVisible();
 
     await closeButton.click();
     await expect(drawerToggle).not.toBeChecked();
