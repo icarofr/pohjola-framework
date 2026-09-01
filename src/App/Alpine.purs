@@ -4,6 +4,7 @@ module App.Alpine
   ( contentTarget
   , alpineRequestHeader
   , spaLink
+  , langLink
   , navLink
   , NavChrome(..)
   , navLinkClasses
@@ -319,6 +320,18 @@ spaLink lang route extraAttrs children =
       , xTargetPush contentTarget
       , prefetchHover
       ] <> extraAttrs
+    )
+    children
+
+langLink :: { targetLang :: Lang, currentLang :: Lang, route :: Route } -> Array Attr -> Array Html -> Html
+langLink { targetLang, currentLang, route } extraAttrs children =
+  el "a"
+    ( [ href (routeUrl targetLang route)
+      , xTargetPush contentTarget
+      ]
+        <> (if targetLang == currentLang then [ attr "aria-current" "page" ] else [])
+        <> (if targetLang == currentLang then [] else [ prefetchHover ])
+        <> extraAttrs
     )
     children
 

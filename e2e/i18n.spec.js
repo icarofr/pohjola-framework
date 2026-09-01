@@ -26,6 +26,25 @@ test.describe("Internationalization", () => {
     await expect(page.locator("html")).toHaveAttribute("lang", "fr");
   });
 
+  test("language switch avoids full page reload", async ({ page }) => {
+    await page.goto("/en/about");
+    await page.evaluate(() => {
+      window.__spaMarker = true;
+    });
+
+    await page
+      .locator('header a[href="/fr/a-propos"]')
+      .filter({ hasText: /Français/i })
+      .click();
+
+    await expect(page).toHaveURL(/\/fr\/a-propos$/);
+    await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+    await expect(
+      page.evaluate(() => window.__spaMarker === true),
+    ).resolves.toBe(true);
+    await expect(page.locator("main")).toContainText("Notre mission");
+  });
+
   test("mobile drawer menu opens and closes", async ({ page }) => {
     await page.goto("/en");
     await page.setViewportSize({ width: 375, height: 667 });

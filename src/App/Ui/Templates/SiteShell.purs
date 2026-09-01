@@ -16,6 +16,7 @@ import App.Alpine
   , classWhenFlag
   , classWhenTheme
   , contentTarget
+  , langLink
   , navLink
   , navLinkClasses
   , onClick
@@ -37,15 +38,14 @@ import App.Html
   , class_
   , el
   , for_
-  , href
   , id_
   , text
   , type_
   )
 import App.Ui.Container as Container
 import App.Ui.Templates.Contract as Contract
-import Data.I18n (Lang(..), dict)
-import Data.Route (Route(..), routeTitle, routeUrl)
+import Data.I18n (Lang(..), dict, langTag)
+import Data.Route (Route(..), routeTitle)
 
 type ShellLabels =
   { siteTitle :: String
@@ -98,6 +98,7 @@ sitePage lang route labels content =
     [ class_ "drawer drawer-end min-h-full bg-base-100 text-base-content"
     , id_ contentTarget
     , attr "data-page-title" (routeTitle lang route)
+    , attr "data-page-lang" (langTag lang)
     , xDataThemeWithFlag ThemeMenuOpen false
     , onKeydownEscapeWindow closeSiteDrawer
     ]
@@ -206,9 +207,8 @@ desktopNavLink lang current target label =
 
 renderLangJoin :: Lang -> Lang -> Route -> String -> Html
 renderLangJoin targetLang currentLang route label =
-  el "a"
-    [ href (routeUrl targetLang route)
-    , class_
+  langLink { targetLang, currentLang, route }
+    [ class_
         ( "join-item btn btn-sm"
             <>
               if targetLang == currentLang then
@@ -217,6 +217,7 @@ renderLangJoin targetLang currentLang route label =
               else
                 ""
         )
+    , onClick closeSiteDrawer
     ]
     [ text label ]
 

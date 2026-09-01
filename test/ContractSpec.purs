@@ -551,6 +551,8 @@ spec = do
       html `StrAssert.shouldContain` "English"
       html `StrAssert.shouldContain` "Français"
       html `StrAssert.shouldContain` "Português"
+      html `StrAssert.shouldContain` ("href=\"/fr\" x-target.push=\"" <> contentTarget <> "\"")
+      html `StrAssert.shouldContain` "data-page-lang"
     it "template pages use bg-base-100 content wrapper" do
       html <- renderStaticPage Home En
       html `StrAssert.shouldContain` "bg-base-100"
@@ -588,6 +590,7 @@ spec = do
           StrAssert.shouldContain html themeLightName
           StrAssert.shouldContain html themeDarkName
           StrAssert.shouldContain html "document.addEventListener('ajax:merged',sync);"
+          StrAssert.shouldContain html "document.documentElement.lang=m.dataset.pageLang"
           StrAssert.shouldContain html "window.addEventListener('popstate',restore,true);"
           StrAssert.shouldContain html "function restore(event){event.stopImmediatePropagation();fetch(location.href"
           StrAssert.shouldContain html "history.replaceState({__ajax:true},'',location.href)"

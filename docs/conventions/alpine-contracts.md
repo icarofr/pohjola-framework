@@ -34,6 +34,9 @@ Three constants bind the server-fragment layer to the Alpine AJAX layer:
 - **`data-page-title`** — attribute on fragment responses. The inline head
   scripts read it to sync the document title on navigation. ContractSpec
   pins its presence in rendered output.
+- **`data-page-lang`** — attribute on the same `#content` wrapper. The title
+  sync script also sets `document.documentElement.lang` after fragment swaps,
+  including language switches.
 
 If you rename any of these, grep the whole repo: `App.Alpine`, `Main.purs`,
 `Layout/Page.purs`, and the inline head scripts all participate.
