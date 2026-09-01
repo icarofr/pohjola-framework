@@ -6,7 +6,6 @@ module App.Ui.Templates.Hub
 import Prelude
 
 import App.Html (Html, attr, class_, el, text)
-import App.Ui.Breadcrumbs as Breadcrumbs
 import App.Ui.Button as Button
 import App.Ui.Button (Size(..))
 import App.Ui.Card as Card
@@ -14,8 +13,7 @@ import App.Ui.Container as Container
 import App.Ui.Templates.ActionLink as ActionLink
 import App.Ui.Templates.Contract as Contract
 import App.Ui.Templates.PageHeader as PageHeader
-import App.Ui.Templates.Types (HubCard, HubSlots, BreadcrumbItem, hubCards)
-import Data.Array (length)
+import App.Ui.Templates.Types (HubCard, HubSlots, hubCards)
 import Data.I18n (Lang)
 import Data.Route (Route)
 
@@ -26,8 +24,9 @@ renderHub lang route slots =
     , attr Contract.marker Contract.hubPage
     ]
     [ Container.container "max-w-6xl" "px-4 sm:px-6"
-        [ maybeBreadcrumbs lang route slots.breadcrumbs
-        , PageHeader.renderCentered { title: slots.title, subtitle: slots.subtitle }
+        [ PageHeader.renderBreadcrumbs Contract.hubBreadcrumbs lang route slots.breadcrumbs
+        , el "div" [ attr Contract.marker Contract.hubHeader ]
+            [ PageHeader.renderCentered { title: slots.title, subtitle: slots.subtitle } ]
         , el "div"
             [ class_ "mt-12 grid gap-6 md:grid-cols-3"
             , attr Contract.marker Contract.hubCards
@@ -35,17 +34,6 @@ renderHub lang route slots =
             (map renderCard (hubCards slots.cards))
         ]
     ]
-
-maybeBreadcrumbs :: Lang -> Route -> Array BreadcrumbItem -> Html
-maybeBreadcrumbs lang route items =
-  if length items == 0 then
-    el "span" [] []
-  else
-    el "div"
-      [ class_ "my-4"
-      , attr Contract.marker Contract.hubBreadcrumbs
-      ]
-      [ Breadcrumbs.breadcrumbs lang route items ]
 
 renderCard :: HubCard -> Html
 renderCard card =

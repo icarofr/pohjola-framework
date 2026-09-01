@@ -25,6 +25,7 @@ module App.Ui.Templates.Contract
   , feedCard
   , pageHeaderCentered
   , pageHeaderBand
+  , pageHeaderDetail
   , schedulePage
   , scheduleList
   , scheduleRow
@@ -101,6 +102,9 @@ pageHeaderCentered = "page-header-centered"
 
 pageHeaderBand :: String
 pageHeaderBand = "page-header-band"
+
+pageHeaderDetail :: String
+pageHeaderDetail = "page-header-detail"
 
 schedulePage :: String
 schedulePage = "schedule-page"

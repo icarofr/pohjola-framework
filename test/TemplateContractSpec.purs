@@ -42,6 +42,7 @@ spec = do
       it "contact renders exactly three equal hub cards" do
         let html = render (Contact.renderContact En)
         countMarker html Contract.hubCard `shouldEqual` Contract.contactHubCardCount
+        StrAssert.shouldContain html (Contract.slot Contract.hubHeader)
         StrAssert.shouldContain html (Contract.slot Contract.pageHeaderCentered)
         StrAssert.shouldContain html "card-body"
         StrAssert.shouldContain html "flex-auto"
@@ -49,6 +50,8 @@ spec = do
 
       it "about renders mission and six value items" do
         let html = render (About.renderAbout En)
+        StrAssert.shouldContain html (Contract.slot Contract.editorialHero)
+        StrAssert.shouldContain html (Contract.slot Contract.pageHeaderBand)
         StrAssert.shouldContain html (Contract.slot Contract.editorialMission)
         StrAssert.shouldContain html (Contract.slot Contract.editorialValues)
         countTags html "dt" `shouldEqual` Contract.aboutValueCount

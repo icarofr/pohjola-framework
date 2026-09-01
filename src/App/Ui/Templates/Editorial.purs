@@ -6,7 +6,6 @@ module App.Ui.Templates.Editorial
 import Prelude
 
 import App.Html (Html, attr, class_, el, text)
-import App.Ui.Breadcrumbs as Breadcrumbs
 import App.Ui.Container as Container
 import App.Ui.Templates.Contract as Contract
 import App.Ui.Templates.PageHeader as PageHeader
@@ -17,7 +16,6 @@ import App.Ui.Templates.Types
   , ValuesSlots
   , valueItems
   )
-import Data.Array (length)
 import Data.I18n (Lang)
 import Data.Route (Route)
 
@@ -30,19 +28,8 @@ renderEditorial lang route slots =
 renderHero :: Lang -> Route -> String -> Array BreadcrumbItem -> Html
 renderHero lang route heading breadcrumbs =
   PageHeader.renderBand
-    [ maybeBreadcrumbs lang route breadcrumbs ]
+    [ PageHeader.renderBreadcrumbs Contract.editorialBreadcrumbs lang route breadcrumbs ]
     heading
-
-maybeBreadcrumbs :: Lang -> Route -> Array BreadcrumbItem -> Html
-maybeBreadcrumbs lang route items =
-  if length items == 0 then
-    el "span" [] []
-  else
-    el "div"
-      [ class_ "my-4"
-      , attr Contract.marker Contract.editorialBreadcrumbs
-      ]
-      [ Breadcrumbs.breadcrumbs lang route items ]
 
 renderMission
   :: { heading :: String

@@ -37,7 +37,8 @@ Entry: `App.Ui.Templates.Render.renderPage lang Route (Constructor slots)`.
 | Variant | Used by | Marker |
 |---|---|---|
 | `renderCentered` | Hub, Feed, Schedule | `data-template="page-header-centered"` |
-| `renderBand` | Editorial hero | `data-template="page-header-band"` |
+| `renderBand` | Editorial hero | `data-template="page-header-band"` (+ `editorial-hero` wrapper) |
+| `renderDetail` | Article detail | `data-template="page-header-detail"` |
 
 Do not duplicate `<h1>` / lead copy in feature views — pass `title` / `subtitle` through slot records.
 
