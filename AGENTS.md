@@ -74,11 +74,6 @@
 - Before committing, run `make check`. **If you skip this, state why.**
 - When verification method is unclear, ask the user before proceeding.
 
-### Apps workspace (Gui sync)
-- Private app: `~/projects/pohjola/apps/` (`upstream` → this repo).
-- After framework improvements land here, **merge into the Gui app** in the same session when practical: `git fetch upstream && git merge upstream/master` (in the app repo).
-- On conflicts: prefer upstream for kernel (`App.Ui*`, templates, policy, scripts, Makefile dev targets); keep app-owned (`App.Features/*`, theme, `Data/I18n`, `Data/Content`, domain routes, brand assets).
-- No Spago package split for now — template copy + git upstream only.
 
 ### Context-efficient workflows
 - Grep first to find line numbers, then read targeted ranges — don't read entire large files.
