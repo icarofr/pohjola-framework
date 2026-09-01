@@ -2,16 +2,15 @@
 module App.Features.About.View where
 
 import App.Html (Html)
+import App.Ui.Templates.PageHeader as PageHeader
 import App.Ui.Templates.Render (renderPage)
 import App.Ui.Templates.Types
-  ( ActionTarget(..)
-  , BreadcrumbItem
-  , EditorialSlots
+  ( EditorialSlots
   , PageTemplate(..)
   , editorialSlots
   , valuesSlotsFromArray
   )
-import Data.I18n (Lang(..), dict)
+import Data.I18n (Lang, dict)
 import Data.Maybe (Maybe(..))
 import Data.Route (Route(..))
 
@@ -23,25 +22,13 @@ aboutSlots :: Lang -> EditorialSlots
 aboutSlots lang =
   let
     d = (dict lang).about
+    nav = (dict lang).nav
   in
     editorialSlots
       d.heading
+      (Just d.subtitle)
       d.mission
       (valuesSlotsFromArray d.values.heading d.values.intro d.values.items)
-      (aboutBreadcrumbs lang)
-
-aboutBreadcrumbs :: Lang -> Array BreadcrumbItem
-aboutBreadcrumbs lang =
-  let
-    d = (dict lang).about
-  in
-    [ { label: homeCrumbLabel lang
-      , target: Just (Internal { lang, route: Home })
-      }
-    , { label: d.heading, target: Nothing }
-    ]
-
-homeCrumbLabel :: Lang -> String
-homeCrumbLabel En = "Home"
-homeCrumbLabel Fr = "Accueil"
-homeCrumbLabel Pt = "Início"
+      [ PageHeader.breadcrumbHome lang nav.home
+      , PageHeader.breadcrumbHere nav.about
+      ]

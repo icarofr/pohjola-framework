@@ -2,17 +2,16 @@
 module App.Features.Contact.View where
 
 import App.Html (Html)
+import App.Ui.Templates.PageHeader as PageHeader
 import App.Ui.Templates.Render (renderPage)
 import App.Ui.Templates.Types
   ( ActionTarget(..)
-  , BreadcrumbItem
   , HubSlots
   , PageTemplate(..)
   , hubCardTriple
   , hubSlots
   )
-import Data.I18n (Lang(..), dict)
-import Data.Maybe (Maybe(..))
+import Data.I18n (Lang, dict)
 import Data.Route (Route(..))
 
 renderContact :: Lang -> Html
@@ -23,6 +22,7 @@ contactSlots :: Lang -> HubSlots
 contactSlots lang =
   let
     d = (dict lang).contact
+    nav = (dict lang).nav
   in
     hubSlots
       d.title
@@ -44,20 +44,6 @@ contactSlots lang =
           , target: External { href: "https://github.com/icarofr/pohjola-framework" }
           }
       )
-      (contactBreadcrumbs lang)
-
-contactBreadcrumbs :: Lang -> Array BreadcrumbItem
-contactBreadcrumbs lang =
-  let
-    d = (dict lang).contact
-  in
-    [ { label: homeCrumbLabel lang
-      , target: Just (Internal { lang, route: Home })
-      }
-    , { label: d.title, target: Nothing }
-    ]
-
-homeCrumbLabel :: Lang -> String
-homeCrumbLabel En = "Home"
-homeCrumbLabel Fr = "Accueil"
-homeCrumbLabel Pt = "Início"
+      [ PageHeader.breadcrumbHome lang nav.home
+      , PageHeader.breadcrumbHere nav.contact
+      ]

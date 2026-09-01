@@ -4,6 +4,7 @@ module App.Features.Fixtures.View where
 import Prelude
 
 import App.Html (Html)
+import App.Ui.Templates.PageHeader as PageHeader
 import App.Ui.Templates.Render (renderPage)
 import App.Ui.Templates.Types
   ( ActionTarget(..)
@@ -39,12 +40,16 @@ renderFixtures :: Lang -> Html
 renderFixtures lang =
   let
     d = (dict lang).fixtures
+    nav = (dict lang).nav
   in
     renderPage lang Fixtures
       ( Schedule
           ( scheduleSlots
               d.listTitle
               d.subtitle
+              [ PageHeader.breadcrumbHome lang nav.home
+              , PageHeader.breadcrumbHere nav.fixtures
+              ]
               (map (fixtureToMatch d) tottenhamFixtures)
           )
       )

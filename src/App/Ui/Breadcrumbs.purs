@@ -14,13 +14,13 @@ import Data.Route (Route)
 
 breadcrumbs :: Lang -> Route -> Array BreadcrumbItem -> Html
 breadcrumbs _ _ [] = el "span" [] []
-breadcrumbs lang current items =
+breadcrumbs _ current items =
   el "nav" [ class_ "breadcrumbs text-sm" ]
-    [ el "ul" [] (map (renderItem lang current) items) ]
+    [ el "ul" [ class_ "flex-nowrap" ] (map (renderItem current) items) ]
 
-renderItem :: Lang -> Route -> BreadcrumbItem -> Html
-renderItem _ current { label, target } =
-  el "li" [] case target of
+renderItem :: Route -> BreadcrumbItem -> Html
+renderItem current { label, target } =
+  el "li" [ class_ (itemClass target) ] case target of
     Nothing ->
       [ text label ]
     Just (Internal { lang: linkLang, route }) ->
@@ -30,3 +30,7 @@ renderItem _ current { label, target } =
       ]
     Just (External { href: url }) ->
       [ el "a" [ href url, class_ "link link-hover" ] [ text label ] ]
+
+itemClass :: Maybe ActionTarget -> String
+itemClass Nothing = "max-w-[9rem] truncate sm:max-w-[12rem]"
+itemClass _ = "shrink-0"

@@ -63,9 +63,11 @@ type ServiceCopy =
 
 type Dictionary =
   { nav ::
-      { about :: String
+      { home :: String
+      , about :: String
       , contact :: String
       , posts :: String
+      , fixtures :: String
       }
   , hero ::
       { eyebrow :: String
@@ -88,6 +90,7 @@ type Dictionary =
       }
   , about ::
       { heading :: String
+      , subtitle :: String
       , mission ::
           { heading :: String
           , lead :: String
@@ -117,6 +120,7 @@ type Dictionary =
       }
   , posts ::
       { listTitle :: String
+      , listSubtitle :: String
       , detailTitle :: String
       , articleTagPrefix :: String
       , readMore :: String
@@ -178,9 +182,11 @@ type Dictionary =
 en :: Dictionary
 en =
   { nav:
-      { about: "About"
+      { home: "Home"
+      , about: "About"
       , contact: "Contact"
       , posts: "Posts"
+      , fixtures: "Fixtures"
       }
   , hero:
       { eyebrow: "PureScript · Bun · Alpine.js"
@@ -218,6 +224,7 @@ en =
       }
   , about:
       { heading: "About Pohjola"
+      , subtitle: "A type-safe functional web framework for Bun — bedrock-first, agent-verified."
       , mission:
           { heading: "Our mission"
           , lead: "Pohjola takes its name from Swallow the Sun's Songs from the North — Finnish lore where pohja is both bedrock and the direction North. We built the framework on that ethos: deliberate craft that survives production."
@@ -250,7 +257,7 @@ en =
       }
   , contact:
       { title: "Community & Contributing"
-      , subtitle: "Pohjola is open source software. Report issues, join discussions, or inspect the codebase directly on GitHub."
+      , subtitle: "Report issues, join discussions, or inspect the codebase directly on GitHub."
       , issuesTag: "Issues"
       , issuesTitle: "Bug Reports & Issues"
       , issuesText: "Found a bug, edge case, or unexpected behaviour? Open an issue on GitHub with reproduction steps."
@@ -265,7 +272,8 @@ en =
       , sourceButton: "View Repository"
       }
   , posts:
-      { listTitle: "Engineering Notes & Architecture"
+      { listTitle: "Engineering Notes"
+      , listSubtitle: "Stack deep-dives, conventions, and guarantees."
       , detailTitle: "Article"
       , articleTagPrefix: "Article #"
       , readMore: "Read article"
@@ -323,9 +331,11 @@ en =
 fr :: Dictionary
 fr =
   { nav:
-      { about: "À propos"
+      { home: "Accueil"
+      , about: "À propos"
       , contact: "Contact"
       , posts: "Articles"
+      , fixtures: "Calendrier"
       }
   , hero:
       { eyebrow: "PureScript · Bun · Alpine.js"
@@ -363,6 +373,7 @@ fr =
       }
   , about:
       { heading: "À propos de Pohjola"
+      , subtitle: "Un framework web fonctionnel et typé pour Bun — fondations solides, vérifié par les agents."
       , mission:
           { heading: "Notre mission"
           , lead: "Pohjola tire son nom de Songs from the North de Swallow the Sun — la mythologie finnoise où pohja est à la fois le socle et la direction du Nord. Nous avons bâti le framework sur cette exigence : un artisanat délibéré qui tient en production."
@@ -395,7 +406,7 @@ fr =
       }
   , contact:
       { title: "Communauté & Contribution"
-      , subtitle: "Pohjola est un projet open source. Signalez des bugs, échangez ou explorez le code directement sur GitHub."
+      , subtitle: "Signalez des bugs, échangez ou explorez le code directement sur GitHub."
       , issuesTag: "Issues"
       , issuesTitle: "Bugs & Problèmes techniques"
       , issuesText: "Un problème, un bug ou un comportement inattendu ? Ouvrez une issue avec les étapes de reproduction."
@@ -410,7 +421,8 @@ fr =
       , sourceButton: "Voir le dépôt"
       }
   , posts:
-      { listTitle: "Notes d'ingénierie et architecture"
+      { listTitle: "Notes d'ingénierie"
+      , listSubtitle: "Stack, conventions et garanties."
       , detailTitle: "Article"
       , articleTagPrefix: "Article n°"
       , readMore: "Lire l'article"
@@ -468,9 +480,11 @@ fr =
 pt :: Dictionary
 pt =
   { nav:
-      { about: "Sobre"
+      { home: "Início"
+      , about: "Sobre"
       , contact: "Contacto"
       , posts: "Artigos"
+      , fixtures: "Calendário"
       }
   , hero:
       { eyebrow: "PureScript · Bun · Alpine.js"
@@ -508,6 +522,7 @@ pt =
       }
   , about:
       { heading: "Sobre o Pohjola"
+      , subtitle: "Um framework web funcional e tipado para Bun — base sólida, verificado por agentes."
       , mission:
           { heading: "A nossa missão"
           , lead: "Pohjola toma o nome de Songs from the North de Swallow the Sun — o folclore finlandês onde pohja é ao mesmo tempo a base e a direção Norte. Construímos o framework sobre esse ethos: artesanato deliberado que aguenta produção."
@@ -540,7 +555,7 @@ pt =
       }
   , contact:
       { title: "Comunidade e contribuição"
-      , subtitle: "Pohjola é software open source. Reporte problemas, participe nas discussões ou inspecione o código diretamente no GitHub."
+      , subtitle: "Reporte problemas, participe nas discussões ou inspecione o código diretamente no GitHub."
       , issuesTag: "Issues"
       , issuesTitle: "Relatórios de bugs e issues"
       , issuesText: "Encontrou um bug, caso limite ou comportamento inesperado? Abra uma issue no GitHub com passos de reprodução."
@@ -555,7 +570,8 @@ pt =
       , sourceButton: "Ver o repositório"
       }
   , posts:
-      { listTitle: "Notas de engenharia e arquitetura"
+      { listTitle: "Notas de engenharia"
+      , listSubtitle: "Stack, convenções e garantias."
       , detailTitle: "Artigo"
       , articleTagPrefix: "Artigo n.º"
       , readMore: "Ler artigo"

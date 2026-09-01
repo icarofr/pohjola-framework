@@ -15,6 +15,7 @@ import App.Ui.Templates.Contract as Contract
 import App.Ui.Templates.PageHeader as PageHeader
 import App.Ui.Templates.Types (HubCard, HubSlots, hubCards)
 import Data.I18n (Lang)
+import Data.Maybe (Maybe(..))
 import Data.Route (Route)
 
 renderHub :: Lang -> Route -> HubSlots -> Html
@@ -24,9 +25,9 @@ renderHub lang route slots =
     , attr Contract.marker Contract.hubPage
     ]
     [ Container.container "max-w-6xl" "px-4 sm:px-6"
-        [ PageHeader.renderBreadcrumbs Contract.hubBreadcrumbs lang route slots.breadcrumbs
-        , el "div" [ attr Contract.marker Contract.hubHeader ]
-            [ PageHeader.renderCentered { title: slots.title, subtitle: slots.subtitle } ]
+        [ PageHeader.render lang route
+            ( PageHeader.pageHeaderSlots slots.title (Just slots.subtitle) slots.breadcrumbs
+            )
         , el "div"
             [ class_ "mt-12 grid gap-6 md:grid-cols-3"
             , attr Contract.marker Contract.hubCards

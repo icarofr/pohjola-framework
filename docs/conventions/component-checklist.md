@@ -39,7 +39,7 @@ renderPage lang MyRoute (Editorial (pageSlots lang))
 -- or Hub, Landing, Feed, Article, Schedule — slots only, no class_
 ```
 
-In-page titles use `PageHeader` inside templates (`page-header-centered` / `page-header-band` markers) — features pass `title` / `subtitle` via slots only.
+In-page titles use `PageHeader` inside templates (`page-header`, `page-header-breadcrumbs`, `page-header-body` markers) — features pass `title` / `subtitle` / `breadcrumbs` via slots only.
 
 ## 2. Extend a template slot (not a primitive)
 

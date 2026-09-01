@@ -27,10 +27,10 @@ renderPage lang route template =
       Hub slots ->
         Hub.renderHub lang route slots
       Feed slots ->
-        Feed.renderFeed slots
+        Feed.renderFeed lang route slots
       Schedule slots ->
-        Schedule.renderSchedule slots
+        Schedule.renderSchedule lang route slots
       Article slots ->
-        Article.renderArticle lang slots
+        Article.renderArticle lang route slots
   in
     Shell.sitePage lang route labels body

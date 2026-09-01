@@ -1,4 +1,4 @@
--- | Editorial page — page hero, mission copy, values grid.
+-- | Editorial page — unified page header, mission copy, values grid.
 module App.Ui.Templates.Editorial
   ( renderEditorial
   ) where
@@ -10,8 +10,7 @@ import App.Ui.Container as Container
 import App.Ui.Templates.Contract as Contract
 import App.Ui.Templates.PageHeader as PageHeader
 import App.Ui.Templates.Types
-  ( BreadcrumbItem
-  , EditorialSlots
+  ( EditorialSlots
   , ValueItem
   , ValuesSlots
   , valueItems
@@ -21,34 +20,23 @@ import Data.Route (Route)
 
 renderEditorial :: Lang -> Route -> EditorialSlots -> Html
 renderEditorial lang route slots =
-  renderHero lang route slots.heading slots.breadcrumbs
-    <> renderMission slots.mission
-    <> renderValues slots.values
-
-renderHero :: Lang -> Route -> String -> Array BreadcrumbItem -> Html
-renderHero lang route heading breadcrumbs =
-  PageHeader.renderBand
-    [ PageHeader.renderBreadcrumbs Contract.editorialBreadcrumbs lang route breadcrumbs ]
-    heading
-
-renderMission
-  :: { heading :: String
-     , lead :: String
-     , body :: String
-     }
-  -> Html
-renderMission mission =
-  el "section"
-    [ class_ "py-16 sm:py-20"
-    , attr Contract.marker Contract.editorialMission
-    ]
-    [ Container.container "max-w-6xl" "px-4 sm:px-6"
-        [ el "div" [ class_ "max-w-3xl" ]
-            [ el "h2" [ class_ "text-3xl font-bold" ] [ text mission.heading ]
-            , el "p" [ class_ "mt-6 text-xl opacity-80" ] [ text mission.lead ]
-            , el "p" [ class_ "mt-6 text-base opacity-70" ] [ text mission.body ]
+  el "div" []
+    [ el "section"
+        [ class_ "py-16 sm:py-20"
+        , attr Contract.marker Contract.editorialMission
+        ]
+        [ Container.container "max-w-6xl" "px-4 sm:px-6"
+            [ PageHeader.render lang route
+                ( PageHeader.pageHeaderSlots slots.heading slots.subtitle slots.breadcrumbs
+                )
+            , el "div" [ class_ "mt-12 max-w-3xl" ]
+                [ el "h2" [ class_ "text-3xl font-bold" ] [ text slots.mission.heading ]
+                , el "p" [ class_ "mt-6 text-xl opacity-80" ] [ text slots.mission.lead ]
+                , el "p" [ class_ "mt-6 text-base opacity-70" ] [ text slots.mission.body ]
+                ]
             ]
         ]
+    , renderValues slots.values
     ]
 
 renderValues :: ValuesSlots -> Html

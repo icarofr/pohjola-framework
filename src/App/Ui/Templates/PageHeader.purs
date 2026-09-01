@@ -1,9 +1,12 @@
--- | Shared in-page headers — one recipe for title/subtitle rhythm across templates.
+-- | Shared in-page headers — DaisyUI breadcrumbs + divider, left-aligned title stack.
+-- | Hero is reserved for Landing only (vendor/daisyui/.../hero.md).
 module App.Ui.Templates.PageHeader
-  ( CenteredHeader
-  , renderBand
-  , renderBreadcrumbs
-  , renderCentered
+  ( PageHeaderSlots
+  , breadcrumbHere
+  , breadcrumbLink
+  , breadcrumbHome
+  , pageHeaderSlots
+  , render
   , renderDetail
   ) where
 
@@ -11,75 +14,101 @@ import Prelude
 
 import App.Html (Html, attr, class_, el, text)
 import App.Ui.Breadcrumbs as Breadcrumbs
-import App.Ui.Container as Container
+import App.Ui.Divider as Divider
+import App.Ui.TextTone as TextTone
 import App.Ui.Templates.Contract as Contract
-import App.Ui.Templates.Types (BreadcrumbItem)
+import App.Ui.Templates.Types (ActionTarget(..), BreadcrumbItem)
 import Data.Array (length)
 import Data.I18n (Lang)
-import Data.Route (Route)
+import Data.Maybe (Maybe(..), maybe)
+import Data.Route (Route(..))
 
-type CenteredHeader =
+type PageHeaderSlots =
   { title :: String
-  , subtitle :: String
+  , subtitle :: Maybe String
+  , breadcrumbs :: Array BreadcrumbItem
   }
 
-headingClass :: String
-headingClass = "text-4xl font-bold sm:text-5xl"
+pageHeaderSlots :: String -> Maybe String -> Array BreadcrumbItem -> PageHeaderSlots
+pageHeaderSlots title subtitle breadcrumbs =
+  { title, subtitle, breadcrumbs }
 
-leadClass :: String
-leadClass = "mt-4 text-lg opacity-70"
+breadcrumbHome :: Lang -> String -> BreadcrumbItem
+breadcrumbHome lang homeLabel =
+  { label: homeLabel
+  , target: Just (Internal { lang, route: Home })
+  }
 
--- | Breadcrumb row above a page header (Hub, Editorial).
-renderBreadcrumbs :: String -> Lang -> Route -> Array BreadcrumbItem -> Html
-renderBreadcrumbs markerName lang route items =
-  if length items == 0 then
-    el "span" [] []
-  else
-    el "div"
-      [ class_ "my-4"
-      , attr Contract.marker markerName
-      ]
-      [ Breadcrumbs.breadcrumbs lang route items ]
+breadcrumbHere :: String -> BreadcrumbItem
+breadcrumbHere label =
+  { label, target: Nothing }
 
--- | Centered page title + lead (Hub, Feed, Schedule).
-renderCentered :: CenteredHeader -> Html
-renderCentered slots =
-  el "header"
-    [ class_ "mx-auto max-w-2xl text-center"
-    , attr Contract.marker Contract.pageHeaderCentered
-    ]
-    [ el "h1" [ class_ headingClass ] [ text slots.title ]
-    , el "p" [ class_ leadClass ] [ text slots.subtitle ]
+breadcrumbLink :: Lang -> Route -> String -> BreadcrumbItem
+breadcrumbLink lang route label =
+  { label, target: Just (Internal { lang, route }) }
+
+render :: Lang -> Route -> PageHeaderSlots -> Html
+render lang route slots =
+  renderShell
+    [ renderBreadcrumbs lang route slots.breadcrumbs
+    , renderBody [] slots
     ]
 
--- | Left-aligned title band with bottom border (Editorial hero).
-renderBand :: Array Html -> String -> Html
-renderBand prefix title =
-  el "div" [ attr Contract.marker Contract.editorialHero ]
-    [ el "header"
-        [ class_ "border-b border-base-200 bg-base-100"
-        , attr Contract.marker Contract.pageHeaderBand
-        ]
-        [ Container.container "max-w-6xl" "px-4 py-16 sm:px-6 sm:py-20"
-            ( prefix
-                <>
-                  [ el "h1" [ class_ ("max-w-3xl " <> headingClass) ]
-                      [ text title ]
-                  ]
-            )
-        ]
-    ]
-
--- | Article detail header — eyebrow prefix + unified h1 scale.
-renderDetail :: String -> Array Html -> String -> Html
-renderDetail markerName prefix title =
-  el "div" [ attr Contract.marker markerName ]
-    [ el "header"
+renderDetail :: Lang -> Route -> Array Html -> PageHeaderSlots -> Html
+renderDetail lang route prefix slots =
+  renderShell
+    [ renderBreadcrumbs lang route slots.breadcrumbs
+    , el "div"
         [ class_ "max-w-3xl"
+        , attr Contract.marker Contract.pageHeaderBody
         , attr Contract.marker Contract.pageHeaderDetail
         ]
         ( prefix
             <>
-              [ el "h1" [ class_ ("mt-4 " <> headingClass) ] [ text title ] ]
+              [ el "h1" [ class_ titleClass ] [ text slots.title ]
+              , renderSubtitle slots.subtitle
+              ]
         )
     ]
+
+renderShell :: Array Html -> Html
+renderShell children =
+  el "header"
+    [ attr Contract.marker Contract.pageHeader
+    ]
+    (children <> [ el "div" [ class_ "mt-8" ] [ Divider.divider ] ])
+
+renderBody :: Array Html -> PageHeaderSlots -> Html
+renderBody prefix slots =
+  el "div"
+    [ class_ "max-w-3xl"
+    , attr Contract.marker Contract.pageHeaderBody
+    ]
+    ( prefix
+        <>
+          [ el "h1" [ class_ titleClass ] [ text slots.title ]
+          , renderSubtitle slots.subtitle
+          ]
+    )
+
+titleClass :: String
+titleClass = "text-3xl font-bold tracking-tight sm:text-4xl"
+
+renderBreadcrumbs :: Lang -> Route -> Array BreadcrumbItem -> Html
+renderBreadcrumbs lang route items =
+  if length items == 0 then
+    el "span" [] []
+  else
+    el "div"
+      [ class_ "mb-4 max-w-full overflow-x-auto"
+      , attr Contract.marker Contract.pageHeaderBreadcrumbs
+      ]
+      [ Breadcrumbs.breadcrumbs lang route items ]
+
+renderSubtitle :: Maybe String -> Html
+renderSubtitle = maybe (el "span" [] []) renderSubtitleText
+
+renderSubtitleText :: String -> Html
+renderSubtitleText subtitle =
+  el "p" [ class_ ("mt-3 text-lg " <> TextTone.toneClass TextTone.Copy) ]
+    [ text subtitle ]

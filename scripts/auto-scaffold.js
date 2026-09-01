@@ -73,6 +73,7 @@ import App.Ui.Templates.Types
   )
 import Data.Either (Either)
 import Data.I18n (Lang, dict)
+import Data.Maybe (Maybe(..))
 import Data.Route (Route(..))
 import Effect.Aff (Aff)
 
@@ -90,6 +91,7 @@ pageSlots lang =
   in
     editorialSlots
       d.heading
+      Nothing
       { heading: d.heading
       , lead: d.body
       , body: d.body
@@ -176,6 +178,7 @@ viewList lang items =
           ( feedSlots
               d.heading
               d.body
+              []
               (map (toCard lang) items)
           )
       )

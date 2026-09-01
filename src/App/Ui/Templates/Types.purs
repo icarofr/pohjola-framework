@@ -132,6 +132,7 @@ type ImageTriple =
 
 type EditorialSlots =
   { heading :: String
+  , subtitle :: Maybe String
   , mission :: MissionSlots
   , values :: ValuesSlots
   , breadcrumbs :: Array BreadcrumbItem
@@ -177,6 +178,7 @@ type FeedCard =
 type FeedSlots =
   { title :: String
   , subtitle :: String
+  , breadcrumbs :: Array BreadcrumbItem
   , posts :: Array FeedCard
   }
 
@@ -199,6 +201,7 @@ type ScheduleMatch =
 type ScheduleSlots =
   { title :: String
   , subtitle :: String
+  , breadcrumbs :: Array BreadcrumbItem
   , matches :: Array ScheduleMatch
   }
 
@@ -208,7 +211,7 @@ type ArticleSlots =
   , authorName :: String
   , date :: String
   , body :: String
-  , backLabel :: String
+  , breadcrumbs :: Array BreadcrumbItem
   }
 
 landingFeatures
@@ -255,12 +258,13 @@ imageTriple one two three =
 
 editorialSlots
   :: String
+  -> Maybe String
   -> MissionSlots
   -> ValuesSlots
   -> Array BreadcrumbItem
   -> EditorialSlots
-editorialSlots heading mission values breadcrumbs =
-  { heading, mission, values, breadcrumbs }
+editorialSlots heading subtitle mission values breadcrumbs =
+  { heading, subtitle, mission, values, breadcrumbs }
 
 hubCardTriple :: HubCard -> HubCard -> HubCard -> HubCardTriple
 hubCardTriple one two three =
@@ -270,13 +274,13 @@ hubSlots :: String -> String -> HubCardTriple -> Array BreadcrumbItem -> HubSlot
 hubSlots title subtitle cards breadcrumbs =
   { title, subtitle, cards, breadcrumbs }
 
-feedSlots :: String -> String -> Array FeedCard -> FeedSlots
-feedSlots title subtitle posts =
-  { title, subtitle, posts }
+feedSlots :: String -> String -> Array BreadcrumbItem -> Array FeedCard -> FeedSlots
+feedSlots title subtitle breadcrumbs posts =
+  { title, subtitle, breadcrumbs, posts }
 
-scheduleSlots :: String -> String -> Array ScheduleMatch -> ScheduleSlots
-scheduleSlots title subtitle matches =
-  { title, subtitle, matches }
+scheduleSlots :: String -> String -> Array BreadcrumbItem -> Array ScheduleMatch -> ScheduleSlots
+scheduleSlots title subtitle breadcrumbs matches =
+  { title, subtitle, breadcrumbs, matches }
 
 articleSlots
   :: String
@@ -284,10 +288,10 @@ articleSlots
   -> String
   -> String
   -> String
-  -> String
+  -> Array BreadcrumbItem
   -> ArticleSlots
-articleSlots metaTag title authorName date body backLabel =
-  { metaTag, title, authorName, date, body, backLabel }
+articleSlots metaTag title authorName date body breadcrumbs =
+  { metaTag, title, authorName, date, body, breadcrumbs }
 
 featureItems :: FeatureTriple -> Array ServiceFeature
 featureItems triple =

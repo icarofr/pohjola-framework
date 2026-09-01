@@ -14,16 +14,21 @@ import App.Ui.Templates.ActionLink as ActionLink
 import App.Ui.Templates.Contract as Contract
 import App.Ui.Templates.PageHeader as PageHeader
 import App.Ui.Templates.Types (FeedCard, FeedSlots)
+import Data.I18n (Lang)
+import Data.Maybe (Maybe(..))
+import Data.Route (Route)
 import Data.String as String
 
-renderFeed :: FeedSlots -> Html
-renderFeed slots =
+renderFeed :: Lang -> Route -> FeedSlots -> Html
+renderFeed lang route slots =
   el "section"
     [ class_ "py-16 sm:py-20"
     , attr Contract.marker Contract.feedPage
     ]
     [ Container.container "max-w-6xl" "px-4 sm:px-6"
-        [ PageHeader.renderCentered { title: slots.title, subtitle: slots.subtitle }
+        [ PageHeader.render lang route
+            ( PageHeader.pageHeaderSlots slots.title (Just slots.subtitle) slots.breadcrumbs
+            )
         , el "div"
             [ class_ "mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3"
             , attr Contract.marker Contract.feedGrid

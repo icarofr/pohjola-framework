@@ -3,9 +3,6 @@ module App.Ui.Templates.Article
   ( renderArticle
   ) where
 
-import Prelude
-
-import App.Alpine (navLink)
 import App.Html (Html, attr, class_, el, text)
 import App.Ui.Badge as Badge
 import App.Ui.Card as Card
@@ -15,27 +12,25 @@ import App.Ui.Templates.Contract as Contract
 import App.Ui.Templates.PageHeader as PageHeader
 import App.Ui.Templates.Types (ArticleSlots)
 import Data.I18n (Lang)
-import Data.Route (Route(..))
+import Data.Maybe (Maybe(..))
+import Data.Route (Route)
 
-renderArticle :: Lang -> ArticleSlots -> Html
-renderArticle lang slots =
+renderArticle :: Lang -> Route -> ArticleSlots -> Html
+renderArticle lang route slots =
   el "article"
     [ class_ "py-12 sm:py-16"
     , attr Contract.marker Contract.articlePage
     ]
     [ Container.container "max-w-6xl" "px-4 sm:px-6"
-        [ navLink { lang, current: PostDetail 0, target: PostList }
-            [ class_ "link link-hover text-sm" ]
-            [ text ("← " <> slots.backLabel) ]
+        [ PageHeader.renderDetail lang route
+            [ Badge.badge Badge.BadgeSecondary slots.metaTag ]
+            ( PageHeader.pageHeaderSlots slots.title Nothing slots.breadcrumbs
+            )
         , el "div" [ class_ "mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_280px]" ]
             [ el "div" []
-                [ PageHeader.renderDetail
-                    Contract.articleHeader
-                    [ Badge.badge Badge.BadgeSecondary slots.metaTag ]
-                    slots.title
-                , el "div"
+                [ el "div"
                     [ attr Contract.marker Contract.articleBody
-                    , class_ "mt-8 max-w-3xl"
+                    , class_ "max-w-3xl"
                     ]
                     [ Prose.proseLg [ el "p" [] [ text slots.body ] ] ]
                 ]

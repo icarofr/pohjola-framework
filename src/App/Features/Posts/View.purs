@@ -5,6 +5,7 @@ import Prelude
 
 import App.Features.Posts.Types (Post, postBody, postExcerpt, postId, postTitle)
 import App.Html (Html)
+import App.Ui.Templates.PageHeader as PageHeader
 import App.Ui.Templates.Render (renderPage)
 import App.Ui.Templates.Types
   ( ActionTarget(..)
@@ -20,12 +21,16 @@ renderPostList :: Lang -> Array Post -> Html
 renderPostList lang posts =
   let
     d = (dict lang).posts
+    nav = (dict lang).nav
   in
     renderPage lang PostList
       ( Feed
           ( feedSlots
               d.listTitle
-              d.listTitle
+              d.listSubtitle
+              [ PageHeader.breadcrumbHome lang nav.home
+              , PageHeader.breadcrumbHere nav.posts
+              ]
               (map (postToCard lang) posts)
           )
       )
@@ -34,17 +39,22 @@ renderPostDetail :: Lang -> Post -> Html
 renderPostDetail lang post =
   let
     d = (dict lang).posts
+    nav = (dict lang).nav
     idNum = postId post
+    title = postTitle post
   in
     renderPage lang (PostDetail idNum)
       ( Article
           ( articleSlots
               (d.articleTagPrefix <> show idNum)
-              (postTitle post)
+              title
               d.unknownAuthor
               (d.articleTagPrefix <> show idNum)
               (postBody post)
-              d.backToList
+              [ PageHeader.breadcrumbHome lang nav.home
+              , PageHeader.breadcrumbLink lang PostList nav.posts
+              , PageHeader.breadcrumbHere (d.articleTagPrefix <> show idNum)
+              ]
           )
       )
 
@@ -58,7 +68,7 @@ postToCard lang post =
     d = (dict lang).posts
     idNum = postId post
   in
-    { imageUrl: "/images/service-2.svg"
+    { imageUrl: postFeedImage idNum
     , imageAlt: postTitle post
     , date: d.articleTagPrefix <> show idNum
     , category: d.detailTitle
@@ -68,3 +78,10 @@ postToCard lang post =
     , authorRole: d.authorRole
     , target: Internal { lang, route: PostDetail idNum }
     }
+
+postFeedImage :: Int -> String
+postFeedImage id =
+  case mod id 3 of
+    0 -> "/images/service-1.svg"
+    1 -> "/images/service-2.svg"
+    _ -> "/images/service-3.svg"

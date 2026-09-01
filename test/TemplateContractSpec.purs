@@ -39,24 +39,28 @@ spec = do
         StrAssert.shouldContain html "md:grid-cols-3"
         StrAssert.shouldContain html "card-border"
 
-      it "contact renders exactly three equal hub cards" do
+      it "contact renders exactly three equal hub cards with unified page header" do
         let html = render (Contact.renderContact En)
         countMarker html Contract.hubCard `shouldEqual` Contract.contactHubCardCount
-        StrAssert.shouldContain html (Contract.slot Contract.hubHeader)
-        StrAssert.shouldContain html (Contract.slot Contract.pageHeaderCentered)
+        StrAssert.shouldContain html (Contract.slot Contract.pageHeader)
+        StrAssert.shouldContain html (Contract.slot Contract.pageHeaderBreadcrumbs)
+        StrAssert.shouldContain html (Contract.slot Contract.pageHeaderBody)
+        StrAssert.shouldContain html "breadcrumbs"
+        StrAssert.shouldContain html "divider"
         StrAssert.shouldContain html "card-body"
         StrAssert.shouldContain html "flex-auto"
         StrAssert.shouldContain html "md:grid-cols-3"
 
-      it "about renders mission and six value items" do
+      it "about renders unified page header, mission, and six value items" do
         let html = render (About.renderAbout En)
-        StrAssert.shouldContain html (Contract.slot Contract.editorialHero)
-        StrAssert.shouldContain html (Contract.slot Contract.pageHeaderBand)
+        StrAssert.shouldContain html (Contract.slot Contract.pageHeader)
+        StrAssert.shouldContain html (dict En).about.subtitle
+        StrAssert.shouldContain html (Contract.slot Contract.pageHeaderBreadcrumbs)
         StrAssert.shouldContain html (Contract.slot Contract.editorialMission)
         StrAssert.shouldContain html (Contract.slot Contract.editorialValues)
         countTags html "dt" `shouldEqual` Contract.aboutValueCount
 
-      it "posts list keeps feed card grid shape" do
+      it "posts list keeps feed card grid shape with unified page header" do
         let
           sample =
             Post
@@ -68,15 +72,17 @@ spec = do
           html = render (Posts.renderPostList En [ sample ])
         StrAssert.shouldContain html (Contract.slot Contract.feedPage)
         StrAssert.shouldContain html (Contract.slot Contract.feedCard)
-        StrAssert.shouldContain html (Contract.slot Contract.pageHeaderCentered)
+        StrAssert.shouldContain html (Contract.slot Contract.pageHeader)
+        StrAssert.shouldContain html (Contract.slot Contract.pageHeaderBreadcrumbs)
         StrAssert.shouldContain html "line-clamp-3"
         StrAssert.shouldContain html "Engineering"
 
-      it "fixtures schedule exposes header, list, and crest rows" do
+      it "fixtures schedule exposes unified header, list, and crest rows" do
         let html = render (Fixtures.renderFixtures En)
         StrAssert.shouldContain html (Contract.slot Contract.schedulePage)
         StrAssert.shouldContain html (Contract.slot Contract.scheduleList)
-        StrAssert.shouldContain html (Contract.slot Contract.pageHeaderCentered)
+        StrAssert.shouldContain html (Contract.slot Contract.pageHeader)
+        StrAssert.shouldContain html (Contract.slot Contract.pageHeaderBreadcrumbs)
         countMarker html Contract.scheduleRow `shouldEqual` 9
         StrAssert.shouldContain html "/images/crests/tottenham.svg"
 

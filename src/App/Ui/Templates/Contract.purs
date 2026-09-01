@@ -11,20 +11,17 @@ module App.Ui.Templates.Contract
   , landingFeatures
   , landingFeatureItem
   , landingCta
-  , editorialHero
   , editorialMission
   , editorialValues
-  , editorialBreadcrumbs
   , hubPage
-  , hubHeader
   , hubCards
   , hubCard
-  , hubBreadcrumbs
   , feedPage
   , feedGrid
   , feedCard
-  , pageHeaderCentered
-  , pageHeaderBand
+  , pageHeader
+  , pageHeaderBreadcrumbs
+  , pageHeaderBody
   , pageHeaderDetail
   , schedulePage
   , scheduleList
@@ -61,32 +58,20 @@ landingFeatureItem = "landing-feature-item"
 landingCta :: String
 landingCta = "landing-cta"
 
-editorialHero :: String
-editorialHero = "editorial-hero"
-
 editorialMission :: String
 editorialMission = "editorial-mission"
 
 editorialValues :: String
 editorialValues = "editorial-values"
 
-editorialBreadcrumbs :: String
-editorialBreadcrumbs = "editorial-breadcrumbs"
-
 hubPage :: String
 hubPage = "hub-page"
-
-hubHeader :: String
-hubHeader = "hub-header"
 
 hubCards :: String
 hubCards = "hub-cards"
 
 hubCard :: String
 hubCard = "hub-card"
-
-hubBreadcrumbs :: String
-hubBreadcrumbs = "hub-breadcrumbs"
 
 feedPage :: String
 feedPage = "feed-page"
@@ -97,11 +82,14 @@ feedGrid = "feed-grid"
 feedCard :: String
 feedCard = "feed-card"
 
-pageHeaderCentered :: String
-pageHeaderCentered = "page-header-centered"
+pageHeader :: String
+pageHeader = "page-header"
 
-pageHeaderBand :: String
-pageHeaderBand = "page-header-band"
+pageHeaderBreadcrumbs :: String
+pageHeaderBreadcrumbs = "page-header-breadcrumbs"
+
+pageHeaderBody :: String
+pageHeaderBody = "page-header-body"
 
 pageHeaderDetail :: String
 pageHeaderDetail = "page-header-detail"

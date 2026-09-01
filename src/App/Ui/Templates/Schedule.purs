@@ -13,15 +13,20 @@ import App.Ui.Templates.ActionLink as ActionLink
 import App.Ui.Templates.Contract as Contract
 import App.Ui.Templates.PageHeader as PageHeader
 import App.Ui.Templates.Types (ScheduleMatch, ScheduleSlots)
+import Data.I18n (Lang)
+import Data.Maybe (Maybe(..))
+import Data.Route (Route)
 
-renderSchedule :: ScheduleSlots -> Html
-renderSchedule slots =
+renderSchedule :: Lang -> Route -> ScheduleSlots -> Html
+renderSchedule lang route slots =
   el "section"
     [ class_ "py-16 sm:py-20"
     , attr Contract.marker Contract.schedulePage
     ]
     [ Container.container "max-w-4xl" "px-4 sm:px-6"
-        [ PageHeader.renderCentered { title: slots.title, subtitle: slots.subtitle }
+        [ PageHeader.render lang route
+            ( PageHeader.pageHeaderSlots slots.title (Just slots.subtitle) slots.breadcrumbs
+            )
         , el "div"
             [ class_ "mt-12 flex flex-col gap-4"
             , attr Contract.marker Contract.scheduleList

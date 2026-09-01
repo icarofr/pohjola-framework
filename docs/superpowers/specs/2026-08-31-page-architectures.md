@@ -32,15 +32,16 @@ Entry: `App.Ui.Templates.Render.renderPage lang Route (Constructor slots)`.
 
 ## Shared header rhythm
 
-`PageHeader` (`App.Ui.Templates.PageHeader`) owns in-page title/subtitle markup:
+`PageHeader` (`App.Ui.Templates.PageHeader`) owns in-page headers for every inner page:
 
 | Variant | Used by | Marker |
 |---|---|---|
-| `renderCentered` | Hub, Feed, Schedule | `data-template="page-header-centered"` |
-| `renderBand` | Editorial hero | `data-template="page-header-band"` (+ `editorial-hero` wrapper) |
-| `renderDetail` | Article detail | `data-template="page-header-detail"` |
+| `render` | Hub, Editorial, Feed, Schedule | `data-template="page-header"` |
+| `renderDetail` | Article detail (badge prefix) | `data-template="page-header-detail"` |
 
-Do not duplicate `<h1>` / lead copy in feature views — pass `title` / `subtitle` through slot records.
+All inner pages use the same DaisyUI recipe: `breadcrumbs` + left-aligned `h1` + optional subtitle + `divider`. **Landing (Home) is the only `hero`** — marketing promo block, not reused on inner routes.
+
+Do not duplicate `<h1>` / lead copy in feature views — pass `title` / `subtitle` / `breadcrumbs` through slot records.
 
 ## Anti-patterns (common agent mistakes)
 
