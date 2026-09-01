@@ -167,10 +167,10 @@ Visit [`http://localhost:3000/en`](http://localhost:3000/en) locally, or view th
 
 | Command | Description |
 |:---|:---|
-| `make dev` | Run full concurrent development environment (Tailwind + Spago + Bun hot reload) |
-| `make watch` | Run Spago watcher for PureScript hot rebuilds |
-| `make css-watch` | Run Tailwind CSS CLI watcher |
-| `make run` | Build production bundle and run under Bun |
+| `make dev` | Local development — CSS + static sync + hot reload (picks port 3000, else 3001) |
+| `make run` | Production-like — full `make build` then bundled server (CI/e2e parity) |
+| `make watch` | Spago watcher only (no server) |
+| `make css` | One-shot Tailwind compile + embed (rarely needed — `make dev`/`make run` include this) |
 
 ---
 

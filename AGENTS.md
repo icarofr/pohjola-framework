@@ -13,8 +13,8 @@
 | Target | Description |
 |---|---|
 |`make deps`|Install Spago/Bun and Alpine assets |
-|`make dev`|Tailwind + static sync + Spago build |
-|`make run`|Build and run with Bun |
+|`make dev`|CSS + static + hot reload via `scripts/dev.js` (port 3000 → 3001 fallback)|
+|`make run`|Production bundle + server (`make build` includes CSS)|
 |`make build`|Produce production CSS & bundle (output to `dist-server/`) |
 |`make test`|Unit + property + ContractSpec (runs under Bun) |
 |`make test/integration`|Venom integration tests |
