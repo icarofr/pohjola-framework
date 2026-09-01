@@ -45,6 +45,32 @@ test.describe("Internationalization", () => {
     await expect(page.locator("main")).toContainText("Notre mission");
   });
 
+  test("language switch syncs head metadata", async ({ page }) => {
+    await page.goto("/en/contact");
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+      "content",
+      "Get in touch with the Pohjola community.",
+    );
+
+    await page
+      .locator('header a[href="/fr/contact"]')
+      .filter({ hasText: /Français/i })
+      .click();
+
+    await expect(page).toHaveURL(/\/fr\/contact$/);
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+      "content",
+      "Rejoindre la communauté et contribuer à Pohjola.",
+    );
+    await expect(page.locator('meta[property="og:locale"]')).toHaveAttribute(
+      "content",
+      "fr_FR",
+    );
+    await expect(
+      page.locator('link[rel="alternate"][hreflang="fr"]'),
+    ).toHaveAttribute("href", /\/fr\/contact$/);
+  });
+
   test("mobile drawer menu opens and closes", async ({ page }) => {
     await page.goto("/en");
     await page.setViewportSize({ width: 375, height: 667 });

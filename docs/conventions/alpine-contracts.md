@@ -37,6 +37,10 @@ Three constants bind the server-fragment layer to the Alpine AJAX layer:
 - **`data-page-lang`** — attribute on the same `#content` wrapper. The title
   sync script also sets `document.documentElement.lang` after fragment swaps,
   including language switches.
+- **`data-page-description`**, **`data-page-og-locale`**, **`data-page-href-*`**
+  — SEO payload on `#content`. The sync script patches description, Open Graph,
+  Twitter, canonical, `og:url`, `og:locale` alternates, and `hreflang` links
+  after every fragment merge (`App.Layout.Head.pageSyncAttrs`).
 
 If you rename any of these, grep the whole repo: `App.Alpine`, `Main.purs`,
 `Layout/Page.purs`, and the inline head scripts all participate.

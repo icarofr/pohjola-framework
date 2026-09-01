@@ -42,6 +42,7 @@ import App.Html
   , text
   , type_
   )
+import App.Layout.Head (pageSyncAttrs)
 import App.Ui.Container as Container
 import App.Ui.Templates.Contract as Contract
 import Data.I18n (Lang(..), dict, langTag)
@@ -95,13 +96,17 @@ homeLabelText Pt = "Início"
 sitePage :: Lang -> Route -> ShellLabels -> Html -> Html
 sitePage lang route labels content =
   el "div"
-    [ class_ "drawer drawer-end min-h-full bg-base-100 text-base-content"
-    , id_ contentTarget
-    , attr "data-page-title" (routeTitle lang route)
-    , attr "data-page-lang" (langTag lang)
-    , xDataThemeWithFlag ThemeMenuOpen false
-    , onKeydownEscapeWindow closeSiteDrawer
-    ]
+    ( [ class_ "drawer drawer-end min-h-full bg-base-100 text-base-content"
+      , id_ contentTarget
+      , attr "data-page-title" (routeTitle lang route)
+      , attr "data-page-lang" (langTag lang)
+      ]
+        <> pageSyncAttrs lang route
+        <>
+          [ xDataThemeWithFlag ThemeMenuOpen false
+          , onKeydownEscapeWindow closeSiteDrawer
+          ]
+    )
     [ el "input"
         [ type_ "checkbox"
         , class_ "drawer-toggle"

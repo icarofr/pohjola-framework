@@ -1,9 +1,16 @@
 -- | HTML <head> rendering — meta, SEO, hreflang, CSS, dark mode init
-module App.Layout.Head where
+module App.Layout.Head
+  ( renderHead
+  , pageSyncAttrs
+  , seoDescription
+  , ogLocale
+  , renderJsonLd
+  , escapeJson
+  ) where
 
 import Prelude
 
-import App.Html (Html, attr, content_, el, href, name_, property_, rel_, text)
+import App.Html (Attr, Html, attr, content_, el, href, name_, property_, rel_, text)
 import App.Layout.Scripts (HeadScript(..), renderHeadScript, renderJsonLdScript)
 import App.Layout.Styles (stylesCss)
 import Data.Argonaut.Core (Json, fromObject, fromString, stringify)
@@ -56,6 +63,15 @@ renderHead baseUrl nonce lang route =
     <> el "title" [] [ text (routeTitle lang route) ]
     -- JSON-LD structured data (exhaustive on Route, XSS-escaped)
     <> foldMap identity (renderJsonLd baseUrl nonce lang route)
+
+pageSyncAttrs :: Lang -> Route -> Array Attr
+pageSyncAttrs lang route =
+  [ attr "data-page-description" (seoDescription lang route)
+  , attr "data-page-og-locale" (ogLocale lang)
+  , attr "data-page-href-en" (routeUrl En route)
+  , attr "data-page-href-fr" (routeUrl Fr route)
+  , attr "data-page-href-pt" (routeUrl Pt route)
+  ]
 
 hreflangTag :: String -> Route -> Lang -> Html
 hreflangTag baseUrl route lang =
