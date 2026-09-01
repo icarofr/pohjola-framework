@@ -2,6 +2,10 @@
 
 Read this **before** adding UI capability, wrapping a DaisyUI component, or extending a page template.
 
+**Page intent first:** [`docs/superpowers/specs/2026-08-31-page-architectures.md`](../superpowers/specs/2026-08-31-page-architectures.md) — pick `PageTemplate` before touching daisyUI.
+
+**Component syntax:** `vendor/daisyui/skills/daisyui/components/<name>.md` (vendored with `make deps`) — use when adding `App.Ui` primitives, not when authoring feature pages.
+
 Shell chrome (navbar, drawer, footer) → [`chrome-checklist.md`](chrome-checklist.md).
 
 ## Decision tree
@@ -26,11 +30,16 @@ Feature `View.purs` and `Components/*.purs` **never** call `class_` or import `A
 | Long-form editorial | `Editorial` | `About/View.purs` | `10-ui-archetypes` |
 | Content feed | `Feed` | `Posts/View.purs` | `02-add-data-page` |
 | Article detail | `Article` | `Posts/View.purs` | `02-add-data-page` |
+| Match schedule / fixtures | `Schedule` | `Fixtures/View.purs` | `10-ui-archetypes` |
+
+**Do not** use `Feed` for schedules, calendars, or crest rows — use `Schedule`.
 
 ```purescript
 renderPage lang MyRoute (Editorial (pageSlots lang))
--- or Hub, Landing, Feed, Article — slots only, no class_
+-- or Hub, Landing, Feed, Article, Schedule — slots only, no class_
 ```
+
+In-page titles use `PageHeader` inside templates (`page-header-centered` / `page-header-band` markers) — features pass `title` / `subtitle` via slots only.
 
 ## 2. Extend a template slot (not a primitive)
 

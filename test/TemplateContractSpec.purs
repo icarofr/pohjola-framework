@@ -5,6 +5,7 @@ import Prelude
 
 import App.Features.About.View as About
 import App.Features.Contact.View as Contact
+import App.Features.Fixtures.View as Fixtures
 import App.Features.Home.View as Home
 import App.Features.Posts.Types (Post(..))
 import App.Features.Posts.View as Posts
@@ -41,6 +42,7 @@ spec = do
       it "contact renders exactly three equal hub cards" do
         let html = render (Contact.renderContact En)
         countMarker html Contract.hubCard `shouldEqual` Contract.contactHubCardCount
+        StrAssert.shouldContain html (Contract.slot Contract.pageHeaderCentered)
         StrAssert.shouldContain html "card-body"
         StrAssert.shouldContain html "flex-auto"
         StrAssert.shouldContain html "md:grid-cols-3"
@@ -63,8 +65,17 @@ spec = do
           html = render (Posts.renderPostList En [ sample ])
         StrAssert.shouldContain html (Contract.slot Contract.feedPage)
         StrAssert.shouldContain html (Contract.slot Contract.feedCard)
+        StrAssert.shouldContain html (Contract.slot Contract.pageHeaderCentered)
         StrAssert.shouldContain html "line-clamp-3"
         StrAssert.shouldContain html "Engineering"
+
+      it "fixtures schedule exposes header, list, and crest rows" do
+        let html = render (Fixtures.renderFixtures En)
+        StrAssert.shouldContain html (Contract.slot Contract.schedulePage)
+        StrAssert.shouldContain html (Contract.slot Contract.scheduleList)
+        StrAssert.shouldContain html (Contract.slot Contract.pageHeaderCentered)
+        countMarker html Contract.scheduleRow `shouldEqual` 9
+        StrAssert.shouldContain html "/images/crests/tottenham.svg"
 
 countMarker :: String -> String -> Int
 countMarker html value =

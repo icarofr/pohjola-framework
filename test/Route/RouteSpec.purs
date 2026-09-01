@@ -30,6 +30,10 @@ spec = do
         parseRoute [ "pt", "about" ] `shouldEqual` Just { lang: Pt, route: About }
       it "parses /en/contact" do
         parseRoute [ "en", "contact" ] `shouldEqual` Just { lang: En, route: Contact }
+      it "parses /en/fixtures" do
+        parseRoute [ "en", "fixtures" ] `shouldEqual` Just { lang: En, route: Fixtures }
+      it "parses /fr/calendrier" do
+        parseRoute [ "fr", "calendrier" ] `shouldEqual` Just { lang: Fr, route: Fixtures }
       it "parses /fr/contact" do
         parseRoute [ "fr", "contact" ] `shouldEqual` Just { lang: Fr, route: Contact }
       it "parses /pt/contact" do
@@ -97,7 +101,7 @@ spec = do
 
       it "covers all lang × route combinations" do
         let total = length allLangs * length allRoutes
-        total `shouldEqual` 12 -- 3 langs * 4 routes
+        total `shouldEqual` 15 -- 3 langs * 5 routes
 
 splitPath :: String -> Array String
 splitPath p = filter (_ /= "") (S.split (Pattern "/") p)

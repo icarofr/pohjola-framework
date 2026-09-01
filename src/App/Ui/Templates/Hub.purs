@@ -13,6 +13,7 @@ import App.Ui.Card as Card
 import App.Ui.Container as Container
 import App.Ui.Templates.ActionLink as ActionLink
 import App.Ui.Templates.Contract as Contract
+import App.Ui.Templates.PageHeader as PageHeader
 import App.Ui.Templates.Types (HubCard, HubSlots, BreadcrumbItem, hubCards)
 import Data.Array (length)
 import Data.I18n (Lang)
@@ -26,13 +27,7 @@ renderHub lang route slots =
     ]
     [ Container.container "max-w-6xl" "px-4 sm:px-6"
         [ maybeBreadcrumbs lang route slots.breadcrumbs
-        , el "div"
-            [ class_ "mx-auto max-w-2xl text-center"
-            , attr Contract.marker Contract.hubHeader
-            ]
-            [ el "h1" [ class_ "text-4xl font-bold sm:text-5xl" ] [ text slots.title ]
-            , el "p" [ class_ "mt-4 text-lg opacity-70" ] [ text slots.subtitle ]
-            ]
+        , PageHeader.renderCentered { title: slots.title, subtitle: slots.subtitle }
         , el "div"
             [ class_ "mt-12 grid gap-6 md:grid-cols-3"
             , attr Contract.marker Contract.hubCards

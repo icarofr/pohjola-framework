@@ -36,6 +36,7 @@ data Route
   | Contact
   | PostList
   | PostDetail Int
+  | Fixtures
 
 derive instance genericRoute :: Generic Route _
 derive instance eqRoute :: Eq Route
@@ -48,6 +49,7 @@ instance showRoute :: Show Route where
     Contact -> "Contact"
     PostList -> "PostList"
     PostDetail n -> "PostDetail " <> show n
+    Fixtures -> "Fixtures"
 
 -- ============================================================================
 -- Bidirectional codec — one per language
@@ -62,6 +64,7 @@ routeCodec En = root $ prefix "en" $ G.sum
   , "Contact": "contact" / G.noArgs
   , "PostList": "posts" / G.noArgs
   , "PostDetail": "posts" / int segment
+  , "Fixtures": "fixtures" / G.noArgs
   }
 routeCodec Fr = root $ prefix "fr" $ G.sum
   { "Home": G.noArgs
@@ -69,6 +72,7 @@ routeCodec Fr = root $ prefix "fr" $ G.sum
   , "Contact": "contact" / G.noArgs
   , "PostList": "articles" / G.noArgs
   , "PostDetail": "articles" / int segment
+  , "Fixtures": "calendrier" / G.noArgs
   }
 -- | Pt uses English path segments under /pt for the framework demo.
 routeCodec Pt = root $ prefix "pt" $ G.sum
@@ -77,6 +81,7 @@ routeCodec Pt = root $ prefix "pt" $ G.sum
   , "Contact": "contact" / G.noArgs
   , "PostList": "posts" / G.noArgs
   , "PostDetail": "posts" / int segment
+  , "Fixtures": "fixtures" / G.noArgs
   }
 
 -- ============================================================================
@@ -100,6 +105,7 @@ prefetchFor PostList = [ PostDetail 1, PostDetail 2 ] -- Demo IDs matching JSONP
 prefetchFor (PostDetail _) = [ PostList ]
 prefetchFor About = [ Home, Contact ]
 prefetchFor Contact = [ Home, About ]
+prefetchFor Fixtures = [ Home ]
 
 -- ============================================================================
 -- Parsing (derived from codec)
@@ -131,10 +137,10 @@ routeTable = Map.fromFoldable
 
 -- | All routes (for sitemap generation). Static routes are enumerated here; dynamic routes like PostDetail are intentionally NOT included because they cannot be enumerated statically.
 allRoutes :: Array Route
-allRoutes = [ Home, About, Contact, PostList ]
+allRoutes = [ Home, About, Contact, PostList, Fixtures ]
 
 staticRoutes :: Array Route
-staticRoutes = [ Home, About, Contact ]
+staticRoutes = [ Home, About, Contact, Fixtures ]
 
 -- | Re-export of Data.I18n.allLangs (single source of truth).
 allLangs :: Array Lang
@@ -153,3 +159,4 @@ routeTitle lang route =
       Contact -> d.nav.contact <> " | " <> siteTitle
       PostList -> d.nav.posts <> " | " <> siteTitle
       PostDetail _ -> d.posts.detailTitle <> " | " <> siteTitle
+      Fixtures -> d.fixtures.listTitle <> " | " <> siteTitle

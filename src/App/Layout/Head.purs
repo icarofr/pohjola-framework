@@ -77,6 +77,7 @@ seoDescription lang route =
       Contact -> d.seo.contactDescription
       PostList -> d.seo.postsDescription
       PostDetail _ -> d.seo.postDetailDescription
+      Fixtures -> d.seo.fixturesDescription
 
 -- ============================================================================
 -- JSON-LD structured data — type-safe, exhaustive on Route, XSS-escaped

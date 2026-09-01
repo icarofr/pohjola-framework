@@ -127,6 +127,16 @@ type Dictionary =
       , authorRole :: String
       , unknownAuthor :: String
       }
+  , fixtures ::
+      { listTitle :: String
+      , subtitle :: String
+      , homeLabel :: String
+      , awayLabel :: String
+      , homeVenue :: String
+      , awayVenue :: String
+      , sourceLabel :: String
+      , vsLabel :: String
+      }
   , footer ::
       { explore :: String
       , resources :: String
@@ -140,6 +150,7 @@ type Dictionary =
       , contactDescription :: String
       , postsDescription :: String
       , postDetailDescription :: String
+      , fixturesDescription :: String
       }
   , common ::
       { siteTitle :: String
@@ -265,6 +276,16 @@ en =
       , authorRole: "Engineering"
       , unknownAuthor: "Pohjola"
       }
+  , fixtures:
+      { listTitle: "Fixtures"
+      , subtitle: "Upcoming Tottenham Hotspur matches — schedule sourced from OneFootball."
+      , homeLabel: "Home"
+      , awayLabel: "Away"
+      , homeVenue: "Tottenham Hotspur Stadium"
+      , awayVenue: "Away fixture"
+      , sourceLabel: "THFC"
+      , vsLabel: "vs"
+      }
   , footer:
       { explore: "Navigation"
       , resources: "Resources"
@@ -278,6 +299,7 @@ en =
       , contactDescription: "Get in touch with the Pohjola community."
       , postsDescription: "Read engineering notes and architectural highlights from Pohjola."
       , postDetailDescription: "An engineering note on Pohjola."
+      , fixturesDescription: "Upcoming Tottenham Hotspur fixtures for the 2026 season."
       }
   , common:
       { siteTitle: "Pohjola"
@@ -399,6 +421,16 @@ fr =
       , authorRole: "Ingénierie"
       , unknownAuthor: "Pohjola"
       }
+  , fixtures:
+      { listTitle: "Calendrier"
+      , subtitle: "Prochains matchs de Tottenham Hotspur — calendrier issu de OneFootball."
+      , homeLabel: "Domicile"
+      , awayLabel: "Extérieur"
+      , homeVenue: "Tottenham Hotspur Stadium"
+      , awayVenue: "Match à l'extérieur"
+      , sourceLabel: "THFC"
+      , vsLabel: "vs"
+      }
   , footer:
       { explore: "Navigation"
       , resources: "Ressources"
@@ -412,6 +444,7 @@ fr =
       , contactDescription: "Rejoindre la communauté et contribuer à Pohjola."
       , postsDescription: "Lire les notes d'ingénierie et l'architecture de Pohjola."
       , postDetailDescription: "Un article d'ingénierie sur Pohjola."
+      , fixturesDescription: "Prochains matchs de Tottenham Hotspur pour la saison 2026."
       }
   , common:
       { siteTitle: "Pohjola"
@@ -533,6 +566,16 @@ pt =
       , authorRole: "Engenharia"
       , unknownAuthor: "Pohjola"
       }
+  , fixtures:
+      { listTitle: "Calendário"
+      , subtitle: "Próximos jogos do Tottenham Hotspur — calendário via OneFootball."
+      , homeLabel: "Casa"
+      , awayLabel: "Fora"
+      , homeVenue: "Tottenham Hotspur Stadium"
+      , awayVenue: "Jogo fora"
+      , sourceLabel: "THFC"
+      , vsLabel: "x"
+      }
   , footer:
       { explore: "Navegação"
       , resources: "Recursos"
@@ -546,6 +589,7 @@ pt =
       , contactDescription: "Entre em contacto com a comunidade Pohjola."
       , postsDescription: "Leia notas de engenharia e destaques de arquitetura do Pohjola."
       , postDetailDescription: "Uma nota de engenharia sobre o Pohjola."
+      , fixturesDescription: "Próximos jogos do Tottenham Hotspur para a temporada de 2026."
       }
   , common:
       { siteTitle: "Pohjola"

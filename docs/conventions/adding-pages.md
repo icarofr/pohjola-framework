@@ -7,7 +7,7 @@
 Route, Main, I18n, and Head. Then add navigation in `SiteShell` per
 [`chrome-checklist.md`](chrome-checklist.md) or use `CHROME=1`. Verify with `make eval EVAL=01-add-page --check`
 and `make eval EVAL=11-edit-chrome --check` when nav changes.
-Component/template UI: [`component-checklist.md`](component-checklist.md), `make eval EVAL=12-add-ui-component --check`.
+Component/template UI: [`component-checklist.md`](component-checklist.md), [`page-architectures`](../superpowers/specs/2026-08-31-page-architectures.md), `make eval EVAL=12-add-ui-component --check`.
 
 ## Component architecture (rule)
 
@@ -15,13 +15,14 @@ Every feature follows this structure — no variations:
 
 ```
 src/App/Features/<Name>/
-  Page.purs              # Orchestrator: calls data fetch, composes children
-  View.purs              # Page-level rendering, imports from Components/
+  Page.purs              # Static: handler + renderPage slots (single module)
+  View.purs              # Data-backed: renderPage slots (fetch lives in Page.purs)
   Components/            # Optional — extract when a second visual unit appears
     <ComponentName>.purs
   Types.purs             # Data-backed features only
-  Service.purs           # Data-backed features only
 ```
+
+**Static pages** use one `Page.purs` (handler + template slots). **Data-backed** pages split fetch (`Page.purs`) and view (`View.purs`). Do not add `Service.purs` unless you have non-trivial domain logic — prefer `App.Data.Fetch` from `Page.purs`.
 
 **Two seams, two rules:**
 
@@ -48,7 +49,7 @@ DaisyUI's `container` class handles full-width inside flex parents. Never
 hand-write `mx-auto max-w-*` in a feature view.
 
 **Page layouts**: compose via `App.Ui.Templates.renderPage` and a `PageTemplate`
-slot record. Do not add `class_` in feature views.
+slot record. Pick the template from [`page-architectures`](../superpowers/specs/2026-08-31-page-architectures.md). Do not add `class_` in feature views.
 
 **Cross-feature imports are forbidden** (enforced by ContractSpec). Features
 compose through shared `App.Ui.Templates` / primitives and `App.Data.Fetch`, never by
@@ -63,8 +64,8 @@ importing a sibling feature's modules.
 5. Update `pageRenderer` in `Main.purs`
 6. `src/App/Features/<Name>/Page.purs` :: `render :: Lang -> Aff (Either AppError Html)`
    (wrap pure Html in `pure (Right ...)`)
-7. `src/App/Features/<Name>/View.purs` — `renderPage` + `PageTemplate` slots
-   (prefer `Editorial` for generic static pages; see `design-system.md`)
+7. `src/App/Features/<Name>/Page.purs` — `renderPage` + `PageTemplate` slots
+   (see [`page-architectures`](../superpowers/specs/2026-08-31-page-architectures.md); default scaffold uses `Editorial`)
 8. `src/App/Features/<Name>/Components/` — optional; extract when you have a
    distinct reusable visual unit (card, sidebar, etc.)
 9. i18n keys in `Data.I18n.purs` (both languages)

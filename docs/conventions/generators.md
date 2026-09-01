@@ -17,8 +17,9 @@ Creates `src/App/Features/<Name>/` with the standard file split. When `WIRE=1` i
 
 **Navigation:** use `CHROME=1` with `WIRE=1` to auto-wire `SiteShell` nav links, or add manually per [`chrome-checklist.md`](chrome-checklist.md).
 
-Generated views consume `App.Ui.Templates` (`renderPage` + slot records). Do not add raw Tailwind
-utility chains to feature views; DaisyUI/layout utilities belong inside Templates / `App.Ui`.
+Generated views consume `App.Ui.Templates` (`renderPage` + slot records). Pick the template from
+[`page-architectures`](../superpowers/specs/2026-08-31-page-architectures.md) before editing the scaffold default (`Editorial`).
+Do not add raw Tailwind utility chains to feature views; DaisyUI/layout utilities belong inside Templates / `App.Ui`.
 
 `make generator-policy` validates the canonical generator and its boundary
 contract. It is not a full proof of the CSS/type system; existing feature views

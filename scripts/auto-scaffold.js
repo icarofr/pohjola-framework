@@ -58,6 +58,7 @@ if (type === "static") {
   await writeText(
     `${featureDir}/Page.purs`,
     `-- | ${name} page — handler + template slots (single module).
+-- | Template: Editorial — see docs/superpowers/specs/2026-08-31-page-architectures.md
 module App.Features.${name}.Page where
 
 import App.Error (AppError)

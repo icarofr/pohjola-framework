@@ -16,6 +16,7 @@ import App.Form (ContactSubmission(..), FormStatus(..), NewsletterSubmission(..)
 import App.Migration (migrate, renderMigrationError)
 import App.Features.About.Page as About
 import App.Features.Contact.Page as Contact
+import App.Features.Fixtures.Page as Fixtures
 import App.Features.Home.Page as Home
 import App.Features.Posts.Page as Posts
 import App.Html (Html)
@@ -112,6 +113,7 @@ pageRenderer cfg route lang = case route of
   Home -> Home.render lang
   About -> About.render lang
   Contact -> Contact.render lang
+  Fixtures -> Fixtures.render lang
   PostList -> Posts.renderList cfg lang
   PostDetail id -> Posts.renderDetail cfg lang id
 
@@ -198,6 +200,7 @@ handleRoute ctx =
     Home -> cachedStaticPage ctx
     About -> cachedStaticPage ctx
     Contact -> cachedStaticPage ctx
+    Fixtures -> cachedStaticPage ctx
     PostList -> cachedDynamicPage ctx
     PostDetail _ -> cachedDynamicPage ctx
 

@@ -9,6 +9,7 @@ import App.Html (Html, attr, class_, el, text)
 import App.Ui.Breadcrumbs as Breadcrumbs
 import App.Ui.Container as Container
 import App.Ui.Templates.Contract as Contract
+import App.Ui.Templates.PageHeader as PageHeader
 import App.Ui.Templates.Types
   ( BreadcrumbItem
   , EditorialSlots
@@ -28,16 +29,9 @@ renderEditorial lang route slots =
 
 renderHero :: Lang -> Route -> String -> Array BreadcrumbItem -> Html
 renderHero lang route heading breadcrumbs =
-  el "section"
-    [ class_ "border-b border-base-200 bg-base-100"
-    , attr Contract.marker Contract.editorialHero
-    ]
-    [ Container.container "max-w-6xl" "px-4 py-16 sm:px-6 sm:py-20"
-        [ maybeBreadcrumbs lang route breadcrumbs
-        , el "h1" [ class_ "max-w-3xl text-4xl font-bold sm:text-5xl" ]
-            [ text heading ]
-        ]
-    ]
+  PageHeader.renderBand
+    [ maybeBreadcrumbs lang route breadcrumbs ]
+    heading
 
 maybeBreadcrumbs :: Lang -> Route -> Array BreadcrumbItem -> Html
 maybeBreadcrumbs lang route items =

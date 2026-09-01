@@ -23,6 +23,11 @@ module App.Ui.Templates.Contract
   , feedPage
   , feedGrid
   , feedCard
+  , pageHeaderCentered
+  , pageHeaderBand
+  , schedulePage
+  , scheduleList
+  , scheduleRow
   , articlePage
   , articleHeader
   , articleBody
@@ -90,6 +95,21 @@ feedGrid = "feed-grid"
 
 feedCard :: String
 feedCard = "feed-card"
+
+pageHeaderCentered :: String
+pageHeaderCentered = "page-header-centered"
+
+pageHeaderBand :: String
+pageHeaderBand = "page-header-band"
+
+schedulePage :: String
+schedulePage = "schedule-page"
+
+scheduleList :: String
+scheduleList = "schedule-list"
+
+scheduleRow :: String
+scheduleRow = "schedule-row"
 
 articlePage :: String
 articlePage = "article-page"

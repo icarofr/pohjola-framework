@@ -31,7 +31,7 @@
 
 ### Task → doc trigger map
 - Adding a page → `docs/conventions/adding-pages.md`, `docs/adr/ADR-008-component-architecture.md`
-- UI / Styling / Components → `docs/conventions/design-system.md`, `DESIGN.md`, `docs/adr/ADR-012-semantic-ui-contracts.md`
+- UI / Styling / Components → `docs/conventions/design-system.md`, `DESIGN.md`, `docs/adr/ADR-012-semantic-ui-contracts.md`, **`docs/superpowers/specs/2026-08-31-page-architectures.md`** (pick `PageTemplate` first)
 - Forms → `docs/conventions/forms.md`
 - Data fetching → `docs/conventions/data-layer.md`
 - Server internals → `docs/conventions/server.md`
@@ -65,7 +65,7 @@
 
 ### Default agent rules
 - Before adding a feature, read the relevant convention doc (task→doc map above). **If you skip this, state why.**
-- Before adding UI/styles, read `DESIGN.md` and `docs/conventions/design-system.md`. Compose views with `App.Ui.Templates.*` (`renderPage` + slot records) — never raw layout utility soup, never `class_` in feature views.
+- Before adding UI/styles, read `DESIGN.md` and `docs/conventions/design-system.md`. **Read `docs/superpowers/specs/2026-08-31-page-architectures.md` to pick the correct `PageTemplate`.** Compose views with `App.Ui.Templates.*` (`renderPage` + slot records) — never raw layout utility soup, never `class_` in feature views. For daisyUI syntax when extending `App.Ui` primitives, use `vendor/daisyui/skills/daisyui/components/<name>.md` — not model memory.
 - DaisyUI is the semantic component layer: Templates and `App.Ui` primitives own recipes; feature views only pass typed slots.
 - Use `scripts/auto-scaffold.js` (via `make new-feature`) as the canonical feature generator.
 - SQL codegen runs via `App.Cli.GenSql` (`make gen-sql`) — no standalone JS script.

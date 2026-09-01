@@ -159,7 +159,9 @@ uiTemplateModules =
   , "src/App/Ui/Templates/Feed.purs"
   , "src/App/Ui/Templates/Hub.purs"
   , "src/App/Ui/Templates/Landing.purs"
+  , "src/App/Ui/Templates/PageHeader.purs"
   , "src/App/Ui/Templates/Render.purs"
+  , "src/App/Ui/Templates/Schedule.purs"
   , "src/App/Ui/Templates/SiteShell.purs"
   , "src/App/Ui/Templates/Types.purs"
   ]

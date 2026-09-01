@@ -20,6 +20,9 @@ module App.Ui.Templates.Types
   , BreadcrumbItem
   , FeedSlots
   , FeedCard
+  , ScheduleSlots
+  , ScheduleMatch
+  , ScheduleCrest
   , ArticleSlots
   , landingSlots
   , landingFeatures
@@ -32,6 +35,7 @@ module App.Ui.Templates.Types
   , imageTriple
   , imageTripleFromArray
   , feedSlots
+  , scheduleSlots
   , articleSlots
   , featureItems
   , valueItems
@@ -56,6 +60,7 @@ data PageTemplate
   | Editorial EditorialSlots
   | Hub HubSlots
   | Feed FeedSlots
+  | Schedule ScheduleSlots
   | Article ArticleSlots
 
 type LandingHeroSlots =
@@ -175,6 +180,28 @@ type FeedSlots =
   , posts :: Array FeedCard
   }
 
+type ScheduleCrest =
+  { src :: String
+  , alt :: String
+  }
+
+type ScheduleMatch =
+  { home :: ScheduleCrest
+  , away :: ScheduleCrest
+  , vsLabel :: String
+  , title :: String
+  , kickoff :: String
+  , competition :: String
+  , detail :: String
+  , target :: ActionTarget
+  }
+
+type ScheduleSlots =
+  { title :: String
+  , subtitle :: String
+  , matches :: Array ScheduleMatch
+  }
+
 type ArticleSlots =
   { metaTag :: String
   , title :: String
@@ -246,6 +273,10 @@ hubSlots title subtitle cards breadcrumbs =
 feedSlots :: String -> String -> Array FeedCard -> FeedSlots
 feedSlots title subtitle posts =
   { title, subtitle, posts }
+
+scheduleSlots :: String -> String -> Array ScheduleMatch -> ScheduleSlots
+scheduleSlots title subtitle matches =
+  { title, subtitle, matches }
 
 articleSlots
   :: String
