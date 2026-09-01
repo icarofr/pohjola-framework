@@ -340,12 +340,20 @@ if (wire) {
       : `  ${name} -> ${name}.render lang`;
 
   if (!mainContent.includes(renderCase)) {
-    mainContent = mainContent.replace(
-      /(pageRenderer :: Config -> Route -> Lang -> Aff \(Either AppError Html\)\s*\npageRenderer cfg route lang = case route of\s*\n[\s\S]*?PostDetail.*?\n)/,
-      (match) => {
-        return `${match}${renderCase}\n`;
-      }
-    );
+    const pageRendererRe =
+      /(pageRenderer _?cfg route lang = case route of\n)([\s\S]*?)(\n\n-- \| Everything)/;
+    if (pageRendererRe.test(mainContent)) {
+      mainContent = mainContent.replace(pageRendererRe, (match, header, cases, footer) => {
+        if (cases.includes(renderCase)) return match;
+        const trimmed = cases.endsWith("\n") ? cases : `${cases}\n`;
+        return `${header}${trimmed}${renderCase}\n${footer}`;
+      });
+    } else {
+      mainContent = mainContent.replace(
+        /(pageRenderer :: Config -> Route -> Lang -> Aff \(Either AppError Html\)\s*\npageRenderer _?cfg route lang = case route of\s*\n[\s\S]*?PostDetail.*?\n)/,
+        (match) => `${match}${renderCase}\n`
+      );
+    }
   }
 
   const handleRouteCase =
@@ -354,12 +362,20 @@ if (wire) {
       : `    ${name} -> cachedStaticPage ctx`;
 
   if (!mainContent.includes(handleRouteCase)) {
-    mainContent = mainContent.replace(
-      /(handleRoute :: RequestCtx -> Aff Server\.Response[\s\S]*?else case ctx\.route of\s*\n[\s\S]*?PostDetail.*?\n)/,
-      (match) => {
-        return `${match}${handleRouteCase}\n`;
-      }
-    );
+    const handleRouteRe =
+      /(else case ctx\.route of\n)([\s\S]*?)(\n\n-- \| True when)/;
+    if (handleRouteRe.test(mainContent)) {
+      mainContent = mainContent.replace(handleRouteRe, (match, header, cases, footer) => {
+        if (cases.includes(handleRouteCase)) return match;
+        const trimmed = cases.endsWith("\n") ? cases : `${cases}\n`;
+        return `${header}${trimmed}${handleRouteCase}\n${footer}`;
+      });
+    } else {
+      mainContent = mainContent.replace(
+        /(handleRoute :: RequestCtx -> Aff Server\.Response[\s\S]*?else case ctx\.route of\s*\n[\s\S]*?PostDetail.*?\n)/,
+        (match) => `${match}${handleRouteCase}\n`
+      );
+    }
   }
 
   await writeText("src/App/Main.purs", mainContent);
@@ -443,6 +459,26 @@ if (wire) {
     }
   );
 
+  const headPreview = await readText("src/App/Layout/Head.purs");
+  const headUsesSeoDescriptions =
+    /d\.seo\.\w+Description/.test(headPreview) && !/PostDetail _ ->/.test(headPreview);
+  if (headUsesSeoDescriptions && !i18nContent.includes(`${lower}Description :: String`)) {
+    i18nContent = i18nContent.replace(
+      /(,\s*seo\s*::\s*\{[\s\S]*?)(\n\s*\}\s*\n\s*, )/,
+      (match, p1, p2) => {
+        if (p1.includes(`${lower}Description :: String`)) return match;
+        return `${p1}\n      , ${lower}Description :: String${p2}`;
+      }
+    );
+    i18nContent = i18nContent.replace(
+      /(,\s*seo:\s*\{[\s\S]*?)(\n\s*\}\s*\n\s*, )/g,
+      (match, p1, p2) => {
+        if (p1.includes(`${lower}Description:`)) return match;
+        return `${p1}\n      , ${lower}Description: "SEO for ${name}."${p2}`;
+      }
+    );
+  }
+
   await writeText("src/Data/I18n.purs", i18nContent);
   for (const marker of [
     `      , ${lower} :: String`,
@@ -466,19 +502,37 @@ if (wire) {
   // seoDescription has one language-polymorphic case expression. Insert the
   // route once and use the generated dictionary section for both languages.
   const headMarker = `      ${name} -> d.${lower}.body`;
-  if (!headContent.includes(headMarker)) {
+  const headSeoMarker = `      ${name} -> d.seo.${lower}Description`;
+  if (!headContent.includes(headMarker) && !headContent.includes(headSeoMarker)) {
     const before = headContent;
-    headContent = headContent.replace(
-      /(seoDescription :: Lang -> Route -> String[\s\S]*?case route of\s*\n[\s\S]*?\n)(\s+PostDetail _ -> [^\n]*\n)/,
-      `$1$2      ${name} -> d.${lower}.body\n`
-    );
+    if (!headUsesSeoDescriptions) {
+      headContent = headContent.replace(
+        /(seoDescription :: Lang -> Route -> String[\s\S]*?case route of\s*\n[\s\S]*?\n)(\s+PostDetail _ -> [^\n]*\n)/,
+        `$1$2      ${name} -> d.${lower}.body\n`
+      );
+    }
+    if (headContent === before) {
+      headContent = headContent.replace(
+        /(seoDescription :: Lang -> Route -> String[\s\S]*?case route of\n)([\s\S]*?)(\n\n--)/,
+        (match, header, cases, footer) => {
+          const seoCase = `      ${name} -> d.seo.${lower}Description\n`;
+          if (cases.includes(seoCase.trim())) return match;
+          const trimmed = cases.endsWith("\n") ? cases : `${cases}\n`;
+          return `${header}${trimmed}${seoCase}${footer}`;
+        }
+      );
+    }
     if (headContent === before) {
       throw new Error("Auto-wiring failed: could not find the seoDescription route case insertion point in src/App/Layout/Head.purs.");
     }
   }
 
   await writeText("src/App/Layout/Head.purs", headContent);
-  requireMarker(headContent, headMarker, "src/App/Layout/Head.purs", "seoDescription route case");
+  if (headContent.includes(headMarker)) {
+    requireMarker(headContent, headMarker, "src/App/Layout/Head.purs", "seoDescription route case");
+  } else {
+    requireMarker(headContent, headSeoMarker, "src/App/Layout/Head.purs", "seoDescription route case");
+  }
   console.log("  ✓ Updated src/App/Layout/Head.purs");
 
   if (chrome) {
