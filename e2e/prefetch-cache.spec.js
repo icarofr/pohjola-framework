@@ -57,12 +57,14 @@ test("the posts route varies on the Alpine header like every other page", async 
   expect(res.headers()["vary"]).toContain("x-alpine-request");
 });
 
-test("public documents are not marked private", async ({ request }) => {
-  // robots.txt and sitemap.xml carry no nonce and should stay shared-cacheable.
+test("public documents are shared-cacheable", async ({ request }) => {
+  // robots.txt and sitemap.xml are static files with long public cache.
   for (const path of ["/robots.txt", "/sitemap.xml"]) {
     const res = await request.get(path);
     expect(res.status()).toBe(200);
-    expect(res.headers()["cache-control"], `${path}`).toBeUndefined();
+    expect(res.headers()["cache-control"], `${path}`).toBe(
+      "public, max-age=86400",
+    );
   }
 });
 

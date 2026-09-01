@@ -12,10 +12,10 @@ ADRs are part of the deliverable — not the demo features they happen to cover.
 2. **Update `spago.yaml`**: `package.name` → your app's name (`pohjola-framework` → yours).
 3. **Update `Data.Content.siteInfo`** — title, description, email, socials.
    This is metadata only; no copy (see `Data.Content` module header).
-4. **Update `Data.I18n`** — rewrite `en` and `fr`. The compiler enforces both
-   stay in sync: one record type, a missing key in either is a compile error.
+4. **Update `Data.I18n`** — rewrite copy for every language in `allLangs`
+   (En, Fr, Pt). The compiler enforces the same `Dictionary` shape in each.
 5. **Update `Data.Route`** — replace the demo routes with your app routes.
-   Both language codecs (compiler enforces), `routeTitle`, `allRoutes` for the
+   Every language codec (compiler enforces), `routeTitle`, `allRoutes` for the
    sitemap, `seoDescription` in `Head.purs`, then `pageRenderer` in `Main.purs`.
 6. **Delete `src/App/Features/Posts/`** (the data-backed demo) — or keep it as
    your first template. With no `DATABASE_URL` it serves curated demo posts;

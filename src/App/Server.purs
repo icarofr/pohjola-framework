@@ -25,11 +25,13 @@ module App.Server
   , cspWithNonce
   , withCsp
   , htmlCacheControl
+  , publicDocumentCacheControl
   , errorCacheControl
   , ok
   , okWith
   , okWithNoStore
   , okText
+  , okTextPublic
   , okTextWith
   , htmlErrorResponse
   , notFound
@@ -201,6 +203,10 @@ withCsp nonce response =
 htmlCacheControl :: Tuple String String
 htmlCacheControl = Tuple "Cache-Control" "private, max-age=10"
 
+-- | Nonce-free public documents (robots.txt, sitemap.xml). Shared-cacheable.
+publicDocumentCacheControl :: Tuple String String
+publicDocumentCacheControl = Tuple "Cache-Control" "public, max-age=86400"
+
 ok :: String -> Response
 ok body = okWith [] body
 
@@ -246,6 +252,13 @@ okWithNoStore hdrs body =
 okText :: String -> String -> Response
 okText contentType body =
   { status: 200, headers: securityHeaders <> [ Tuple "Content-Type" contentType ], body: StringBody body }
+
+okTextPublic :: String -> String -> Response
+okTextPublic contentType body =
+  { status: 200
+  , headers: securityHeaders <> [ Tuple "Content-Type" contentType ] <> [ publicDocumentCacheControl ]
+  , body: StringBody body
+  }
 
 okTextWith :: Array (Tuple String String) -> String -> String -> Response
 okTextWith hdrs contentType body =
@@ -420,7 +433,7 @@ fileResponse contentType body =
   { status: 200
   , headers: securityHeaders <>
       [ Tuple "Content-Type" contentType
-      , Tuple "Cache-Control" "public, max-age=3600"
+      , Tuple "Cache-Control" "public, max-age=31536000"
       ]
   , body: StringBody body
   }

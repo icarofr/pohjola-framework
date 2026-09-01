@@ -90,7 +90,7 @@ Feature logic lives in isolated domain modules. Asynchronous effects compose cle
 
 ### Built for AI Agents: Zero-Drift by Construction
 In loosely typed stacks, AI coding assistants frequently hallucinate missing properties, drop edge cases, forget localized translation keys, or produce inconsistent "utility soup" layouts.
-- **Mechanical Logic Enforcement:** An agent cannot declare a route without completing its bidirectional codec, sitemap entry, and bilingual dictionaries.
+- **Mechanical Logic Enforcement:** An agent cannot declare a route without completing its bidirectional codec, sitemap entry, and dictionary entries for every language in `allLangs`.
 - **Visual Drift Prevention (daisyUI + page templates):** Raw layout utility soup in views is forbidden. `App.Ui.Templates` owns page chrome and section recipes on **daisyUI 5**; agents fill typed slot records (`Landing`, `Hub`, `Editorial`, `Feed`, `Article`). This limits structural drift; the type system does not guarantee pixels or intent.
 - **Fast Guardrails:** `Policy.Contract` (`src/Policy/Contract.purs`) is the single source of truth. `make gate` (`Test.Gate`) enforces structural policy; `PolicySpec` (`make test`) adds reference-page archetypes; `ContractSpec` pins CSP, Alpine seams, and security headers.
 
@@ -135,7 +135,7 @@ Pohjola's guarantees are not documentation conventions. They are mechanically ve
 - [x] **Scrutinized FFI Floor**: Foreign JavaScript imports are restricted to four allowlisted modules in `Policy.Contract` (`App.ServerBun`, `App.FetchBun`, `App.Bun`, `App.Data.SQL`).
 - [x] **Pinned Security Policy (CSP)**: Nonce-based Content Security Policy verified byte-exact in `test/ContractSpec.purs`.
 - [x] **UI Archetype Policy**: Feature views consume `App.Ui.Templates` slot records only — no `class_` in feature views (`Policy.Contract` + `Test.Gate`).
-- [x] **Total Bilingual Routing**: Derived via `routing-duplex`; missing translations or routes fail at compile time.
+- [x] **Total multilingual routing**: Derived via `routing-duplex`; missing translations or routes fail at compile time (`allLangs`: En, Fr, Pt).
 
 > For an in-depth breakdown of guarantees, see [`docs/GUARANTEES.md`](docs/GUARANTEES.md).
 
@@ -157,7 +157,7 @@ cd pohjola-framework
 make deps
 
 # 3. Start development environment with live reload
-# (Runs Tailwind watcher + PureScript watcher + Bun server concurrently)
+# (scripts/dev.js — CSS embed, static sync, Tailwind + Spago watchers, Bun)
 make dev
 ```
 

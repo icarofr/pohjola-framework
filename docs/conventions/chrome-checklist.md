@@ -16,8 +16,8 @@ Full recipe: `docs/superpowers/specs/2026-08-30-shell-recipe.md`.
 
 ## Adding or changing a nav item
 
-1. **Route** — add constructor + codec in `Data.Route.purs` (both languages compile-check).
-2. **Copy** — add label in `Data.I18n` (`nav.*` or feature-specific), both `En` and `Fr`.
+1. **Route** — add constructor + codec in `Data.Route.purs` (every language in `allLangs` compile-checks).
+2. **Copy** — add label in `Data.I18n` (`nav.*` or feature-specific) for each language in `allLangs`.
 3. **Shell labels** — if the label is new to chrome, extend `ShellLabels` / `shellLabels` in `SiteShell.purs`.
 4. **Wire links** — in `renderHeader` (desktop `desktopNavLink`), `renderDrawerSide` (`mobileNavLink`), and `renderFooter` (`footerLink`). Use the existing helpers; do not invent class strings.
 5. **Tests** — run `make test` (`ShellSpec`, `ContractSpec`). If markers or structure change, update e2e selectors.

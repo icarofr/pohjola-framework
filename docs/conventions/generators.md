@@ -57,5 +57,5 @@ ContractSpec enforces feature isolation — see `test/ContractSpec.purs`.
 - No new cross-feature imports (ContractSpec isolation test).
 - `make check` passes (lint + formatting).
 
-**Done when**: `make check` is green and the feature renders at both
-`/en/<route>` and `/fr/<route>`.
+**Done when**: `make check` is green and the feature renders at each language
+prefix (`/en/…`, `/fr/…`, `/pt/…` by default).

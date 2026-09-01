@@ -243,7 +243,7 @@ new application-wide architecture.
 
 The pilot must add or update:
 
-- SSR tests for both languages and fallback content;
+- SSR tests for every language in `allLangs` and fallback content;
 - root/version marker assertions;
 - bootstrap escaping and invalid-version tests;
 - auth, cache, and upstream-failure integration tests;

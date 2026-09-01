@@ -56,7 +56,7 @@ typeclasses, closed view surfaces, and `nix flake check` — not parallel config
 - `make gate` requires a Spago build (~slower than raw Node scan). Acceptable:
   gate still runs before full `make test` in `make fast`.
 - Apps that fork the framework must carry their own `Policy.Contract` deltas or
-  override gate tests — same as before with per-app `manifest.json`.
+  override gate tests — same as before with per-app policy lists.
 
 ## Enforcement map
 

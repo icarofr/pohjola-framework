@@ -59,7 +59,7 @@ importing a sibling feature's modules.
 
 1. `make new-feature NAME=<Name> WIRE=1` — or manually:
 2. New variant in `data Route` (`src/Data/Route.purs`)
-3. Update both codecs in `routeCodec` (En + Fr)
+3. Update both codecs in `routeCodec` (every language in `allLangs`)
 4. Update `routeTitle` (in `Data.Route.purs`)
 5. Update `pageRenderer` in `Main.purs`
 6. `src/App/Features/<Name>/Page.purs` :: `render :: Lang -> Aff (Either AppError Html)`
@@ -68,21 +68,21 @@ importing a sibling feature's modules.
    (see [`page-architectures`](../superpowers/specs/2026-08-31-page-architectures.md); default scaffold uses `Editorial`)
 8. `src/App/Features/<Name>/Components/` — optional; extract when you have a
    distinct reusable visual unit (card, sidebar, etc.)
-9. i18n keys in `Data.I18n.purs` (both languages)
+9. i18n keys in `Data.I18n.purs` (every language in `allLangs`)
 10. **Navigation** — if the page belongs in the header/footer, edit
     `App.Ui.Templates.SiteShell` (`desktopNavLink`, `mobileNavLink`,
     `footerLink`) per [`chrome-checklist.md`](chrome-checklist.md). `WIRE=1`
     does not wire nav for you.
 11. Venom assertions in `venom/01_routes.yml` + unit route tests
 
-**Done when**: `make check` passes and the page renders at both `/en/<route>`
-and `/fr/<route>` with localized titles.
+**Done when**: `make check` passes and the page renders at each language prefix
+(`/en/…`, `/fr/…`, `/pt/…` by default) with localized titles.
 
 ## Dynamic route + data fetching (e.g. `/posts/:id`)
 
 1. `make new-feature NAME=<Name> TYPE=data WIRE=1` — or manually:
 2. New variant in `data Route` with an argument: `PostDetail Int`
-3. Update both codecs: `"PostDetail": "posts" / int segment` (En + Fr)
+3. Update every language codec: `"PostDetail": "posts" / int segment`
 4. Update `routeTitle` — pattern-match on `PostDetail _`
 5. Update `seoDescription` in `Head.purs` — pattern-match on `PostDetail _`
 6. Update `pageRenderer` in `Main.purs` — call the async page renderer
@@ -93,7 +93,7 @@ and `/fr/<route>` with localized titles.
 10. Create `src/App/Features/<Name>/View.purs` — `renderPage` + `Feed` / `Article` slots
 11. Create `src/App/Features/<Name>/Components/` — optional; extract list
     items/cards when the view grows
-12. i18n keys in `Data.I18n.purs` (both languages)
+12. i18n keys in `Data.I18n.purs` (every language in `allLangs`)
 13. Add the LIST route to `allRoutes` (for sitemap) — omit detail routes
     (dynamic IDs)
 14. **Navigation** — add list route to `SiteShell` if it belongs in chrome

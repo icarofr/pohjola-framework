@@ -41,3 +41,18 @@
 [x-cloak] {
   display: none !important;
 }
+
+/* PageSpeed: keep drawer motion on compositor-friendly properties. */
+.drawer-side,
+.drawer-overlay {
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer-side,
+  .drawer-overlay,
+  .drawer-side * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

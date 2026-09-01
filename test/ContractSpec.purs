@@ -18,7 +18,7 @@ import App.Form (contactFields, newsletterFields)
 import App.Layout.Head (renderJsonLd, escapeJson)
 import App.Layout.Page (renderErrorFragment, renderErrorPage, renderFragment, renderPage, renderShellOpen, renderShellClose, renderPrefetch)
 import App.Main (pageRenderer)
-import App.Server (RedirectKind(..), Response, cspWithNonce, errorStatusCode, fileResponse, htmlErrorResponse, internalError, methodNotAllowed, notFound, notModified, ok, okText, okWith, redirect, redirectVary, securityHeaders, tooManyRequests)
+import App.Server (RedirectKind(..), Response, cspWithNonce, errorStatusCode, fileResponse, htmlErrorResponse, internalError, methodNotAllowed, notFound, notModified, ok, okText, okTextPublic, okWith, redirect, redirectVary, securityHeaders, tooManyRequests)
 import App.Cache (insertDynamic, lookupDynamic, maxEntries, mkDynamicCache)
 import App.Html (render, text)
 import Data.Array (find, last, length, mapMaybe, nub, range)
@@ -138,6 +138,7 @@ spec = do
     it "ok" $ checkSecurityHeaders (ok "body")
     it "okWith" $ checkSecurityHeaders (okWith [] "body")
     it "okText" $ checkSecurityHeaders (okText "text/plain; charset=utf-8" "body")
+    it "okTextPublic" $ checkSecurityHeaders (okTextPublic "text/plain; charset=utf-8" "body")
     it "htmlErrorResponse" $ checkSecurityHeaders (htmlErrorResponse "body" [] (errorStatusCode 500))
     it "notFound" $ checkSecurityHeaders notFound
     it "methodNotAllowed" $ checkSecurityHeaders methodNotAllowed
@@ -446,10 +447,9 @@ spec = do
       -- stored", which pins no-store for those.
       for_ [ ok "<p>x</p>", okWith [] "<p>x</p>" ] \r ->
         (cacheControl r >>= CodeUnits.stripPrefix (Pattern "private")) `shouldNotEqual` Nothing
-    it "robots.txt and sitemap.xml are NOT marked private" do
-      -- okText serves nonce-free public documents; marking them private would
-      -- stop shared caches serving them for no benefit.
-      cacheControl (okText "text/plain" "User-agent: *") `shouldEqual` Nothing
+    it "robots.txt and sitemap.xml are publicly cacheable" do
+      -- okTextPublic serves nonce-free public documents with shared-cache policy.
+      cacheControl (okTextPublic "text/plain" "User-agent: *") `shouldEqual` Just "public, max-age=86400"
 
   describe "nav links never prefetch the page already shown" do
     -- After an AJAX swap the header re-renders, and the link for the current

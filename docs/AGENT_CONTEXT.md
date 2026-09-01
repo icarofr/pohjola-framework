@@ -13,10 +13,10 @@ contracts below. `docs/GUARANTEES.md` lists every guarantee and its check.
    concatenation bypasses escaping.
 3. `src/App/Error.purs` — the error ADT. Add variants here; return `Either`,
    never throw.
-4. `src/Data/Route.purs` — route codec. Update BOTH languages (compiler
-   enforces).
-5. `src/Data/I18n.purs` — dictionary. Update BOTH languages (compiler
-   enforces).
+4. `src/Data/Route.purs` — route codec. Update every language in `allLangs`
+   (compiler enforces).
+5. `src/Data/I18n.purs` — dictionary. Update every language in `allLangs`
+   (compiler enforces).
 6. `Policy.Contract` + `Test.Gate` (`make gate`) — what's
    banned: `unsafeCoerce`/`unsafePerformEffect`/`unsafePartial`, partial-function
    modules, `fromJust`, FFI outside `ffiAllowlist`, and any general-purpose HTML

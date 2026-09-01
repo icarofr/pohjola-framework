@@ -74,8 +74,8 @@ handleGet cfg cache nonce headers query path = case path of
   [] -> redirectRoot headers
   [ "healthz" ] -> pure $ Server.okText "text/plain" "ok"
   [ "dev", "live-reload" ] -> pure $ Server.okTextWith [ Tuple "Cache-Control" "no-cache", Tuple "Connection" "keep-alive" ] "text/event-stream" "retry: 1500\n\n: live-reload connected\n\n"
-  [ "robots.txt" ] -> pure $ Server.okText "text/plain" (renderRobots cfg.baseUrl)
-  [ "sitemap.xml" ] -> pure $ Server.okText "application/xml" (renderSitemap cfg.baseUrl)
+  [ "robots.txt" ] -> pure $ Server.okTextPublic "text/plain; charset=utf-8" (renderRobots cfg.baseUrl)
+  [ "sitemap.xml" ] -> pure $ Server.okTextPublic "application/xml; charset=utf-8" (renderSitemap cfg.baseUrl)
   _ -> case parseRoute path of
     Just { lang, route } -> handleRoute { cfg, cache, nonce, lang, route, headers, query }
     Nothing -> pure $ routeMiss404 nonce (isFragmentRequest headers query) (langFromPath path)

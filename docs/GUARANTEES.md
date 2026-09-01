@@ -17,7 +17,7 @@ check fails loudly — on every push, in CI.
 | 4 | No general-purpose unescaped HTML constructor — the `Html` ADT has no `raw`/`Raw` escape hatch; script/style and JSON-LD contexts are explicit | `make gate` + PolicySpec (filesystem scan) | `make gate`, `make test` |
 | 5 | Every handler failure is a typed value — `Aff (Either AppError a)` at every boundary | Compiler (types) + convention | `spago build` |
 | 6 | Exhaustive pattern matching — adding a route, i18n key, or error variant breaks the build until every site is updated | Compiler | `spago build` |
-| 7 | Bilingual completeness — `en` and `fr` share one record type; a missing key in either is a compile error | Compiler | `spago build` |
+| 7 | Dictionary completeness — every language in `allLangs` shares one record type; a missing key in any language is a compile error | Compiler | `spago build` |
 | 8 | Runtime exceptions (socket errors, JS failures) are contained at one boundary, logged, and answered with a 500 — never a process crash | `attempt` in `App.Server` + `makeFetch` try/catch in `App.ServerBun` | `make test` |
 | 9 | No hung requests — `idleTimeout: 30` closes connections with unresolved handler Promises; `makeFetch` catches synchronous throws in the callback bridge; stream `controller.close()` is guaranteed via `try/finally` | `idleTimeout` + `makeFetch` guard + `try/finally` in `App.ServerBun` | runtime-verified at introduction; exercised under Venom/Playwright |
 | 10 | Security headers on every response, including errors and redirects | ContractSpec security-header suite (12 `Response` constructors) | `make test` |

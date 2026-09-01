@@ -18,11 +18,12 @@ invariant here is enforced by gate, ContractSpec, or Venom.
 
 ## Static files
 
-Production and local dev: Bun's `routes: { dir }` serves `/assets/*`, `/css/*`,
-`/images/*`, and `/favicon.svg` from `staticRoot` (passed through `serveImpl`) with
-kernel-level path safety. The `STATIC_ROOT` env var flows from `Config` →
-`serve` → `serveImpl` → Bun routes. Route path safety is verified via `isUnsafePath`
-(exact `..` / `\` segments rejected).
+Production and local dev: Bun's `routes: { dir }` in `App.ServerBun.js` serves
+`/assets/*`, `/css/*`, `/images/*`, and `/favicon.svg` from `staticRoot` with
+`Cache-Control: public, max-age=31536000` on directory routes. ETag /
+`Last-Modified` still come from Bun for revalidation. The `STATIC_ROOT` env var
+flows from `Config` → `serve` → `serveImpl` → Bun routes. Route path safety is
+verified via `isUnsafePath` (exact `..` / `\` segments rejected).
 
 ## Security headers
 
@@ -46,8 +47,10 @@ HTML, so the claim was false in exactly the case it was broadest about.
 | AJAX fragments | `private, max-age=10` — same policy, **different reason** | `okWith` |
 | Errors (4xx/5xx) | `no-store` | `htmlErrorResponse`, `notFound`, `methodNotAllowed`, `internalError`, `tooManyRequests` (`errorCacheControl`) |
 | Redirects | `RedirectKind` derives `public, max-age=3600` for 301/308 and `no-store` for 302/303/307 | `redirect`, `redirectVary` |
-| robots.txt, sitemap.xml, healthz | none — no nonce, genuinely public | `okText` |
-| Static files (test-only path) | `public, max-age=3600` | `fileResponse` |
+| robots.txt, sitemap.xml | `public, max-age=86400` | `okTextPublic` in `Main.purs` |
+| healthz | none — no nonce, genuinely public | `okText` |
+| Static files (Bun `routes: { dir }`) | `public, max-age=31536000` | `App.ServerBun.js` |
+| Static files (`fileResponse`, tests) | `public, max-age=31536000` | `fileResponse` |
 
 The `RedirectKind` type enforces the status/policy pairing. For 301/308,
 callers must still supply a request-independent location; that semantic property

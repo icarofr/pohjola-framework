@@ -6,8 +6,14 @@
 // PS records compile to JS objects: { status, body } maps to { status: n, body: s }.
 // PS Tuple compiles to { value0, value1 }.
 
+const ASSET_CACHE = "public, max-age=31536000";
+
 function shouldReadBody(method) {
   return method === "POST" || method === "PUT" || method === "PATCH";
+}
+
+function cachedDir(dir) {
+  return { dir, headers: { "cache-control": ASSET_CACHE } };
 }
 
 function toPsRequest(req, server, body) {
@@ -152,9 +158,9 @@ export function serveImpl(port) {
           idleTimeout: 30,
           maxRequestBodySize: 64 * 1024,
           routes: {
-            "/assets/*": { dir: staticRoot + "/assets" },
-            "/css/*":    { dir: staticRoot + "/css" },
-            "/images/*": { dir: staticRoot + "/images" },
+            "/assets/*": cachedDir(staticRoot + "/assets"),
+            "/css/*": cachedDir(staticRoot + "/css"),
+            "/images/*": cachedDir(staticRoot + "/images"),
             "/favicon.svg": Bun.file(staticRoot + "/favicon.svg"),
           },
           fetch: makeFetch(handler),
