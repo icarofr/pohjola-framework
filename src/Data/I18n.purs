@@ -482,7 +482,7 @@ pt =
   { nav:
       { home: "Início"
       , about: "Sobre"
-      , contact: "Contacto"
+      , contact: "Contato"
       , posts: "Artigos"
       , fixtures: "Calendário"
       }
@@ -530,12 +530,12 @@ pt =
           }
       , values:
           { heading: "Os nossos valores"
-          , intro: "Estes princípios guiam cada decisão arquitectónica do framework."
+          , intro: "Estes princípios guiam cada decisão arquitetural do framework."
           , items:
               [ { title: "Base antes da moda"
                 , description: "Preferir fundações comprovadas — HTML tipado, erros explícitos e renderização server-first — em vez da moda da semana."
                 }
-              , { title: "Aberto por omissão"
+              , { title: "Aberto por padrão"
                 , description: "Invariantes de segurança, portões de política e convenções são documentados e testáveis para que os contribuidores raciocinem sobre o sistema."
                 }
               , { title: "Aprender sempre"
@@ -545,7 +545,7 @@ pt =
                 , description: "A interatividade Alpine permanece tipada e mínima — polish de UX sem contrabandear um runtime de cliente."
                 }
               , { title: "Assumir a responsabilidade"
-                , description: "Erros são valores, a CSP está fixa, e as caches são conservadoras porque surpresas em produção são o nosso problema, não do utilizador."
+                , description: "Erros são valores, a CSP está fixa, e as caches são conservadoras porque surpresas em produção são o nosso problema, não do usuário."
                 }
               , { title: "Gostar da contenção"
                 , description: "Uma superfície pequena que cabe na cabeça vale mais do que uma caixa de ferramentas máxima a combater em cada feature."
@@ -576,7 +576,7 @@ pt =
       , articleTagPrefix: "Artigo n.º"
       , readMore: "Ler artigo"
       , backToList: "Voltar aos artigos"
-      , loadingError: "Falha ao carregar artigos. Verifique a sua ligação."
+      , loadingError: "Falha ao carregar artigos. Verifique sua conexão."
       , notFound: "Artigo não encontrado."
       , byAuthor: "Por"
       , authorRole: "Engenharia"
@@ -602,7 +602,7 @@ pt =
   , seo:
       { homeDescription: "O framework web funcional e tipado para Bun, PureScript e Alpine.js"
       , aboutDescription: "Saiba mais sobre o Pohjola."
-      , contactDescription: "Entre em contacto com a comunidade Pohjola."
+      , contactDescription: "Entre em contato com a comunidade Pohjola."
       , postsDescription: "Leia notas de engenharia e destaques de arquitetura do Pohjola."
       , postDetailDescription: "Uma nota de engenharia sobre o Pohjola."
       , fixturesDescription: "Próximos jogos do Tottenham Hotspur para a temporada de 2026."

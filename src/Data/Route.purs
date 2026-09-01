@@ -74,14 +74,14 @@ routeCodec Fr = root $ prefix "fr" $ G.sum
   , "PostDetail": "articles" / int segment
   , "Fixtures": "calendrier" / G.noArgs
   }
--- | Pt uses English path segments under /pt for the framework demo.
+-- | Pt uses localized path segments under /pt.
 routeCodec Pt = root $ prefix "pt" $ G.sum
   { "Home": G.noArgs
-  , "About": "about" / G.noArgs
-  , "Contact": "contact" / G.noArgs
-  , "PostList": "posts" / G.noArgs
-  , "PostDetail": "posts" / int segment
-  , "Fixtures": "fixtures" / G.noArgs
+  , "About": "sobre" / G.noArgs
+  , "Contact": "contato" / G.noArgs
+  , "PostList": "artigos" / G.noArgs
+  , "PostDetail": "artigos" / int segment
+  , "Fixtures": "calendario" / G.noArgs
   }
 
 -- ============================================================================

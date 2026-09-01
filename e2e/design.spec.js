@@ -4,8 +4,8 @@ import AxeBuilder from "@axe-core/playwright";
 /** Canonical routes and the template markers each must expose. */
 const canonicalRoutes = [
   { path: "/en", marker: "landing-hero" },
-  { path: "/en/about", marker: "editorial-breadcrumbs" },
-  { path: "/en/contact", marker: "hub-breadcrumbs" },
+  { path: "/en/about", marker: "page-header-breadcrumbs" },
+  { path: "/en/contact", marker: "page-header-breadcrumbs" },
   { path: "/en/posts", marker: "feed-page" },
   { path: "/fr", marker: "landing-hero" },
   { path: "/fr/contact", marker: "hub-page" },

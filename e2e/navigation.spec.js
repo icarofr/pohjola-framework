@@ -71,7 +71,7 @@ test.describe("Alpine AJAX navigation", () => {
     expect(await page.evaluate(() => window.__marker)).toBe(1);
   });
 
-  test("language switch performs a full navigation", async ({ page }) => {
+  test("language switch swaps content without reload", async ({ page }) => {
     await page.goto("/en");
 
     await page.evaluate(() => {
@@ -80,11 +80,12 @@ test.describe("Alpine AJAX navigation", () => {
 
     await page.locator('header a[href="/fr"]').filter({ hasText: /Français/i }).click();
     await expect(page).toHaveURL(/\/fr$/);
+    await expect(page.locator("html")).toHaveAttribute("lang", "fr");
     await expect(page.locator("main")).toContainText(
       "Le framework web fonctionnel",
     );
 
-    expect(await page.evaluate(() => window.__marker)).toBeUndefined();
+    expect(await page.evaluate(() => window.__marker)).toBe(1);
   });
 
   test("hero CTA button link navigation works without reload", async ({
