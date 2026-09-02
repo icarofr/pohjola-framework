@@ -11,9 +11,12 @@ import App.Features.Posts.Types (Post(..))
 import App.Features.Posts.View as Posts
 import App.Html (render)
 import App.Ui.Templates.Contract as Contract
+import App.Ui.Templates.Form as Form
+import App.Ui.Templates.Types (FormField(..))
 import Data.Array (length)
 import Data.I18n (Lang(..), dict)
 import Data.Maybe (Maybe(..))
+import Data.Route (Route(..))
 import Data.String.Common (split) as String
 import Data.String.Pattern (Pattern(..))
 import Test.Spec (Spec, describe, it)
@@ -86,6 +89,21 @@ spec = do
         StrAssert.shouldContain html (Contract.slot Contract.pageHeaderBreadcrumbs)
         countMarker html Contract.scheduleRow `shouldEqual` 9
         StrAssert.shouldContain html "/images/crests/tottenham.svg"
+
+      it "Form template renders fieldset and honeypot without feature class_" do
+        let
+          slots =
+            { title: "Beta"
+            , subtitle: Nothing
+            , breadcrumbs: []
+            , action: "/api/beta-signup"
+            , submitLabel: "Join"
+            , fields: [ FormEmail { name: "email", label: "Email", required: true } ]
+            }
+          html = render (Form.renderForm En Home slots)
+        StrAssert.shouldContain html (Contract.slot Contract.formPage)
+        StrAssert.shouldContain html "name=\"website\""
+        StrAssert.shouldContain html "fieldset"
 
 countMarker :: String -> String -> Int
 countMarker html value =

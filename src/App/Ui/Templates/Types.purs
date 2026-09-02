@@ -24,6 +24,8 @@ module App.Ui.Templates.Types
   , ScheduleMatch
   , ScheduleCrest
   , ArticleSlots
+  , FormField(..)
+  , FormSlots
   , landingSlots
   , landingFeatures
   , hubSlots
@@ -37,6 +39,7 @@ module App.Ui.Templates.Types
   , feedSlots
   , scheduleSlots
   , articleSlots
+  , formSlots
   , featureItems
   , valueItems
   , hubCards
@@ -62,6 +65,7 @@ data PageTemplate
   | Feed FeedSlots
   | Schedule ScheduleSlots
   | Article ArticleSlots
+  | Form FormSlots
 
 type LandingHeroSlots =
   { eyebrow :: String
@@ -214,6 +218,22 @@ type ArticleSlots =
   , breadcrumbs :: Array BreadcrumbItem
   }
 
+data FormField
+  = FormText { name :: String, label :: String, required :: Boolean }
+  | FormEmail { name :: String, label :: String, required :: Boolean }
+  | FormTextarea { name :: String, label :: String, required :: Boolean, rows :: Int }
+
+derive instance eqFormField :: Eq FormField
+
+type FormSlots =
+  { title :: String
+  , subtitle :: Maybe String
+  , breadcrumbs :: Array BreadcrumbItem
+  , action :: String
+  , submitLabel :: String
+  , fields :: Array FormField
+  }
+
 landingFeatures
   :: String
   -> String
@@ -292,6 +312,17 @@ articleSlots
   -> ArticleSlots
 articleSlots metaTag title authorName date body breadcrumbs =
   { metaTag, title, authorName, date, body, breadcrumbs }
+
+formSlots
+  :: String
+  -> Maybe String
+  -> Array BreadcrumbItem
+  -> String
+  -> String
+  -> Array FormField
+  -> FormSlots
+formSlots title subtitle breadcrumbs action submitLabel fields =
+  { title, subtitle, breadcrumbs, action, submitLabel, fields }
 
 featureItems :: FeatureTriple -> Array ServiceFeature
 featureItems triple =

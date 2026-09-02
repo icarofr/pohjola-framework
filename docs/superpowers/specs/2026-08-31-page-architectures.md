@@ -27,6 +27,7 @@ Site chrome (navbar, drawer, footer) stays in `SiteShell` — not in page templa
 | Blog / post teasers, author cards | `Feed` | `feedSlots` + `FeedCard` | `Posts/View.purs` |
 | Single article / detail page | `Article` | `articleSlots` | `Posts/View.purs` |
 | Match list, fixtures, calendars, crests | `Schedule` | `scheduleSlots` + `ScheduleMatch` | `Fixtures/View.purs` |
+| Signup / contact / newsletter form | `Form` | `formSlots` + `FormField` | (template-only; no feature exemplar yet) |
 
 Entry: `App.Ui.Templates.Render.renderPage lang Route (Constructor slots)`.
 
@@ -36,7 +37,7 @@ Entry: `App.Ui.Templates.Render.renderPage lang Route (Constructor slots)`.
 
 | Variant | Used by | Marker |
 |---|---|---|
-| `render` | Hub, Editorial, Feed, Schedule | `data-template="page-header"` |
+| `render` | Hub, Editorial, Feed, Schedule, Form | `data-template="page-header"` |
 | `renderDetail` | Article detail (badge prefix) | `data-template="page-header-detail"` |
 
 All inner pages use the same DaisyUI recipe: `breadcrumbs` + left-aligned `h1` + optional subtitle + `divider`. **Landing (Home) is the only `hero`** — marketing promo block, not reused on inner routes.
@@ -50,6 +51,7 @@ Do not duplicate `<h1>` / lead copy in feature views — pass `title` / `subtitl
 | `Feed` for sports schedules / match rows | Feed is post teasers; ignores crests and kickoff shape | `Schedule` |
 | `Hub` for long prose | Hub is card grid, not article body | `Editorial` |
 | `Editorial` for marketing hero + feature grid | Missing landing sections | `Landing` |
+| `import App.Ui.Form` in features | Gate forbids primitives in views | `Form` `PageTemplate` + slots |
 | `class_` or `App.Ui.Card` in features | Breaks ADR-012; fails `make gate` | Slots + templates |
 | Freestyle daisyUI from model memory | Stale syntax, drift | Vendor skill doc → `App.Ui.*` primitive |
 | New page type without new template | Forces wrong archetype | Extend `Templates.*` + `Policy.Contract` closed set |

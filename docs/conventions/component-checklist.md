@@ -31,12 +31,14 @@ Feature `View.purs` and `Components/*.purs` **never** call `class_` or import `A
 | Content feed | `Feed` | `Posts/View.purs` | `02-add-data-page` |
 | Article detail | `Article` | `Posts/View.purs` | `02-add-data-page` |
 | Match schedule / fixtures | `Schedule` | `Fixtures/View.purs` | `10-ui-archetypes` |
+| Signup / contact form | `Form` | slots in View → `Templates/Form` | see `forms.md` |
 
 **Do not** use `Feed` for schedules, calendars, or crest rows — use `Schedule`.
+**Do not** import `App.Ui.Form` in features — use the `Form` `PageTemplate`.
 
 ```purescript
-renderPage lang MyRoute (Editorial (pageSlots lang))
--- or Hub, Landing, Feed, Article, Schedule — slots only, no class_
+renderPage lang MyRoute status (Editorial (pageSlots lang))
+-- or Hub, Landing, Feed, Article, Schedule, Form — slots only, no class_
 ```
 
 In-page titles use `PageHeader` inside templates (`page-header`, `page-header-breadcrumbs`, `page-header-body` markers) — features pass `title` / `subtitle` / `breadcrumbs` via slots only.

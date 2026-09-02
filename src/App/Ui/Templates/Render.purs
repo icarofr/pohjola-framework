@@ -8,6 +8,7 @@ import App.Html (Html)
 import App.Ui.Templates.Article as Article
 import App.Ui.Templates.Editorial as Editorial
 import App.Ui.Templates.Feed as Feed
+import App.Ui.Templates.Form as FormTemplate
 import App.Ui.Templates.Hub as Hub
 import App.Ui.Templates.Landing as Landing
 import App.Ui.Templates.Schedule as Schedule
@@ -34,5 +35,7 @@ renderPage lang route status template =
         Schedule.renderSchedule lang route slots
       Article slots ->
         Article.renderArticle lang route slots
+      Form slots ->
+        FormTemplate.renderForm lang route slots
   in
     Shell.sitePage lang route labels status body

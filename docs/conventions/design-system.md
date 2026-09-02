@@ -37,6 +37,8 @@ Feature views **must not** compose primitives. Call `renderPage` with one `PageT
 | Long-form editorial | `Editorial` | `About/View.purs` |
 | Content feed / list | `Feed` | `Posts/View.purs` (list) |
 | Article detail | `Article` | `Posts/View.purs` (detail) |
+| Match schedule / fixtures | `Schedule` | `Fixtures/View.purs` |
+| Signup / contact form | `Form` | `Templates/Form.purs` (slots in View) |
 | Scaffold default | `Editorial` | `make new-feature` |
 
 **ADR-012:** feature `View.purs` / `Components/` must not call `class_` or import primitive modules — enforced by `make gate`.
@@ -55,7 +57,7 @@ Contract markers: `App.Ui.Templates.Contract` (`data-template="…"`). Shell chr
 | `App.Ui.Alert` | `alert` | `alert` + color |
 | `App.Ui.Breadcrumbs` | `breadcrumbs` | `breadcrumbs` |
 | `App.Ui.Prose` | `prose`, `proseLg` | `prose` |
-| `App.Ui.Form` | `textField`, … | `fieldset` + `input` / `textarea` |
+| `App.Ui.Form` | `textField`, … | `fieldset` + `input` / `textarea` (**Templates only**) |
 | `App.Ui.Container` | `container` | `container` + width utilities |
 | `App.Ui.TextTone` | `toneClass` | `text-base-content` opacities |
 | Templates | `renderPage`, `PageTemplate`, slots | site shell + page sections |

@@ -3,7 +3,7 @@
 `src/App/Form.purs` is the single source of truth for every form: field
 names, API paths (`apiContactPath`/`apiNewsletterPath`), `FormStatus`,
 `EmailAddress` (newtype via `mkEmailAddress`), and the `decodeX` functions.
-Views import these; handlers decode them. Keep field names and paths in
+Handlers decode through `App.Form`. Keep field names and paths in
 `App.Form` — views and handlers reference them, never duplicate them.
 
 ## Rules
@@ -18,26 +18,41 @@ Views import these; handlers decode them. Keep field names and paths in
 - **Parsing** — `Data.FormURLEncoded.decode`. Use this, not hand-rolled
   parsing.
 - **Status banners** — `?status=success|error|subscribed` rendered via
-  `maybeStatusBanner` with `data-form-status` + localized `statusText`.
+  SiteShell / `maybeStatusBanner` with `data-form-status` + localized
+  `statusText` (status is applied when `renderPage` wraps the body).
 
-## Form UI helpers (`App.Ui.Form`)
+## Visible form UI (`PageTemplate` Form)
 
-Use `src/App/Ui/Form.purs` for rendering form containers and inputs when you
-add a page that needs one. No demo page currently renders these helpers, but
-`/api/contact` and `/api/newsletter` handlers in `App.Main` are wired for when
-you do.
-- `formContainer` — wraps form with automatic `lang` hidden field and honeypot field.
-- `textField`, `emailField`, `textareaField` — styled inputs with dark mode, labels, and required flags.
-- `submitButton` — accessible Tailwind button with hover/focus states.
-- `renderStatusBanner` — accessible feedback banners for `FormSuccess`/`FormError`.
+Feature views must **not** import `App.Ui.Form`. The legal path is:
+
+1. Decode in `App.Form` (unchanged).
+2. Handler in `Main` (unchanged).
+3. **Visible form:** `PageTemplate` constructor `Form` + `FormSlots` /
+   `FormField` records in **View.purs**, via
+   `App.Ui.Templates.Render.renderPage`.
+4. **Forbidden:** `import App.Ui.Form` in `App.Features` — gate fails.
+
+`App.Ui.Templates.Form` owns DaisyUI fieldset rendering and calls
+`App.Ui.Form` helpers (`formContainer`, `textField`, `emailField`,
+`textareaField`, `submitButton`) internally. Honeypot name is `"website"`
+(same as `contactFields` / `newsletterFields`).
+
+Contact remains a **Hub**; `/api/contact` is a kernel form-contract demo
+without a Contact form view. Newsletter POST remains available for a
+future `Form` page.
 
 ## Adding a form
 
-Extend `App.Form` with a new `decodeX` following `decodeContact`/
-`decodeNewsletter` (new Submission sum + decoder + field-name record + API
-path constant), render via `App.Ui.Form`, then add the handler in `Main.purs` following the existing
-ones. Parse form bodies through `App.Form` — inline parsing in handlers
-fails ContractSpec / property tests.
+1. Extend `App.Form` with a new `decodeX` following `decodeContact` /
+   `decodeNewsletter` (Submission sum + decoder + field-name record + API
+   path constant).
+2. Add a handler in `Main.purs` following the existing ones.
+3. In the feature `View.purs`, call `renderPage` with
+   `Form { title, subtitle, breadcrumbs, action, submitLabel, fields }`
+   (or `formSlots`). Map fields with `FormText` / `FormEmail` /
+   `FormTextarea` from `App.Ui.Templates.Types`.
+4. Parse form bodies through `App.Form` — inline parsing in handlers
+   fails ContractSpec / property tests.
 
 **Done when**: `make check` passes and the form submits successfully with
 both valid and honeypot inputs (303 success for both).

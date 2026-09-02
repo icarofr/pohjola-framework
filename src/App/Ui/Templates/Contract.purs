@@ -30,6 +30,7 @@ module App.Ui.Templates.Contract
   , articleHeader
   , articleBody
   , articleMeta
+  , formPage
   ) where
 
 import Prelude
@@ -114,6 +115,9 @@ articleBody = "article-body"
 
 articleMeta :: String
 articleMeta = "article-meta"
+
+formPage :: String
+formPage = "form-page"
 
 homeFeatureItemCount :: Int
 homeFeatureItemCount = 3
