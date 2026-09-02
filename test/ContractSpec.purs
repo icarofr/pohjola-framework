@@ -173,7 +173,7 @@ spec = do
         Left err -> StrAssert.shouldContain "" ("expected file to be readable: " <> err)
 
   describe "Alpine seam — contentTarget" do
-    it "every static page renders <main id=contentTarget> in both languages" do
+    it "every static page renders div#content on the SiteShell drawer for allLangs" do
       for_ staticRoutes \route ->
         for_ allLangs \lang -> do
           html <- renderStaticPage route lang

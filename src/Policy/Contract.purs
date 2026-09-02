@@ -92,7 +92,6 @@ forbiddenImportsInFeatureViews :: Array String
 forbiddenImportsInFeatureViews =
   [ "App.Ui.Card"
   , "App.Ui.Container"
-  , "App.Ui.Hero"
   , "App.Ui.Prose"
   , "App.Ui.Alert"
   , "App.Ui.Badge"

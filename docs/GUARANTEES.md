@@ -32,6 +32,25 @@ check fails loudly — on every push, in CI.
 | 18 | Every page flows through the layout shell — no hand-rolled HTML documents | ContractSpec | `make test` |
 | 19 | All of the above runs on every push | GitHub Actions (build+gate, unit, Venom, Playwright) | `.github/workflows/ci.yml` |
 
+## Named exemptions and scan limits
+
+Honesty about what the checks actually catch:
+
+- **Experimental streaming shell** — `renderShellOpen` / `renderShellClose` in
+  `App.Layout.Page` build opening/closing document markup as string HTML
+  outside the `Html` ADT. Clause 4 is constructor-shaped (no general-purpose
+  `Raw`); it does not claim every byte of response HTML is ADT-rendered.
+  Streaming remains opt-in and experimental.
+- **Tag names are `String`** — `el :: Tag -> …` with `type Tag = String`. The
+  gate scans for the literal `el "script"`. A non-literal construction such as
+  `el ("scr" <> "ipt")` evades it.
+- **Alpine attribute-name scan** — clause 12 already admits the same class of
+  hole for non-literal `attr` keys outside `App.Alpine`.
+- **`App.Bun` API growth** — adding a new Bun primitive to the existing
+  `App.Bun` module does **not** need a fifth `ffiAllowlist` entry (the module
+  is already listed). It still needs a decode-at-boundary story and an ADR.
+  A *new* runtime boundary module would need a new allowlist path and ADR.
+
 ## FFI marshalling: a named exemption to clause 3
 
 Clause 3 requires decoding at the boundary. `toPsRequest` in
@@ -107,6 +126,7 @@ and is not wired into `Main` — do not treat it as the approved shape.
 ## Keeping it true
 
 - Every future FFI module: decode at the boundary, allowlist entry, ADR.
-  One undecoded boundary voids clause 3.
+  One undecoded boundary voids clause 3. Growing `App.Bun` itself needs decode
+  + ADR, not a new allowlist path, unless it is a new runtime boundary.
 - Every new convention: promoted to compiler, gate, or ContractSpec — or
   accepted as taste. Prose without enforcement gets deleted.

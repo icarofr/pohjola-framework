@@ -1,7 +1,7 @@
 -- | Server entry point — MPA architecture
 -- |
 -- | Server renders all HTML via the Html ADT, Alpine.js provides interactivity.
--- | Bilingual routes: /en/* and /fr/*
+-- | Routes for every language in `allLangs` (En, Fr, Pt): /en/*, /fr/*, /pt/*
 module App.Main (main, pageRenderer, detectLang) where
 
 import Prelude

@@ -14,8 +14,8 @@ invisible to the PureScript type system and to the gate.
 
 1. **Browser JS: banned.** No `<script src>` beyond the two pinned,
    self-hosted Alpine assets (integrity-verified via
-   `static/assets/SHA256SUMS`). No inline `<script>` beyond the two head
-   snippets (dark-mode init; title-sync + popstate). All interactivity is
+   `static/assets/SHA256SUMS`). No inline `<script>` beyond the three
+   `HeadScript`s (DarkModeInit, TitleSync, DevLiveReload). All interactivity is
    expressed as Alpine attributes in the Html ADT.
 2. **Server JS app-logic: banned.** All server logic is PureScript.
 3. **Server JS via FFI: allowed** — but only through the taming recipe
@@ -101,8 +101,8 @@ over-engineering for this threat model.
 
 ### Why `unsafe-inline` was dropped
 
-`unsafe-inline` was needed for exactly two static `<script>` snippets in
-`<head>` (dark-mode init, title-sync/popstate) and the JSON-LD script. It is
+`unsafe-inline` was needed for exactly three static `HeadScript`s in
+`<head>` (DarkModeInit, TitleSync, DevLiveReload) and the JSON-LD script. It is
 **not** needed for Alpine's `@click`/`x-data` attributes — those are custom
 attributes read via `MutationObserver`, not inline event handlers in the CSP
 sense. Per-request nonces (18 random bytes → base64, generated via Web Crypto

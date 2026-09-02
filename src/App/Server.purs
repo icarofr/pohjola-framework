@@ -125,16 +125,18 @@ type Response =
 -- | `withCsp`. The `serve` function injects it after generating the nonce.
 -- |
 -- | Threat model: the primary XSS defense is upstream — the Html ADT escapes
--- | all text via Bun.escapeHTML, the unsafe HTML constructor is gate-banned
--- | outside 6 allowlisted modules, and ContractSpec property-tests that
--- | rendered text never contains unescaped `<`/`>`. CSP is defense-in-depth
--- | for future developer mistakes (an unsafe-HTML call passing user-influenced
--- | data, user data flowing into an Alpine constructor argument).
--- | `unsafe-eval` is required by Alpine's standard build (it evaluates
--- | attribute expressions via `new Function()`); the CSP build can't call
--- | global functions like the `fetch()` in `prefetchHover` and would force a
--- | custom-JS seam violating ADR-000. `unsafe-inline` was dropped in favour
--- | of per-request nonces on the two head `<script>` snippets and the JSON-LD
+-- | all text via Bun.escapeHTML and has no general-purpose unescaped
+-- | constructor; inline script elements are restricted to `scriptAllowlist`
+-- | (two files: Layout.Scripts + Layout.Page); FFI is limited to four
+-- | allowlisted modules (`ffiAllowlist`); and ContractSpec property-tests
+-- | that rendered text never contains unescaped `<`/`>`. CSP is
+-- | defense-in-depth for future developer mistakes (user data flowing into
+-- | an Alpine constructor argument). `unsafe-eval` is required by Alpine's
+-- | standard build (it evaluates attribute expressions via `new Function()`);
+-- | the CSP build can't call global functions like the `fetch()` in
+-- | `prefetchHover` and would force a custom-JS seam violating ADR-000.
+-- | `unsafe-inline` was dropped in favour of per-request nonces on the three
+-- | `HeadScript`s (DarkModeInit, TitleSync, DevLiveReload) and the JSON-LD
 -- | script. See ADR-000 addendum.
 securityHeaders :: Array (Tuple String String)
 securityHeaders =

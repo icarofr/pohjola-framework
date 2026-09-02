@@ -81,9 +81,12 @@ Bun-native task will fail it.
 
 ## Step 4 — Register
 
-- Add the module to `ffiAllowlist` in `Policy.Contract`.
-- Write `docs/adr/ADR-00N`: why this library, what's bounded, what state it
-  holds, why not the alternatives.
+- New Bun primitive on an existing boundary → extend `App.Bun` + decode + ADR.
+  That is **not** a fifth allowlist path unless it is a new runtime boundary
+  module.
+- A genuinely new FFI module → add it to `ffiAllowlist` in `Policy.Contract`
+  and write `docs/adr/ADR-00N`: why this library, what's bounded, what state
+  it holds, why not the alternatives.
 
 ## Step 5 — Test
 
