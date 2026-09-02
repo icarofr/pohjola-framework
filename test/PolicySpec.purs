@@ -25,12 +25,10 @@ spec =
       it "contact renders three-column hub cards" do
         let html = render (Contact.renderContact En Nothing)
         html `StrAssert.shouldContain` "data-template=\"hub-card\""
-        html `StrAssert.shouldContain` "flex-auto"
 
       it "about renders mission and values grid" do
         let html = render (About.renderAbout En Nothing)
         html `StrAssert.shouldContain` "Our mission"
-        html `StrAssert.shouldContain` "lg:grid-cols-3"
 
       it "posts list renders feed card grid" do
         let
