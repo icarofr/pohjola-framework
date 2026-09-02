@@ -16,3 +16,4 @@
 | [011](ADR-011-alpine-ajax-frozen-transport.md) | Alpine AJAX frozen transport | Accepted |
 | [012](ADR-012-semantic-ui-contracts.md) | Semantic UI contracts | Accepted |
 | [013](ADR-013-compiler-first-policy.md) | Compiler-first policy | Accepted |
+| [014](ADR-014-deferred-splits-and-csp.md) | Defer I18n splits, package splits, and Alpine CSP build | Accepted (deferral) |
