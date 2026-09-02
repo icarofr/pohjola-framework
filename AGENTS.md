@@ -83,9 +83,9 @@
 
 ### Agent evals
 - `evals/` contains prompt + assertion pairs that test whether an agent follows our conventions.
-- Run `make eval EVAL=01-add-page --check` after implementing an eval prompt to verify.
-- Chrome / nav changes: `make eval EVAL=11-edit-chrome --check`.
-- Component / template UI: `make eval EVAL=12-add-ui-component --check`.
+- Run `make eval EVAL=01-add-page CHECK=1` after implementing an eval prompt to verify.
+- Chrome / nav changes: `make eval EVAL=11-edit-chrome CHECK=1`.
+- Component / template UI: `make eval EVAL=12-add-ui-component CHECK=1`.
 - Before changing a convention doc, run the related eval to see what it asserts. (each enforced by a check)
 - Build HTML through the `Html` ADT — string-concatenated HTML bypasses escaping (ADR-001, `make gate`).
 - Compose views via `App.Ui.Templates.renderPage` and slot records — manual `space-y-*` / `flex-col justify-between` soup in feature views is forbidden.

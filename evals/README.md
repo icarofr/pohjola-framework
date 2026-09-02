@@ -35,7 +35,7 @@ make eval EVAL=01-add-page CHECK=1
 
 GNU/BSD Make treat `--check` as a Make flag/unknown option; it does **not** reach the recipe.
 
-Or directly:
+Or directly (prefer `make eval … CHECK=1` above; if `bun` is not on PATH, use `~/.bun/bin/bun` or `command -v bun`):
 
 ```bash
 bun evals/run-eval.js 01-add-page          # show prompt
