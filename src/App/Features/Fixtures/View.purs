@@ -3,6 +3,7 @@ module App.Features.Fixtures.View where
 
 import Prelude
 
+import App.Form (FormStatus)
 import App.Html (Html)
 import App.Ui.Templates.PageHeader as PageHeader
 import App.Ui.Templates.Render (renderPage)
@@ -23,6 +24,7 @@ import Data.Content
   , tottenhamFixtures
   )
 import Data.I18n (Lang, dict)
+import Data.Maybe (Maybe)
 import Data.Route (Route(..))
 
 type FixturesCopy =
@@ -36,13 +38,13 @@ type FixturesCopy =
   , vsLabel :: String
   }
 
-renderFixtures :: Lang -> Html
-renderFixtures lang =
+renderFixtures :: Lang -> Maybe FormStatus -> Html
+renderFixtures lang status =
   let
     d = (dict lang).fixtures
     nav = (dict lang).nav
   in
-    renderPage lang Fixtures
+    renderPage lang Fixtures status
       ( Schedule
           ( scheduleSlots
               d.listTitle

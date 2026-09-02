@@ -31,6 +31,7 @@ import App.Alpine
   , xSetThemeAndClose
   , xShowFlag
   )
+import App.Form (FormStatus(..), formStatusQuery, statusText)
 import App.Html
   ( Attr
   , Html
@@ -44,9 +45,11 @@ import App.Html
   , type_
   )
 import App.Layout.Head (pageSyncAttrs)
+import App.Ui.Alert (AlertVariant(..), alert)
 import App.Ui.Container as Container
 import App.Ui.Templates.Contract as Contract
 import Data.I18n (Lang(..), dict, langTag)
+import Data.Maybe (Maybe(..), maybe)
 import Data.Route (Route(..), routeTitle)
 
 type ShellLabels =
@@ -94,12 +97,23 @@ homeLabelText En = "Home"
 homeLabelText Fr = "Accueil"
 homeLabelText Pt = "Início"
 
-sitePage :: Lang -> Route -> ShellLabels -> Html -> Html
-sitePage lang route labels content =
-  sitePageTitled lang route (routeTitle lang route) labels content
+maybeStatusBanner :: Lang -> Maybe FormStatus -> Html
+maybeStatusBanner lang = maybe (text "") \status ->
+  let
+    variant = case status of
+      FormSuccess -> AlertSuccess
+      FormError -> AlertError
+      FormSubscribed -> AlertSuccess
+  in
+    el "div" [ attr "data-form-status" (formStatusQuery status) ]
+      [ alert variant (statusText lang status) ]
 
-sitePageTitled :: Lang -> Route -> String -> ShellLabels -> Html -> Html
-sitePageTitled lang route title labels content =
+sitePage :: Lang -> Route -> ShellLabels -> Maybe FormStatus -> Html -> Html
+sitePage lang route labels status content =
+  sitePageTitled lang route (routeTitle lang route) labels status content
+
+sitePageTitled :: Lang -> Route -> String -> ShellLabels -> Maybe FormStatus -> Html -> Html
+sitePageTitled lang route title labels status content =
   el "div"
     ( [ class_ "drawer drawer-end min-h-full bg-base-100 text-base-content"
       , id_ contentTarget
@@ -120,6 +134,7 @@ sitePageTitled lang route title labels content =
         []
     , el "div" [ class_ "drawer-content flex min-h-full flex-col" ]
         [ renderHeader lang route labels
+        , maybeStatusBanner lang status
         , el "main" [ class_ "flex-1" ] [ content ]
         , renderFooter lang route labels
         ]
@@ -138,7 +153,7 @@ siteErrorPage lang statusCode =
         ]
   in
     -- Reuse the drawer wrapper so Alpine replaceWith and TitleSync keep working.
-    sitePageTitled lang Home title labels body
+    sitePageTitled lang Home title labels Nothing body
 
 errorMessage :: Lang -> Int -> String
 errorMessage lang status =

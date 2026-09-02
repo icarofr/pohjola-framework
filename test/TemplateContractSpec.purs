@@ -13,6 +13,7 @@ import App.Html (render)
 import App.Ui.Templates.Contract as Contract
 import Data.Array (length)
 import Data.I18n (Lang(..), dict)
+import Data.Maybe (Maybe(..))
 import Data.String.Common (split) as String
 import Data.String.Pattern (Pattern(..))
 import Test.Spec (Spec, describe, it)
@@ -24,14 +25,14 @@ spec = do
   describe "TemplateContractSpec" do
     describe "structural markers" do
       it "home exposes landing hero, features, and cta sections" do
-        let html = render (Home.renderHome En)
+        let html = render (Home.renderHome En Nothing)
         StrAssert.shouldContain html (Contract.slot Contract.landingHero)
         StrAssert.shouldContain html (Contract.slot Contract.landingFeatures)
         StrAssert.shouldContain html (Contract.slot Contract.landingCta)
         StrAssert.shouldContain html (Contract.slot Contract.siteHeader)
 
       it "home features expose three items and section copy" do
-        let html = render (Home.renderHome En)
+        let html = render (Home.renderHome En Nothing)
         countMarker html Contract.landingFeatureItem `shouldEqual` Contract.homeFeatureItemCount
         StrAssert.shouldContain html (dict En).hero.eyebrow
         StrAssert.shouldContain html (dict En).services.sectionEyebrow
@@ -40,7 +41,7 @@ spec = do
         StrAssert.shouldContain html "card-border"
 
       it "contact renders exactly three equal hub cards with unified page header" do
-        let html = render (Contact.renderContact En)
+        let html = render (Contact.renderContact En Nothing)
         countMarker html Contract.hubCard `shouldEqual` Contract.contactHubCardCount
         StrAssert.shouldContain html (Contract.slot Contract.pageHeader)
         StrAssert.shouldContain html (Contract.slot Contract.pageHeaderBreadcrumbs)
@@ -52,7 +53,7 @@ spec = do
         StrAssert.shouldContain html "md:grid-cols-3"
 
       it "about renders unified page header, mission, and six value items" do
-        let html = render (About.renderAbout En)
+        let html = render (About.renderAbout En Nothing)
         StrAssert.shouldContain html (Contract.slot Contract.pageHeader)
         StrAssert.shouldContain html (dict En).about.subtitle
         StrAssert.shouldContain html (Contract.slot Contract.pageHeaderBreadcrumbs)
@@ -69,7 +70,7 @@ spec = do
               , title: "Sample post"
               , body: "Excerpt for contract test."
               }
-          html = render (Posts.renderPostList En [ sample ])
+          html = render (Posts.renderPostList En Nothing [ sample ])
         StrAssert.shouldContain html (Contract.slot Contract.feedPage)
         StrAssert.shouldContain html (Contract.slot Contract.feedCard)
         StrAssert.shouldContain html (Contract.slot Contract.pageHeader)
@@ -78,7 +79,7 @@ spec = do
         StrAssert.shouldContain html "Engineering"
 
       it "fixtures schedule exposes unified header, list, and crest rows" do
-        let html = render (Fixtures.renderFixtures En)
+        let html = render (Fixtures.renderFixtures En Nothing)
         StrAssert.shouldContain html (Contract.slot Contract.schedulePage)
         StrAssert.shouldContain html (Contract.slot Contract.scheduleList)
         StrAssert.shouldContain html (Contract.slot Contract.pageHeader)

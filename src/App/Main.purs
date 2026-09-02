@@ -108,14 +108,14 @@ langFromPath path = fromMaybe defaultLang (head path >>= parseLang)
 -- | Select the correct page renderer for a route.
 -- | Static pages use `staticPage` (pure Html, no error path).
 -- | Data-backed pages (Posts) fetch via Aff and may return `Left AppError`.
-pageRenderer :: Config -> Route -> Lang -> Aff (Either AppError Html)
-pageRenderer cfg route lang = case route of
-  Home -> Home.render lang
-  About -> About.render lang
-  Contact -> Contact.render lang
-  Fixtures -> Fixtures.render lang
-  PostList -> Posts.renderList cfg lang
-  PostDetail id -> Posts.renderDetail cfg lang id
+pageRenderer :: Config -> Route -> Lang -> Maybe FormStatus -> Aff (Either AppError Html)
+pageRenderer cfg route lang status = case route of
+  Home -> Home.render lang status
+  About -> About.render lang status
+  Contact -> Contact.render lang status
+  Fixtures -> Fixtures.render lang status
+  PostList -> Posts.renderList cfg lang status
+  PostDetail id -> Posts.renderDetail cfg lang id status
 
 -- | Everything a page render needs about the current request, bundled.
 -- |
@@ -144,8 +144,8 @@ statusFor ctx = Map.lookup "status" ctx.query >>= parseFormStatus
 fullPage :: RequestCtx -> Maybe FormStatus -> Html -> Server.Response
 fullPage ctx status html =
   case status of
-    Just _ -> Server.okWithNoStore [ varyHeader ] (renderDocument ctx.cfg.baseUrl ctx.nonce ctx.lang ctx.route status html)
-    Nothing -> Server.okWith [ varyHeader ] (renderDocument ctx.cfg.baseUrl ctx.nonce ctx.lang ctx.route status html)
+    Just _ -> Server.okWithNoStore [ varyHeader ] (renderDocument ctx.cfg.baseUrl ctx.nonce ctx.lang ctx.route html)
+    Nothing -> Server.okWith [ varyHeader ] (renderDocument ctx.cfg.baseUrl ctx.nonce ctx.lang ctx.route html)
 
 -- | Log a page-render failure. Shared by both error paths so the log shape
 -- | cannot drift between them.
@@ -215,7 +215,7 @@ hasStatusQuery ctx = Map.member "status" ctx.query
 -- | to the path that lacked it.
 handleFragment :: RequestCtx -> Aff Server.Response
 handleFragment ctx = do
-  result <- pageRenderer ctx.cfg ctx.route ctx.lang
+  result <- pageRenderer ctx.cfg ctx.route ctx.lang (statusFor ctx)
   case result of
     Left err -> failureFragment ctx err
     Right html ->
@@ -257,7 +257,7 @@ freshPage ctx = renderThen ctx (const (pure unit))
 -- | Render the page, hand the Html to `store` (which may cache it), respond.
 renderThen :: RequestCtx -> (Html -> Aff Unit) -> Aff Server.Response
 renderThen ctx store = do
-  result <- pageRenderer ctx.cfg ctx.route ctx.lang
+  result <- pageRenderer ctx.cfg ctx.route ctx.lang (statusFor ctx)
   case result of
     Left err -> failurePage ctx err
     Right html -> do

@@ -5,17 +5,14 @@ module App.Layout.Page where
 import Prelude
 
 import App.Error (AppError)
-import App.Form (FormStatus(..), formStatusQuery, statusText)
 import App.Html (Html, attr, class_, doctype, el, flag, href, name_, render, src, text)
 import App.Layout.Head (renderHead)
 import App.Layout.Scripts (HeadScript(..), renderHeadScript)
 import App.Layout.Styles (stylesCss)
-import App.Ui.Alert (AlertVariant(..), alert)
 import App.Ui.Templates.SiteShell as Shell
 import Data.Either (Either(..))
 import Data.Foldable (foldMap)
 import Data.I18n (Lang, dict, langTag)
-import Data.Maybe (Maybe, maybe)
 import Data.Route (Route, prefetchFor, routeUrl)
 import Effect.Aff (Aff)
 
@@ -25,19 +22,8 @@ bodyClass = "bg-base-100 text-base-content"
 staticPage :: Html -> Aff (Either AppError Html)
 staticPage = pure <<< Right
 
-maybeStatusBanner :: Lang -> Maybe FormStatus -> Html
-maybeStatusBanner lang = maybe (text "") \status ->
-  let
-    variant = case status of
-      FormSuccess -> AlertSuccess
-      FormError -> AlertError
-      FormSubscribed -> AlertSuccess
-  in
-    el "div" [ attr "data-form-status" (formStatusQuery status) ]
-      [ alert variant (statusText lang status) ]
-
-renderDocument :: String -> String -> Lang -> Route -> Maybe FormStatus -> Html -> String
-renderDocument baseUrl nonce lang route maybeStatus content =
+renderDocument :: String -> String -> Lang -> Route -> Html -> String
+renderDocument baseUrl nonce lang route content =
   render $
     doctype
       <> el "html" [ attr "lang" (langTag lang) ]
@@ -46,8 +32,7 @@ renderDocument baseUrl nonce lang route maybeStatus content =
             , renderPrefetch lang (prefetchFor route)
             ]
         , el "body" [ class_ bodyClass ]
-            [ maybeStatusBanner lang maybeStatus
-            , content
+            [ content
             , renderScripts nonce
             ]
         ]

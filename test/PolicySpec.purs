@@ -10,6 +10,7 @@ import App.Features.Posts.Types (Post(..))
 import App.Features.Posts.View as Posts
 import App.Html (render)
 import Data.I18n (Lang(..))
+import Data.Maybe (Maybe(..))
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions.String as StrAssert
 
@@ -18,19 +19,19 @@ spec =
   describe "PolicySpec" do
     describe "reference pages (page templates)" do
       it "home renders landing hero markers" do
-        let html = render (Home.renderHome En)
+        let html = render (Home.renderHome En Nothing)
         html `StrAssert.shouldContain` "text-4xl font-bold"
         html `StrAssert.shouldContain` "bg-base-200"
         html `StrAssert.shouldContain` "https://github.com/icarofr/pohjola-framework"
 
       it "contact renders three-column hub cards" do
-        let html = render (Contact.renderContact En)
+        let html = render (Contact.renderContact En Nothing)
         html `StrAssert.shouldContain` "data-template=\"hub-card\""
         html `StrAssert.shouldContain` "md:grid-cols-3"
         html `StrAssert.shouldContain` "flex-auto"
 
       it "about renders mission and values grid" do
-        let html = render (About.renderAbout En)
+        let html = render (About.renderAbout En Nothing)
         html `StrAssert.shouldContain` "Our mission"
         html `StrAssert.shouldContain` "lg:grid-cols-3"
 
@@ -43,6 +44,6 @@ spec =
               , title: "Sample post title"
               , body: "Excerpt body for the card grid."
               }
-          html = render (Posts.renderPostList En [ sample ])
+          html = render (Posts.renderPostList En Nothing [ sample ])
         html `StrAssert.shouldContain` "data-template=\"feed-card\""
         html `StrAssert.shouldContain` "line-clamp-3"

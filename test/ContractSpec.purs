@@ -14,7 +14,7 @@ import App.Alpine (Flag(..), NavChrome(..), ThemeMode(..), contentTarget, cycleT
 import App.Theme (themeInitScript, themeDarkName, themeLightName)
 import App.Config (Config)
 import App.Features.Home.View as Home
-import App.Form (contactFields, newsletterFields)
+import App.Form (FormStatus(..), contactFields, newsletterFields)
 import App.Layout.Head (renderJsonLd, escapeJson)
 import App.Layout.Page (renderErrorFragment, renderErrorPage, renderFragment, renderDocument, renderShellOpen, renderShellClose, renderPrefetch)
 import App.Main (pageRenderer)
@@ -70,9 +70,9 @@ testEmail s = fromMaybe (EmailAddress "fallback@example.com") (mkEmailAddress s)
 -- | is unreachable (callers pass `staticRoutes`) but keeps the match total.
 renderStaticPage :: Route -> Lang -> Aff String
 renderStaticPage route lang = do
-  result <- pageRenderer stubConfig route lang
+  result <- pageRenderer stubConfig route lang Nothing
   pure case result of
-    Right html -> renderDocument stubConfig.baseUrl "test-nonce-123" lang route Nothing html
+    Right html -> renderDocument stubConfig.baseUrl "test-nonce-123" lang route html
     Left _ -> ""
 
 -- | True when a headers array contains a header with the given name.
@@ -260,9 +260,15 @@ spec = do
         let frag = renderFragment lang Home (text "content")
         frag `StrAssert.shouldNotContain` "nonce="
 
+  describe "form status in fragment" do
+    it "Home with FormSuccess renders data-form-status inside #content" do
+      let html = render (Home.renderHome En (Just FormSuccess))
+      html `StrAssert.shouldContain` "data-form-status"
+      html `StrAssert.shouldContain` ("id=\"" <> contentTarget <> "\"")
+
   describe "fragment responses are fragment-shaped" do
     it "fragments are full template page div#content" do
-      let frag = renderFragment En Home (Home.renderHome En)
+      let frag = renderFragment En Home (Home.renderHome En Nothing)
       frag `StrAssert.shouldContain` "id=\"content\""
       frag `StrAssert.shouldContain` "data-template=\"site-header\""
       frag `StrAssert.shouldContain` "sticky top-0 z-50"

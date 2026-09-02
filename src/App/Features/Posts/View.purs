@@ -4,6 +4,7 @@ module App.Features.Posts.View where
 import Prelude
 
 import App.Features.Posts.Types (Post, postBody, postExcerpt, postId, postTitle)
+import App.Form (FormStatus)
 import App.Html (Html)
 import App.Ui.Templates.PageHeader as PageHeader
 import App.Ui.Templates.Render (renderPage)
@@ -15,15 +16,16 @@ import App.Ui.Templates.Types
   , feedSlots
   )
 import Data.I18n (Lang, dict)
+import Data.Maybe (Maybe)
 import Data.Route (Route(..))
 
-renderPostList :: Lang -> Array Post -> Html
-renderPostList lang posts =
+renderPostList :: Lang -> Maybe FormStatus -> Array Post -> Html
+renderPostList lang status posts =
   let
     d = (dict lang).posts
     nav = (dict lang).nav
   in
-    renderPage lang PostList
+    renderPage lang PostList status
       ( Feed
           ( feedSlots
               d.listTitle
@@ -35,15 +37,15 @@ renderPostList lang posts =
           )
       )
 
-renderPostDetail :: Lang -> Post -> Html
-renderPostDetail lang post =
+renderPostDetail :: Lang -> Maybe FormStatus -> Post -> Html
+renderPostDetail lang status post =
   let
     d = (dict lang).posts
     nav = (dict lang).nav
     idNum = postId post
     title = postTitle post
   in
-    renderPage lang (PostDetail idNum)
+    renderPage lang (PostDetail idNum) status
       ( Article
           ( articleSlots
               (d.articleTagPrefix <> show idNum)
@@ -58,9 +60,9 @@ renderPostDetail lang post =
           )
       )
 
-renderPostsError :: Lang -> Html
-renderPostsError lang =
-  renderPostList lang []
+renderPostsError :: Lang -> Maybe FormStatus -> Html
+renderPostsError lang status =
+  renderPostList lang status []
 
 postToCard :: Lang -> Post -> FeedCard
 postToCard lang post =

@@ -3,6 +3,7 @@ module App.Ui.Templates.Render
   ( renderPage
   ) where
 
+import App.Form (FormStatus)
 import App.Html (Html)
 import App.Ui.Templates.Article as Article
 import App.Ui.Templates.Editorial as Editorial
@@ -13,10 +14,11 @@ import App.Ui.Templates.Schedule as Schedule
 import App.Ui.Templates.SiteShell as Shell
 import App.Ui.Templates.Types (PageTemplate(..))
 import Data.I18n (Lang)
+import Data.Maybe (Maybe)
 import Data.Route (Route)
 
-renderPage :: Lang -> Route -> PageTemplate -> Html
-renderPage lang route template =
+renderPage :: Lang -> Route -> Maybe FormStatus -> PageTemplate -> Html
+renderPage lang route status template =
   let
     labels = Shell.shellLabels lang
     body = case template of
@@ -33,4 +35,4 @@ renderPage lang route template =
       Article slots ->
         Article.renderArticle lang route slots
   in
-    Shell.sitePage lang route labels body
+    Shell.sitePage lang route labels status body

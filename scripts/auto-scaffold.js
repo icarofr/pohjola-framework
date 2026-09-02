@@ -62,14 +62,16 @@ module App.Features.${name}.Page where
 
 import App.Error (AppError)
 import App.Features.${name}.View (render${name})
+import App.Form (FormStatus)
 import App.Html (Html)
 import App.Layout.Page (staticPage)
 import Data.Either (Either)
 import Data.I18n (Lang)
+import Data.Maybe (Maybe)
 import Effect.Aff (Aff)
 
-render :: Lang -> Aff (Either AppError Html)
-render lang = staticPage (render${name} lang)
+render :: Lang -> Maybe FormStatus -> Aff (Either AppError Html)
+render lang status = staticPage (render${name} lang status)
 `
   );
 
@@ -78,6 +80,7 @@ render lang = staticPage (render${name} lang)
     `-- | ${name} page view — fills Editorial template slots only.
 module App.Features.${name}.View where
 
+import App.Form (FormStatus)
 import App.Html (Html)
 import App.Ui.Templates.PageHeader as PageHeader
 import App.Ui.Templates.Render (renderPage)
@@ -91,9 +94,9 @@ import Data.I18n (Lang, dict)
 import Data.Maybe (Maybe(..))
 import Data.Route (Route(..))
 
-render${name} :: Lang -> Html
-render${name} lang =
-  renderPage lang ${name} (Editorial (pageSlots lang))
+render${name} :: Lang -> Maybe FormStatus -> Html
+render${name} lang status =
+  renderPage lang ${name} status (Editorial (pageSlots lang))
 
 pageSlots :: Lang -> EditorialSlots
 pageSlots lang =
@@ -191,23 +194,25 @@ import App.Config (Config)
 import App.Error (AppError)
 import App.Features.${name}.Service (fetch${name}, fetch${name}s)
 import App.Features.${name}.View (render${name}Detail, render${name}Error, render${name}List)
+import App.Form (FormStatus)
 import App.Html (Html)
 import Data.Either (Either(..))
 import Data.I18n (Lang)
+import Data.Maybe (Maybe)
 import Effect.Aff (Aff)
 
-renderList :: Config -> Lang -> Aff (Either AppError Html)
-renderList cfg lang = do
+renderList :: Config -> Lang -> Maybe FormStatus -> Aff (Either AppError Html)
+renderList cfg lang status = do
   result <- fetch${name}s cfg
   pure case result of
-    Right items -> Right (render${name}List lang items)
-    Left _ -> Right (render${name}Error lang)
+    Right items -> Right (render${name}List lang status items)
+    Left _ -> Right (render${name}Error lang status)
 
-renderDetail :: Config -> Lang -> Int -> Aff (Either AppError Html)
-renderDetail cfg lang id = do
+renderDetail :: Config -> Lang -> Int -> Maybe FormStatus -> Aff (Either AppError Html)
+renderDetail cfg lang id status = do
   result <- fetch${name} cfg id
   pure case result of
-    Right item -> Right (render${name}Detail lang item)
+    Right item -> Right (render${name}Detail lang status item)
     Left err -> Left err
 `
   );
@@ -220,6 +225,7 @@ module App.Features.${name}.View where
 import Prelude
 
 import App.Features.${name}.Types (${name}, ${lower}Body, ${lower}Id, ${lower}Title)
+import App.Form (FormStatus)
 import App.Html (Html)
 import App.Ui.Templates.PageHeader as PageHeader
 import App.Ui.Templates.Render (renderPage)
@@ -231,15 +237,16 @@ import App.Ui.Templates.Types
   , feedSlots
   )
 import Data.I18n (Lang, dict)
+import Data.Maybe (Maybe)
 import Data.Route (Route(..))
 
-render${name}List :: Lang -> Array ${name} -> Html
-render${name}List lang items =
+render${name}List :: Lang -> Maybe FormStatus -> Array ${name} -> Html
+render${name}List lang status items =
   let
     d = (dict lang).${lower}
     nav = (dict lang).nav
   in
-    renderPage lang ${name}
+    renderPage lang ${name} status
       ( Feed
           ( feedSlots
               d.heading
@@ -251,15 +258,15 @@ render${name}List lang items =
           )
       )
 
-render${name}Detail :: Lang -> ${name} -> Html
-render${name}Detail lang item =
+render${name}Detail :: Lang -> Maybe FormStatus -> ${name} -> Html
+render${name}Detail lang status item =
   let
     d = (dict lang).${lower}
     nav = (dict lang).nav
     idNum = ${lower}Id item
     title = ${lower}Title item
   in
-    renderPage lang ${name}
+    renderPage lang ${name} status
       ( Article
           ( articleSlots
               (d.heading <> " #" <> show idNum)
@@ -274,9 +281,9 @@ render${name}Detail lang item =
           )
       )
 
-render${name}Error :: Lang -> Html
-render${name}Error lang =
-  render${name}List lang []
+render${name}Error :: Lang -> Maybe FormStatus -> Html
+render${name}Error lang status =
+  render${name}List lang status []
 
 toCard :: Lang -> ${name} -> FeedCard
 toCard lang item =
@@ -433,12 +440,12 @@ if (wire) {
 
   const renderCase =
     type === "data"
-      ? `  ${name} -> ${name}.renderList cfg lang`
-      : `  ${name} -> ${name}.render lang`;
+      ? `  ${name} -> ${name}.renderList cfg lang status`
+      : `  ${name} -> ${name}.render lang status`;
 
   if (!mainContent.includes(renderCase)) {
     const pageRendererRe =
-      /(pageRenderer _?cfg route lang = case route of\n)([\s\S]*?)(\n\n-- \| Everything)/;
+      /(pageRenderer _?cfg route lang status = case route of\n)([\s\S]*?)(\n\n-- \| Everything)/;
     if (pageRendererRe.test(mainContent)) {
       mainContent = mainContent.replace(pageRendererRe, (match, header, cases, footer) => {
         if (cases.includes(renderCase)) return match;
@@ -447,7 +454,7 @@ if (wire) {
       });
     } else {
       mainContent = mainContent.replace(
-        /(pageRenderer :: Config -> Route -> Lang -> Aff \(Either AppError Html\)\s*\npageRenderer _?cfg route lang = case route of\s*\n[\s\S]*?PostDetail.*?\n)/,
+        /(pageRenderer :: Config -> Route -> Lang -> Maybe FormStatus -> Aff \(Either AppError Html\)\s*\npageRenderer _?cfg route lang status = case route of\s*\n[\s\S]*?PostDetail.*?\n)/,
         (match) => `${match}${renderCase}\n`
       );
     }

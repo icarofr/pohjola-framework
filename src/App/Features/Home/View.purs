@@ -3,6 +3,7 @@ module App.Features.Home.View where
 
 import Prelude
 
+import App.Form (FormStatus)
 import App.Html (Html)
 import App.Ui.Templates.Render (renderPage)
 import App.Ui.Templates.Types
@@ -16,11 +17,12 @@ import App.Ui.Templates.Types
   )
 import Data.Content (bookingUrl, services)
 import Data.I18n (Lang, dict)
+import Data.Maybe (Maybe)
 import Data.Route (Route(..))
 
-renderHome :: Lang -> Html
-renderHome lang =
-  renderPage lang Home (Landing (homeSlots lang))
+renderHome :: Lang -> Maybe FormStatus -> Html
+renderHome lang status =
+  renderPage lang Home status (Landing (homeSlots lang))
 
 homeSlots :: Lang -> LandingSlots
 homeSlots lang =

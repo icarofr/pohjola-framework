@@ -1,6 +1,7 @@
 -- | Community & Contributing — fills Hub template slots only.
 module App.Features.Contact.View where
 
+import App.Form (FormStatus)
 import App.Html (Html)
 import App.Ui.Templates.PageHeader as PageHeader
 import App.Ui.Templates.Render (renderPage)
@@ -12,11 +13,12 @@ import App.Ui.Templates.Types
   , hubSlots
   )
 import Data.I18n (Lang, dict)
+import Data.Maybe (Maybe)
 import Data.Route (Route(..))
 
-renderContact :: Lang -> Html
-renderContact lang =
-  renderPage lang Contact (Hub (contactSlots lang))
+renderContact :: Lang -> Maybe FormStatus -> Html
+renderContact lang status =
+  renderPage lang Contact status (Hub (contactSlots lang))
 
 contactSlots :: Lang -> HubSlots
 contactSlots lang =

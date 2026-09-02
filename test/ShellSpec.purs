@@ -6,6 +6,7 @@ import Prelude
 import App.Html (render, text)
 import App.Ui.Templates.SiteShell (shellLabels, sitePage)
 import Data.I18n (Lang(..))
+import Data.Maybe (Maybe(..))
 import Data.Route (Route(..))
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions.String (shouldContain)
@@ -18,7 +19,7 @@ spec = do
         labels = shellLabels En
         html =
           render
-            ( sitePage En Home labels
+            ( sitePage En Home labels Nothing
                 (text "inner")
             )
       html `shouldContain` "sticky top-0 z-50"
@@ -31,7 +32,7 @@ spec = do
       let
         html =
           render
-            ( sitePage En About (shellLabels En)
+            ( sitePage En About (shellLabels En) Nothing
                 (text "inner")
             )
       html
@@ -42,7 +43,7 @@ spec = do
       let
         html =
           render
-            ( sitePage En About (shellLabels En)
+            ( sitePage En About (shellLabels En) Nothing
                 (text "inner")
             )
       html
