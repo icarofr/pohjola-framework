@@ -16,7 +16,7 @@ import App.Config (Config)
 import App.Features.Home.View as Home
 import App.Form (contactFields, newsletterFields)
 import App.Layout.Head (renderJsonLd, escapeJson)
-import App.Layout.Page (renderErrorFragment, renderErrorPage, renderFragment, renderPage, renderShellOpen, renderShellClose, renderPrefetch)
+import App.Layout.Page (renderErrorFragment, renderErrorPage, renderFragment, renderDocument, renderShellOpen, renderShellClose, renderPrefetch)
 import App.Main (pageRenderer)
 import App.Server (RedirectKind(..), Response, cspWithNonce, errorStatusCode, fileResponse, htmlErrorResponse, internalError, methodNotAllowed, notFound, notModified, ok, okText, okTextPublic, okWith, redirect, redirectVary, securityHeaders, tooManyRequests)
 import App.Cache (insertDynamic, lookupDynamic, maxEntries, mkDynamicCache)
@@ -72,7 +72,7 @@ renderStaticPage :: Route -> Lang -> Aff String
 renderStaticPage route lang = do
   result <- pageRenderer stubConfig route lang
   pure case result of
-    Right html -> renderPage stubConfig.baseUrl "test-nonce-123" lang route Nothing html
+    Right html -> renderDocument stubConfig.baseUrl "test-nonce-123" lang route Nothing html
     Left _ -> ""
 
 -- | True when a headers array contains a header with the given name.

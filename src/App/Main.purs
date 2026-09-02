@@ -20,7 +20,7 @@ import App.Features.Fixtures.Page as Fixtures
 import App.Features.Home.Page as Home
 import App.Features.Posts.Page as Posts
 import App.Html (Html)
-import App.Layout.Page (renderErrorFragment, renderErrorPage, renderFragment, renderPage)
+import App.Layout.Page (renderErrorFragment, renderErrorPage, renderFragment, renderDocument)
 import App.Logger as Log
 import App.RateLimit (RateLimiter, RateLimitVerdict(..), checkRateLimit, mkRateLimiter)
 import App.Server as Server
@@ -144,8 +144,8 @@ statusFor ctx = Map.lookup "status" ctx.query >>= parseFormStatus
 fullPage :: RequestCtx -> Maybe FormStatus -> Html -> Server.Response
 fullPage ctx status html =
   case status of
-    Just _ -> Server.okWithNoStore [ varyHeader ] (renderPage ctx.cfg.baseUrl ctx.nonce ctx.lang ctx.route status html)
-    Nothing -> Server.okWith [ varyHeader ] (renderPage ctx.cfg.baseUrl ctx.nonce ctx.lang ctx.route status html)
+    Just _ -> Server.okWithNoStore [ varyHeader ] (renderDocument ctx.cfg.baseUrl ctx.nonce ctx.lang ctx.route status html)
+    Nothing -> Server.okWith [ varyHeader ] (renderDocument ctx.cfg.baseUrl ctx.nonce ctx.lang ctx.route status html)
 
 -- | Log a page-render failure. Shared by both error paths so the log shape
 -- | cannot drift between them.

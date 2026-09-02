@@ -170,7 +170,7 @@ withCsp nonce response =
 -- | Cache policy for successful HTML responses.
 -- |
 -- | `private` is not optional for a full page. Those embed a per-request CSP
--- | nonce (`renderPage` and `renderShellOpen` both take one). A
+-- | nonce (`renderDocument` and `renderShellOpen` both take one). A
 -- | shared cache storing such a response would replay one visitor's nonce to
 -- | every other visitor, which destroys the property that makes a nonce worth
 -- | having — unpredictability per response. CSP itself would not break, since

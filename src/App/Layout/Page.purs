@@ -1,4 +1,5 @@
--- | Full page shell — feature views supply complete page templates.
+-- | HTTP document wrapper — not the template entry. Feature views call
+-- | `App.Ui.Templates.Render.renderPage`.
 module App.Layout.Page where
 
 import Prelude
@@ -34,8 +35,8 @@ maybeStatusBanner lang = maybe (text "") \status ->
     el "div" [ attr "data-form-status" (formStatusQuery status) ]
       [ alert variant (statusText lang status) ]
 
-renderPage :: String -> String -> Lang -> Route -> Maybe FormStatus -> Html -> String
-renderPage baseUrl nonce lang route maybeStatus content =
+renderDocument :: String -> String -> Lang -> Route -> Maybe FormStatus -> Html -> String
+renderDocument baseUrl nonce lang route maybeStatus content =
   render $
     doctype
       <> el "html" [ attr "lang" (langTag lang) ]
