@@ -18,7 +18,8 @@ export BASE_URL ?= http://localhost:3000
 # spago bundle shells out to esbuild (devDependency, installed locally)
 export PATH := $(CURDIR)/node_modules/.bin:$(PATH)
 
-SPAGO := bun x spago
+BUN := $(shell command -v bun 2>/dev/null || echo $(HOME)/.bun/bin/bun)
+SPAGO := $(BUN) x spago
 
 .PHONY: all help deps assets assets-check dev watch css css-watch bundle build sync-static run test test/integration test/integration/down test/e2e check deploy image up down clean gate generator-policy design-policy fast local full ci-equivalent format format-check gen-sql new-feature evals eval
 
@@ -39,26 +40,26 @@ help:
 # Paths
 .PHONY: format
 format:
-	bun x purs-tidy format-in-place 'src/**/*.purs' 'test/**/*.purs'
+	$(BUN) x purs-tidy format-in-place 'src/**/*.purs' 'test/**/*.purs'
 
 ## format-check: verify formatting (runs in make check + CI)
 .PHONY: format-check
 format-check:
-	bun x purs-tidy check 'src/**/*.purs' 'test/**/*.purs'
+	$(BUN) x purs-tidy check 'src/**/*.purs' 'test/**/*.purs'
 
 ## gate: structural policy checks (Policy.Contract via Test.Gate)
 .PHONY: gate
 gate:
 	$(SPAGO) build --pure
-	bun -e "import { main } from './output/Test.Gate/index.js'; main()"
+	$(BUN) -e "import { main } from './output/Test.Gate/index.js'; main()"
 
 ## generator-policy: validate the canonical generator and App.Ui boundary
 .PHONY: generator-policy design-policy
 generator-policy:
-	@bun scripts/verify-generator-fixture.js
+	@$(BUN) scripts/verify-generator-fixture.js
 
 design-policy: generator-policy
-	@bun scripts/verify-theme.js
+	@$(BUN) scripts/verify-theme.js
 
 # ==================================================================================== #
 # DEPENDENCIES
@@ -68,7 +69,7 @@ design-policy: generator-policy
 .PHONY: deps
 deps:
 	git submodule update --init --depth 1 vendor/daisyui
-	bun install
+	$(BUN) install
 	$(SPAGO) install
 	$(MAKE) assets
 
@@ -102,25 +103,25 @@ assets-check:
 ## dev: CSS embed + static sync + hot reload (Tailwind, Spago, Bun)
 .PHONY: dev
 dev:
-	@bun scripts/dev.js
+	@$(BUN) scripts/dev.js
 
 ## watch: PureScript hot rebuild only (no server)
 .PHONY: watch
 watch:
-	@bun -e "const { spawn } = require('child_process'), fs = require('fs'); let t; console.log('[watch] Watching src/ for changes...'); fs.watch('src', { recursive: true }, (e, f) => { if (f && f.endsWith('.purs')) { clearTimeout(t); t = setTimeout(() => spawn('bun', ['spago', 'build', '--pure', '--strict'], { stdio: 'inherit' }), 100); } });"
+	@$(BUN) -e "const { spawn } = require('child_process'), fs = require('fs'); let t; console.log('[watch] Watching src/ for changes...'); fs.watch('src', { recursive: true }, (e, f) => { if (f && f.endsWith('.purs')) { clearTimeout(t); t = setTimeout(() => spawn('bun', ['spago', 'build', '--pure', '--strict'], { stdio: 'inherit' }), 100); } });"
 
 ## css: compile Tailwind CSS (minified) and embed into PureScript
 .PHONY: css
 css:
 	mkdir -p $(DIST_DIR)/css
-	bun x @tailwindcss/cli -i css/input.css -o $(DIST_DIR)/css/styles.css --minify
-	bun scripts/embed-css.js
+	$(BUN) x @tailwindcss/cli -i css/input.css -o $(DIST_DIR)/css/styles.css --minify
+	$(BUN) scripts/embed-css.js
 
 ## css-watch: Tailwind CSS hot reload
 .PHONY: css-watch
 css-watch:
 	mkdir -p $(DIST_DIR)/css
-	bun x @tailwindcss/cli -i css/input.css -o $(DIST_DIR)/css/styles.css --watch
+	$(BUN) x @tailwindcss/cli -i css/input.css -o $(DIST_DIR)/css/styles.css --watch
 
 # ==================================================================================== #
 # BUILD
@@ -154,14 +155,14 @@ sync-static:
 ## run: production bundle + local server (same CSS pipeline as deploy)
 .PHONY: run
 run: build
-	@eval $$(bun scripts/pick-port.js --export) && echo "[pohjola] Running at $$BASE_URL" && bun $(SERVER_BUNDLE_DIR)/server.js
+	@eval $$($(BUN) scripts/pick-port.js --export) && echo "[pohjola] Running at $$BASE_URL" && $(BUN) $(SERVER_BUNDLE_DIR)/server.js
 
 ## migrate: run pending database migrations (requires DATABASE_URL)
 ## Bundles with MIGRATE_ONLY=1 so the server exits after migrating.
 .PHONY: migrate
 migrate: bundle
 	DATABASE_URL=$${DATABASE_URL:-postgres://postgres:postgres@localhost:5432/app} \
-	MIGRATE_ONLY=1 bun $(SERVER_BUNDLE_DIR)/server.js
+	MIGRATE_ONLY=1 $(BUN) $(SERVER_BUNDLE_DIR)/server.js
 
 ## migrate-create: create a new empty migration file (usage: make migrate-create NAME=create_users)
 .PHONY: migrate-create
@@ -181,7 +182,7 @@ migrate-create:
 .PHONY: test
 test:
 	$(SPAGO) build --pure
-	bun -e "import { main } from './output/Test.Main/index.js'; main()"
+	$(BUN) -e "import { main } from './output/Test.Main/index.js'; main()"
 
 ## test/integration: run Venom HTTP tests via Docker Compose
 .PHONY: test/integration
@@ -196,7 +197,7 @@ test/integration/down:
 ## test/e2e: run Playwright browser tests (requires server running)
 .PHONY: test/e2e
 test/e2e:
-	bun x playwright test
+	$(BUN) x playwright test
 
 ## check: full pre-push validation (build + test — mirrors CI)
 .PHONY: check
@@ -222,17 +223,17 @@ ci-equivalent: full
 ## new-feature: scaffold a feature (usage: make new-feature NAME=Team [TYPE=data] [SLUG_FR=equipe] [WIRE=1] [CHROME=1])
 .PHONY: new-feature
 new-feature:
-	@bun scripts/auto-scaffold.js --name=$(NAME) $(if $(TYPE),--type=$(TYPE),) $(if $(SLUG_EN),--slug-en=$(SLUG_EN),) $(if $(SLUG_FR),--slug-fr=$(SLUG_FR),) $(if $(WIRE),--wire,) $(if $(CHROME),--chrome,)
+	@$(BUN) scripts/auto-scaffold.js --name=$(NAME) $(if $(TYPE),--type=$(TYPE),) $(if $(SLUG_EN),--slug-en=$(SLUG_EN),) $(if $(SLUG_FR),--slug-fr=$(SLUG_FR),) $(if $(WIRE),--wire,) $(if $(CHROME),--chrome,)
 
 ## ui-coverage: regenerate App.Ui ↔ DaisyUI coverage map
 .PHONY: ui-coverage
 ui-coverage:
-	@bun scripts/gen-ui-coverage.js
+	@$(BUN) scripts/gen-ui-coverage.js
 
 ## gen-sql: generate PureScript types & codecs from SQL migrations (usage: make gen-sql [FILE=migrations/001.sql] [TABLE=comments] [OUT=path])
 .PHONY: gen-sql
 gen-sql:
-	@$(SPAGO) build --quiet && bun --eval "import('./output/App.Cli.GenSql/index.js').then(m => m.main())" -- $${FILE:+"--file=$(FILE)"} $${TABLE:+"--table=$(TABLE)"} $${OUT:+"--out=$(OUT)"}
+	@$(SPAGO) build --quiet && $(BUN) --eval "import('./output/App.Cli.GenSql/index.js').then(m => m.main())" -- $${FILE:+"--file=$(FILE)"} $${TABLE:+"--table=$(TABLE)"} $${OUT:+"--out=$(OUT)"}
 
 # ==================================================================================== #
 # AGENT EVALS
@@ -241,12 +242,17 @@ gen-sql:
 ## evals: list available agent evals
 .PHONY: evals
 evals:
-	@bun evals/run-eval.js
+	@$(BUN) evals/run-eval.js
 
-## eval: run an agent eval (usage: make eval EVAL=01-add-page --check)
+## eval: show prompt (EVAL=01-add-page) or run checks (CHECK=1)
 .PHONY: eval
 eval:
-	@bun evals/run-eval.js $(EVAL) $(ARGS)
+ifndef EVAL
+	@echo 'Usage: make eval EVAL=01-add-page'
+	@echo '       make eval EVAL=01-add-page CHECK=1'
+	@exit 2
+endif
+	@$(BUN) evals/run-eval.js $(EVAL) $(if $(CHECK),--check,)
 
 # ==================================================================================== #
 # DOCKER

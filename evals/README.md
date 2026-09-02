@@ -30,8 +30,10 @@ then runs the assertions:
 make eval EVAL=01-add-page
 
 # After implementing, run the checks
-make eval EVAL=01-add-page --check
+make eval EVAL=01-add-page CHECK=1
 ```
+
+GNU/BSD Make treat `--check` as a Make flag/unknown option; it does **not** reach the recipe.
 
 Or directly:
 
@@ -47,7 +49,7 @@ bun evals/run-eval.js 01-add-page --check  # run assertions
 
 2. **Implement.** Make the change in the repo following the conventions.
 
-3. **Check.** Run `make eval EVAL=<name> --check`. All assertions must pass.
+3. **Check.** Run `make eval EVAL=<name> CHECK=1`. All assertions must pass.
    If any fail, read the convention doc the assertion encodes, fix, re-check.
 
 4. **Run `make check`.** The eval checks conventions; `make check` verifies the
