@@ -15,6 +15,7 @@ module Test.Policy.Scan
   , findFeaturesMissingView
   , findFilesMatching
   , findForbiddenAuthImports
+  , isForbiddenAuthImport
   , findForbiddenImportsInFiles
   , findForbiddenInFiles
   , findForeignImportsOutsideAllowlist
@@ -195,14 +196,13 @@ findForbiddenImportsInFiles modules files = do
       Left _ -> Nothing
   pure (mapMaybe identity results)
 
--- | `import App.Auth.Scaffold` contains substring `import App.Auth`.
--- | Flag lines matching `import App.Auth` that are not `import App.Auth.Scaffold`.
+-- | Any `import App.Auth` line is forbidden in Main/Features (including Scaffold).
+-- | Scaffold is allowed only in `test/` and `src/App/Auth/` — this scan does not cover those paths.
 isForbiddenAuthImport :: String -> Boolean
 isForbiddenAuthImport line =
   containsSubstring "import App.Auth" line
-    && not (containsSubstring "import App.Auth.Scaffold" line)
 
--- | Ban bare App.Auth imports in Main and Features (scaffold path excluded).
+-- | Ban all App.Auth imports in Main and Features (Scaffold included).
 findForbiddenAuthImports :: Aff (Array String)
 findForbiddenAuthImports = do
   featureFiles <- liftEffect $ pursFilesUnder "src/App/Features"

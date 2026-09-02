@@ -48,6 +48,11 @@ gateSpec =
       offenders <- Scan.findForbiddenAuthImports
       offenders `shouldEqual` []
 
+    it "isForbiddenAuthImport flags any App.Auth import line" do
+      Scan.isForbiddenAuthImport "import App.Auth (requireAuth)" `shouldEqual` true
+      Scan.isForbiddenAuthImport "import App.Auth.Scaffold (requireAuth)" `shouldEqual` true
+      Scan.isForbiddenAuthImport "import App.Features.Home.View as Home" `shouldEqual` false
+
     it "no forbidden patterns in feature views" do
       files <- liftGlob Policy.featureViewGlobPatterns
       offenders <- Scan.findForbiddenInFiles Policy.forbiddenInFeatureViews files
