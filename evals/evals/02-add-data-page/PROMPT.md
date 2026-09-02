@@ -1,1 +1,1 @@
-Add a /jobs page that fetches job listings from https://example.com/api/jobs and displays them as a list. Each job has a title and description.
+Add a /jobs page that fetches job listings from https://example.com/api/jobs and displays them as a list. Each job has a title and description. It must work in English, French, and Portuguese.

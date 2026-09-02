@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Eval 03: Add a form
-# Asserts: App.Form contract (honeypot, Submission type, decode), no client-side JS
+# Eval 03: Add a form via Form page template
+# Asserts: Beta View uses Form template, no App.Ui.Form in features, decode in App.Form, honeypot
 set -euo pipefail
 
 pass=0; fail=0
@@ -17,21 +17,14 @@ check() {
 echo "Eval 03: Add a form"
 echo ""
 
-# Uses the App.Form contract (not a hand-rolled form decoder)
-check "imports App.Form" "grep -r 'App.Form' src/App/Features/ 2>/dev/null | grep -iv 'import App.Form (FormStatus)' | head -1 | grep -q ."
-
-# Honeypot field present (the "website" field is the honeypot in App.Form)
-check "honeypot field (website)" "grep -ri 'website' src/App/Features/ 2>/dev/null | grep -iv 'import\|--' | head -1 | grep -q ."
-
-# No client-side JS (no x-data with functions, no onSubmit, no fetch in views)
-check "no onSubmit in views" "! grep -r 'onSubmit\|@submit' src/App/Features/ 2>/dev/null | grep -v '.purs'"
-check "no client-side fetch" "! grep -r 'fetch(' src/App/Features/ 2>/dev/null | grep -v '.purs'"
-
-# Decode returns a Submission type (pattern matching on variants)
-check "has Submission type" "grep -r 'Submission' src/App/ 2>/dev/null | grep -iv 'import\|--' | head -1 | grep -q ."
-
-# Form posts to same origin (no external action URLs)
-check "no external form action" "! grep -r 'action=\"http' src/App/Features/ 2>/dev/null"
+check "Beta/View.purs exists" "test -f src/App/Features/Beta/View.purs"
+check "View uses Form template" "grep -q 'Form' src/App/Features/Beta/View.purs"
+check "View uses Templates.Render" "grep -q 'App.Ui.Templates.Render' src/App/Features/Beta/View.purs"
+check "no App.Ui.Form in Features" "! grep -r 'import App.Ui.Form' src/App/Features/"
+check "decode lives in App.Form" "grep -q 'decodeBeta\|BetaSignup' src/App/Form.purs || grep -q 'beta' src/App/Form.purs"
+check "honeypot website" "grep -q 'website' src/App/Ui/Templates/Form.purs"
+check "no client-side fetch in Features" "! grep -r 'fetch(' src/App/Features/ 2>/dev/null | grep -v '.purs'"
+check "gate" "make gate >/dev/null 2>&1"
 
 echo ""
 echo "$pass passed, $fail failed"

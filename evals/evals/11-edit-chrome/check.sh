@@ -25,7 +25,7 @@ check "i18n has team copy" "grep -i 'team' src/Data/I18n.purs | grep -iv 'import
 
 echo ""
 echo "Running gate + tests..."
-if make gate && PATH="$HOME/.bun/bin:$PATH" make test; then
+if make gate && make test; then
   echo "  ✓ make gate && make test"
   pass=$((pass + 1))
 else

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Eval 01: Add a static page
-# Asserts: page structure (Page.purs + Layout.Page), route added, i18n in both langs
+# Asserts: Page+View, Templates.Render, route, i18n, no FFI, gate
 set -euo pipefail
 
 pass=0; fail=0
@@ -17,20 +17,15 @@ check() {
 echo "Eval 01: Add a static page"
 echo ""
 
-# Page exists and uses Layout.Page (not hand-rolled HTML shell)
 check "Team/Page.purs exists" "test -f src/App/Features/Team/Page.purs"
-check "uses Layout.Page" "grep -q 'App.Layout.Page' src/App/Features/Team/Page.purs"
-check "no hand-rolled doctype/html" "! grep -qi '<!doctype\|<html' src/App/Features/Team/Page.purs"
-
-# Route added to Route.purs
-check "Route has Team constructor" "grep -q 'Team' src/Data/Route.purs"
-
-# i18n: both languages have entries
+check "Team/View.purs exists" "test -f src/App/Features/Team/View.purs"
+check "View uses Templates.Render" "grep -q 'App.Ui.Templates.Render' src/App/Features/Team/View.purs"
+check "Page uses staticPage" "grep -q 'App.Layout.Page' src/App/Features/Team/Page.purs"
+check "no class_ in View" "! grep -q 'class_' src/App/Features/Team/View.purs"
+check "Route has Team" "grep -q 'Team' src/Data/Route.purs"
 check "I18n has team entries" "grep -i 'team' src/Data/I18n.purs | grep -iv 'import\|--' | head -1 | grep -q ."
-
-# No FFI or raw used for a static page
-check "no FFI in Team feature" "! grep -r 'foreign import' src/App/Features/Team/ 2>/dev/null"
-check "no raw in Team feature" "! grep -r '\braw\b' src/App/Features/Team/ 2>/dev/null"
+check "no FFI" "! grep -r 'foreign import' src/App/Features/Team/"
+check "gate" "make gate >/dev/null 2>&1"
 
 echo ""
 echo "$pass passed, $fail failed"

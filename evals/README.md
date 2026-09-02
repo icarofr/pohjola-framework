@@ -10,7 +10,7 @@ Eval `check.js` / `check.sh` scripts should delegate to those tiers instead of d
 grep rules.
 
 The point: find places where agents get the conventions wrong, then fix it by
-improving the docs in `docs/conventions/` and `docs/AGENT_CONTEXT.md`.
+improving the docs in `docs/conventions/` and `AGENTS.md`.
 
 ## How it works
 
@@ -82,7 +82,8 @@ make test
 For task-specific checks (route wired, module exists), targeted greps are fine:
 
 ```bash
-check "uses Layout.Page" "grep -q 'App.Layout.Page' src/App/Features/Team/Page.purs"
+check "View uses Templates.Render" "grep -q 'App.Ui.Templates.Render' src/App/Features/Team/View.purs"
+check "Page uses Layout.Page" "grep -q 'App.Layout.Page' src/App/Features/Team/Page.purs"
 check "route added" "grep -q 'Team' src/Data/Route.purs"
 ```
 

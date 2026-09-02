@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Eval 09: Script Security & Isolation
-# Asserts: el "script" only exists in App.Layout.Scripts and App.Layout.Page, no raw JS
+# Asserts: no el "script" in Features; structural policy via make gate
 set -euo pipefail
 
 pass=0; fail=0
@@ -17,13 +17,10 @@ check() {
 echo "Eval 09: Script Security & Isolation"
 echo ""
 
-# Script elements restricted exclusively to App.Layout.Scripts and App.Layout.Page
-check "no script outside Layout.Scripts and Layout.Page" "! grep -rn 'el \"script\"' src/ | grep -v '^src/App/Layout/Scripts\.purs:' | grep -v '^src/App/Layout/Page\.purs:'"
+# Features must not emit script elements (allowlist lives in Layout + Policy.Contract)
+check "no el script in Features" "! grep -rn 'el \"script\"' src/App/Features/"
 
-# No raw HTML escape hatch in source
-check "no raw/Raw in src/" "! grep -rnE '\braw\b|\bRaw\b' src/"
-
-# Gate check succeeds
+# Gate already covers raw/Raw, script allowlist, FFI, etc.
 check "passes make gate" "make gate >/dev/null 2>&1"
 
 echo ""

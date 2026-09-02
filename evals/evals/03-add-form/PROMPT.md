@@ -1,1 +1,1 @@
-Add a beta signup form to the /home page. It should collect a name and email address, submit to /api/beta-signup, and show a success message after submission.
+Add a /beta page with a signup form that collects a name and email, posts to /api/beta-signup, and shows a success message after submission. Use the Form page template (not App.Ui.Form in the feature).
