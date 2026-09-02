@@ -70,7 +70,7 @@ gateSpec =
 
     it "feature views do not concatenate el tags" do
       files <- liftGlob Policy.featureViewGlobPatterns
-      offenders <- Scan.findForbiddenInFiles ["el ("] files
+      offenders <- Scan.findForbiddenInFiles [ "el (" ] files
       offenders `shouldEqual` []
 
     it "no raw Alpine strings outside App.Alpine" do
