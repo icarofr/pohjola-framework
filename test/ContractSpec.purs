@@ -283,6 +283,12 @@ spec = do
     it "the error fragment carries the swap target so Alpine can replace it" do
       let frag = renderErrorFragment En Home 404
       frag `StrAssert.shouldContain` ("id=\"" <> contentTarget <> "\"")
+    it "error fragment is a SiteShell drawer with data-page-title" do
+      let html = renderErrorFragment En Home 404
+      html `StrAssert.shouldContain` ("id=\"" <> contentTarget <> "\"")
+      html `StrAssert.shouldContain` "data-page-title"
+      html `StrAssert.shouldContain` "data-template=\"site-header\""
+      html `StrAssert.shouldNotContain` "<!DOCTYPE"
     it "the error fragment shows the status and localized message" do
       let frag = renderErrorFragment En Home 404
       frag `StrAssert.shouldContain` "404"

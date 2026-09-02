@@ -187,11 +187,11 @@ test.describe("Alpine AJAX navigation", () => {
     page,
   }) => {
     await page.goto("/en");
-    for (const [path, expectTemplate] of [
+    for (const [path, expectOk] of [
       ["/en/about", true],
       ["/en/definitely-not-a-route", false],
     ]) {
-      const result = await page.evaluate(async ([url, template]) => {
+      const result = await page.evaluate(async ([url, ok]) => {
         const response = await fetch(url, {
           headers: { "x-alpine-request": "true" },
         });
@@ -209,15 +209,31 @@ test.describe("Alpine AJAX navigation", () => {
           ),
           forbidden: parsed.body.querySelectorAll("html,body,script,link,style")
             .length,
-          template,
+          ok,
         };
-      }, [path, expectTemplate]);
-      expect(result.hasContent, path).toBe(expectTemplate);
-      if (expectTemplate) {
-        expect(result.hasHeader, path).toBe(true);
-      }
+      }, [path, expectOk]);
+      expect(result.hasContent, path).toBe(true);
+      expect(result.hasHeader, path).toBe(true);
       expect(result.forbidden, path).toBe(0);
-      expect(result.status, path).toBe(expectTemplate ? 200 : 404);
+      expect(result.status, path).toBe(expectOk ? 200 : 404);
     }
+  });
+
+  test("404 fragment keeps drawer chrome and data-page-title", async ({ page }) => {
+    await page.goto("/en");
+    await page.evaluate(async () => {
+      const r = await fetch("/en/no-such-page", {
+        headers: { "x-alpine-request": "true" },
+      });
+      const h = await r.text();
+      const d = new DOMParser().parseFromString(h, "text/html");
+      const n = d.getElementById("content");
+      const o = document.getElementById("content");
+      if (!n || !o) throw new Error("missing #content");
+      o.replaceWith(n);
+    });
+    await expect(page.locator("header[data-template='site-header']")).toBeVisible();
+    await expect(page.locator("div#content[data-page-title]")).toBeVisible();
+    expect(await page.locator("html").count()).toBe(1);
   });
 });

@@ -6,11 +6,12 @@ import Prelude
 
 import App.Error (AppError)
 import App.Form (FormStatus(..), formStatusQuery, statusText)
-import App.Html (Html, attr, class_, doctype, el, flag, href, id_, name_, render, src, text)
+import App.Html (Html, attr, class_, doctype, el, flag, href, name_, render, src, text)
 import App.Layout.Head (renderHead)
 import App.Layout.Scripts (HeadScript(..), renderHeadScript)
 import App.Layout.Styles (stylesCss)
 import App.Ui.Alert (AlertVariant(..), alert)
+import App.Ui.Templates.SiteShell as Shell
 import Data.Either (Either(..))
 import Data.Foldable (foldMap)
 import Data.I18n (Lang, dict, langTag)
@@ -60,25 +61,9 @@ renderFragment :: Lang -> Route -> Html -> String
 renderFragment _ _ content =
   render content
 
-errorContent :: Lang -> Int -> Html
-errorContent lang status =
-  let
-    d = dict lang
-    message = case status of
-      404 -> d.common.error404
-      _ -> d.common.error500
-  in
-    el "div" [ class_ "bg-base-100 text-base-content", id_ "content" ]
-      [ el "div" [ class_ "mx-auto max-w-7xl px-6 py-32 text-center lg:px-8" ]
-          [ el "h1" [ class_ "text-5xl font-semibold tracking-tight text-base-content" ]
-              [ text (show status) ]
-          , el "p" [ class_ "mt-6 text-lg text-base-content opacity-70" ] [ text message ]
-          ]
-      ]
-
 renderErrorFragment :: Lang -> Route -> Int -> String
 renderErrorFragment lang _ status =
-  render (errorContent lang status)
+  render (Shell.siteErrorPage lang status)
 
 renderErrorPage :: String -> Lang -> Int -> String
 renderErrorPage nonce lang status =
@@ -97,7 +82,7 @@ renderErrorPage nonce lang status =
               , renderHeadScript nonce DarkModeInit
               ]
           , el "body" [ class_ bodyClass ]
-              [ errorContent lang status
+              [ Shell.siteErrorPage lang status
               , renderScripts nonce
               ]
           ]

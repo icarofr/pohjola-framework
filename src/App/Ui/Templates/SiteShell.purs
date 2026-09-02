@@ -2,6 +2,7 @@
 module App.Ui.Templates.SiteShell
   ( ShellLabels
   , sitePage
+  , siteErrorPage
   , shellLabels
   ) where
 
@@ -95,10 +96,14 @@ homeLabelText Pt = "Início"
 
 sitePage :: Lang -> Route -> ShellLabels -> Html -> Html
 sitePage lang route labels content =
+  sitePageTitled lang route (routeTitle lang route) labels content
+
+sitePageTitled :: Lang -> Route -> String -> ShellLabels -> Html -> Html
+sitePageTitled lang route title labels content =
   el "div"
     ( [ class_ "drawer drawer-end min-h-full bg-base-100 text-base-content"
       , id_ contentTarget
-      , attr "data-page-title" (routeTitle lang route)
+      , attr "data-page-title" title
       , attr "data-page-lang" (langTag lang)
       ]
         <> pageSyncAttrs lang route
@@ -120,6 +125,27 @@ sitePage lang route labels content =
         ]
     , renderDrawerSide lang route labels
     ]
+
+siteErrorPage :: Lang -> Int -> Html
+siteErrorPage lang statusCode =
+  let
+    labels = shellLabels lang
+    title = show statusCode <> " — " <> labels.siteTitle
+    body =
+      el "div" [ class_ "mx-auto max-w-3xl px-6 py-24 text-center" ]
+        [ el "h1" [ class_ "text-5xl font-semibold tracking-tight" ] [ text (show statusCode) ]
+        , el "p" [ class_ "mt-6 text-lg opacity-70" ] [ text (errorMessage lang statusCode) ]
+        ]
+  in
+    -- Reuse the drawer wrapper so Alpine replaceWith and TitleSync keep working.
+    sitePageTitled lang Home title labels body
+
+errorMessage :: Lang -> Int -> String
+errorMessage lang status =
+  let
+    d = dict lang
+  in
+    if status == 404 then d.common.error404 else d.common.error500
 
 renderHeader :: Lang -> Route -> ShellLabels -> Html
 renderHeader lang route labels =
