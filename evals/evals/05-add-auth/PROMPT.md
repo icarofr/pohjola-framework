@@ -1,1 +1,1 @@
-Add login and logout to the site. Users should be able to log in with email and password and see a protected dashboard page at /dashboard.
+Add login and a /dashboard. Follow accepted ADRs. If production auth is not implemented, do not wire the in-memory scaffold.

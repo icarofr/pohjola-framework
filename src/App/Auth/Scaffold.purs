@@ -1,10 +1,6 @@
--- | Authentication and session management — the single boundary for auth flows.
--- |
--- | Contract: no inline session checks in App.Main or feature modules.
--- | All cookie -> Session resolution goes through `requireAuth`.
--- |
--- | Follows ADR-002 (Auth shape), ADR-004 (Sessions), and ADR-005 (CSRF).
-module App.Auth
+-- | UNAUTHORIZED FOR PRODUCTION. In-memory store, wrong cookie name.
+-- | ADR-002 / GUARANTEES: do not import from App.Main or App.Features.
+module App.Auth.Scaffold
   ( UserId(..)
   , SessionId(..)
   , Session(..)

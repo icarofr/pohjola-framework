@@ -101,7 +101,7 @@ implements them:
 The session constraints above are specified by ADR-002, ADR-004, and ADR-005.
 The SQL pool lifecycle is specified by ADR-009 Phase 3B. Until that source work
 lands, they must not be reported as runtime-enforced guarantees. Note:
-`App.Auth.purs` is non-compliant scaffold (in-memory store, wrong cookie name)
+`App.Auth.Scaffold` is non-compliant scaffold (in-memory store, wrong cookie name)
 and is not wired into `Main` — do not treat it as the approved shape.
 
 ## Keeping it true

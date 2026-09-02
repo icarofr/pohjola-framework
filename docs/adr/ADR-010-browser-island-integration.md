@@ -1,6 +1,6 @@
 # ADR-010: Browser-island integration for browser-heavy features (proposal)
 
-**Status:** Proposed — under discussion; **not accepted**
+**Status:** Proposed — **not accepted**. Do not implement. Do not treat this document as a feature recipe.
 **Date:** 2026-08-11
 
 > This is a discussion draft, not an accepted architectural decision. It does

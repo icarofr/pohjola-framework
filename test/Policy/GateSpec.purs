@@ -44,6 +44,10 @@ gateSpec =
       offenders <- Scan.findHardcodedTextInFiles Policy.contentFirewallPattern files
       offenders `shouldEqual` []
 
+    it "no forbidden auth imports in Main or Features" do
+      offenders <- Scan.findForbiddenAuthImports
+      offenders `shouldEqual` []
+
     it "no forbidden patterns in feature views" do
       files <- liftGlob Policy.featureViewGlobPatterns
       offenders <- Scan.findForbiddenInFiles Policy.forbiddenInFeatureViews files

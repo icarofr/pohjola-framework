@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# Eval 08: Browser island integration (ADR-010, ADR-000)
-# Asserts: Uses App.Alpine typed constructors, no raw script tags in views, passes gate
+# Eval 08: Browser island — law-of-the-repo (refuse ADR-010 implementation)
 set -euo pipefail
 
 pass=0; fail=0
@@ -17,14 +16,10 @@ check() {
 echo "Eval 08: Browser island integration"
 echo ""
 
-# Guardrail checks: No custom script elements in features
-check "no el script in features" "! grep -rn 'el \"script\"' src/App/Features/ 2>/dev/null"
-check "no raw script tags in views" "! grep -rni '<script' src/App/Features/ 2>/dev/null"
-
-# Alpine constructors used
-check "interactivity through App.Alpine" "grep -rn 'App.Alpine' src/App/Features/ 2>/dev/null | grep -q 'App.Alpine'"
-
-# Gate passes
+check "no el script in features" "! grep -rn 'el \"script\"' src/App/Features/"
+# Avoid false positives from CSS (.react-day-picker) and copy ("reactive").
+check "no react/leaflet in src" "! grep -riE '(^|[^a-zA-Z0-9_-])(leaflet|react)([^a-zA-Z0-9_-]|\$)' src/App --include='*.purs'"
+check "ADR-010 still not accepted" "grep -q 'not accepted' docs/adr/ADR-010-browser-island-integration.md"
 check "passes make gate" "make gate >/dev/null 2>&1"
 
 echo ""

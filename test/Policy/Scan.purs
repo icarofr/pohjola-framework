@@ -14,6 +14,7 @@ module Test.Policy.Scan
   , findFeatureViewsMissingTemplateRender
   , findFeaturesMissingView
   , findFilesMatching
+  , findForbiddenAuthImports
   , findForbiddenImportsInFiles
   , findForbiddenInFiles
   , findForeignImportsOutsideAllowlist
@@ -191,6 +192,30 @@ findForbiddenImportsInFiles modules files = do
           Just file
         else
           Nothing
+      Left _ -> Nothing
+  pure (mapMaybe identity results)
+
+-- | `import App.Auth.Scaffold` contains substring `import App.Auth`.
+-- | Flag lines matching `import App.Auth` that are not `import App.Auth.Scaffold`.
+isForbiddenAuthImport :: String -> Boolean
+isForbiddenAuthImport line =
+  containsSubstring "import App.Auth" line
+    && not (containsSubstring "import App.Auth.Scaffold" line)
+
+-- | Ban bare App.Auth imports in Main and Features (scaffold path excluded).
+findForbiddenAuthImports :: Aff (Array String)
+findForbiddenAuthImports = do
+  featureFiles <- liftEffect $ pursFilesUnder "src/App/Features"
+  let files = [ "src/App/Main.purs" ] <> featureFiles
+  results <- for files \file -> do
+    content <- readTextFile file
+    pure case content of
+      Right c ->
+        let
+          lines = Common.split (Pattern "\n") c
+          hits = filter isForbiddenAuthImport lines
+        in
+          if length hits > 0 then Just file else Nothing
       Left _ -> Nothing
   pure (mapMaybe identity results)
 

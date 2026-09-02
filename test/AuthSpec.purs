@@ -3,7 +3,7 @@ module Test.AuthSpec (spec) where
 
 import Prelude
 
-import App.Auth (Session(..), SessionId(..), UserId(..), createSession, destroySession, formatClearSessionCookie, formatSessionCookie, hashPassword, mkSessionStore, parseSessionCookie, requireAuth, verifyPassword)
+import App.Auth.Scaffold (Session(..), SessionId(..), UserId(..), createSession, destroySession, formatClearSessionCookie, formatSessionCookie, hashPassword, mkSessionStore, parseSessionCookie, requireAuth, verifyPassword)
 import App.Error (AppError(..))
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
@@ -14,7 +14,7 @@ import Test.Spec.Assertions.String (shouldContain)
 
 spec :: Spec Unit
 spec = do
-  describe "App.Auth" do
+  describe "App.Auth.Scaffold" do
     describe "Cookie parsing and formatting" do
       it "extracts session_id from cookie header" do
         parseSessionCookie "session_id=abc123token" `shouldEqual` Just (SessionId "abc123token")
