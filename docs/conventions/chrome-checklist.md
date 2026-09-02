@@ -61,4 +61,4 @@ Never duplicate `btn-active` / `menu-active` logic in `SiteShell` — extend `na
 - [ ] Nav links use `navLink` + `navLinkClasses`, not bespoke active classes.
 - [ ] `Contract.marker` attributes unchanged unless intentional.
 - [ ] `make gate` + `make test` pass.
-- [ ] Eval: `make eval EVAL=11-edit-chrome --check` after nav/chrome edits.
+- [ ] Eval: `make eval EVAL=11-edit-chrome CHECK=1` after nav/chrome edits.

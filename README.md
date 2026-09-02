@@ -46,26 +46,27 @@ Incoming Request -> PureScript Route Codec -> Typed Service -> Algebraic Html AD
 From incoming HTTP request down to emitted DOM fragments, application-level shapes are checked by the PureScript compiler; runtime behavior, FFI, infrastructure, and application intent remain outside that guarantee:
 
 ```purescript
--- 1. Total bidirectional routing (one codec per language)
---    "/fr/articles" <-> Just { lang: Fr, route: PostList }
+-- Feature views fill template slots only (no class_ / layout soup).
+-- See src/App/Features/About/View.purs
 
--- 2. Typed data fetching with explicit error values (never thrown)
-renderList :: Config -> Lang -> Aff (Either AppError Html)
-renderList cfg lang = do
-  result <- fetchPosts cfg
-  pure case result of
-    Right posts -> Right (renderPostList lang posts)
-    Left _      -> Right (renderPostsError lang)
+renderAbout :: Lang -> Maybe FormStatus -> Html
+renderAbout lang status =
+  renderPage lang About status (Editorial (aboutSlots lang))
 
--- 3. Algebraic closed HTML ADT (centralized escaping limits XSS risk)
-renderPostList :: Lang -> Array Post -> Html
-renderPostList lang posts =
-  container "max-w-7xl" "py-16 sm:py-24"
-    [ el "h1" [ class_ "text-4xl font-bold text-gray-900 dark:text-white" ]
-        [ text (dict lang).posts.listTitle ]
-    , el "div" [ class_ "mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" ]
-        (map (renderPostCard lang) posts)
-    ]
+aboutSlots :: Lang -> EditorialSlots
+aboutSlots lang =
+  let
+    d = (dict lang).about
+    nav = (dict lang).nav
+  in
+    editorialSlots
+      d.heading
+      (Just d.subtitle)
+      d.mission
+      (valuesSlotsFromArray d.values.heading d.values.intro d.values.items)
+      [ PageHeader.breadcrumbHome lang nav.home
+      , PageHeader.breadcrumbHere nav.about
+      ]
 ```
 
 Feature logic lives in isolated domain modules. Asynchronous effects compose cleanly through `Aff`. Alpine.js provides reactive micro-interactivity through typed constructors: the browser always receives complete, semantic HTML first.
@@ -91,7 +92,7 @@ Feature logic lives in isolated domain modules. Asynchronous effects compose cle
 ### Built for AI Agents: Zero-Drift by Construction
 In loosely typed stacks, AI coding assistants frequently hallucinate missing properties, drop edge cases, forget localized translation keys, or produce inconsistent "utility soup" layouts.
 - **Mechanical Logic Enforcement:** An agent cannot declare a route without completing its bidirectional codec, sitemap entry, and dictionary entries for every language in `allLangs`.
-- **Visual Drift Prevention (daisyUI + page templates):** Raw layout utility soup in views is forbidden. `App.Ui.Templates` owns page chrome and section recipes on **daisyUI 5**; agents fill typed slot records (`Landing`, `Hub`, `Editorial`, `Feed`, `Article`). This limits structural drift; the type system does not guarantee pixels or intent.
+- **Visual Drift Prevention (daisyUI + page templates):** Raw layout utility soup in views is forbidden. `App.Ui.Templates` owns page chrome and section recipes on **daisyUI 5**; agents fill typed slot records (`Landing`, `Hub`, `Editorial`, `Feed`, `Article`, `Schedule`, `Form`). This limits structural drift; the type system does not guarantee pixels or intent.
 - **Fast Guardrails:** `Policy.Contract` (`src/Policy/Contract.purs`) is the single source of truth. `make gate` (`Test.Gate`) enforces structural policy; `PolicySpec` (`make test`) adds reference-page archetypes; `ContractSpec` pins CSP, Alpine seams, and security headers.
 
 ---
@@ -134,8 +135,9 @@ Pohjola's guarantees are not documentation conventions. They are mechanically ve
 - [x] **Errors as Values**: Async data boundaries strictly return `Aff (Either AppError a)`.
 - [x] **Scrutinized FFI Floor**: Foreign JavaScript imports are restricted to four allowlisted modules in `Policy.Contract` (`App.ServerBun`, `App.FetchBun`, `App.Bun`, `App.Data.SQL`).
 - [x] **Pinned Security Policy (CSP)**: Nonce-based Content Security Policy verified byte-exact in `test/ContractSpec.purs`.
-- [x] **UI Archetype Policy**: Feature views consume `App.Ui.Templates` slot records only — no `class_` in feature views (`Policy.Contract` + `Test.Gate`).
+- [x] **UI Archetype Policy**: UI: gate requires Templates.Render in every View; class_ banned (`Policy.Contract` + `Test.Gate`).
 - [x] **Total multilingual routing**: Derived via `routing-duplex`; missing translations or routes fail at compile time (`allLangs`: En, Fr, Pt).
+- [x] **Agent evals**: `make eval EVAL=10-ui-archetypes CHECK=1` (and matching evals for page/chrome/UI) after convention changes.
 
 > For an in-depth breakdown of guarantees, see [`docs/GUARANTEES.md`](docs/GUARANTEES.md).
 

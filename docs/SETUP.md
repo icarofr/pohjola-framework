@@ -42,12 +42,12 @@ ADRs are part of the deliverable — not the demo features they happen to cover.
     anything-architectural: persistence, auth, a second data feature. The
     ADR is how the next agent (or future you) learns *why*. See `docs/adr/`
     for the existing set and their shape.
-13. **Update `docs/AGENT_CONTEXT.md`** — replace the boilerplate "always load"
-    list with your app's core files (your `Data.*` and `App.*` modules), and
-    keep the "What NOT to do" table pointing at *your* enforcement.
+13. **Keep `AGENTS.md` accurate** — agent entry point and safety floor for this
+    tree (and forks). Point app-specific guidance there; do not revive
+    `docs/AGENT_CONTEXT.md` (stub only).
 14. **First feature** — copy the Posts pattern (data-backed:
-    `Types`/`Service`/`Page`/`View` + `App.Data.Fetch`) or the Home/Contact
-    pattern (static: `Page` + `View`, compose via `App.Ui.Templates.renderPage`). Never
+    `Types`/`Service`/`Page`/`View` + `App.Data.Fetch`) or the About pattern
+    (static: `Page` + `View`, compose via `App.Ui.Templates.Render.renderPage`). Never
     invent a third shape; if one is genuinely needed, write the ADR first
     (backlog #14).
 

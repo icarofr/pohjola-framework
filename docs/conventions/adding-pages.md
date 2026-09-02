@@ -5,9 +5,9 @@
 
 **Fast path:** `make new-feature NAME=Team WIRE=1` scaffolds files and wires
 Route, Main, I18n, and Head. Then add navigation in `SiteShell` per
-[`chrome-checklist.md`](chrome-checklist.md) or use `CHROME=1`. Verify with `make eval EVAL=01-add-page --check`
-and `make eval EVAL=11-edit-chrome --check` when nav changes.
-Component/template UI: [`component-checklist.md`](component-checklist.md), [`page-architectures`](../superpowers/specs/2026-08-31-page-architectures.md), `make eval EVAL=12-add-ui-component --check`.
+[`chrome-checklist.md`](chrome-checklist.md) or use `CHROME=1`. Verify with `make eval EVAL=01-add-page CHECK=1`
+and `make eval EVAL=11-edit-chrome CHECK=1` when nav changes.
+Component/template UI: [`component-checklist.md`](component-checklist.md), [`page-architectures`](../superpowers/specs/2026-08-31-page-architectures.md), `make eval EVAL=12-add-ui-component CHECK=1`.
 
 ## Component architecture (rule)
 

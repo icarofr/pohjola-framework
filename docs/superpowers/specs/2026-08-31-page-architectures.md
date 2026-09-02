@@ -68,8 +68,8 @@ Do not duplicate `<h1>` / lead copy in feature views — pass `title` / `subtitl
 
 - `make gate` — no `class_` in features, closed template surface
 - `make test` — `TemplateContractSpec` structural markers
-- `make eval EVAL=10-ui-archetypes --check` — policy + doc presence
-- `make eval EVAL=12-add-ui-component --check` — after template/primitive changes
+- `make eval EVAL=10-ui-archetypes CHECK=1` — policy + doc presence
+- `make eval EVAL=12-add-ui-component CHECK=1` — after template/primitive changes
 
 ## Related
 

@@ -12,6 +12,7 @@ console.log("");
 const pageArchitectures =
   "docs/superpowers/specs/2026-08-31-page-architectures.md";
 const componentChecklist = "docs/conventions/component-checklist.md";
+const designSystem = "docs/conventions/design-system.md";
 const uiBlueprint = "docs/superpowers/specs/2026-08-30-ui-blueprint-recipe.md";
 
 if (!(await exists(pageArchitectures))) {
@@ -20,13 +21,16 @@ if (!(await exists(pageArchitectures))) {
 }
 
 const checklist = await readText(componentChecklist);
+const design = await readText(designSystem);
 const blueprint = await readText(uiBlueprint);
 const architectures = await readText(pageArchitectures);
 
 const required = [
   [ "component-checklist documents Schedule", () => checklist.includes("`Schedule`") ],
   [ "component-checklist warns against Feed for schedules", () => checklist.includes("Do not") && checklist.includes("Schedule") ],
-  [ "ui-blueprint documents Schedule", () => blueprint.includes("`Schedule`") ],
+  [ "design-system documents Schedule", () => design.includes("`Schedule`") ],
+  [ "design-system documents Form", () => design.includes("`Form`") ],
+  [ "ui-blueprint points at page-architectures", () => blueprint.includes("2026-08-31-page-architectures.md") ],
   [ "page-architectures lists Feed anti-pattern", () => architectures.includes("Feed") && architectures.includes("Schedule") ],
   [ "page-architectures references vendor daisyUI skills", () => architectures.includes("vendor/daisyui/skills") ],
 ];

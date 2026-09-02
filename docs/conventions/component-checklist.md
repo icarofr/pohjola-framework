@@ -52,7 +52,7 @@ When a page type needs new optional UI (breadcrumbs, stats row, aside):
 3. Add a `Contract` marker if the slot is test-visible.
 4. Update exemplar feature view (e.g. `Contact/View.purs` for Hub breadcrumbs).
 5. Extend `TemplateContractSpec` if marker counts change.
-6. Run `make eval EVAL=12-add-ui-component --check`.
+6. Run `make eval EVAL=12-add-ui-component CHECK=1`.
 
 ## 3. Add an App.Ui primitive
 
@@ -92,4 +92,4 @@ Run `make ui-coverage` to regenerate `docs/conventions/ui-coverage.md` (App.Ui â
 - [ ] New classes only in `App.Ui` / Templates; extend `Policy.Contract` closed sets if adding modules.
 - [ ] Both `En` and `Fr` copy in `Data.I18n` when user-visible strings change.
 - [ ] `make gate && make test && make test/e2e` pass.
-- [ ] Eval: `make eval EVAL=12-add-ui-component --check` after component/template UI work.
+- [ ] Eval: `make eval EVAL=12-add-ui-component CHECK=1` after component/template UI work.
