@@ -1,0 +1,19 @@
+---
+description: Git commits must not include Co-authored-by trailers
+alwaysApply: true
+---
+
+# No co-authored commit trailers
+
+**Never** add `Co-authored-by:` (or any co-author trailer) to commit messages in this repository.
+
+## Agent rules
+
+- Do not append co-author lines to commit messages or PR descriptions for attribution.
+- After any commit, verify: `git cat-file commit HEAD | rg -i '^Co-authored-by:'` must return nothing.
+- If `git commit` adds a co-author trailer anyway, rewrite with `git commit-tree` and a clean message, then `git reset --hard <new-sha>`.
+
+## Commit messages
+
+- One author only (the human repo owner).
+- Clear subject + body; no tool attribution footers.

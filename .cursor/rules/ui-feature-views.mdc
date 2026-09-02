@@ -1,0 +1,19 @@
+# Feature views — template slots only
+
+Read `docs/superpowers/specs/2026-08-31-page-architectures.md` before any UI work.
+
+## Rules
+
+1. One PageTemplate per page — Landing, Hub, Editorial, Feed, Article, Schedule, Form.
+2. **Slots only** — build records with `landingSlots` / `hubSlots` / `editorialSlots` / `feedSlots` / `articleSlots` / `scheduleSlots` / `formSlots`.
+3. **No primitives in features** — no `import App.Ui.Card`, no `class_` (`make gate`).
+4. **Copy exemplars** — `Home`, `Contact`, `About`, `Posts` views; do not invent layout.
+5. **DaisyUI HTML lives in `App.Ui.Templates` / `App.Ui` primitives** — not in feature views.
+
+```purescript
+-- ❌ BAD — class soup or primitives in a feature
+el "div" [ class_ "grid gap-6" ] [ … ]
+
+-- ✅ GOOD — closed template
+renderPage lang Contact (Hub (hubSlots …))
+```
