@@ -213,32 +213,77 @@ hasStatusQuery ctx = Map.member "status" ctx.query
 -- | `renderErrorPage` here would nest a complete `<!DOCTYPE>` document inside
 -- | the page body. See ADR-007 (streaming errors) — the same principle, applied
 -- | to the path that lacked it.
+-- |
+-- | Cacheable fragments reuse the same static/dynamic Html cache as full
+-- | documents (keyed by `(Route, Lang)`). Statusful requests stay uncached so
+-- | one visitor's form banner never leaks into another response.
 handleFragment :: RequestCtx -> Aff Server.Response
 handleFragment ctx = do
-  result <- pageRenderer ctx.cfg ctx.route ctx.lang (statusFor ctx)
+  result <- fragmentHtml ctx
   case result of
     Left err -> failureFragment ctx err
     Right html ->
       pure $ Server.okWith [ varyHeader ] $ renderFragment ctx.lang ctx.route html
 
+-- | Html for a fragment request: statusful → fresh; otherwise the shared cache.
+fragmentHtml :: RequestCtx -> Aff (Either AppError Html)
+fragmentHtml ctx =
+  if hasStatusQuery ctx then
+    pageRenderer ctx.cfg ctx.route ctx.lang (statusFor ctx)
+  else case ctx.route of
+    Home -> cachedInner ctx
+    About -> cachedInner ctx
+    Contact -> cachedInner ctx
+    Fixtures -> cachedInner ctx
+    PostList -> cachedInnerDynamic ctx
+    PostDetail _ -> cachedInnerDynamic ctx
+
 -- | Pure page cached per (route, lang) for the process lifetime.
 cachedStaticPage :: RequestCtx -> Aff Server.Response
 cachedStaticPage ctx = do
-  mCached <- liftEffect $ lookupStatic ctx.cache.static ctx.route ctx.lang
-  case mCached of
-    Just html -> pure $ fullPage ctx Nothing html
-    Nothing -> renderThen ctx \html ->
-      liftEffect $ insertStatic ctx.cache.static ctx.route ctx.lang html
+  result <- cachedInner ctx
+  case result of
+    Left err -> failurePage ctx err
+    Right html -> pure $ fullPage ctx Nothing html
 
 -- | Data-backed page cached under a TTL.
 cachedDynamicPage :: RequestCtx -> Aff Server.Response
 cachedDynamicPage ctx = do
+  result <- cachedInnerDynamic ctx
+  case result of
+    Left err -> failurePage ctx err
+    Right html -> pure $ fullPage ctx Nothing html
+
+-- | Lookup or render+insert for static pages. Shared by full and fragment paths.
+-- | Never caches `Left` errors.
+cachedInner :: RequestCtx -> Aff (Either AppError Html)
+cachedInner ctx = do
+  mCached <- liftEffect $ lookupStatic ctx.cache.static ctx.route ctx.lang
+  case mCached of
+    Just html -> pure (Right html)
+    Nothing -> do
+      result <- pageRenderer ctx.cfg ctx.route ctx.lang Nothing
+      case result of
+        Left err -> pure (Left err)
+        Right html -> do
+          liftEffect $ insertStatic ctx.cache.static ctx.route ctx.lang html
+          pure (Right html)
+
+-- | Lookup or render+insert for dynamic pages. Shared by full and fragment paths.
+-- | Never caches `Left` errors.
+cachedInnerDynamic :: RequestCtx -> Aff (Either AppError Html)
+cachedInnerDynamic ctx = do
   let key = dynamicCacheKey ctx
   mCached <- liftEffect $ lookupDynamic ctx.cache.dynamic key
   case mCached of
-    Just html -> pure $ fullPage ctx Nothing html
-    Nothing -> renderThen ctx \html ->
-      liftEffect $ insertDynamic ctx.cache.dynamic key html defaultTtlMs
+    Just html -> pure (Right html)
+    Nothing -> do
+      result <- pageRenderer ctx.cfg ctx.route ctx.lang Nothing
+      case result of
+        Left err -> pure (Left err)
+        Right html -> do
+          liftEffect $ insertDynamic ctx.cache.dynamic key html defaultTtlMs
+          pure (Right html)
 
 -- | Dynamic-cache key: the `(Route, Lang)` pair itself.
 -- |

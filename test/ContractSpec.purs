@@ -19,7 +19,7 @@ import App.Layout.Head (pageSyncAttrs, renderJsonLd, escapeJson)
 import App.Layout.Page (renderErrorFragment, renderErrorPage, renderFragment, renderDocument, renderShellOpen, renderShellClose, renderPrefetch)
 import App.Main (pageRenderer)
 import App.Server (RedirectKind(..), Response, cspWithNonce, errorStatusCode, fileResponse, htmlErrorResponse, internalError, methodNotAllowed, notFound, notModified, ok, okText, okTextPublic, okWith, redirect, redirectVary, securityHeaders, tooManyRequests)
-import App.Cache (insertDynamic, lookupDynamic, maxEntries, mkDynamicCache)
+import App.Cache (insertDynamic, insertStatic, lookupDynamic, lookupStatic, maxEntries, mkDynamicCache, mkStaticCache)
 import App.Html (el, render, text)
 import Data.Array (find, last, length, mapMaybe, nub, range)
 import Data.Content (services)
@@ -445,6 +445,24 @@ spec = do
       lastEntry <- liftEffect $ lookupDynamic cache (Tuple (PostDetail maxEntries) En)
       map render first `shouldEqual` Nothing
       map render lastEntry `shouldEqual` Just (show maxEntries)
+
+  describe "full documents and fragments share page-cache keys" do
+    -- handleGet with a live server is out of reach here. The property that
+    -- matters for Task 8 is that both paths key on the same (Route, Lang)
+    -- pair: a full GET that inserts, then a fragment GET that looks up, must
+    -- hit. Statusful requests stay out of these caches (hasStatusQuery).
+    it "static (Route, Lang) insert is visible to a later lookup" do
+      cache <- liftEffect mkStaticCache
+      liftEffect $ insertStatic cache About En (text "about-en")
+      hit <- liftEffect $ lookupStatic cache About En
+      miss <- liftEffect $ lookupStatic cache About Fr
+      map render hit `shouldEqual` Just "about-en"
+      map render miss `shouldEqual` Nothing
+    it "dynamic (Route, Lang) insert is visible to a later lookup" do
+      cache <- liftEffect mkDynamicCache
+      liftEffect $ insertDynamic cache (Tuple PostList En) (text "posts") 60000.0
+      hit <- liftEffect $ lookupDynamic cache (Tuple PostList En)
+      map render hit `shouldEqual` Just "posts"
 
   describe "nonce-bearing HTML is never shared-cached (W6)" do
     -- Every HTML response embeds a per-request CSP nonce. A shared cache
