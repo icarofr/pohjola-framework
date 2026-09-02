@@ -67,6 +67,14 @@ gateSpec =
       offenders <- Scan.findCrossFeatureImports "src/App/Features"
       offenders `shouldEqual` []
 
+    it "every feature Page has a sibling View.purs" do
+      missing <- Scan.findFeaturesMissingView "src/App/Features"
+      missing `shouldEqual` []
+
+    it "every feature View imports App.Ui.Templates.Render" do
+      missing <- Scan.findFeatureViewsMissingTemplateRender "src/App/Features"
+      missing `shouldEqual` []
+
     it "no extra App.Ui.Templates modules" do
       extras <- Scan.findExtraFiles Policy.uiTemplateModules "src/App/Ui/Templates/*.purs"
       extras `shouldEqual` []

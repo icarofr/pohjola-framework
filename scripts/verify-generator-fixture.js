@@ -71,6 +71,16 @@ async function runFixture(cwd, name, type, slug) {
 
   assertIncludes(i18n, `  , ${lower}:`, `I18n dictionary (${name})`);
   assertIncludes(head, `${name} -> d.${lower}.body`, `Head insertion (${name})`);
+
+  const view = await readText(join(cwd, `src/App/Features/${name}/View.purs`));
+  assertIncludes(view, "App.Ui.Templates.Render", `View Templates.Render (${name})`);
+  assertIncludes(view, "renderPage", `View renderPage (${name})`);
+
+  const page = await readText(join(cwd, `src/App/Features/${name}/Page.purs`));
+  if (page.includes("editorialSlots") || page.includes("feedSlots")) {
+    console.error(`Slots must live in View.purs, not Page.purs (${name})`);
+    process.exit(1);
+  }
 }
 
 async function runCopy(copy) {

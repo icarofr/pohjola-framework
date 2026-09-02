@@ -11,7 +11,7 @@ This is Pohjola's answer to "which layout?" — a small, enforced catalog instea
 
 1. **Classify the page intent** using the table below — do not guess from training-data landing pages.
 2. **Pick `PageTemplate`** and slot builders from `App.Ui.Templates.Types`.
-3. **Fill slots only** in `App.Features.<Name>.Page.purs` (static) or `View.purs` (data-backed).
+3. **Fill slots only** in `View.purs`. `Page.purs` is the handler.
 4. **Wire** with `make new-feature NAME=X WIRE=1` when adding a route.
 5. **If no row fits** → extend `App.Ui.Templates.*` + `Types.purs` slots; never add `class_` in features.
 

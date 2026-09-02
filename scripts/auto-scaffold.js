@@ -57,13 +57,29 @@ if (await exists(featureDir)) {
 if (type === "static") {
   await writeText(
     `${featureDir}/Page.purs`,
-    `-- | ${name} page — handler + template slots (single module).
--- | Template: Editorial — see docs/superpowers/specs/2026-08-31-page-architectures.md
+    `-- | ${name} page — entry point
 module App.Features.${name}.Page where
 
 import App.Error (AppError)
+import App.Features.${name}.View (render${name})
 import App.Html (Html)
 import App.Layout.Page (staticPage)
+import Data.Either (Either)
+import Data.I18n (Lang)
+import Effect.Aff (Aff)
+
+render :: Lang -> Aff (Either AppError Html)
+render lang = staticPage (render${name} lang)
+`
+  );
+
+  await writeText(
+    `${featureDir}/View.purs`,
+    `-- | ${name} page view — fills Editorial template slots only.
+module App.Features.${name}.View where
+
+import App.Html (Html)
+import App.Ui.Templates.PageHeader as PageHeader
 import App.Ui.Templates.Render (renderPage)
 import App.Ui.Templates.Types
   ( EditorialSlots
@@ -71,37 +87,35 @@ import App.Ui.Templates.Types
   , editorialSlots
   , valuesSlotsFromArray
   )
-import Data.Either (Either)
 import Data.I18n (Lang, dict)
 import Data.Maybe (Maybe(..))
 import Data.Route (Route(..))
-import Effect.Aff (Aff)
 
-render :: Lang -> Aff (Either AppError Html)
-render lang = staticPage (view lang)
-
-view :: Lang -> Html
-view lang =
+render${name} :: Lang -> Html
+render${name} lang =
   renderPage lang ${name} (Editorial (pageSlots lang))
 
 pageSlots :: Lang -> EditorialSlots
 pageSlots lang =
   let
     d = (dict lang).${lower}
+    nav = (dict lang).nav
   in
     editorialSlots
       d.heading
-      Nothing
+      (Just d.body)
       { heading: d.heading
       , lead: d.body
       , body: d.body
       }
       (valuesSlotsFromArray d.heading d.body [])
-      []
+      [ PageHeader.breadcrumbHome lang nav.home
+      , PageHeader.breadcrumbHere d.heading
+      ]
 `
   );
 } else {
-  // Data-backed feature
+  // Data-backed feature — Types + Service + Page + View (exemplar: Posts/)
   await writeText(
     `${featureDir}/Types.purs`,
     `-- | ${name} domain type + JSON decoding.
@@ -130,13 +144,24 @@ instance decodeJson${name} :: DecodeJson ${name} where
     body <- obj .: "body"
     pure (${name} { id, title, body })
 
+${lower}Id :: ${name} -> Int
+${lower}Id (${name} row) = row.id
+
+${lower}Title :: ${name} -> String
+${lower}Title (${name} row) = row.title
+
+${lower}Body :: ${name} -> String
+${lower}Body (${name} row) = row.body
 `
   );
 
   await writeText(
-    `${featureDir}/Page.purs`,
-    `-- | ${name} page — fetch + Feed template slots (single handler module).
-module App.Features.${name}.Page where
+    `${featureDir}/Service.purs`,
+    `-- | ${name} data service — fetchJson boundary.
+module App.Features.${name}.Service
+  ( fetch${name}
+  , fetch${name}s
+  ) where
 
 import Prelude
 
@@ -144,60 +169,129 @@ import App.Config (Config)
 import App.Data.Fetch (fetchJson)
 import App.Error (AppError)
 import App.Features.${name}.Types (${name})
-import App.Html (Html)
-import App.Ui.Templates.Render (renderPage)
-import App.Ui.Templates.Types
-  ( ActionTarget(..)
-  , FeedCard
-  , PageTemplate(..)
-  , feedSlots
-  )
-import Data.Either (Either(..))
-import Data.I18n (Lang, dict)
-import Data.Newtype (unwrap)
-import Data.Route (Route(..))
+import Data.Either (Either)
 import Effect.Aff (Aff)
 
 fetch${name}s :: Config -> Aff (Either AppError (Array ${name}))
 fetch${name}s cfg = fetchJson (cfg.postsApiBase <> "/posts")
 
+fetch${name} :: Config -> Int -> Aff (Either AppError ${name})
+fetch${name} cfg id = fetchJson (cfg.postsApiBase <> "/posts/" <> show id)
+`
+  );
+
+  await writeText(
+    `${featureDir}/Page.purs`,
+    `-- | ${name} page — entry point with async data fetching.
+module App.Features.${name}.Page (renderList, renderDetail) where
+
+import Prelude
+
+import App.Config (Config)
+import App.Error (AppError)
+import App.Features.${name}.Service (fetch${name}, fetch${name}s)
+import App.Features.${name}.View (render${name}Detail, render${name}Error, render${name}List)
+import App.Html (Html)
+import Data.Either (Either(..))
+import Data.I18n (Lang)
+import Effect.Aff (Aff)
+
 renderList :: Config -> Lang -> Aff (Either AppError Html)
 renderList cfg lang = do
   result <- fetch${name}s cfg
   pure case result of
-    Right items -> Right (viewList lang items)
-    Left _ -> Right (viewList lang [])
+    Right items -> Right (render${name}List lang items)
+    Left _ -> Right (render${name}Error lang)
 
-viewList :: Lang -> Array ${name} -> Html
-viewList lang items =
+renderDetail :: Config -> Lang -> Int -> Aff (Either AppError Html)
+renderDetail cfg lang id = do
+  result <- fetch${name} cfg id
+  pure case result of
+    Right item -> Right (render${name}Detail lang item)
+    Left err -> Left err
+`
+  );
+
+  await writeText(
+    `${featureDir}/View.purs`,
+    `-- | ${name} feature views — Feed and Article templates.
+module App.Features.${name}.View where
+
+import Prelude
+
+import App.Features.${name}.Types (${name}, ${lower}Body, ${lower}Id, ${lower}Title)
+import App.Html (Html)
+import App.Ui.Templates.PageHeader as PageHeader
+import App.Ui.Templates.Render (renderPage)
+import App.Ui.Templates.Types
+  ( ActionTarget(..)
+  , FeedCard
+  , PageTemplate(..)
+  , articleSlots
+  , feedSlots
+  )
+import Data.I18n (Lang, dict)
+import Data.Route (Route(..))
+
+render${name}List :: Lang -> Array ${name} -> Html
+render${name}List lang items =
   let
     d = (dict lang).${lower}
+    nav = (dict lang).nav
   in
     renderPage lang ${name}
       ( Feed
           ( feedSlots
               d.heading
               d.body
-              []
+              [ PageHeader.breadcrumbHome lang nav.home
+              , PageHeader.breadcrumbHere d.heading
+              ]
               (map (toCard lang) items)
           )
       )
+
+render${name}Detail :: Lang -> ${name} -> Html
+render${name}Detail lang item =
+  let
+    d = (dict lang).${lower}
+    nav = (dict lang).nav
+    idNum = ${lower}Id item
+    title = ${lower}Title item
+  in
+    renderPage lang ${name}
+      ( Article
+          ( articleSlots
+              (d.heading <> " #" <> show idNum)
+              title
+              ""
+              (d.heading <> " #" <> show idNum)
+              (${lower}Body item)
+              [ PageHeader.breadcrumbHome lang nav.home
+              , PageHeader.breadcrumbLink lang ${name} d.heading
+              , PageHeader.breadcrumbHere title
+              ]
+          )
+      )
+
+render${name}Error :: Lang -> Html
+render${name}Error lang =
+  render${name}List lang []
 
 toCard :: Lang -> ${name} -> FeedCard
 toCard lang item =
   let
     d = (dict lang).${lower}
-    row = unwrap item
   in
     { imageUrl: ""
-    , imageAlt: row.title
+    , imageAlt: ${lower}Title item
     , date: ""
     , category: d.heading
-    , title: row.title
-    , excerpt: row.body
+    , title: ${lower}Title item
+    , excerpt: ${lower}Body item
     , authorName: ""
     , authorRole: ""
-    , target: Internal { lang, route: Home }
+    , target: Internal { lang, route: ${name} }
     }
 `
   );

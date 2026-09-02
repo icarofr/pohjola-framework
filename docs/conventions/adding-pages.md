@@ -15,14 +15,14 @@ Every feature follows this structure — no variations:
 
 ```
 src/App/Features/<Name>/
-  Page.purs              # Static: handler + renderPage slots (single module)
-  View.purs              # Data-backed: renderPage slots (fetch lives in Page.purs)
-  Components/            # Optional — extract when a second visual unit appears
-    <ComponentName>.purs
-  Types.purs             # Data-backed features only
+  Page.purs     # handler: staticPage or fetch + Either
+  View.purs     # App.Ui.Templates.Render.renderPage + PageTemplate slots
+  Types.purs    # data-backed only
+  Service.purs  # data-backed only (fetchJson)
+  Components/   # optional
 ```
 
-**Static pages** use one `Page.purs` (handler + template slots). **Data-backed** pages split fetch (`Page.purs`) and view (`View.purs`). Do not add `Service.purs` unless you have non-trivial domain logic — prefer `App.Data.Fetch` from `Page.purs`.
+**Static** features ship `Page.purs` + `View.purs` (exemplar: `About/`). **Data-backed** features add `Types.purs` + `Service.purs` (exemplar: `Posts/`).
 
 **Two seams, two rules:**
 
@@ -37,19 +37,12 @@ src/App/Features/<Name>/
    second feature needs it. `App/Ui/` modules must never import from
    `App/Features/`.
 
-**Container**: width-constrained sections go through `App.Ui.Container.container`:
+**Container**: width-constrained sections live inside Templates and `App.Ui`
+primitives — feature views never call `Container.container` or hand-write
+layout utility classes. Fill `PageTemplate` slots only.
 
-```purescript
-container :: String -> String -> Array Html -> Html
-container maxW extraClass children
--- Produces: <div class="container mx-auto px-4 sm:px-6 lg:px-8 {maxW} {extraClass}">{children}</div>
-```
-
-DaisyUI's `container` class handles full-width inside flex parents. Never
-hand-write `mx-auto max-w-*` in a feature view.
-
-**Page layouts**: compose via `App.Ui.Templates.renderPage` and a `PageTemplate`
-slot record. Pick the template from [`page-architectures`](../superpowers/specs/2026-08-31-page-architectures.md). Do not add `class_` in feature views.
+**Page layouts**: compose via `App.Ui.Templates.Render.renderPage` and a `PageTemplate`
+slot record in `View.purs`. Pick the template from [`page-architectures`](../superpowers/specs/2026-08-31-page-architectures.md). Do not add `class_` in feature views.
 
 **Cross-feature imports are forbidden** (enforced by ContractSpec). Features
 compose through shared `App.Ui.Templates` / primitives and `App.Data.Fetch`, never by
@@ -63,8 +56,8 @@ importing a sibling feature's modules.
 4. Update `routeTitle` (in `Data.Route.purs`)
 5. Update `pageRenderer` in `Main.purs`
 6. `src/App/Features/<Name>/Page.purs` :: `render :: Lang -> Aff (Either AppError Html)`
-   (wrap pure Html in `pure (Right ...)`)
-7. `src/App/Features/<Name>/Page.purs` — `renderPage` + `PageTemplate` slots
+   via `staticPage` (handler only)
+7. `src/App/Features/<Name>/View.purs` — `renderPage` + `PageTemplate` slots
    (see [`page-architectures`](../superpowers/specs/2026-08-31-page-architectures.md); default scaffold uses `Editorial`)
 8. `src/App/Features/<Name>/Components/` — optional; extract when you have a
    distinct reusable visual unit (card, sidebar, etc.)
@@ -89,7 +82,7 @@ importing a sibling feature's modules.
 7. Create `src/App/Features/<Name>/Types.purs` — newtype + `DecodeJson`
 8. Create `src/App/Features/<Name>/Service.purs` — `fetchX :: Aff (Either AppError a)`
    via `App.Data.Fetch.fetchJson`
-9. Create `src/App/Features/<Name>/Page.purs` — `render :: Lang -> Aff (Either AppError Html)`
+9. Create `src/App/Features/<Name>/Page.purs` — `renderList` / `renderDetail`
 10. Create `src/App/Features/<Name>/View.purs` — `renderPage` + `Feed` / `Article` slots
 11. Create `src/App/Features/<Name>/Components/` — optional; extract list
     items/cards when the view grows
@@ -105,9 +98,9 @@ page returns 404 for a missing ID.
 
 ## ContractSpec enforcement
 
-ContractSpec verifies: every feature has `Page.purs` with a `render*` entry;
-a `Service.purs` implies the full `Types/Service/Page/View` split; no imports
-from sibling features.
+ContractSpec / `make gate` verify: every feature has `Page.purs` with a sibling
+`View.purs` that imports `App.Ui.Templates.Render`; a `Service.purs` implies the
+full `Types/Service/Page/View` split; no imports from sibling features.
 
 ## Related docs
 

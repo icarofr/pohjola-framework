@@ -11,6 +11,8 @@ module Test.Policy.Scan
   , findCrossFeatureImports
   , findEnvReadsOutsideAllowlist
   , findExtraFiles
+  , findFeatureViewsMissingTemplateRender
+  , findFeaturesMissingView
   , findFilesMatching
   , findForbiddenImportsInFiles
   , findForbiddenInFiles
@@ -26,14 +28,14 @@ module Test.Policy.Scan
 
 import Prelude
 
-import App.Bun (glob, readTextFile)
+import App.Bun (exists, glob, readTextFile)
 import Data.Array (concat, elem, filter, length, mapMaybe, uncons)
 import Data.Char (toCharCode)
 import Data.Either (Either(..))
 import Data.Foldable (any)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.String.Common (split) as Common
-import Data.String.CodeUnits (fromCharArray, stripPrefix, toCharArray) as CodeUnits
+import Data.String.CodeUnits (fromCharArray, stripPrefix, stripSuffix, toCharArray) as CodeUnits
 import Data.String.Pattern (Pattern(..))
 import Data.Traversable (for)
 import Effect (Effect)
@@ -251,3 +253,24 @@ findCrossFeatureImports featuresRoot = do
       Just rest ->
         if featureOfModule ("App.Features." <> rest) == Just ownFeature then Nothing
         else Just line
+
+findFeatureViewsMissingTemplateRender :: String -> Aff (Array String)
+findFeatureViewsMissingTemplateRender featuresRoot = do
+  files <- liftEffect $ findFilesMatching (featuresRoot <> "/*/View.purs")
+  results <- for files \file -> do
+    content <- readTextFile file
+    pure case content of
+      Right c ->
+        if containsSubstring "App.Ui.Templates.Render" c then Nothing
+        else Just file
+      Left _ -> Just file
+  pure (mapMaybe identity results)
+
+findFeaturesMissingView :: String -> Aff (Array String)
+findFeaturesMissingView featuresRoot = do
+  pages <- liftEffect $ findFilesMatching (featuresRoot <> "/*/Page.purs")
+  results <- for pages \pagePath -> do
+    let viewPath = (fromMaybe pagePath (CodeUnits.stripSuffix (Pattern "Page.purs") pagePath)) <> "View.purs"
+    present <- liftEffect $ exists viewPath
+    pure if present then Nothing else Just pagePath
+  pure (mapMaybe identity results)
