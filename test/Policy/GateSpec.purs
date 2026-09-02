@@ -68,6 +68,11 @@ gateSpec =
       offenders <- Scan.findForbiddenInFiles Policy.forbiddenCallsInFeatureViews files
       offenders `shouldEqual` []
 
+    it "feature views do not concatenate el tags" do
+      files <- liftGlob Policy.featureViewGlobPatterns
+      offenders <- Scan.findForbiddenInFiles ["el ("] files
+      offenders `shouldEqual` []
+
     it "no raw Alpine strings outside App.Alpine" do
       offenders <- Scan.findRawAlpineOutsideAlpine "src"
       offenders `shouldEqual` []

@@ -17,6 +17,7 @@ module Test.Policy.Scan
   , findForbiddenAuthImports
   , isForbiddenAuthImport
   , findForbiddenImportsInFiles
+  , findConcatenatedEl
   , findForbiddenInFiles
   , findForeignImportsOutsideAllowlist
   , findHardcodedTextInFiles
@@ -243,6 +244,11 @@ findForbiddenInFiles patterns files = do
           Nothing
       Left _ -> Nothing
   pure (mapMaybe identity results)
+
+-- | Feature views must not use non-literal / parenthesized `el (` tags.
+-- | False positive: `el ("div")` still matches; kernel `el ("scr" <> "ipt")` is out of scope.
+findConcatenatedEl :: Array String -> Aff (Array String)
+findConcatenatedEl = findForbiddenInFiles [ "el (" ]
 
 featureOfModule :: String -> Maybe String
 featureOfModule modName = do

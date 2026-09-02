@@ -42,8 +42,11 @@ Honesty about what the checks actually catch:
   `Raw`); it does not claim every byte of response HTML is ADT-rendered.
   Streaming remains opt-in and experimental.
 - **Tag names are `String`** — `el :: Tag -> …` with `type Tag = String`. The
-  gate scans for the literal `el "script"`. A non-literal construction such as
-  `el ("scr" <> "ipt")` evades it.
+  gate scans for the literal `el "script"`, and feature views are scanned for
+  `el (` (non-literal / concatenated tags). Closing `Tag` as a sum type is
+  deferred (YAGNI). Kernel modules can still evade with
+  `el ("scr" <> "ipt")`; `el ("div")` in a feature view is a false-positive
+  hit for the `el (` scan.
 - **Alpine attribute-name scan** — clause 12 already admits the same class of
   hole for non-literal `attr` keys outside `App.Alpine`.
 - **`App.Bun` API growth** — adding a new Bun primitive to the existing

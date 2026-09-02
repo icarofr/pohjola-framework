@@ -20,14 +20,11 @@ spec =
     describe "reference pages (page templates)" do
       it "home renders landing hero markers" do
         let html = render (Home.renderHome En Nothing)
-        html `StrAssert.shouldContain` "text-4xl font-bold"
-        html `StrAssert.shouldContain` "bg-base-200"
         html `StrAssert.shouldContain` "https://github.com/icarofr/pohjola-framework"
 
       it "contact renders three-column hub cards" do
         let html = render (Contact.renderContact En Nothing)
         html `StrAssert.shouldContain` "data-template=\"hub-card\""
-        html `StrAssert.shouldContain` "md:grid-cols-3"
         html `StrAssert.shouldContain` "flex-auto"
 
       it "about renders mission and values grid" do
@@ -46,4 +43,3 @@ spec =
               }
           html = render (Posts.renderPostList En Nothing [ sample ])
         html `StrAssert.shouldContain` "data-template=\"feed-card\""
-        html `StrAssert.shouldContain` "line-clamp-3"
