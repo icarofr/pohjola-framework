@@ -1,3 +1,8 @@
+---
+description: Feature views use PageTemplate slot records only — no class_ or Ui primitives
+alwaysApply: true
+---
+
 # Feature views — template slots only
 
 Read `docs/superpowers/specs/2026-08-31-page-architectures.md` before any UI work.
@@ -15,5 +20,5 @@ Read `docs/superpowers/specs/2026-08-31-page-architectures.md` before any UI wor
 el "div" [ class_ "grid gap-6" ] [ … ]
 
 -- ✅ GOOD — closed template
-renderPage lang Contact (Hub (hubSlots …))
+renderPage lang Contact status (Hub (hubSlots …))
 ```

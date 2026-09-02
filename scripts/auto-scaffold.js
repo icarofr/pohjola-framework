@@ -482,10 +482,35 @@ if (wire) {
     }
   }
 
+  // Second exhaustive Route case (shared fragment cache). Anchor on the
+  // footer after fragmentHtml so we never double-patch handleRoute above.
+  const fragmentHtmlCase =
+    type === "data"
+      ? `    ${name} -> cachedInnerDynamic ctx`
+      : `    ${name} -> cachedInner ctx`;
+
+  if (!mainContent.includes(fragmentHtmlCase)) {
+    const fragmentHtmlRe =
+      /(else case ctx\.route of\n)([\s\S]*?)(\n\n-- \| Pure page cached)/;
+    if (fragmentHtmlRe.test(mainContent)) {
+      mainContent = mainContent.replace(fragmentHtmlRe, (match, header, cases, footer) => {
+        if (cases.includes(fragmentHtmlCase)) return match;
+        const trimmed = cases.endsWith("\n") ? cases : `${cases}\n`;
+        return `${header}${trimmed}${fragmentHtmlCase}\n${footer}`;
+      });
+    } else {
+      mainContent = mainContent.replace(
+        /(fragmentHtml :: RequestCtx -> Aff \(Either AppError Html\)[\s\S]*?else case ctx\.route of\s*\n[\s\S]*?PostDetail.*?\n)/,
+        (match) => `${match}${fragmentHtmlCase}\n`
+      );
+    }
+  }
+
   await writeText("src/App/Main.purs", mainContent);
   requireMarker(mainContent, importLine, "src/App/Main.purs", "feature import");
   requireMarker(mainContent, renderCase, "src/App/Main.purs", "pageRenderer case");
   requireMarker(mainContent, handleRouteCase, "src/App/Main.purs", "handleRoute case");
+  requireMarker(mainContent, fragmentHtmlCase, "src/App/Main.purs", "fragmentHtml case");
   console.log("  ✓ Updated src/App/Main.purs");
 
   // C. Update src/Data/I18n.purs

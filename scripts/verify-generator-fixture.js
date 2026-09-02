@@ -60,6 +60,12 @@ async function runFixture(cwd, name, type, slug) {
   assertIncludes(main, `${name} ->`, `Main insertion (${name})`);
   assertIncludes(main, `${name}.`, `Main renderer (${name})`);
   assertIncludes(main, `${name} -> cached`, `Main handler (${name})`);
+  // Shared fragment cache has its own exhaustive case (must stay in sync with handleRoute).
+  assertIncludes(
+    main,
+    type === "data" ? `${name} -> cachedInnerDynamic` : `${name} -> cachedInner`,
+    `Main fragmentHtml (${name})`,
+  );
   assertIncludes(i18n, `${lower} :: String`, `I18n type (${name})`);
   assertIncludes(i18n, `${lower}: "${name}"`, `I18n English (${name})`);
 

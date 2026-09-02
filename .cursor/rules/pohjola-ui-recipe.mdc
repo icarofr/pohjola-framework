@@ -1,3 +1,8 @@
+---
+description: Read page-architectures and design-system before any UI work; slots only in features
+alwaysApply: true
+---
+
 # Pohjola UI recipe
 
 Read **`docs/superpowers/specs/2026-08-31-page-architectures.md`** and **`docs/conventions/design-system.md`**.
