@@ -15,17 +15,17 @@ import App.Theme (themeInitScript, themeDarkName, themeLightName)
 import App.Config (Config)
 import App.Features.Home.View as Home
 import App.Form (FormStatus(..), contactFields, newsletterFields)
-import App.Layout.Head (renderJsonLd, escapeJson)
+import App.Layout.Head (pageSyncAttrs, renderJsonLd, escapeJson)
 import App.Layout.Page (renderErrorFragment, renderErrorPage, renderFragment, renderDocument, renderShellOpen, renderShellClose, renderPrefetch)
 import App.Main (pageRenderer)
 import App.Server (RedirectKind(..), Response, cspWithNonce, errorStatusCode, fileResponse, htmlErrorResponse, internalError, methodNotAllowed, notFound, notModified, ok, okText, okTextPublic, okWith, redirect, redirectVary, securityHeaders, tooManyRequests)
 import App.Cache (insertDynamic, lookupDynamic, maxEntries, mkDynamicCache)
-import App.Html (render, text)
+import App.Html (el, render, text)
 import Data.Array (find, last, length, mapMaybe, nub, range)
 import Data.Content (services)
 import Data.Either (Either(..))
 import Data.Foldable (any, for_)
-import Data.I18n (Lang(..), dict)
+import Data.I18n (Lang(..), dict, langTag)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Route (Route(..), allLangs, allRoutes, routeUrl, staticRoutes)
 import Data.Email (EmailAddress(..), mkEmailAddress)
@@ -605,11 +605,18 @@ spec = do
           StrAssert.shouldContain html "document.addEventListener('ajax:merged',sync);"
           StrAssert.shouldContain html "document.documentElement.lang=d.pageLang"
           StrAssert.shouldContain html "meta[property=\"og:title\"]"
-          StrAssert.shouldContain html "link[rel=\"alternate\"][hreflang=\"en\"]"
+          StrAssert.shouldContain html "pageHref"
+          StrAssert.shouldContain html "pageOgAlts"
           StrAssert.shouldContain html "window.addEventListener('popstate',restore,true);"
           StrAssert.shouldContain html "function restore(event){event.stopImmediatePropagation();fetch(location.href"
           StrAssert.shouldContain html "history.replaceState({__ajax:true},'',location.href)"
           html `StrAssert.shouldContain` "var es=new EventSource('/dev/live-reload')"
+
+    it "pageSyncAttrs emits one data-page-href-* per allLangs" do
+      let html = render (el "div" (pageSyncAttrs En Home) [])
+      for_ allLangs \lang ->
+        html `StrAssert.shouldContain` ("data-page-href-" <> langTag lang)
+      html `StrAssert.shouldContain` "data-page-og-alts"
 
   describe "pages flow through the layout shell" do
     it "every static page is a full document with a footer" do

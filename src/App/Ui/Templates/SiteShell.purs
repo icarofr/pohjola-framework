@@ -80,7 +80,7 @@ shellLabels lang =
     , aboutLabel: d.nav.about
     , contactLabel: d.nav.contact
     , postsLabel: d.nav.posts
-    , homeLabel: homeLabelText lang
+    , homeLabel: d.nav.home
     , langEn: "English"
     , langFr: "Français"
     , langPt: "Português"
@@ -91,11 +91,6 @@ shellLabels lang =
     , themeLabel: d.common.themeLabel
     , copyright: d.footer.copyright
     }
-
-homeLabelText :: Lang -> String
-homeLabelText En = "Home"
-homeLabelText Fr = "Accueil"
-homeLabelText Pt = "Início"
 
 maybeStatusBanner :: Lang -> Maybe FormStatus -> Html
 maybeStatusBanner lang = maybe (text "") \status ->

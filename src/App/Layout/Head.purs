@@ -20,7 +20,7 @@ import Data.Foldable (foldMap)
 import Data.I18n (Lang(..), dict, langTag)
 import Data.Maybe (Maybe(..))
 import Data.Route (Route(..), allLangs, routeTitle, routeUrl)
-import Data.String.Common (replaceAll) as S
+import Data.String.Common (joinWith, replaceAll) as S
 import Data.String.Pattern (Pattern(..), Replacement(..))
 import Data.Tuple (Tuple(..))
 import Foreign.Object (Object)
@@ -68,10 +68,9 @@ pageSyncAttrs :: Lang -> Route -> Array Attr
 pageSyncAttrs lang route =
   [ attr "data-page-description" (seoDescription lang route)
   , attr "data-page-og-locale" (ogLocale lang)
-  , attr "data-page-href-en" (routeUrl En route)
-  , attr "data-page-href-fr" (routeUrl Fr route)
-  , attr "data-page-href-pt" (routeUrl Pt route)
+  , attr "data-page-og-alts" (S.joinWith "," (map ogLocale allLangs))
   ]
+    <> map (\l -> attr ("data-page-href-" <> langTag l) (routeUrl l route)) allLangs
 
 hreflangTag :: String -> Route -> Lang -> Html
 hreflangTag baseUrl route lang =
