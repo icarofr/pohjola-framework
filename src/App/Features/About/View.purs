@@ -9,7 +9,8 @@ import App.Ui.Templates.Types
   ( EditorialSlots
   , PageTemplate(..)
   , editorialSlots
-  , valuesSlotsFromArray
+  , valueSextuple
+  , valuesSlots
   )
 import Data.I18n (Lang, dict)
 import Data.Maybe (Maybe(..))
@@ -29,7 +30,16 @@ aboutSlots lang =
       d.heading
       (Just d.subtitle)
       d.mission
-      (valuesSlotsFromArray d.values.heading d.values.intro d.values.items)
+      ( valuesSlots d.values.heading d.values.intro
+          ( valueSextuple
+              d.values.items.one
+              d.values.items.two
+              d.values.items.three
+              d.values.items.four
+              d.values.items.five
+              d.values.items.six
+          )
+      )
       [ PageHeader.breadcrumbHome lang nav.home
       , PageHeader.breadcrumbHere nav.about
       ]

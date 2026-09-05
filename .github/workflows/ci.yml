@@ -43,7 +43,7 @@ jobs:
   test:
     name: Unit + Property Tests (Bun)
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
 
@@ -64,6 +64,9 @@ jobs:
         run: |
           bun x spago build --pure
           bun -e "import { main } from './output/Test.Main/index.js'; main()"
+
+      - name: Repo-law evals (04/05/08/09/12)
+        run: make eval-repo-law
 
   integration:
     name: Integration Tests (Venom)

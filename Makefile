@@ -254,6 +254,15 @@ ifndef EVAL
 endif
 	@$(BUN) evals/run-eval.js $(EVAL) $(if $(CHECK),--check,)
 
+## eval-repo-law: evals that must pass on a clean master (not 01/02/03)
+.PHONY: eval-repo-law
+eval-repo-law:
+	$(MAKE) eval EVAL=04-add-ffi CHECK=1
+	$(MAKE) eval EVAL=05-add-auth CHECK=1
+	$(MAKE) eval EVAL=08-browser-island CHECK=1
+	$(MAKE) eval EVAL=09-script-security CHECK=1
+	$(MAKE) eval EVAL=12-add-ui-component CHECK=1
+
 # ==================================================================================== #
 # DOCKER
 # ==================================================================================== #

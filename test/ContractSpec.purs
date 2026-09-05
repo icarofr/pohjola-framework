@@ -17,7 +17,7 @@ import App.Features.Home.View as Home
 import App.Form (FormStatus(..), contactFields, newsletterFields)
 import App.Layout.Head (pageSyncAttrs, renderJsonLd, escapeJson)
 import App.Layout.Page (renderErrorFragment, renderErrorPage, renderFragment, renderDocument, renderShellOpen, renderShellClose, renderPrefetch)
-import App.Main (pageRenderer)
+import App.Main (htmlOk, pageRenderer)
 import App.Server (RedirectKind(..), Response, cspWithNonce, errorStatusCode, fileResponse, htmlErrorResponse, internalError, methodNotAllowed, notFound, notModified, ok, okText, okTextPublic, okWith, redirect, redirectVary, securityHeaders, tooManyRequests)
 import App.Cache (insertDynamic, insertStatic, lookupDynamic, lookupStatic, maxEntries, mkDynamicCache, mkStaticCache)
 import App.Html (el, render, text)
@@ -402,6 +402,9 @@ spec = do
       -- The error rule must not leak into the success path, which is what makes
       -- the click cache hit possible at all.
       cacheControl (okWith [] "<p>x</p>") `shouldEqual` Just "private, max-age=10"
+    it "htmlOk uses no-store for statusful responses and private cache otherwise" do
+      cacheControl (htmlOk true [] "<p>x</p>") `shouldEqual` Just "no-store"
+      cacheControl (htmlOk false [] "<p>x</p>") `shouldEqual` Just "private, max-age=10"
 
   describe "dynamic cache keys cannot collide" do
     -- The key was a rendered string resting on Show Route being injective — a
@@ -624,17 +627,20 @@ spec = do
           StrAssert.shouldContain html "document.documentElement.lang=d.pageLang"
           StrAssert.shouldContain html "meta[property=\"og:title\"]"
           StrAssert.shouldContain html "pageHref"
+          StrAssert.shouldContain html "pageHrefDefault"
           StrAssert.shouldContain html "pageOgAlts"
           StrAssert.shouldContain html "window.addEventListener('popstate',restore,true);"
           StrAssert.shouldContain html "function restore(event){event.stopImmediatePropagation();fetch(location.href"
           StrAssert.shouldContain html "history.replaceState({__ajax:true},'',location.href)"
           html `StrAssert.shouldContain` "var es=new EventSource('/dev/live-reload')"
+          html `StrAssert.shouldNotContain` "pageHrefEn"
 
     it "pageSyncAttrs emits one data-page-href-* per allLangs" do
       let html = render (el "div" (pageSyncAttrs En Home) [])
       for_ allLangs \lang ->
         html `StrAssert.shouldContain` ("data-page-href-" <> langTag lang)
       html `StrAssert.shouldContain` "data-page-og-alts"
+      html `StrAssert.shouldContain` "data-page-href-default"
 
   describe "pages flow through the layout shell" do
     it "every static page is a full document with a footer" do

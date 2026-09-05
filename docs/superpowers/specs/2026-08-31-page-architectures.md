@@ -23,13 +23,13 @@ Site chrome (navbar, drawer, footer) stays in `SiteShell` — not in page templa
 |---|---|---|---|
 | Marketing home, hero + features + CTA | `Landing` | `landingSlots`, `landingFeatures` | `Home/Page.purs` |
 | Link grid, contact options, hub | `Hub` | `hubSlots`, `hubCardTriple` | `Contact/View.purs` |
-| Long-form static content, mission/values | `Editorial` | `editorialSlots`, `valuesSlotsFromArray` | `About/View.purs` |
+| Long-form static content, mission/values | `Editorial` | `editorialSlots`, `valuesSlots`, `valueSextuple` | `About/View.purs` |
 | Blog / post teasers, author cards | `Feed` | `feedSlots` + `FeedCard` | `Posts/View.purs` |
 | Single article / detail page | `Article` | `articleSlots` | `Posts/View.purs` |
 | Match list, fixtures, calendars, crests | `Schedule` | `scheduleSlots` + `ScheduleMatch` | `Fixtures/View.purs` |
 | Signup / contact / newsletter form | `Form` | `formSlots` + `FormField` | (template-only; no feature exemplar yet) |
 
-Entry: `App.Ui.Templates.Render.renderPage lang Route (Constructor slots)`.
+Entry: `App.Ui.Templates.Render.renderPage lang route status (Constructor slots)`.
 
 ## Shared header rhythm
 

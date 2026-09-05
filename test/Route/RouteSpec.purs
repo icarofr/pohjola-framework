@@ -6,7 +6,7 @@ import Prelude
 import Data.Array (all, filter, length)
 import Data.I18n (Lang(..))
 import Data.Maybe (Maybe(..), isJust)
-import Data.Route (Route(..), allLangs, allRoutes, parseRoute, routeUrl)
+import Data.Route (Route(..), allLangs, allRoutes, parseRoute, routeUrl, staticRoutes)
 import Data.String.Common (split) as S
 import Data.String.Pattern (Pattern(..))
 import Test.Spec (Spec, describe, it)
@@ -105,5 +105,16 @@ spec = do
         let total = length allLangs * length allRoutes
         total `shouldEqual` 15 -- 3 langs * 5 routes
 
+    describe "allRoutes" do
+      it "enumerates sitemap routes and excludes PostDetail" do
+        allRoutes `shouldEqual` [ Home, About, Contact, PostList, Fixtures ]
+        staticRoutes `shouldEqual` [ Home, About, Contact, Fixtures ]
+        all isSitemapRoute allRoutes `shouldEqual` true
+
 splitPath :: String -> Array String
 splitPath p = filter (_ /= "") (S.split (Pattern "/") p)
+
+isSitemapRoute :: Route -> Boolean
+isSitemapRoute = case _ of
+  PostDetail _ -> false
+  _ -> true

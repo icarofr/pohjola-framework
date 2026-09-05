@@ -33,9 +33,8 @@ module App.Ui.Templates.Types
   , editorialSlots
   , valuesSlots
   , valueSextuple
-  , valuesSlotsFromArray
+  , emptyValue
   , imageTriple
-  , imageTripleFromArray
   , feedSlots
   , scheduleSlots
   , articleSlots
@@ -272,6 +271,9 @@ valuesSlots :: String -> String -> ValueSextuple -> ValuesSlots
 valuesSlots heading intro items =
   { heading, intro, items }
 
+emptyValue :: ValueItem
+emptyValue = { title: "", description: "" }
+
 imageTriple :: String -> String -> String -> ImageTriple
 imageTriple one two three =
   { one, two, three }
@@ -339,30 +341,3 @@ hubCards triple =
 imageUrls :: ImageTriple -> Array String
 imageUrls triple =
   [ triple.one, triple.two, triple.three ]
-
-valuesSlotsFromArray :: String -> String -> Array ValueItem -> ValuesSlots
-valuesSlotsFromArray heading intro items =
-  case items of
-    [ one, two, three, four, five, six ] ->
-      valuesSlots heading intro (valueSextuple one two three four five six)
-    _ ->
-      valuesSlots heading intro
-        ( valueSextuple
-            emptyValue
-            emptyValue
-            emptyValue
-            emptyValue
-            emptyValue
-            emptyValue
-        )
-
-emptyValue :: ValueItem
-emptyValue = { title: "", description: "" }
-
-imageTripleFromArray :: Array String -> ImageTriple
-imageTripleFromArray urls =
-  case urls of
-    [ one, two, three ] ->
-      imageTriple one two three
-    _ ->
-      imageTriple "" "" ""

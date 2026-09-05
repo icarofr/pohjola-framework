@@ -17,7 +17,7 @@ import Data.Argonaut.Core (Json, fromObject, fromString, stringify)
 import Data.Array (filter)
 import Data.Content (siteInfo)
 import Data.Foldable (foldMap)
-import Data.I18n (Lang(..), dict, langTag)
+import Data.I18n (Lang(..), defaultLang, dict, langTag)
 import Data.Maybe (Maybe(..))
 import Data.Route (Route(..), allLangs, routeTitle, routeUrl)
 import Data.String.Common (joinWith, replaceAll) as S
@@ -42,7 +42,7 @@ renderHead baseUrl nonce lang route =
     <> el "link" [ rel_ "canonical", href (baseUrl <> routeUrl lang route) ] []
     -- hreflang alternates
     <> foldMap (hreflangTag baseUrl route) allLangs
-    <> el "link" [ rel_ "alternate", attr "hreflang" "x-default", href (baseUrl <> routeUrl En route) ] []
+    <> el "link" [ rel_ "alternate", attr "hreflang" "x-default", href (baseUrl <> routeUrl defaultLang route) ] []
     -- Favicon
     <> el "link" [ rel_ "icon", attr "type" "image/svg+xml", href "/favicon.svg" ] []
     -- Inlined CSS (eliminates render-blocking CSS network roundtrip)
@@ -70,6 +70,7 @@ pageSyncAttrs lang route =
   , attr "data-page-og-locale" (ogLocale lang)
   , attr "data-page-og-alts" (S.joinWith "," (map ogLocale allLangs))
   ]
+    <> [ attr "data-page-href-default" (routeUrl defaultLang route) ]
     <> map (\l -> attr ("data-page-href-" <> langTag l) (routeUrl l route)) allLangs
 
 hreflangTag :: String -> Route -> Lang -> Html

@@ -4,18 +4,20 @@
 
 ## Do
 
-- Fill `App.Ui.Templates` slots via `renderPage lang route (Landing|Editorial|Hub|Feed|Article slots)`.
-- Put copy in `Data.I18n` (both En and Fr). Put metadata in `Data.Content`.
+- Fill `App.Ui.Templates` slots via `renderPage lang route status (Landing|Hub|Editorial|Feed|Article|Schedule|Form …)`.
+- Put copy in `Data.I18n` for every `allLangs` (En, Fr, Pt). Put metadata in `Data.Content`.
 - Build HTML only through `App.Html`. Interactivity only through `App.Alpine`.
 - Run `make gate` before claiming UI work is done; `make check` before commit.
+- After a convention change, run the matching eval with `CHECK=1` (`make eval EVAL=12-add-ui-component CHECK=1`).
 
 ## Do not
 
 - Call `class_` or assemble DaisyUI/Tailwind strings in `App.Features/*/View.purs` or `Components/`.
-- Import `App.Ui.Card`, `Container`, `Hero`, `Prose`, `Alert`, `Badge`, `Form`, … from feature views.
-- Invent layout: copy the exemplar for the page purpose (Home/About/Contact/Posts).
+- Import `App.Ui.Card`, `Container`, `Prose`, `Alert`, `Badge`, `Form`, … from feature views.
+- Invent layout: copy the exemplar for the page purpose (Home/About/Contact/Posts/Fixtures).
 - Maintain a parallel React/shadcn/Next app or JSON registry for production UI.
 - Serve `dist-server/` from the public static root (`dist/` only).
+- Implement ADR-010 or wire `App.Auth.Scaffold` into Main/Features.
 
 ## Page → template
 
@@ -26,13 +28,15 @@
 | Editorial | `Editorial` | `About/View.purs` |
 | Feed / list | `Feed` | `Posts/View.purs` (list) |
 | Article | `Article` | `Posts/View.purs` (detail) |
+| Match list / calendar | `Schedule` | `Fixtures/View.purs` |
+| Signup / contact form | `Form` | template-only (no feature exemplar yet) |
 
 Markers: `App.Ui.Templates.Contract` (`data-template="…"`). Tests: `TemplateContractSpec`, `ShellSpec`, `PolicySpec`.
 
 ## Where classes live
 
-- Primitives: `App.Ui.Button`, `Card`, `Badge`, `Hero`, … (DaisyUI 1:1).
-- Page chrome + sections: `App.Ui.Templates.*` (SiteShell, Landing, Editorial, Hub, Feed, Article).
+- Primitives: `App.Ui.Alert`, `Avatar`, `Badge`, `Breadcrumbs`, `Button`, `Card`, `Container`, `Divider`, `EmptyState`, `Form`, `Prose`, `Stat`, `TextTone` (DaisyUI 1:1). There is no `App.Ui.Hero` — landing hero is `LandingHeroSlots`.
+- Page chrome + sections: `App.Ui.Templates.*` (SiteShell, Landing, Editorial, Hub, Feed, Article, Schedule, Form).
 - Site nav/theme chrome: `SiteShell.purs` only; use `navLink` + `navLinkClasses` (`docs/conventions/chrome-checklist.md`).
 - DaisyUI primitives: `App.Ui.*` + Templates only — `docs/conventions/component-checklist.md`; coverage: `make ui-coverage`.
 - DaisyUI reference: `vendor/daisyui/skills/daisyui/components/` (git submodule — `make deps`).

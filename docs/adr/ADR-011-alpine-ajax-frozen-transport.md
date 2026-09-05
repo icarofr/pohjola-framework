@@ -29,8 +29,9 @@ HTMX 4.0.0 (released 2026-08-28) and Datastar were reviewed. Key findings:
 3. **Pure HTMX + hx-live** is rejected — conflicts with Alpine, ceiling below
    Pohjola Header (`@click.outside`, nested scopes).
 4. **Datastar** is rejected as primary nav transport — no history API, SSE-first
-   server contract, philosophy opposes shell partial navigation. Reserved for
-   ADR-010 tier-5 live/island features.
+   server contract, philosophy opposes shell partial navigation. Live/island
+   widgets, if ever added, belong at ADR-010 (proposed, do not implement) — not
+   as nav transport.
 
 ## Decision
 
@@ -63,7 +64,7 @@ HTMX 4.0.0 (released 2026-08-28) and Datastar were reviewed. Key findings:
 | 2 | `App.Alpine.spaLink` — shell navigation (Alpine AJAX transport) |
 | 3 | `HeadScript` ADT — `DarkModeInit`, `TitleSync`, `DevLiveReload` |
 | 4 | Server — forms, mutations (POST → redirect or full/shell page) |
-| 5 | Datastar island — ADR-010, explicit per feature (live/SSE widgets) |
+| 5 | island runtime — ADR-010 (proposed, do not implement) |
 
 ### Spike criterion — when to open HTMX migration ADR
 
@@ -88,7 +89,7 @@ research in `docs/archive/htmx-4-migration.md` (planning artifact, not active).
 | Menu / theme / modal | `App.Alpine` builders |
 | Form submit (default) | Server POST → redirect or shell/full page |
 | In-page partial (until HTMX spike) | **Do not invent** — escalate to spike criterion |
-| Live/real-time widget | ADR-010 Datastar island (explicit, per feature) |
+| Live/real-time widget | island runtime — ADR-010 (proposed, do not implement) |
 
 Raw `x-target`, `x-alpine-request`, `fetch(` in feature views remain **banned**
 (gate + ContractSpec).
@@ -122,4 +123,4 @@ Raw `x-target`, `x-alpine-request`, `fetch(` in feature views remain **banned**
 
 - [`docs/archive/htmx-4-migration.md`](../archive/htmx-4-migration.md) — deferred migration plan
 - [`docs/adr/ADR-007-bun-serve.md`](ADR-007-bun-serve.md) — fragment protocol
-- [`docs/adr/ADR-010-browser-island-integration.md`](ADR-010-browser-island-integration.md) — Datastar tier
+- [`docs/adr/ADR-010-browser-island-integration.md`](ADR-010-browser-island-integration.md) — proposed island runtime (do not implement)

@@ -2,7 +2,7 @@
 -- |
 -- | Server renders all HTML via the Html ADT, Alpine.js provides interactivity.
 -- | Routes for every language in `allLangs` (En, Fr, Pt): /en/*, /fr/*, /pt/*
-module App.Main (main, pageRenderer, detectLang) where
+module App.Main (main, pageRenderer, detectLang, htmlOk) where
 
 import Prelude
 
@@ -30,7 +30,7 @@ import Data.Either (Either(..))
 import Data.I18n (Lang, defaultLang, parseLang)
 import Data.Map (Map)
 import Data.Map as Map
-import Data.Maybe (Maybe(..), fromMaybe, isNothing)
+import Data.Maybe (Maybe(..), fromMaybe, isJust, isNothing)
 import Data.Route (Route(..), parseRoute, routeUrl)
 import Data.String.Common (split, toLower)
 import Data.String.Pattern (Pattern(..))
@@ -141,11 +141,15 @@ varyHeader = Tuple "Vary" alpineRequestHeader
 statusFor :: RequestCtx -> Maybe FormStatus
 statusFor ctx = Map.lookup "status" ctx.query >>= parseFormStatus
 
+-- | HTML 200 with the same Cache-Control policy as full pages: statusful
+-- | responses are never stored; others stay private, short-lived.
+htmlOk :: Boolean -> Array (Tuple String String) -> String -> Server.Response
+htmlOk statusful hdrs body =
+  if statusful then Server.okWithNoStore hdrs body else Server.okWith hdrs body
+
 fullPage :: RequestCtx -> Maybe FormStatus -> Html -> Server.Response
 fullPage ctx status html =
-  case status of
-    Just _ -> Server.okWithNoStore [ varyHeader ] (renderDocument ctx.cfg.baseUrl ctx.nonce ctx.lang ctx.route html)
-    Nothing -> Server.okWith [ varyHeader ] (renderDocument ctx.cfg.baseUrl ctx.nonce ctx.lang ctx.route html)
+  htmlOk (isJust status) [ varyHeader ] (renderDocument ctx.cfg.baseUrl ctx.nonce ctx.lang ctx.route html)
 
 -- | Log a page-render failure. Shared by both error paths so the log shape
 -- | cannot drift between them.
@@ -223,7 +227,7 @@ handleFragment ctx = do
   case result of
     Left err -> failureFragment ctx err
     Right html ->
-      pure $ Server.okWith [ varyHeader ] $ renderFragment ctx.lang ctx.route html
+      pure $ htmlOk (hasStatusQuery ctx) [ varyHeader ] $ renderFragment ctx.lang ctx.route html
 
 -- | Html for a fragment request: statusful → fresh; otherwise the shared cache.
 fragmentHtml :: RequestCtx -> Aff (Either AppError Html)

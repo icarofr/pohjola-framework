@@ -99,7 +99,14 @@ type Dictionary =
       , values ::
           { heading :: String
           , intro :: String
-          , items :: Array { title :: String, description :: String }
+          , items ::
+              { one :: { title :: String, description :: String }
+              , two :: { title :: String, description :: String }
+              , three :: { title :: String, description :: String }
+              , four :: { title :: String, description :: String }
+              , five :: { title :: String, description :: String }
+              , six :: { title :: String, description :: String }
+              }
           }
       }
   , contact ::
@@ -234,25 +241,13 @@ en =
           { heading: "Our values"
           , intro: "These principles guide every architectural decision in the framework."
           , items:
-              [ { title: "Bedrock over fashion"
-                , description: "Prefer proven foundations — typed HTML, explicit errors, and server-first rendering — over the framework churn of the week."
-                }
-              , { title: "Open by default"
-                , description: "Safety invariants, policy gates, and conventions are documented and testable so contributors can reason about the system."
-                }
-              , { title: "Always learning"
-                , description: "ADRs, evals, and convention docs encode what we learned so the next change starts from shared context."
-                }
-              , { title: "Supportive seams"
-                , description: "Alpine interactivity stays typed and minimal — enough UX polish without smuggling a client runtime through the back door."
-                }
-              , { title: "Take responsibility"
-                , description: "Errors are values, CSP is pinned, and caches are conservative because production surprises are our problem, not the user's."
-                }
-              , { title: "Enjoy restraint"
-                , description: "A small surface area you can hold in your head beats a maximal toolkit you have to fight on every feature."
-                }
-              ]
+              { one: { title: "Bedrock over fashion", description: "Prefer proven foundations — typed HTML, explicit errors, and server-first rendering — over the framework churn of the week." }
+              , two: { title: "Open by default", description: "Safety invariants, policy gates, and conventions are documented and testable so contributors can reason about the system." }
+              , three: { title: "Always learning", description: "ADRs, evals, and convention docs encode what we learned so the next change starts from shared context." }
+              , four: { title: "Supportive seams", description: "Alpine interactivity stays typed and minimal — enough UX polish without smuggling a client runtime through the back door." }
+              , five: { title: "Take responsibility", description: "Errors are values, CSP is pinned, and caches are conservative because production surprises are our problem, not the user's." }
+              , six: { title: "Enjoy restraint", description: "A small surface area you can hold in your head beats a maximal toolkit you have to fight on every feature." }
+              }
           }
       }
   , contact:
@@ -383,25 +378,13 @@ fr =
           { heading: "Nos valeurs"
           , intro: "Ces principes guident chaque décision architecturale du framework."
           , items:
-              [ { title: "Le socle avant la mode"
-                , description: "HTML typé, erreurs explicites et rendu serveur d'abord — plutôt que la mode du moment."
-                }
-              , { title: "Ouvert par défaut"
-                , description: "Invariants, politiques et conventions documentés et testables pour que chacun puisse raisonner sur le système."
-                }
-              , { title: "Apprendre en continu"
-                , description: "ADRs, evals et docs de convention encodent ce que nous avons appris pour la prochaine évolution."
-                }
-              , { title: "Coutures bienveillantes"
-                , description: "L'interactivité Alpine reste typée et minimale — assez de polish sans runtime client déguisé."
-                }
-              , { title: "Assumer la responsabilité"
-                , description: "Les erreurs sont des valeurs, la CSP est figée, et les caches restent prudents : la production nous regarde."
-                }
-              , { title: "La retenue comme force"
-                , description: "Une surface maîtrisable vaut mieux qu'une boîte à outils maximale à combattre à chaque feature."
-                }
-              ]
+              { one: { title: "Le socle avant la mode", description: "HTML typé, erreurs explicites et rendu serveur d'abord — plutôt que la mode du moment." }
+              , two: { title: "Ouvert par défaut", description: "Invariants, politiques et conventions documentés et testables pour que chacun puisse raisonner sur le système." }
+              , three: { title: "Apprendre en continu", description: "ADRs, evals et docs de convention encodent ce que nous avons appris pour la prochaine évolution." }
+              , four: { title: "Coutures bienveillantes", description: "L'interactivité Alpine reste typée et minimale — assez de polish sans runtime client déguisé." }
+              , five: { title: "Assumer la responsabilité", description: "Les erreurs sont des valeurs, la CSP est figée, et les caches restent prudents : la production nous regarde." }
+              , six: { title: "La retenue comme force", description: "Une surface maîtrisable vaut mieux qu'une boîte à outils maximale à combattre à chaque feature." }
+              }
           }
       }
   , contact:
@@ -532,25 +515,13 @@ pt =
           { heading: "Os nossos valores"
           , intro: "Estes princípios guiam cada decisão arquitetural do framework."
           , items:
-              [ { title: "Base antes da moda"
-                , description: "Preferir fundações comprovadas — HTML tipado, erros explícitos e renderização server-first — em vez da moda da semana."
-                }
-              , { title: "Aberto por padrão"
-                , description: "Invariantes de segurança, portões de política e convenções são documentados e testáveis para que os contribuidores raciocinem sobre o sistema."
-                }
-              , { title: "Aprender sempre"
-                , description: "ADRs, evals e docs de convenção registam o que aprendemos para que a próxima mudança parta de contexto partilhado."
-                }
-              , { title: "Costuras de apoio"
-                , description: "A interatividade Alpine permanece tipada e mínima — polish de UX sem contrabandear um runtime de cliente."
-                }
-              , { title: "Assumir a responsabilidade"
-                , description: "Erros são valores, a CSP está fixa, e as caches são conservadoras porque surpresas em produção são o nosso problema, não do usuário."
-                }
-              , { title: "Gostar da contenção"
-                , description: "Uma superfície pequena que cabe na cabeça vale mais do que uma caixa de ferramentas máxima a combater em cada feature."
-                }
-              ]
+              { one: { title: "Base antes da moda", description: "Preferir fundações comprovadas — HTML tipado, erros explícitos e renderização server-first — em vez da moda da semana." }
+              , two: { title: "Aberto por padrão", description: "Invariantes de segurança, portões de política e convenções são documentados e testáveis para que os contribuidores raciocinem sobre o sistema." }
+              , three: { title: "Aprender sempre", description: "ADRs, evals e docs de convenção registam o que aprendemos para que a próxima mudança parta de contexto partilhado." }
+              , four: { title: "Costuras de apoio", description: "A interatividade Alpine permanece tipada e mínima — polish de UX sem contrabandear um runtime de cliente." }
+              , five: { title: "Assumir a responsabilidade", description: "Erros são valores, a CSP está fixa, e as caches são conservadoras porque surpresas em produção são o nosso problema, não do usuário." }
+              , six: { title: "Gostar da contenção", description: "Uma superfície pequena que cabe na cabeça vale mais do que uma caixa de ferramentas máxima a combater em cada feature." }
+              }
           }
       }
   , contact:

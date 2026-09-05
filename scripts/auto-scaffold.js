@@ -88,7 +88,9 @@ import App.Ui.Templates.Types
   ( EditorialSlots
   , PageTemplate(..)
   , editorialSlots
-  , valuesSlotsFromArray
+  , emptyValue
+  , valueSextuple
+  , valuesSlots
   )
 import Data.I18n (Lang, dict)
 import Data.Maybe (Maybe(..))
@@ -111,7 +113,7 @@ pageSlots lang =
       , lead: d.body
       , body: d.body
       }
-      (valuesSlotsFromArray d.heading d.body [])
+      (valuesSlots d.heading d.body (valueSextuple emptyValue emptyValue emptyValue emptyValue emptyValue emptyValue))
       [ PageHeader.breadcrumbHome lang nav.home
       , PageHeader.breadcrumbHere d.heading
       ]
