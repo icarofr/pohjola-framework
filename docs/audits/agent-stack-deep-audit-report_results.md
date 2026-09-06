@@ -181,3 +181,88 @@ Read `AGENTS.md` (47 lines), then the one doc named by the task-table row, then 
 2. Is `evals/` intended to gain CI wiring at some point (per `evals/README.md`'s "Future CI integration" item), or is it staying a manual self-check tool indefinitely? That changes how much weight the eval suite should carry in the "verification ladder" story.
 3. Given `App.Bun`'s explicitly-unbounded growth path, is there an appetite for even a lightweight tripwire (diff-size warning, required comment tag) short of a full ADR per addition — or is review discipline considered sufficient at current team size?
 4. Is `ADR-010`'s Datastar mention in `ADR-011` intentional pre-commitment, or should `ADR-011` be loosened to not name a specific runtime until `ADR-010` itself is accepted?
+
+---
+
+## Addendum (2026-09-07): remediation verification + extended pass
+
+The original audit above (commit `b16d325`) sampled two feature exemplars (About, Contact), stopped at the compiler/gate/test verification ladder, and explicitly did not cover dependency security, full-feature code review, test-coverage gaps, or live browser/accessibility testing. This addendum closes those gaps against the current tip, and verifies the remediation commit made in response to the original report.
+
+### Remediation verified
+
+Commit `25daf5e` ("Close the audit leftovers: typed values, fragment cache, and repo-law CI") was already on `origin/master` when this pass began (authored outside this session, per `docs/superpowers/plans/2026-09-05-audit-honesty-pass.md`). Re-ran the full verification ladder against it from a clean shell:
+
+```
+make format-check   → All files are formatted.
+make gate           → 21/21
+make test           → 244/244  (+2 vs the original pass: new allRoutes/staticRoutes coverage assertions)
+make design-policy  → OK
+make eval-repo-law   → 22/22 assertions across evals 04/05/08/09/12
+```
+
+All green. Confirmed by reading the diff, not just the plan doc:
+
+- **P0 (silent array-adapter fallback) — fixed correctly, not papered over.** `valuesSlotsFromArray`/`imageTripleFromArray` are deleted from `src/App/Ui/Templates/Types.purs`; `Data.I18n`'s `about.values.items` is now a typed six-field record consumed via `valueSextuple`. A 5th or 7th value is now a compile error, which is the fix the original report actually asked for (fail loudly, not "add a fallback with a warning").
+- **P0 (`llms.txt` Hero drift) — fixed.** The `App.Ui.Hero` reference is gone; confirmed by reading the current `llms.txt`.
+- **P1 (ADR-011 → ADR-010 overstatement) — fixed.** Tier 5 and the agent-rules table now read "island runtime — ADR-010 (proposed, do not implement)" instead of presenting Datastar as a settled tier-5 choice.
+- **Not in the original report, same class of bug:** `handleFragment` previously always used the short-lived cache header even for statusful (form-submission-result) fragments, while `fullPage` correctly used `no-store` for the same case — a real fragment-vs-full-page cache-policy divergence. Both now go through one `htmlOk :: Boolean -> ... -> Response` helper (`src/App/Main.purs`). Good catch, consistent with this audit's general "cache correctness" praise for the rest of the codebase.
+- **Not in the original report:** `x-default` hreflang was hardcoded to `En` instead of following `defaultLang`; now derives from it, with a `data-page-href-default` attribute threading the value through fragment nav. Also fixed.
+- **CI scoping resolved one of the four open questions.** `make eval-repo-law` (evals 04/05/08/09/12 only, explicitly not 01/02/03 which fail by design on clean master) is now wired into `.github/workflows/ci.yml`. This answers open question 2 above: evals are gaining CI wiring, but scoped to the subset that is a true repo-law regression check, not the exploratory/prompt-based ones.
+
+### Dependency / supply-chain audit (new)
+
+- **Runtime surface is minimal.** `package.json` has zero runtime `dependencies`; all 9 direct deps are devDependencies (build/test tooling). This is the correct shape for a server-rendered app with no client JS bundle.
+- **`bun audit` finds 13 known vulnerabilities (1 critical, 9 high, 3 moderate), all in transitive dev-tooling, none reachable from the served application:**
+  - `tar` (pulled in transitively by `spago` and the PureScript installer) — 1 critical (GHSA-23hp-3jrh-7fpw, decompression DoS, ≤7.5.18) + 8 high/moderate path-traversal/symlink issues in node-tar's extraction logic. Affects the install-time toolchain, not the server.
+  - `playwright@1.48.0` — high severity, TLS cert verification bypass during browser downloads (<1.55.1, GHSA-7mvr-c777-76hp). Affects the e2e test runner, not the server.
+- **Finding: no CI vulnerability-scanning step exists.** `.github/workflows/ci.yml` has build/test/e2e jobs but no `bun audit` (or Dependabot/Renovate) gate, so a newly-introduced vulnerable dependency would only be caught by someone manually running `bun audit`.
+- **Lockfiles: clean.** Both `bun.lock` and `spago.lock` are committed; CI installs with `--frozen-lockfile`/`--pure`. Reproducible builds are enforced, not assumed.
+- **PureScript deps: clean.** 24 direct deps in `spago.yaml`, standard upstream registry package-set (`registry: 80.1.0`), no forked/custom package-set entries.
+- **License spot-check: clean.** tailwindcss (MIT), daisyui (MIT), `@playwright/test` (Apache-2.0), esbuild (MIT), purescript (ISC) — all permissive, all devDependencies, no AGPL-propagation concern.
+- **Verdict:** solid posture (zero runtime deps, pinned + committed lockfiles, no license conflicts) undermined by one process gap — nothing in CI would catch the next `tar`-class CVE landing in the toolchain. Recommend a `bun audit --audit-level=high` CI step.
+
+### Full feature-code review (new — every feature, not just About/Contact)
+
+The original report sampled About and Contact as exemplars. This pass read every remaining feature (`Fixtures`, `Home`, `Posts`) plus the shared `App.Layout.*` and `App.Ui.Templates.*` infrastructure in full. All still respect the core contract (no `class_`, no `App.Ui.*` imports, `renderPage` called correctly, copy from `dict`) — the gate's guarantees hold repo-wide, not just in the two exemplars. But the wider read surfaced code-level issues the gate cannot see because they're inside allowed constructs, not policy violations:
+
+1. **`src/App/Features/Posts/Service.purs:83-95`** — `fetchPosts`, when a database is configured, silently substitutes `curatedPosts` (English demo content) when the query succeeds but decodes to zero rows. This is the same fallback path used for "no database configured" (an intentional demo mode), so a real production issue — schema drift, an empty table, decode failures — renders as if the site were healthy, serving fake articles instead of an error or empty state. This is the same class of bug as the original report's headline finding (silent fallback instead of a surfaced failure), just in a data feature rather than a template slot.
+2. **`src/App/Layout/Head.purs:120-126`** — `renderJsonLd` emits a literal `"Blog Post"` headline for every `PostDetail` page's JSON-LD, regardless of the actual post title. This is a self-documented placeholder (the code comment says exactly this: `renderJsonLd` receives `Route`, not the fetched `Post`, and a real implementation needs the fetch to happen before head render) — a known, honest gap, not a hidden bug, but still user-visible-incorrect structured data for every article except coincidentally-titled ones.
+3. **`src/App/Ui/Templates/SiteShell.purs:208,218,220` and `src/App/Ui/Templates/Article.purs:40,42,44`** — hardcoded, unlocalized English strings (`"Close sidebar"`, `"Close menu"`, `"Close"`, `"Author"`, `"Engineering"`, `"Published"`) inside shared template infrastructure. `Engineering` in particular is not wired to any real author-role data — `ArticleSlots` has no such field, so it's pure placeholder text shown for every article regardless of the actual author. These live in `App.Ui.Templates.*`, which is exempt from the feature-view copy-literal gate scan (`Policy.Contract.contentFirewallGlobPatterns` only covers `Features/*/Page.purs` and `View.purs`), so the "chrome labels from dict, not hardcoded" rule in `CLAUDE.md`/`AGENTS.md` is not actually mechanically enforced for shared templates — only for feature views.
+4. **Test-coverage gaps, by direct module-to-test-file cross-check** (19 test files vs. 70 `src/` modules): `App.Features.Posts.Service` (the DB-fetch/curated-fallback logic above) and `App.Features.Posts.Page`'s `renderList`/`renderDetail` have no dedicated test — `PostsSpec.purs` only covers `Types.purs` JSON decoding and generic fetch-status mapping, not the actual data-source branching. `App.Email` (100 lines, includes pure `parseForm` form-decoding logic used by the contact form) has zero test references anywhere. `App.Cli.GenSql` (373-line DDL-to-PureScript codegen) has zero test references, though its output is itself compiled, so a generator bug is at least caught one step downstream rather than silently.
+5. **Non-finding:** `App.Cache`, `App.Config`, `App.Migration`, `Data.Email` all looked untested by filename (no dedicated `*Spec.purs`) but are in fact exercised inside `ContractSpec.purs`/`FormSpec.purs` — worth noting so this isn't miscounted as a gap.
+
+### Live e2e / accessibility testing — attempted, environment-blocked
+
+The repo has a real Playwright e2e suite (`e2e/*.spec.js`, 9 files: navigation, theme, i18n, forms, assets, prefetch-cache, error-fragment, nojs, design) wired into `.github/workflows/ci.yml`, including a genuine automated accessibility check (`e2e/design.spec.js` runs `@axe-core/playwright` with `wcag2a`/`wcag2aa` tags against `<main>` on 6 canonical routes). This directly closes part of the "no accessibility audit" gap named at the start of this session — the project already has one, I had just not read `e2e/` in the original pass.
+
+I was not able to execute it in this environment, and want to be explicit about that rather than imply a result:
+
+- `bun x playwright install --with-deps chromium` failed (needs `sudo`, no password available in this shell).
+- `bun x playwright install chromium` (browser binary only, no system deps) succeeded.
+- A standalone script (`chromium.launch()` via `playwright-core`) launched successfully — the browser itself runs fine headless in this environment.
+- `make run` (the actual server) builds and serves correctly standalone — confirmed `curl http://localhost:3000/en` → `200`.
+- However, `bun x playwright test` (the test-runner CLI) hung indefinitely with zero output, even at `--list` (no browser, no server, no test execution — just enumerating tests), with `BASE_URL` pointed at an already-running server (bypassing the runner's own webServer auto-start), with `--workers=1`, with `CI=1`, with the `html` reporter swapped for `line`, and with sandboxing disabled for the shell command. All variants hung the same way; none produced an error, just silence until killed.
+- This isolates the hang to Playwright's test-runner bootstrap itself in this specific sandboxed shell environment, not to the project's server, its build, or the browser binary. I'm reporting this as an audit-environment limitation, not a project defect — **the e2e/accessibility suite's actual pass/fail status against current `HEAD` remains unverified by this audit**, and should not be inferred from anything else in this document.
+
+### Updated risk register (deltas only)
+
+| Risk | Status | Note |
+|---|---|---|
+| Slot-array arity mismatch → silent blank content | **Closed** | Fixed in `25daf5e`; now a compile error. |
+| `llms.txt` doc drift (Hero) | **Closed** | Fixed in `25daf5e`. |
+| ADR-011/ADR-010 overstatement | **Closed** | Fixed in `25daf5e`. |
+| Fragment cache-policy divergence (statusful fragments not `no-store`) | **New, now closed** | Found and fixed together in `25daf5e`, not in the original report. |
+| Data-layer silent fallback (Posts DB → curated content on decode failure) | **New, open** | Same bug class as the closed slot-arity finding; not yet addressed. |
+| Untranslated hardcoded strings in shared templates (`SiteShell`, `Article`) | **New, open** | Outside the gate's scan scope (`Features/*` only); mechanically unenforced. |
+| No CI dependency-vulnerability gate | **New, open** | 13 known CVEs in transitive dev-tooling today; nothing would catch the next one. |
+| e2e/accessibility suite pass/fail vs. current `HEAD` | **Unverified** | Real suite exists and is CI-wired; this audit could not execute it locally (environment limitation, detailed above). |
+
+### Additional recommendations
+
+| P | Effort | Recommendation |
+|---|--------|----------------|
+| P1 | S | Apply the same fix pattern as the closed slot-arity bug to `Posts.Service.fetchPosts`: surface a distinct error/log when a configured database returns zero decodable rows, instead of silently reusing the "no database configured" demo-content path for both cases. |
+| P1 | S | Add a `bun audit --audit-level=high` (or equivalent) step to CI. |
+| P2 | S | Either extend the copy-literal gate scan to `App.Ui.Templates.*`, or explicitly document (as already done for `App.Bun`) that shared templates are a reviewed-not-scanned exemption for hardcoded chrome text. |
+| P2 | S | Replace the `Article.purs` `"Author"`/`"Engineering"`/`"Published"` labels with real `dict` copy and an actual author-role slot field, or remove the fabricated `"Engineering"` placeholder. |
+| P3 | S | Confirm (outside this environment) that `bun run test:e2e` actually passes on current `HEAD` — this audit could not verify it. |
