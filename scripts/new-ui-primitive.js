@@ -128,6 +128,25 @@ console.log(`  ✓ Added ${modulePath} to Policy.Contract.uiPrimitiveModules`);
 run(["make", "ui-coverage"]);
 console.log(`  ✓ Regenerated docs/conventions/ui-coverage.md`);
 
+// Format + build-validate before declaring success, matching
+// auto-scaffold.js -- a regex-spliced array literal or template typo
+// should fail loudly here, not surface later in CI.
+try {
+  run(["bun", "x", "purs-tidy", "format-in-place", "src/**/*.purs"], { throwOnError: true });
+  console.log("  ✓ Formatted with purs-tidy");
+} catch (error) {
+  console.error("✘ Formatting failed; refusing to complete.");
+  throw error;
+}
+
+try {
+  run(["bun", "x", "spago", "build", "--strict"], { throwOnError: true });
+  console.log("  ✓ Built successfully with zero compiler errors!");
+} catch (error) {
+  console.error("✘ Build failed -- the scaffolded stub or the Contract.purs edit is broken.");
+  throw error;
+}
+
 console.log(`
 Next steps:
   1. Read ${vendorDocPath}
