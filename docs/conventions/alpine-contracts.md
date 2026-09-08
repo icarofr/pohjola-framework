@@ -108,9 +108,13 @@ behaviour belongs on the server, not that the seam needs loosening.
   prefetch sends `alpineRequestHeader` so the server returns a fragment the
   browser caches; the click hits cache with zero round-trip. Degrades to a
   normal `<a>` without JS.
-- **Language toggles are plain anchors** — `<html lang>`, canonical/hreflang,
-  and head metadata require a full reload. Nav chrome lives in
-  `App.Ui.Templates.SiteShell`.
+- **`langLink`** — same `x-target.push` fragment-swap navigation as `navLink`,
+  not a plain anchor; a language switch never full-reloads. Only `<html lang>`
+  and `document.title` sync client-side afterward (the two fields with a real
+  observer — see "Deliberately just these two" above); canonical/hreflang/
+  OG stay correct in the server-rendered `<head>` because a reload was never
+  needed for them to be right on the *next* direct request. Nav chrome lives
+  in `App.Ui.Templates.SiteShell`.
 - **`renderFragment`** — shared fragment builder (`Page.purs` + `Main.purs`).
   Fragments never stream (small, already fast).
 
