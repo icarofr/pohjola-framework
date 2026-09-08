@@ -29,6 +29,9 @@ jobs:
       - name: Format check (purs-tidy)
         run: make format-check
 
+      - name: Dependency audit (informational — see `make audit`)
+        run: make audit
+
       - name: Gate (unsafe fns, FFI, HTML escape hatch) + build
         run: make ci-equivalent
 

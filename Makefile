@@ -58,6 +58,17 @@ gate:
 generator-policy:
 	@$(BUN) scripts/verify-generator-fixture.js
 
+## audit: dependency vulnerability scan (informational — see target for why it does not gate)
+.PHONY: audit
+audit:
+	@echo "bun audit: reports known advisories in installed packages. Non-blocking:"
+	@echo "current advisories are all transitive dev-tooling (spago-installer via"
+	@echo "tar, playwright cert verification) with no upstream fix or pin available"
+	@echo "yet, and none appear in a shipped runtime dependency (package.json"
+	@echo "dependencies is empty). Read the output; do not ignore a new advisory"
+	@echo "landing in a package this repo actually ships."
+	@$(BUN) audit || true
+
 design-policy: generator-policy
 	@$(BUN) scripts/verify-theme.js
 

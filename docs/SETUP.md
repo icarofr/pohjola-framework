@@ -43,8 +43,8 @@ ADRs are part of the deliverable — not the demo features they happen to cover.
     ADR is how the next agent (or future you) learns *why*. See `docs/adr/`
     for the existing set and their shape.
 13. **Keep `AGENTS.md` accurate** — agent entry point and safety floor for this
-    tree (and forks). Point app-specific guidance there; do not revive
-    `docs/AGENT_CONTEXT.md` (stub only).
+    tree (and forks). Point app-specific guidance there; `docs/AGENT_CONTEXT.md`
+    (a superseded stub) has been removed — do not recreate it.
 14. **First feature** — copy the Posts pattern (data-backed:
     `Types`/`Service`/`Page`/`View` + `App.Data.Fetch`) or the About pattern
     (static: `Page` + `View`, compose via `App.Ui.Templates.Render.renderPage`). Never
