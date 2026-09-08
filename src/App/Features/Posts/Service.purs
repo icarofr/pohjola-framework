@@ -87,12 +87,21 @@ fetchPosts cfg = case cfg.databaseUrl of
     result <- SQL.query sql "SELECT id, user_id, title, body FROM posts ORDER BY id ASC" []
     case result of
       Left err -> pure (Left (DecodeError (TypeMismatch (show err))))
-      Right rows -> do
-        let posts = Array.mapMaybe decodePostRow rows
-        if Array.null posts then
-          pure (Right curatedPosts)
+      Right rows ->
+        if Array.null rows then
+          -- No rows in the table is a valid production state, not demo mode.
+          pure (Right [])
         else
-          pure (Right posts)
+          let
+            posts = Array.mapMaybe decodePostRow rows
+          in
+            if Array.null posts then
+              -- Rows came back but none decoded: schema drift or a decode
+              -- bug, not "no data configured" — a real, distinguishable
+              -- failure (mirrors fetchPost's NotFound on the same condition).
+              pure (Left (DecodeError (TypeMismatch "posts: all rows failed to decode")))
+            else
+              pure (Right posts)
   Nothing ->
     if cfg.postsApiBase /= "https://jsonplaceholder.typicode.com" && cfg.postsApiBase /= "" then
       fetchJson (cfg.postsApiBase <> "/posts")

@@ -18,22 +18,29 @@ import App.Features.Posts.Service (fetchPost, fetchPosts)
 import App.Features.Posts.View (renderPostDetail, renderPostList, renderPostsError)
 import App.Form (FormStatus)
 import App.Html (Html)
+import App.Logger as Log
 import Data.Either (Either(..))
 import Data.I18n (Lang)
 import Data.Maybe (Maybe)
+import Data.Tuple (Tuple(..))
 import Effect.Aff (Aff)
+import Effect.Class (liftEffect)
 
 -- | Post list page — fetches all posts, renders list or feature-specific error.
 -- | A fetch failure returns `Right (renderPostsError ...)` (a 200 with an
 -- | error message in-page), not `Left err` (which would render a generic 500).
 -- | This is the right call for a list page: the user sees a retryable error
 -- | in context, not a blank 500. For detail pages, NotFound maps to a 404.
+-- | The AppError is still logged before being swallowed into the soft
+-- | render, so a fetch failure stays operator-visible.
 renderList :: Config -> Lang -> Maybe FormStatus -> Aff (Either AppError Html)
 renderList cfg lang status = do
   result <- fetchPosts cfg
-  pure case result of
-    Right posts -> Right (renderPostList lang status posts)
-    Left _ -> Right (renderPostsError lang status)
+  case result of
+    Right posts -> pure $ Right (renderPostList lang status posts)
+    Left err -> do
+      liftEffect $ Log.logErr "posts-list-fetch-failed" [ Tuple "error" (show err) ]
+      pure $ Right (renderPostsError lang status)
 
 -- | Post detail page — fetches a single post by ID.
 -- | NotFound propagates as Left so the router renders the branded 404 page
