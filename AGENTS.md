@@ -44,3 +44,17 @@ When the verify method is unclear, ask.
 
 ## Evals
 After a convention change, run the matching eval CHECK=1 (01 page, 11 chrome, 12 UI, 10 archetypes).
+
+## Agent skills
+
+### Issue tracker
+
+Markdown files under `.scratch/<feature-slug>/` (no GitHub issue tracker use — `gh` isn't assumed available). See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default vocabulary: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context layout (`CONTEXT.md` + `docs/adr/` at the repo root — `docs/adr/` already exists). See `docs/agents/domain.md`.
