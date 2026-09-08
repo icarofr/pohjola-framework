@@ -376,7 +376,7 @@ if (wire) {
       if (p1.includes(`${name} ->`)) return match;
       const isStatic = type === "static" ? "true" : "false";
       const trimmed = p1.endsWith("\n") ? p1 : `${p1}\n`;
-      return `routeMeta = case _ of\n${trimmed}  ${name} -> { isStatic: ${isStatic}, prefetch: [ Home ] }\n${p2}`;
+      return `routeMeta = case _ of\n${trimmed}  ${name} -> { isStatic: ${isStatic}, inSitemap: true, prefetch: [ Home ] }\n${p2}`;
     }
   );
 

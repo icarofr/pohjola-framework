@@ -100,21 +100,36 @@ routeUrl lang = print (routeCodec lang)
 -- | other compiled cleanly and silently misrouted caching. Deriving
 -- | `isStaticRoute`/`staticRoutes` and both call sites from this one table
 -- | closes that: there is now exactly one place to get it wrong.
+-- | `inSitemap` closes the other half of the same risk: `allRoutes` below is
+-- | necessarily a hand-written literal (`Route` isn't `Bounded`/`Enum`, and
+-- | `PostDetail Int` can't be enumerated regardless), so nothing forces it
+-- | to agree with this table by construction the way `staticRoutes` now
+-- | does. What IS forced: `routeMeta` has no wildcard arm, so a new
+-- | constructor is a compile error here until it gets an explicit
+-- | `inSitemap` decision — "documented as excluded," mechanically, not by
+-- | comment. `RouteSpec`'s "allRoutes agrees with routeMeta" test then
+-- | catches the *other* direction: an entry present in one but not the
+-- | other. What no test in this codebase can catch: a whole new
+-- | constructor whose `inSitemap: true` decision was never carried over
+-- | into the `allRoutes` literal at all — closing that fully would need a
+-- | second, enumerable mirror type purely to drive `allRoutes`, which is
+-- | more machinery than this 6-route framework has earned yet.
 type RouteMeta =
   { isStatic :: Boolean
+  , inSitemap :: Boolean
   , prefetch :: Array Route
   }
 
--- | Exhaustive on Route — adding a constructor forces both a caching and a
--- | prefetch decision here, in one place, instead of two.
+-- | Exhaustive on Route — adding a constructor forces a caching, a sitemap,
+-- | and a prefetch decision here, in one place, instead of three.
 routeMeta :: Route -> RouteMeta
 routeMeta = case _ of
-  Home -> { isStatic: true, prefetch: [ PostList, About, Contact ] }
-  About -> { isStatic: true, prefetch: [ Home, Contact ] }
-  Contact -> { isStatic: true, prefetch: [ Home, About ] }
-  Fixtures -> { isStatic: true, prefetch: [ Home ] }
-  PostList -> { isStatic: false, prefetch: [ PostDetail 1, PostDetail 2 ] } -- Demo IDs matching JSONPlaceholder API; update for real CMS
-  PostDetail _ -> { isStatic: false, prefetch: [ PostList ] }
+  Home -> { isStatic: true, inSitemap: true, prefetch: [ PostList, About, Contact ] }
+  About -> { isStatic: true, inSitemap: true, prefetch: [ Home, Contact ] }
+  Contact -> { isStatic: true, inSitemap: true, prefetch: [ Home, About ] }
+  Fixtures -> { isStatic: true, inSitemap: true, prefetch: [ Home ] }
+  PostList -> { isStatic: false, inSitemap: true, prefetch: [ PostDetail 1, PostDetail 2 ] } -- Demo IDs matching JSONPlaceholder API; update for real CMS
+  PostDetail _ -> { isStatic: false, inSitemap: false, prefetch: [ PostList ] } -- Dynamic; cannot be enumerated for the sitemap
 
 -- | `renderPrefetch` emits `<link rel="prefetch">` for these routes, using the
 -- | FULL page URL — not a fragment URL. A fragment entry could never be hit,
@@ -129,6 +144,11 @@ prefetchFor = _.prefetch <<< routeMeta
 -- | routes (`cachedDynamicPage`/`cachedInnerDynamic`).
 isStaticRoute :: Route -> Boolean
 isStaticRoute = _.isStatic <<< routeMeta
+
+-- | True for routes that belong in `allRoutes`/the sitemap. See `RouteMeta`
+-- | for exactly what this does and doesn't guarantee.
+isInSitemap :: Route -> Boolean
+isInSitemap = _.inSitemap <<< routeMeta
 
 -- ============================================================================
 -- Parsing (derived from codec)

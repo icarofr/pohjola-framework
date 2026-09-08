@@ -6,7 +6,7 @@ import Prelude
 import Data.Array (all, filter, length)
 import Data.I18n (Lang(..))
 import Data.Maybe (Maybe(..), isJust)
-import Data.Route (Route(..), allLangs, allRoutes, parseRoute, routeUrl, staticRoutes)
+import Data.Route (Route(..), allLangs, allRoutes, isInSitemap, parseRoute, routeUrl, staticRoutes)
 import Data.String.Common (split) as S
 import Data.String.Pattern (Pattern(..))
 import Test.Spec (Spec, describe, it)
@@ -106,15 +106,21 @@ spec = do
         total `shouldEqual` 15 -- 3 langs * 5 routes
 
     describe "allRoutes" do
+      -- allRoutes is necessarily a hand-written literal (Route isn't
+      -- Bounded/Enum, and PostDetail Int can't be enumerated regardless —
+      -- see the comment on RouteMeta in Data.Route). `all isInSitemap
+      -- allRoutes` is the mechanically-checkable half of that: isInSitemap
+      -- comes from routeMeta, an exhaustive case with no wildcard arm, so
+      -- every Route constructor is forced to carry an explicit inSitemap
+      -- decision — this test catches that literal disagreeing with it. It
+      -- cannot catch a constructor whose routeMeta entry was written
+      -- correctly but never added to the allRoutes literal at all; closing
+      -- that fully would need a second, enumerable mirror type, which is
+      -- more machinery than this 6-route framework has earned yet.
       it "enumerates sitemap routes and excludes PostDetail" do
         allRoutes `shouldEqual` [ Home, About, Contact, PostList, Fixtures ]
         staticRoutes `shouldEqual` [ Home, About, Contact, Fixtures ]
-        all isSitemapRoute allRoutes `shouldEqual` true
+        all isInSitemap allRoutes `shouldEqual` true
 
 splitPath :: String -> Array String
 splitPath p = filter (_ /= "") (S.split (Pattern "/") p)
-
-isSitemapRoute :: Route -> Boolean
-isSitemapRoute = case _ of
-  PostDetail _ -> false
-  _ -> true
