@@ -9,10 +9,14 @@ is a straightforward version bump with a real fix on the other side.
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** done (e2e-in-CI check unverifiable from here, see below)
 
-- [ ] `@playwright/test` and `playwright` bumped to >=1.55.1 in `package.json` and `bun.lock`
-- [ ] `bun audit` (`make audit`) no longer lists the Playwright advisory
-- [ ] `make check` passes (build, gate, 244+ tests, format)
-- [ ] e2e suite (`bun run test:e2e`) still passes in CI at the new version — this repo's sandboxed dev environment cannot run Playwright's test runner at all (a confirmed, unrelated environment issue — see the diagnosis in `docs/audits/agent-stack-deep-audit-report_results.md`'s addendum), so this must be verified via the GitHub Actions e2e job, not locally
-- [ ] Check the Playwright 1.48 -> 1.55 changelog for breaking config/API changes that would affect `playwright.config.js` or the `e2e/*.spec.js` files, and adjust if needed
+- [x] `@playwright/test` and `playwright` bumped to 1.63.0 (latest, past >=1.55.1) in `package.json` and `bun.lock`
+- [x] `bun audit` (`make audit`) no longer lists the Playwright advisory — only the unfixable `tar` advisories remain
+- [x] `make check` passes (build, gate, 244/244 tests, format)
+- [ ] e2e suite (`bun run test:e2e`) still passes in CI at the new version — cannot verify from this sandboxed dev environment (Playwright's test runner hangs here regardless of version, a confirmed unrelated environment issue — see the diagnosis in `docs/audits/agent-stack-deep-audit-report_results.md`'s addendum). `playwright --version` works fine at 1.63.0. Needs a human/CI check of the next GitHub Actions e2e job run.
+- [x] Checked `e2e/*.spec.js` and `playwright.config.js` for deprecated/removed APIs across the 1.48->1.63 jump: only standard `defineConfig`/`test`/`expect`/`devices`/`AxeBuilder` usage, no `waitForNavigation`, snapshot APIs, or other flagged patterns found. No changes needed.
+
+## Comments
+
+Done except the CI verification checkbox, which requires seeing an actual GitHub Actions run — flagging for the user/next session to confirm once pushed.
