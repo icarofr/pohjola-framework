@@ -15,6 +15,7 @@ module Policy.Contract
   , forbiddenInFeatureViews
   , forbiddenThemeLiterals
   , ffiAllowlist
+  , moduleNameFromPath
   , policyScanExclusions
   , scriptAllowlist
   , textToneAllowlist
@@ -22,6 +23,13 @@ module Policy.Contract
   , uiPrimitiveModules
   , uiTemplateModules
   ) where
+
+import Prelude
+
+import Data.Array (mapMaybe)
+import Data.Maybe (Maybe)
+import Data.String (Pattern(..), Replacement(..), stripPrefix, stripSuffix)
+import Data.String.Common (replaceAll)
 
 -- | Modules that quote policy literals — excluded from content scans.
 policyScanExclusions :: Array String
@@ -89,22 +97,6 @@ forbiddenInFeatureViews =
   , "text-base-content/"
   ]
 
-forbiddenImportsInFeatureViews :: Array String
-forbiddenImportsInFeatureViews =
-  [ "App.Ui.Card"
-  , "App.Ui.Container"
-  , "App.Ui.Prose"
-  , "App.Ui.Alert"
-  , "App.Ui.Badge"
-  , "App.Ui.Form"
-  , "App.Ui.Divider"
-  , "App.Ui.EmptyState"
-  , "App.Ui.Avatar"
-  , "App.Ui.Button"
-  , "App.Ui.Breadcrumbs"
-  , "App.Ui.Stat"
-  ]
-
 forbiddenCallsInFeatureViews :: Array String
 forbiddenCallsInFeatureViews =
   [ "Ui.page"
@@ -168,6 +160,9 @@ uiTemplateModules =
   ]
 
 -- | DaisyUI primitives — styling lives here, not in new ad-hoc Ui modules.
+-- | `make new-ui-primitive NAME=X` appends here automatically; adding one by
+-- | hand needs no other edit (forbiddenImportsInFeatureViews derives from
+-- | this list, not a second hand-typed one — see the note there for why).
 uiPrimitiveModules :: Array String
 uiPrimitiveModules =
   [ "src/App/Ui/Alert.purs"
@@ -184,3 +179,20 @@ uiPrimitiveModules =
   , "src/App/Ui/Stat.purs"
   , "src/App/Ui/TextTone.purs"
   ]
+
+-- | Derive an App.* module name from its source path
+-- | (e.g. "src/App/Ui/Card.purs" -> "App.Ui.Card").
+moduleNameFromPath :: String -> Maybe String
+moduleNameFromPath path = do
+  withoutSrc <- stripPrefix (Pattern "src/") path
+  withoutExt <- stripSuffix (Pattern ".purs") withoutSrc
+  pure (replaceAll (Pattern "/") (Replacement ".") withoutExt)
+
+-- | Derived from uiPrimitiveModules, not a second hand-typed list. It used
+-- | to be one, and it had already drifted: App.Ui.TextTone was in
+-- | uiPrimitiveModules but missing here, so nothing stopped a feature view
+-- | from importing it directly — found in a whole-codebase idiom audit,
+-- | the same "same fact, two lists, no cross-check" class of bug as the
+-- | Route dispatch consolidation elsewhere in this repo's history.
+forbiddenImportsInFeatureViews :: Array String
+forbiddenImportsInFeatureViews = mapMaybe moduleNameFromPath uiPrimitiveModules

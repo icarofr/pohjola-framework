@@ -242,6 +242,11 @@ new-feature:
 ui-coverage:
 	@$(BUN) scripts/gen-ui-coverage.js
 
+## new-ui-primitive: scaffold an App.Ui primitive (usage: make new-ui-primitive NAME=Accordion [VENDOR=accordion])
+.PHONY: new-ui-primitive
+new-ui-primitive:
+	@$(BUN) scripts/new-ui-primitive.js --name=$(NAME) $(if $(VENDOR),--vendor=$(VENDOR),)
+
 ## gen-sql: generate PureScript types & codecs from SQL migrations (usage: make gen-sql [FILE=migrations/001.sql] [TABLE=comments] [OUT=path])
 .PHONY: gen-sql
 gen-sql:

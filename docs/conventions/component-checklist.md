@@ -58,14 +58,26 @@ When a page type needs new optional UI (breadcrumbs, stats row, aside):
 
 When a DaisyUI pattern is reused across templates:
 
-1. Read the vendor recipe: `vendor/daisyui/skills/daisyui/components/<name>.md` (`make deps` initializes submodule).
-2. Create `src/App/Ui/<Name>.purs` — follow `App.Ui.Button.purs` or `App.Ui.Breadcrumbs.purs`:
-   - Module header cites vendor doc path
-   - Typed variants (not raw class strings at call sites outside App.Ui)
-   - Export render functions only; classes stay inside the module
-3. Use **only** from `App.Ui.Templates.*` or other `App.Ui.*` — never from features.
-4. Add row to `docs/conventions/design-system.md` §4 and run `make ui-coverage`.
-5. Run `make gate && make test`.
+1. **Find the DaisyUI name first.** It doesn't always match the common name —
+   `App.Ui.Form` wraps DaisyUI's `fieldset`, not `form`. Run `make ui-coverage`
+   and check `docs/conventions/ui-coverage.md`'s "Vendor docs without App.Ui
+   wrapper yet" section (generated from the vendored submodule, `make deps`
+   initializes it) rather than guessing a filename.
+2. Run `make new-ui-primitive NAME=Accordion [VENDOR=accordion]` (`VENDOR`
+   only needed when it differs from `lowercase(NAME)`, per step 1). This
+   scaffolds `src/App/Ui/<Name>.purs` from the same shape as `App.Ui.Button.purs`/
+   `App.Ui.Breadcrumbs.purs` (module header citing the vendor doc, a typed
+   variant stub, render-function-only export), adds it to
+   `Policy.Contract.uiPrimitiveModules` — the *only* closed-set list; feature
+   views are automatically forbidden from importing it, derived from that
+   same list — and regenerates `ui-coverage.md`. One command instead of a
+   checklist to remember correctly.
+3. Read the vendor recipe the generator printed the path to, and replace the
+   `TODO` variant/render logic with the real thing — typed variants, not
+   hand-assembled class strings at call sites outside this module.
+4. Use **only** from `App.Ui.Templates.*` or other `App.Ui.*` — never from features.
+5. Add a row to `docs/conventions/design-system.md` §4.
+6. Run `make gate && make test`.
 
 Do **not** add to `App.Ui.purs` barrel unless multiple templates need re-export — features must not import the barrel anyway.
 
@@ -89,7 +101,7 @@ Run `make ui-coverage` to regenerate `docs/conventions/ui-coverage.md` (App.Ui �
 ## Pre-ship checks
 
 - [ ] Feature views: `renderPage` + slots only; no forbidden imports (`make gate`).
-- [ ] New classes only in `App.Ui` / Templates; extend `Policy.Contract` closed sets if adding modules.
+- [ ] New classes only in `App.Ui` / Templates; new primitives via `make new-ui-primitive` (§3), new templates still need `Policy.Contract.uiTemplateModules` + an ADR by hand.
 - [ ] All `allLangs` copy in `Data.I18n` when user-visible strings change.
 - [ ] `make gate && make test && make test/e2e` pass.
 - [ ] Eval: `make eval EVAL=12-add-ui-component CHECK=1` after component/template UI work.
