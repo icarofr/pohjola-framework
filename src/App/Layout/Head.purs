@@ -1,7 +1,6 @@
 -- | HTML <head> rendering — meta, SEO, hreflang, CSS, dark mode init
 module App.Layout.Head
   ( renderHead
-  , pageSyncAttrs
   , seoDescription
   , ogLocale
   , renderJsonLd
@@ -10,13 +9,7 @@ module App.Layout.Head
 
 import Prelude
 
-import App.Alpine
-  ( dataPageDescriptionAttr
-  , dataPageHrefPrefix
-  , dataPageOgAltsAttr
-  , dataPageOgLocaleAttr
-  )
-import App.Html (Attr, Html, attr, content_, el, href, name_, property_, rel_, text)
+import App.Html (Html, attr, content_, el, href, name_, property_, rel_, text)
 import App.Layout.Scripts (HeadScript(..), renderHeadScript, renderJsonLdScript)
 import App.Layout.Styles (stylesCss)
 import Data.Argonaut.Core (Json, fromObject, fromString, stringify)
@@ -26,7 +19,7 @@ import Data.Foldable (foldMap)
 import Data.I18n (Lang(..), defaultLang, dict, langTag)
 import Data.Maybe (Maybe(..))
 import Data.Route (Route(..), allLangs, routeTitle, routeUrl)
-import Data.String.Common (joinWith, replaceAll) as S
+import Data.String.Common (replaceAll) as S
 import Data.String.Pattern (Pattern(..), Replacement(..))
 import Data.Tuple (Tuple(..))
 import Foreign.Object (Object)
@@ -69,15 +62,6 @@ renderHead baseUrl nonce lang route =
     <> el "title" [] [ text (routeTitle lang route) ]
     -- JSON-LD structured data (exhaustive on Route, XSS-escaped)
     <> foldMap identity (renderJsonLd baseUrl nonce lang route)
-
-pageSyncAttrs :: Lang -> Route -> Array Attr
-pageSyncAttrs lang route =
-  [ attr dataPageDescriptionAttr (seoDescription lang route)
-  , attr dataPageOgLocaleAttr (ogLocale lang)
-  , attr dataPageOgAltsAttr (S.joinWith "," (map ogLocale allLangs))
-  ]
-    <> [ attr (dataPageHrefPrefix <> "default") (routeUrl defaultLang route) ]
-    <> map (\l -> attr (dataPageHrefPrefix <> langTag l) (routeUrl l route)) allLangs
 
 hreflangTag :: String -> Route -> Lang -> Html
 hreflangTag baseUrl route lang =

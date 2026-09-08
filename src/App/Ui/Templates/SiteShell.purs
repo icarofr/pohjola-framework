@@ -46,7 +46,6 @@ import App.Html
   , text
   , type_
   )
-import App.Layout.Head (pageSyncAttrs)
 import App.Ui.Alert (AlertVariant(..), alert)
 import App.Ui.Container as Container
 import App.Ui.Templates.Contract as Contract
@@ -123,7 +122,6 @@ sitePageTitled lang route title labels status content =
       , attr dataPageTitleAttr title
       , attr dataPageLangAttr (langTag lang)
       ]
-        <> pageSyncAttrs lang route
         <>
           [ xDataThemeWithFlag ThemeMenuOpen false
           , onKeydownEscapeWindow closeSiteDrawer

@@ -37,23 +37,24 @@ Three constants bind the server-fragment layer to the Alpine AJAX layer:
 - **`data-page-lang`** — attribute on the same `#content` wrapper. The title
   sync script also sets `document.documentElement.lang` after fragment swaps,
   including language switches.
-- **`data-page-description`**, **`data-page-og-locale`**, **`data-page-href-*`**
-  — SEO payload on `#content`. The sync script patches description, Open Graph,
-  Twitter, canonical, `og:url`, `og:locale` alternates, and `hreflang` links
-  after every fragment merge (`App.Layout.Head.pageSyncAttrs`).
 
-All of these names are constants in `App.Alpine` (`contentTarget`,
-`alpineRequestHeader`, `dataPageTitleAttr`, `dataPageLangAttr`,
-`dataPageDescriptionAttr`, `dataPageOgLocaleAttr`, `dataPageOgAltsAttr`,
-`dataPageHrefPrefix`) — `Layout/Head.purs`, `Ui/Templates/SiteShell.purs`,
-and the inline head-sync script in `Layout/Scripts.purs` all reference these
+Deliberately just these two. SEO/social metadata (description, Open Graph,
+Twitter, canonical, `og:locale` alternates, `hreflang` links) used to be
+synced here too, but every consumer of those fields — crawlers, link
+unfurlers — fetches the URL fresh via SSR and never executes this script, so
+client-side syncing served no observer. The server-rendered `<head>`
+(`App.Layout.Head.renderHead`) still emits all of it correctly on every
+direct request; only the fragment-swap sync payload was trimmed.
+
+`contentTarget`, `alpineRequestHeader`, `dataPageTitleAttr`, and
+`dataPageLangAttr` are constants in `App.Alpine` — `Ui/Templates/SiteShell.purs`
+and the inline head-sync script in `Layout/Scripts.purs` reference these
 exports rather than restating the literals, so a rename is a single-file,
 compiler-checked change instead of a repo-wide grep. The inline script's
 JS-side `dataset` field names (e.g. `d.pageTitle`) still read as prose
 matching each attribute name — that transformation is the DOM's own
 spec-defined kebab-case → camelCase `dataset` mapping, not a second
-hand-typed copy of the name, so it isn't a source of drift the way the
-attribute names themselves used to be.
+hand-typed copy of the name.
 
 ## Typed constructors
 
