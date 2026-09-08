@@ -54,8 +54,7 @@ browser-native prefetching". That is not achievable with the current design.
 `x-target.push` uses the href for both the fetch and the pushed state.
 
 `renderPrefetch` correctly emits the full `routeUrl`, and the comment above it
-identified this before the ADR was amended — a code comment silently overruling
-an accepted decision, which is its own problem.
+identified this before the ADR was amended.
 
 `?_frag=1` keeps its place for the reasons that do hold: header-free fragment
 requests for `curl`, integration tests, non-header clients, and a fragment cache

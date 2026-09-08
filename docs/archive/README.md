@@ -7,3 +7,4 @@ Superseded or deferred plans kept for history. **Not active guidance** — follo
 |---|---|
 | `htmx-4-migration.md` | Deferred — Alpine AJAX frozen (ADR-011) |
 | `2026-08-30-text-tone-plan.md` | Completed — see `App.Ui.TextTone` |
+| `2026-09-05-audit-honesty-pass.md` | Completed — every task checked off |

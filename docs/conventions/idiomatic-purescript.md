@@ -1,10 +1,9 @@
 # Idiomatic PureScript — FP lessons for this codebase
 
 The project docs cover architecture and runtime safety. This doc fills the
-gap: general FP idioms that keep PureScript code clean and correct. Drawn
-from general FP idioms that keep PureScript code clean and correct. Optional
-local clones of the PureScript book (`research/` — optional, gitignored) informed some
-rules; the repo does not require them.
+gap: general FP idioms that keep PureScript code clean and correct, informed
+by optional local clones of the PureScript book (`research/` — gitignored,
+not required).
 
 ## Errors and effects
 

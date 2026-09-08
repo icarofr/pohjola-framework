@@ -9,7 +9,7 @@ The starter's current auth module is legacy in-memory scaffolding, not a
 production session implementation. Auth is the domain where parallel implementations
 accumulate fastest ("10 auth wrappers"): the first agent to need auth defines
 the shape every later agent inherits. The shape is therefore fixed BEFORE the
-first implementation, by the stub at `src/App/Auth.purs`. Deployment is 100%
+first implementation, by the stub at `src/App/Auth/Scaffold.purs`. Deployment is 100%
 Bun (vendored 1.4.0 source verified for the native APIs below).
 
 ## Decision

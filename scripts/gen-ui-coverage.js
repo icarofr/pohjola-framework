@@ -73,6 +73,8 @@ md += `
 | \`App.Ui.Templates.Editorial\` | Long-form static |
 | \`App.Ui.Templates.Feed\` | Post/list grid |
 | \`App.Ui.Templates.Article\` | Article detail |
+| \`App.Ui.Templates.Schedule\` | Fixture/match list |
+| \`App.Ui.Templates.Form\` | Form page (fieldset + submit) |
 
 ## Chrome-only (SiteShell, not App.Ui primitives)
 

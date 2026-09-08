@@ -90,6 +90,6 @@ Run `make ui-coverage` to regenerate `docs/conventions/ui-coverage.md` (App.Ui â
 
 - [ ] Feature views: `renderPage` + slots only; no forbidden imports (`make gate`).
 - [ ] New classes only in `App.Ui` / Templates; extend `Policy.Contract` closed sets if adding modules.
-- [ ] Both `En` and `Fr` copy in `Data.I18n` when user-visible strings change.
+- [ ] All `allLangs` copy in `Data.I18n` when user-visible strings change.
 - [ ] `make gate && make test && make test/e2e` pass.
 - [ ] Eval: `make eval EVAL=12-add-ui-component CHECK=1` after component/template UI work.

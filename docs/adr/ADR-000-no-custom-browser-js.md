@@ -29,8 +29,7 @@ invisible to the PureScript type system and to the gate.
   pinned by ContractSpec; widening it fails a test that demands justification.
   (Originally `script-src 'self' 'unsafe-inline' 'unsafe-eval'` — `unsafe-inline`
   was dropped in favour of per-request nonces; see the addendum below for the
-  reasoning. This line previously still described the pre-nonce policy and
-  contradicted the addendum.)
+  reasoning.)
 - ContractSpec asserts rendered pages never reference external `src="http…"`.
 - The gate bans `foreign import` outside `ffiAllowlist` in `Policy.Contract`.
 - If a behaviour can't be expressed in Alpine attributes, it moves to the

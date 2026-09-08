@@ -110,4 +110,4 @@ For a starter template, the repo IS the fixture. The evals serve as:
    they still pass.
 4. **Repo-law CI** — `make eval-repo-law` runs evals that must pass on a clean master (`04-add-ffi`, `05-add-auth`, `08-browser-island`, `09-script-security`, `12-add-ui-component`). Do **not** CI `01`/`02`/`03`: those fail until an agent implements the prompt.
 
-Post-feature evals (`01-add-page`, `02-add-data-feature`, `03-add-form`, `10-ui-archetypes`, `11-edit-chrome`) stay local: run `CHECK=1` after doing the task.
+Post-feature evals (`01-add-page`, `02-add-data-page`, `03-add-form`, `10-ui-archetypes`, `11-edit-chrome`) stay local: run `CHECK=1` after doing the task.

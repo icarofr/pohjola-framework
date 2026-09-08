@@ -30,14 +30,16 @@ Close the **semantic** styling seam for base-content foreground text so agents h
 data TextTone = Ink | Copy | Meta
 
 -- Ink  -> text-base-content       (headings, primary labels — usually written as bare DaisyUI token)
--- Copy -> text-base-content/80    (all supporting paragraphs, subtitles, descriptions)
--- Meta -> text-base-content/60    (telemetry, legal, section labels, timestamps)
+-- Copy -> text-base-content/NN    (all supporting paragraphs, subtitles, descriptions)
+-- Meta -> text-base-content/NN    (telemetry, legal, section labels, timestamps)
+-- Exact opacities: see App.Ui.TextTone (the sole emitter, per make gate) — not
+-- restated here since a prior pass in this doc already drifted from what shipped.
 ```
 
 `interactiveSoftClass` = `Copy` + `hover:text-base-content` for toolbar/nav controls.
 
 **Pros:** Actually answers token drift; smallest agent vocabulary; matches Linear/StyleX *principle* (semantic contracts) not just syntax.  
-**Cons:** Minor visual consolidation (/70, /75, /85 → /80 for supporting copy).
+**Cons:** Minor visual consolidation of the old scattered opacities down to one value for supporting copy (see `App.Ui.TextTone` for the exact number shipped).
 
 ### B. Ship six-variant 1:1 map (interrupted work as-is)
 
@@ -103,7 +105,3 @@ withTone tone layout = layout <> " " <> toneClass tone
 4. ADR-008 tone table reflects three variants (`Ink`, `Copy`, `Meta`)
 5. `src/App/Layout/Styles.purs` not included in the change (build artifact)
 6. No new styling escape hatches in feature views
-
-## Decision
-
-**Approach A approved.** Three semantic roles; supporting copy consolidates to `/80`.
