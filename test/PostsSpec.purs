@@ -4,8 +4,12 @@ module Test.PostsSpec where
 import Prelude
 
 import App.Data.Fetch (statusToAppError)
+import App.Data.SQL (SQLError(..))
+import App.Data.SQL as SQL
 import App.Error (AppError(..))
+import App.Features.Posts.Service (postFromRows, postsFromRows)
 import App.Features.Posts.Types (Post(..), postExcerpt)
+import Data.Argonaut.Decode.Error (JsonDecodeError(..))
 import Data.Array as Array
 import Data.Argonaut.Core (Json, fromObject, fromNumber, fromString)
 import Data.Argonaut.Decode (decodeJson)
@@ -13,9 +17,20 @@ import Data.Either (Either(..))
 import Data.Int (toNumber)
 import Data.String as String
 import Data.Tuple (Tuple(..))
+import Foreign (unsafeToForeign)
 import Foreign.Object as Object
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (fail, shouldEqual, shouldSatisfy)
+
+-- | A DbRow is Foreign, and readStringField/readIntField do plain `row[field]`
+-- | property access (App.Data.SQL.js) -- so a compiled PS record literal is a
+-- | valid DbRow fixture with zero DB involved.
+validRow :: SQL.DbRow
+validRow = unsafeToForeign { id: 1, user_id: 1, title: "Hello World", body: "Body text." }
+
+-- | Missing "title" -- decodePostRow's Maybe chain fails on this field.
+malformedRow :: SQL.DbRow
+malformedRow = unsafeToForeign { id: 1, user_id: 1 }
 
 -- | Sample JSON matching JSONPlaceholder's post shape.
 -- | Lives in the test (not Types.purs) — test data doesn't belong in
@@ -60,6 +75,38 @@ spec = do
         longBody = String.joinWith " " (Array.replicate 40 "word")
         post = Post { id: 1, userId: 1, title: "T", body: longBody }
       String.length (postExcerpt post) `shouldSatisfy` (_ <= 165)
+
+  describe "postFromRows (fetchPost's SQL-branch decision, no DB required)" do
+    it "surfaces a real SQL error as DecodeError, not NotFound" do
+      postFromRows (Left (QueryError "connection reset"))
+        `shouldEqual` Left (DecodeError (TypeMismatch "QueryError: connection reset"))
+
+    it "reports zero rows as NotFound" do
+      postFromRows (Right []) `shouldEqual` Left NotFound
+
+    it "decodes a single valid row" do
+      postFromRows (Right [ validRow ])
+        `shouldEqual` Right (Post { id: 1, userId: 1, title: "Hello World", body: "Body text." })
+
+    it "reports a malformed row as DecodeError, not NotFound (the post exists, it's malformed)" do
+      postFromRows (Right [ malformedRow ])
+        `shouldEqual` Left (DecodeError (TypeMismatch "post: row failed to decode"))
+
+  describe "postsFromRows (fetchPosts' SQL-branch decision, no DB required)" do
+    it "surfaces a real SQL error as DecodeError" do
+      postsFromRows (Left (QueryError "connection reset"))
+        `shouldEqual` Left (DecodeError (TypeMismatch "QueryError: connection reset"))
+
+    it "reports an empty table as Right [] -- a valid production state, not demo mode" do
+      postsFromRows (Right []) `shouldEqual` Right []
+
+    it "decodes rows that are all valid" do
+      postsFromRows (Right [ validRow ])
+        `shouldEqual` Right [ Post { id: 1, userId: 1, title: "Hello World", body: "Body text." } ]
+
+    it "reports all-rows-failed-to-decode as DecodeError, not an empty demo fallback" do
+      postsFromRows (Right [ malformedRow ])
+        `shouldEqual` Left (DecodeError (TypeMismatch "posts: all rows failed to decode"))
 
   describe "fetchJson status mapping" do
     it "maps 200 to Right" do

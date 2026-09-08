@@ -12,6 +12,8 @@ module App.Features.Posts.Service
   , curatedPosts
   , fetchPost
   , fetchPosts
+  , postFromRows
+  , postsFromRows
   ) where
 
 import Prelude
@@ -78,6 +80,21 @@ curatedPosts =
       }
   ]
 
+-- | Decide the fetch-all result from an SQL query outcome. Pure — no live
+-- | DB required, which is what makes it directly testable (see PostsSpec).
+-- | Distinguishes a real query error, an empty table (valid production
+-- | state), and rows that came back but all failed to decode (schema drift —
+-- | a real, distinguishable failure, not "no data configured").
+postsFromRows :: Either SQL.SQLError (Array SQL.DbRow) -> Either AppError (Array Post)
+postsFromRows = case _ of
+  Left err -> Left (DecodeError (TypeMismatch (show err)))
+  Right rows
+    | Array.null rows -> Right []
+    | otherwise -> case Array.mapMaybe decodePostRow rows of
+        posts
+          | Array.null posts -> Left (DecodeError (TypeMismatch "posts: all rows failed to decode"))
+          | otherwise -> Right posts
+
 -- | Fetch all posts. Queries PostgreSQL when DATABASE_URL is configured;
 -- | otherwise fetches from external API or serves local curated posts.
 fetchPosts :: Config -> Aff (Either AppError (Array Post))
@@ -85,28 +102,25 @@ fetchPosts cfg = case cfg.databaseUrl of
   Just dbUrl -> do
     sql <- liftEffect $ SQL.connect dbUrl
     result <- SQL.query sql "SELECT id, user_id, title, body FROM posts ORDER BY id ASC" []
-    case result of
-      Left err -> pure (Left (DecodeError (TypeMismatch (show err))))
-      Right rows ->
-        if Array.null rows then
-          -- No rows in the table is a valid production state, not demo mode.
-          pure (Right [])
-        else
-          let
-            posts = Array.mapMaybe decodePostRow rows
-          in
-            if Array.null posts then
-              -- Rows came back but none decoded: schema drift or a decode
-              -- bug, not "no data configured" — a real, distinguishable
-              -- failure (mirrors fetchPost's NotFound on the same condition).
-              pure (Left (DecodeError (TypeMismatch "posts: all rows failed to decode")))
-            else
-              pure (Right posts)
+    pure (postsFromRows result)
   Nothing ->
     if cfg.postsApiBase /= "https://jsonplaceholder.typicode.com" && cfg.postsApiBase /= "" then
       fetchJson (cfg.postsApiBase <> "/posts")
     else
       pure (Right curatedPosts)
+
+-- | Decide the fetch-one result from an SQL query outcome. Pure, same
+-- | rationale as postsFromRows. Distinguishes zero rows (genuinely no such
+-- | post — NotFound) from a row that failed to decode (the post exists but
+-- | is malformed — a decode error, not "not found").
+postFromRows :: Either SQL.SQLError (Array SQL.DbRow) -> Either AppError Post
+postFromRows = case _ of
+  Left err -> Left (DecodeError (TypeMismatch (show err)))
+  Right rows
+    | Array.null rows -> Left NotFound
+    | otherwise -> case Array.head (Array.mapMaybe decodePostRow rows) of
+        Just post -> Right post
+        Nothing -> Left (DecodeError (TypeMismatch "post: row failed to decode"))
 
 -- | Fetch a single post by ID.
 fetchPost :: Config -> Int -> Aff (Either AppError Post)
@@ -114,11 +128,7 @@ fetchPost cfg id = case cfg.databaseUrl of
   Just dbUrl -> do
     sql <- liftEffect $ SQL.connect dbUrl
     result <- SQL.query sql "SELECT id, user_id, title, body FROM posts WHERE id = $1 LIMIT 1" [ SQL.SqlInt id ]
-    case result of
-      Left _ -> pure (Left NotFound)
-      Right rows -> case Array.head (Array.mapMaybe decodePostRow rows) of
-        Just post -> pure (Right post)
-        Nothing -> pure (Left NotFound)
+    pure (postFromRows result)
   Nothing ->
     if cfg.postsApiBase /= "https://jsonplaceholder.typicode.com" && cfg.postsApiBase /= "" then
       fetchJson (cfg.postsApiBase <> "/posts/" <> show id)
