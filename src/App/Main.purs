@@ -322,6 +322,7 @@ errorStatus = case _ of
   HttpError _ -> 500
   FfiError _ -> 500
   ResendError _ -> 500
+  Unauthorized -> 401
 
 -- ============================================================================
 -- Root redirect — / → /fr or /en based on Accept-Language

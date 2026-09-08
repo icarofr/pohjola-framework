@@ -30,6 +30,7 @@ module App.Data.SQL
   , execMulti
   , readStringField
   , readIntField
+  , readBoolField
   ) where
 
 import Prelude
@@ -172,6 +173,10 @@ foreign import readStringFieldImpl :: DbRow -> String -> Nullable String
 -- | missing or not an integer. Plumbing for decoding query results.
 foreign import readIntFieldImpl :: DbRow -> String -> Nullable Int
 
+-- | Read a boolean field from a query row. Returns null if the field is
+-- | missing or not a boolean. Plumbing for decoding query results.
+foreign import readBoolFieldImpl :: DbRow -> String -> Nullable Boolean
+
 -- | Create a Bun.SQL client. Lazy connect — no I/O until first query.
 connect :: String -> Effect SQL
 connect = connectImpl
@@ -229,3 +234,7 @@ readStringField = map toMaybe <<< readStringFieldImpl
 -- | Read an integer field from a query row. Nothing if missing/non-integer.
 readIntField :: DbRow -> String -> Maybe Int
 readIntField = map toMaybe <<< readIntFieldImpl
+
+-- | Read a boolean field from a query row. Nothing if missing/non-boolean.
+readBoolField :: DbRow -> String -> Maybe Boolean
+readBoolField = map toMaybe <<< readBoolFieldImpl

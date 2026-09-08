@@ -60,6 +60,7 @@ stubConfig =
   , rateLimitMax: 0
   , rateLimitWindowMs: 60000.0
   , databaseUrl: Nothing
+  , secureCookies: true
   }
 
 testEmail :: String -> EmailAddress

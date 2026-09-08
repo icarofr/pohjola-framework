@@ -128,3 +128,11 @@ export function readIntFieldImpl(row) {
     return typeof v === "number" && Number.isInteger(v) ? v : null;
   };
 }
+
+// readBoolFieldImpl :: Row -> String -> Nullable Boolean
+export function readBoolFieldImpl(row) {
+  return function (field) {
+    var v = row[field];
+    return typeof v === "boolean" ? v : null;
+  };
+}

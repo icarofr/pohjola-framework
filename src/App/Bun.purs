@@ -64,6 +64,22 @@ foreign import getArgs :: Effect (Array String)
 -- | Formats output as hex string. Ideal for ETags, cache keys, and checksums.
 foreign import wyhash :: String -> String
 
+-- | N cryptographically random bytes, base64-encoded, via the Web Crypto
+-- | API (native to Bun's JS engine — not a node:crypto shim; the same
+-- | primitive App.ServerBun's CSP nonce generator uses). Used for the
+-- | secret half of session tokens (App.Auth) per ADR-002's Lucia-pattern
+-- | amendment — matches Lucia's own `secret.toBase64()`.
+foreign import randomBase64 :: Int -> Effect String
+
+-- | N cryptographically random bytes, each reduced to 5 bits (the top
+-- | 5 of each byte, `byte >> 3`) and mapped through a 32-character
+-- | human-readable alphabet excluding ambiguous characters (l/o/0/1).
+-- | Matches Lucia's own `generateRandomId` in `auth_session.ts` exactly
+-- | (verified against the live source, not reimplemented from a
+-- | paraphrase) — entropy is 5 bits per byte requested, not 8: 16 bytes
+-- | in gives 80 bits of entropy, the same as Lucia's session/user ids.
+foreign import randomLuciaId :: Int -> Effect String
+
 foreign import hashPasswordImpl
   :: String
   -> (String -> Effect Unit)

@@ -35,6 +35,13 @@ type Config =
   , rateLimitMax :: Int
   , rateLimitWindowMs :: Number
   , databaseUrl :: Maybe String
+  -- | Secure by default (true). __Host- prefixed session cookies (ADR-002)
+  -- | require Secure + HTTPS; a browser silently refuses to send them back
+  -- | over plain http://localhost, breaking `make dev`'s login flow. Set
+  -- | DEV_ALLOW_INSECURE_COOKIES=true locally to test login without HTTPS.
+  -- | Never set in production — this is an explicit opt-OUT of the safe
+  -- | default, not the other way around.
+  , secureCookies :: Boolean
   }
 
 -- | Load configuration from environment variables.
@@ -62,6 +69,7 @@ loadConfig = do
   rateLimitMaxStr <- getEnvDefault "RATE_LIMIT_MAX" "20"
   rateLimitWindowStr <- getEnvDefault "RATE_LIMIT_WINDOW_MS" "60000"
   databaseUrl <- getEnvMaybe "DATABASE_URL"
+  insecureCookiesStr <- getEnvDefault "DEV_ALLOW_INSECURE_COOKIES" "false"
 
   let
     rateLimitWindowMs = case Int.fromString rateLimitWindowStr of
@@ -82,6 +90,7 @@ loadConfig = do
         Nothing -> 20
     , rateLimitWindowMs
     , databaseUrl
+    , secureCookies: insecureCookiesStr /= "true"
     }
 
 -- | Parse an env var as an EmailAddress, falling back to a known-valid default

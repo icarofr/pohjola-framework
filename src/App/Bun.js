@@ -97,13 +97,45 @@ export function wyhash(str) {
   return Bun.hash.wyhash(str).toString(16);
 }
 
+// randomBase64 :: Int -> Effect String
+// N random bytes via the Web Crypto API (crypto.getRandomValues — native to
+// Bun's engine, same primitive App.ServerBun.js's CSP nonce generator uses),
+// base64-encoded.
+export function randomBase64(n) {
+  return function () {
+    return btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(n))));
+  };
+}
+
+// randomLuciaId :: Int -> Effect String
+// Exact port of Lucia's own generateRandomId (auth_session.ts): each random
+// byte's top 5 bits (byte >> 3) index a 32-char human-readable alphabet
+// (a-z0-9 without l/o/0/1, to avoid visual ambiguity). 5 bits of entropy
+// per byte requested, not 8.
+const LUCIA_ID_ALPHABET = "abcdefghijkmnpqrstuvwxyz23456789";
+export function randomLuciaId(n) {
+  return function () {
+    const bytes = new Uint8Array(n);
+    crypto.getRandomValues(bytes);
+    let id = "";
+    for (let i = 0; i < bytes.length; i++) {
+      id += LUCIA_ID_ALPHABET[bytes[i] >> 3];
+    }
+    return id;
+  };
+}
+
 // hashPasswordImpl :: String -> (String -> Effect Unit) -> (String -> Effect Unit) -> Effect Unit
-// Native Argon2id password hashing via Bun.password (SIMD-accelerated background thread)
+// Native Argon2id password hashing via Bun.password (SIMD-accelerated background thread).
+// memoryCost/timeCost match Lucia's own stated minimum (auth.pilcrowonpaper.com/passwords):
+// "Argon2id with at least 16MiB of memory, 3 iterations" -- 16384 KiB = 16 MiB.
+// Bun.password.verify reads parameters back out of the stored hash string itself,
+// so these values don't need to be passed again at verify time.
 export function hashPasswordImpl(password) {
   return function (onSuccess) {
     return function (onError) {
       return function () {
-        Bun.password.hash(password, { algorithm: "argon2id" })
+        Bun.password.hash(password, { algorithm: "argon2id", memoryCost: 16384, timeCost: 3 })
           .then(function (hash) { onSuccess(hash)(); })
           .catch(function (err) { onError(err.message || String(err))(); });
       };

@@ -18,6 +18,7 @@ data AppError
   | FfiError String
   | NotFound
   | ResendError Int
+  | Unauthorized
 
 derive instance eqAppError :: Eq AppError
 
@@ -29,3 +30,4 @@ instance showAppError :: Show AppError where
     FfiError msg -> "FfiError: " <> msg
     NotFound -> "NotFound"
     ResendError status -> "ResendError: " <> show status
+    Unauthorized -> "Unauthorized"

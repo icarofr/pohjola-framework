@@ -8,7 +8,7 @@ PureScript 0.15.16 + Bun SSR MPA. Alpine AJAX swaps the SiteShell drawer `#conte
 - FFI: Policy.Contract ffiAllowlist (four modules). Extend App.Bun for new Bun primitives; do not add a fifth module without ADR-003.
 - make gate = Policy.Contract. No class_ in Features. Every View.purs imports App.Ui.Templates.Render.
 - CSP pinned in ContractSpec. Do not widen. unsafe-eval is required by Alpine (new Function).
-- Do not implement ADR-010. Do not import App.Auth.Scaffold into Main or Features (ADR-002 pending).
+- Do not implement ADR-010. App.Auth (ADR-002, Lucia session pattern) is implemented — session lifecycle only, no users table/login UI. Do not wire requireAuth into a mutating route until ADR-005 (CSRF) lands too — see GUARANTEES.md.
 - Licence: Apache 2.0 (spirit: `LICENCE.md`). Do not paste private app names into this public tree.
 
 ## Commands
@@ -34,7 +34,7 @@ make eval EVAL=01-add-page CHECK=1  # assertions
 | deploy | docs/conventions/server.md |
 | new language | docs/conventions/adding-a-language.md |
 | claims | docs/GUARANTEES.md |
-| auth | docs/adr/ADR-002-auth-shape.md (do not code) |
+| auth | docs/conventions/auth-lucia-arctic.md (pattern) + docs/adr/ADR-002-auth-shape.md (decision) — App.Auth implemented; CSRF (ADR-005) still pending, don't wire into mutating routes yet |
 
 Skip docs/SETUP.md unless a human asks. Exemplars: About (static), Posts (data). Grep those before README samples.
 

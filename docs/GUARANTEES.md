@@ -113,18 +113,44 @@ implements them:
   browser-island model.
 - SSR is buffered by default. Streaming is experimental and must be opted in;
   it is not the default response contract.
-- When sessions are implemented, `__Host-ps_session` will carry an opaque
-  random 32-byte value, while PostgreSQL stores only its hash. Sessions have a
-  fixed 24-hour expiry, explicit revocation, and a per-session CSRF token.
 - SQL access (`App.Data.SQL`, migrations via `App.Migration`) is implemented.
   The remaining ADR-009 gap is one application-lifetime handle, created after
   synchronous migrations and closed during shutdown (Phase 3B).
 
-The session constraints above are specified by ADR-002, ADR-004, and ADR-005.
-The SQL pool lifecycle is specified by ADR-009 Phase 3B. Until that source work
-lands, they must not be reported as runtime-enforced guarantees. Note:
-`App.Auth.Scaffold` is non-compliant scaffold (in-memory store, wrong cookie name)
-and is not wired into `Main` — do not treat it as the approved shape.
+The SQL pool lifecycle is specified by ADR-009 Phase 3B. Until that source
+work lands, it must not be reported as a runtime-enforced guarantee.
+
+## Sessions (App.Auth) — implemented, CSRF is not
+
+`App.Auth` (2026-09-08) implements ADR-002's fixed interface using Lucia's
+session pattern in full (ADR-002's Amendment; full reference at
+`docs/conventions/auth-lucia-arctic.md`): `__Host-ps_session` carries an
+`id.secret` token where only the secret's SHA-256 hash is stored, and a
+**sliding 10-day renewal** window — not the originally-specified fixed
+24-hour expiry, which the Amendment supersedes. This is server-side
+validity only — the cookie's own `Max-Age` does not currently slide (see
+the pattern doc's "Known limitation" section); nothing re-issues
+`Set-Cookie` on renewal yet. `createSession`,
+`requireAuth`, and `destroySession` are real, tested (the pure
+cookie/token/decision logic — `checkSession`, cookie parsing/formatting —
+has direct unit coverage in `test/AuthSpec.purs`; the SQL-backed integration
+itself is not verified against a live database by CI or in this repo's own
+development environment, the same honest limitation already true of
+`App.Features.Posts.Service`'s SQL-configured branch).
+
+**This module owns session lifecycle only.** It does not define a users
+table, registration, or login-form handling — a caller obtains a `UserId`
+however the application does (password check, OAuth) and passes it to
+`createSession`. No login UI exists yet.
+
+**CSRF (ADR-005) is still "Accepted — implementation pending," and that is a
+real, currently-open gap, not a formality.** Lucia's own documentation is
+explicit that a cookie-carried session token requires CSRF protection
+regardless of `SameSite` — ADR-002's own Amendment section says the same.
+Any code that wires `App.Auth.requireAuth` into a real protected, mutating
+route (a form submission, not a GET) before ADR-005 lands reopens exactly
+the risk both documents warn about. Read-only protected pages are lower
+risk; anything that writes is not safe to ship without CSRF alongside it.
 
 ## Keeping it true
 
