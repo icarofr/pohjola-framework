@@ -1,13 +1,36 @@
 #!/usr/bin/env bun
 /**
  * Regenerate docs/conventions/ui-coverage.md — App.Ui primitive ↔ DaisyUI vendor index.
+ *
+ * --check: don't write, compare the freshly-generated content against the
+ * committed file and exit 1 if they differ. Catches exactly the bug this
+ * flag was added for: a regen that ran without vendor/daisyui checked out
+ * (globSync returns nothing, silently blanking the "unwrapped" list) got
+ * committed as if it were correct, and nothing caught it until a later,
+ * unrelated session noticed by inspection.
  */
 import { join } from "node:path";
-import { globSync, readText, writeText, ROOT } from "./lib/repo.js";
+import { exists, globSync, readText, writeText, ROOT } from "./lib/repo.js";
 
+const CHECK = process.argv.includes("--check");
 const OUT = join(ROOT, "docs/conventions/ui-coverage.md");
 const VENDOR_DIR = join(ROOT, "vendor/daisyui/skills/daisyui/components");
 const UI_DIR = join(ROOT, "src/App/Ui");
+
+// Bun.file(path).exists() only answers for files, not directories, so a
+// glob against the vendor dir is the actual signal: zero matches means
+// either the submodule isn't checked out or DaisyUI genuinely shipped no
+// component docs, and there's no way to tell those apart from here — both
+// make regenerating unsafe.
+if (globSync("vendor/daisyui/skills/daisyui/components/*.md").length === 0) {
+  console.error(
+    `Error: no .md files under ${VENDOR_DIR}. The vendor/daisyui submodule isn't checked out ` +
+      `(run \`make deps\`, or \`git submodule update --init --depth 1 vendor/daisyui\`). ` +
+      `Regenerating without it would silently blank the "unwrapped" list, which is the exact` +
+      ` bug this check exists to catch — refusing to run.`,
+  );
+  process.exit(1);
+}
 
 const primitives = globSync("src/App/Ui/*.purs").sort();
 const vendorDocs = globSync("vendor/daisyui/skills/daisyui/components/*.md").sort();
@@ -85,5 +108,18 @@ ${chromeOnly.map((c) => `- \`${c}\``).join("\n")}
 ${unwrapped.length === 0 ? "_All vendor components are either wrapped or chrome-only._" : unwrapped.map((c) => `- [${c}](vendor/daisyui/skills/daisyui/components/${c}.md)`).join("\n")}
 `;
 
-await writeText(OUT, md);
-console.log(`Wrote ${OUT} (${rows.length} primitives, ${unwrapped.length} unwrapped vendor docs)`);
+if (CHECK) {
+  const current = (await exists(OUT)) ? await readText(OUT) : "";
+  if (current === md) {
+    console.log(`OK: docs/conventions/ui-coverage.md matches a fresh regen (${rows.length} primitives, ${unwrapped.length} unwrapped).`);
+  } else {
+    console.error(
+      "docs/conventions/ui-coverage.md is stale — it doesn't match what `make ui-coverage` " +
+        "would generate right now. Run `make ui-coverage` and commit the result.",
+    );
+    process.exit(1);
+  }
+} else {
+  await writeText(OUT, md);
+  console.log(`Wrote ${OUT} (${rows.length} primitives, ${unwrapped.length} unwrapped vendor docs)`);
+}

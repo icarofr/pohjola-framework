@@ -58,6 +58,8 @@ gate:
 generator-policy:
 	@$(BUN) scripts/verify-generator-fixture.js
 	@$(BUN) scripts/verify-bun-ffi-surface.js
+	@$(BUN) scripts/gen-ui-coverage.js --check
+	@$(BUN) scripts/verify-e2e-page-attrs.js
 
 ## audit: dependency vulnerability scan (informational — see target for why it does not gate)
 .PHONY: audit
