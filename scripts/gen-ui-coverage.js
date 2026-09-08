@@ -10,7 +10,7 @@
  * unrelated session noticed by inspection.
  */
 import { join } from "node:path";
-import { exists, globSync, readText, writeText, ROOT } from "./lib/repo.js";
+import { exists, globSync, readText, rel, writeText, ROOT } from "./lib/repo.js";
 
 const CHECK = process.argv.includes("--check");
 const OUT = join(ROOT, "docs/conventions/ui-coverage.md");
@@ -47,7 +47,7 @@ for (const file of primitives) {
     /vendor\/daisyui\/skills\/daisyui\/components\/([a-z0-9-]+)\.md/,
   );
   const vendor = docMatch ? docMatch[1] : "—";
-  rows.push({ module: `App.Ui.${base}`, vendor, file });
+  rows.push({ module: `App.Ui.${base}`, vendor, file: rel(file) });
 }
 
 const wrapped = new Set(rows.map((r) => r.vendor).filter((v) => v !== "—"));

@@ -8,19 +8,19 @@ Maps `App.Ui` primitives to DaisyUI vendor docs. Feature views must not import t
 
 | Module | DaisyUI doc | Source |
 |---|---|---|
-| `App.Ui.Alert` | [alert](vendor/daisyui/skills/daisyui/components/alert.md) | `/home/irocha/projects/pohjola/src/App/Ui/Alert.purs` |
-| `App.Ui.Avatar` | [avatar](vendor/daisyui/skills/daisyui/components/avatar.md) | `/home/irocha/projects/pohjola/src/App/Ui/Avatar.purs` |
-| `App.Ui.Badge` | — | `/home/irocha/projects/pohjola/src/App/Ui/Badge.purs` |
-| `App.Ui.Breadcrumbs` | [breadcrumbs](vendor/daisyui/skills/daisyui/components/breadcrumbs.md) | `/home/irocha/projects/pohjola/src/App/Ui/Breadcrumbs.purs` |
-| `App.Ui.Button` | [button](vendor/daisyui/skills/daisyui/components/button.md) | `/home/irocha/projects/pohjola/src/App/Ui/Button.purs` |
-| `App.Ui.Card` | [card](vendor/daisyui/skills/daisyui/components/card.md) | `/home/irocha/projects/pohjola/src/App/Ui/Card.purs` |
-| `App.Ui.Container` | — | `/home/irocha/projects/pohjola/src/App/Ui/Container.purs` |
-| `App.Ui.Divider` | — | `/home/irocha/projects/pohjola/src/App/Ui/Divider.purs` |
-| `App.Ui.EmptyState` | — | `/home/irocha/projects/pohjola/src/App/Ui/EmptyState.purs` |
-| `App.Ui.Form` | [fieldset](vendor/daisyui/skills/daisyui/components/fieldset.md) | `/home/irocha/projects/pohjola/src/App/Ui/Form.purs` |
-| `App.Ui.Prose` | — | `/home/irocha/projects/pohjola/src/App/Ui/Prose.purs` |
-| `App.Ui.Stat` | [stat](vendor/daisyui/skills/daisyui/components/stat.md) | `/home/irocha/projects/pohjola/src/App/Ui/Stat.purs` |
-| `App.Ui.TextTone` | — | `/home/irocha/projects/pohjola/src/App/Ui/TextTone.purs` |
+| `App.Ui.Alert` | [alert](vendor/daisyui/skills/daisyui/components/alert.md) | `src/App/Ui/Alert.purs` |
+| `App.Ui.Avatar` | [avatar](vendor/daisyui/skills/daisyui/components/avatar.md) | `src/App/Ui/Avatar.purs` |
+| `App.Ui.Badge` | — | `src/App/Ui/Badge.purs` |
+| `App.Ui.Breadcrumbs` | [breadcrumbs](vendor/daisyui/skills/daisyui/components/breadcrumbs.md) | `src/App/Ui/Breadcrumbs.purs` |
+| `App.Ui.Button` | [button](vendor/daisyui/skills/daisyui/components/button.md) | `src/App/Ui/Button.purs` |
+| `App.Ui.Card` | [card](vendor/daisyui/skills/daisyui/components/card.md) | `src/App/Ui/Card.purs` |
+| `App.Ui.Container` | — | `src/App/Ui/Container.purs` |
+| `App.Ui.Divider` | — | `src/App/Ui/Divider.purs` |
+| `App.Ui.EmptyState` | — | `src/App/Ui/EmptyState.purs` |
+| `App.Ui.Form` | [fieldset](vendor/daisyui/skills/daisyui/components/fieldset.md) | `src/App/Ui/Form.purs` |
+| `App.Ui.Prose` | — | `src/App/Ui/Prose.purs` |
+| `App.Ui.Stat` | [stat](vendor/daisyui/skills/daisyui/components/stat.md) | `src/App/Ui/Stat.purs` |
+| `App.Ui.TextTone` | — | `src/App/Ui/TextTone.purs` |
 
 ## Page templates
 
