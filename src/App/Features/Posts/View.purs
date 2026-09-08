@@ -51,6 +51,7 @@ renderPostDetail lang status post =
               (d.articleTagPrefix <> show idNum)
               title
               d.unknownAuthor
+              d.authorRole
               (d.articleTagPrefix <> show idNum)
               (postBody post)
               [ PageHeader.breadcrumbHome lang nav.home

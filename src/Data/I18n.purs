@@ -179,6 +179,11 @@ type Dictionary =
       , navAriaLabel :: String
       , menuLabel :: String
       , langToggleLabel :: String
+      , closeSidebarLabel :: String
+      , closeMenuLabel :: String
+      , closeLabel :: String
+      , authorLabel :: String
+      , publishedLabel :: String
       }
   }
 
@@ -320,6 +325,11 @@ en =
       , navAriaLabel: "Main navigation"
       , menuLabel: "Open menu"
       , langToggleLabel: "Switch language"
+      , closeSidebarLabel: "Close sidebar"
+      , closeMenuLabel: "Close menu"
+      , closeLabel: "Close"
+      , authorLabel: "Author"
+      , publishedLabel: "Published"
       }
   }
 
@@ -457,6 +467,11 @@ fr =
       , navAriaLabel: "Navigation principale"
       , menuLabel: "Ouvrir le menu"
       , langToggleLabel: "Changer de langue"
+      , closeSidebarLabel: "Fermer le panneau latéral"
+      , closeMenuLabel: "Fermer le menu"
+      , closeLabel: "Fermer"
+      , authorLabel: "Auteur"
+      , publishedLabel: "Publié"
       }
   }
 
@@ -594,6 +609,11 @@ pt =
       , navAriaLabel: "Navegação principal"
       , menuLabel: "Abrir menu"
       , langToggleLabel: "Mudar de idioma"
+      , closeSidebarLabel: "Fechar barra lateral"
+      , closeMenuLabel: "Fechar menu"
+      , closeLabel: "Fechar"
+      , authorLabel: "Autor"
+      , publishedLabel: "Publicado"
       }
   }
 

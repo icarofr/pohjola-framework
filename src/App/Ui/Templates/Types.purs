@@ -212,6 +212,7 @@ type ArticleSlots =
   { metaTag :: String
   , title :: String
   , authorName :: String
+  , authorRole :: String
   , date :: String
   , body :: String
   , breadcrumbs :: Array BreadcrumbItem
@@ -310,10 +311,11 @@ articleSlots
   -> String
   -> String
   -> String
+  -> String
   -> Array BreadcrumbItem
   -> ArticleSlots
-articleSlots metaTag title authorName date body breadcrumbs =
-  { metaTag, title, authorName, date, body, breadcrumbs }
+articleSlots metaTag title authorName authorRole date body breadcrumbs =
+  { metaTag, title, authorName, authorRole, date, body, breadcrumbs }
 
 formSlots
   :: String

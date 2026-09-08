@@ -39,7 +39,7 @@ gateSpec =
       offenders <- Scan.findEnvReadsOutsideAllowlist Policy.envReadAllowlist "src"
       offenders `shouldEqual` []
 
-    it "no hardcoded copy in feature views" do
+    it "no hardcoded copy in feature views or shared templates" do
       files <- liftGlob Policy.contentFirewallGlobPatterns
       offenders <- Scan.findHardcodedTextInFiles Policy.contentFirewallPattern files
       offenders `shouldEqual` []

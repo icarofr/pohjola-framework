@@ -68,6 +68,9 @@ type ShellLabels =
   , themeSystem :: String
   , themeLabel :: String
   , copyright :: String
+  , closeSidebarLabel :: String
+  , closeMenuLabel :: String
+  , closeLabel :: String
   }
 
 shellLabels :: Lang -> ShellLabels
@@ -90,6 +93,9 @@ shellLabels lang =
     , themeSystem: d.common.themeSystem
     , themeLabel: d.common.themeLabel
     , copyright: d.footer.copyright
+    , closeSidebarLabel: d.common.closeSidebarLabel
+    , closeMenuLabel: d.common.closeMenuLabel
+    , closeLabel: d.common.closeLabel
     }
 
 maybeStatusBanner :: Lang -> Maybe FormStatus -> Html
@@ -205,7 +211,7 @@ renderDrawerSide lang route labels =
     [ el "label"
         [ for_ siteDrawerId
         , class_ "drawer-overlay"
-        , ariaLabel "Close sidebar"
+        , ariaLabel labels.closeSidebarLabel
         ]
         []
     , el "div"
@@ -215,9 +221,9 @@ renderDrawerSide lang route labels =
             , el "label"
                 [ for_ siteDrawerId
                 , class_ "btn btn-ghost btn-sm"
-                , ariaLabel "Close menu"
+                , ariaLabel labels.closeMenuLabel
                 ]
-                [ text "Close" ]
+                [ text labels.closeLabel ]
             ]
         , el "nav" [ class_ "menu mt-6 w-full rounded-box bg-base-100 p-2" ]
             [ mobileNavLink lang route Home labels.homeLabel

@@ -11,41 +11,44 @@ import App.Ui.Prose as Prose
 import App.Ui.Templates.Contract as Contract
 import App.Ui.Templates.PageHeader as PageHeader
 import App.Ui.Templates.Types (ArticleSlots)
-import Data.I18n (Lang)
+import Data.I18n (Lang, dict)
 import Data.Maybe (Maybe(..))
 import Data.Route (Route)
 
 renderArticle :: Lang -> Route -> ArticleSlots -> Html
 renderArticle lang route slots =
-  el "article"
-    [ class_ "py-12 sm:py-16"
-    , attr Contract.marker Contract.articlePage
-    ]
-    [ Container.container "max-w-6xl" "px-4 sm:px-6"
-        [ PageHeader.renderDetail lang route
-            [ Badge.badge Badge.BadgeSecondary slots.metaTag ]
-            ( PageHeader.pageHeaderSlots slots.title Nothing slots.breadcrumbs
-            )
-        , el "div" [ class_ "mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_280px]" ]
-            [ el "div" []
-                [ el "div"
-                    [ attr Contract.marker Contract.articleBody
-                    , class_ "max-w-3xl"
-                    ]
-                    [ Prose.proseLg [ el "p" [] [ text slots.body ] ] ]
-                ]
-            , el "aside" [ attr Contract.marker Contract.articleMeta ]
-                [ Card.card Card.defaultCardOptions
-                    [ Card.cardBody
-                        [ Card.cardTitle "Author"
-                        , el "p" [ class_ "font-medium" ] [ text slots.authorName ]
-                        , el "p" [ class_ "text-sm opacity-70" ] [ text "Engineering" ]
-                        , el "div" [ class_ "divider my-4" ] []
-                        , el "p" [ class_ "font-medium" ] [ text "Published" ]
-                        , el "p" [ class_ "text-sm opacity-70" ] [ text slots.date ]
-                        ]
-                    ]
-                ]
-            ]
-        ]
-    ]
+  let
+    d = (dict lang).common
+  in
+    el "article"
+      [ class_ "py-12 sm:py-16"
+      , attr Contract.marker Contract.articlePage
+      ]
+      [ Container.container "max-w-6xl" "px-4 sm:px-6"
+          [ PageHeader.renderDetail lang route
+              [ Badge.badge Badge.BadgeSecondary slots.metaTag ]
+              ( PageHeader.pageHeaderSlots slots.title Nothing slots.breadcrumbs
+              )
+          , el "div" [ class_ "mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_280px]" ]
+              [ el "div" []
+                  [ el "div"
+                      [ attr Contract.marker Contract.articleBody
+                      , class_ "max-w-3xl"
+                      ]
+                      [ Prose.proseLg [ el "p" [] [ text slots.body ] ] ]
+                  ]
+              , el "aside" [ attr Contract.marker Contract.articleMeta ]
+                  [ Card.card Card.defaultCardOptions
+                      [ Card.cardBody
+                          [ Card.cardTitle d.authorLabel
+                          , el "p" [ class_ "font-medium" ] [ text slots.authorName ]
+                          , el "p" [ class_ "text-sm opacity-70" ] [ text slots.authorRole ]
+                          , el "div" [ class_ "divider my-4" ] []
+                          , el "p" [ class_ "font-medium" ] [ text d.publishedLabel ]
+                          , el "p" [ class_ "text-sm opacity-70" ] [ text slots.date ]
+                          ]
+                      ]
+                  ]
+              ]
+          ]
+      ]

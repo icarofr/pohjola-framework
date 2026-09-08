@@ -78,6 +78,7 @@ contentFirewallGlobPatterns :: Array String
 contentFirewallGlobPatterns =
   [ "src/App/Features/*/Page.purs"
   , "src/App/Features/*/View.purs"
+  , "src/App/Ui/Templates/*.purs"
   ]
 
 -- | Feature views fill template slots only — no styling or primitive soup (ADR-012).
