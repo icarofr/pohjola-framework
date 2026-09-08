@@ -119,9 +119,6 @@ loadMigrations = do
           pure (Right { filename, content: c, checksum })
     pure (sequence results)
 
--- | Collect an array of Eithers into an Either of an array (short-circuit
--- | on first error). Standard pattern — keeps the runner linear.
-
 -- ============================================================================
 -- Applied migrations
 -- ============================================================================

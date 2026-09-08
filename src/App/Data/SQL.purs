@@ -176,7 +176,7 @@ foreign import readIntFieldImpl :: DbRow -> String -> Nullable Int
 connect :: String -> Effect SQL
 connect = connectImpl
 
--- | Close all pooled connections. Awaits in-flight queries.
+-- | Aff-wrapped `closeImpl`.
 close :: SQL -> Aff Unit
 close sql = makeAff \callback -> do
   closeImpl sql (\_ -> callback (pure unit))
@@ -204,8 +204,7 @@ query sql stmt params = makeAff \callback -> do
     (\msg -> callback (pure (Left (QueryError msg))))
   pure mempty
 
--- | Parameterized execute — discards rows. For INSERT/UPDATE/DELETE
--- | and transaction control (BEGIN/COMMIT/ROLLBACK).
+-- | Aff-wrapped `executeImpl`.
 execute :: SQL -> String -> Array SqlValue -> Aff (Either SQLError Unit)
 execute sql stmt params = makeAff \callback -> do
   executeImpl sql stmt (map toForeignValue params)

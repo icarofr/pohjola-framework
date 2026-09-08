@@ -15,17 +15,18 @@ import Data.Either (Either(..))
 import Effect.Aff (Aff, Canceler(..), makeAff)
 import Effect.Class (liftEffect)
 
+-- | Map an HTTP status code to a request outcome.
+statusToAppError :: Int -> Either AppError Unit
+statusToAppError code | code >= 200 && code < 300 = Right unit
+statusToAppError 404 = Left NotFound
+statusToAppError code = Left (HttpStatusError code)
+
 -- | Fetch JSON from a URL and decode via Argonaut.
 -- | Shared by all data-backed features — the single boundary where
 -- | fetch errors and decode errors are mapped to AppError.
 -- | Uses Bun's native fetch (not Affjax.Node) so it works in forked
 -- | fibers — enabling streaming SSR. The AbortController canceler
 -- | ensures killed fibers abort the in-flight request.
-statusToAppError :: Int -> Either AppError Unit
-statusToAppError code | code >= 200 && code < 300 = Right unit
-statusToAppError 404 = Left NotFound
-statusToAppError code = Left (HttpStatusError code)
-
 fetchJson :: forall a. DecodeJson a => String -> Aff (Either AppError a)
 fetchJson url = do
   result <- makeAff \callback -> do

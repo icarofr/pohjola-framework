@@ -2,7 +2,7 @@
 -- |
 -- | Single source of truth for all localized user-facing text.
 -- | `Dictionary` is a nested record — the `en` instance defines the shape,
--- | and the compiler enforces that `fr` has the exact same structure.
+-- | and the compiler enforces that `fr` and `pt` have the exact same structure.
 module Data.I18n
   ( Dictionary
   , Lang(..)
@@ -52,7 +52,7 @@ defaultLang :: Lang
 defaultLang = En
 
 -- ============================================================================
--- Dictionary type — `en` defines the shape, `fr` must match
+-- Dictionary type — `en` defines the shape, `fr` and `pt` must match
 -- ============================================================================
 
 type ServiceCopy =

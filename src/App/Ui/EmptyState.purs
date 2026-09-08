@@ -18,7 +18,7 @@ type EmptyStateProps =
   , action :: Maybe Html
   }
 
--- | Frozen class recipes — do not vary per feature (eval 07 / UiSpec).
+-- | Frozen class recipes — do not vary per feature.
 emptyStateSectionClass :: String
 emptyStateSectionClass = "py-16 sm:py-20"
 

@@ -10,9 +10,7 @@ import Prelude
 
 import Data.Argonaut.Decode.Error (JsonDecodeError)
 
--- | The single error type for the application.
--- | Add variants as needed — the compiler will tell you every handler
--- | that needs updating.
+-- | The single error type for the application. Add variants as needed.
 data AppError
   = DecodeError JsonDecodeError
   | HttpError String

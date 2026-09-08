@@ -11,7 +11,6 @@ import Node.Process (lookupEnv)
 getEnv :: String -> Effect String
 getEnv key = fromMaybe "" <$> lookupEnv key
 
--- | Read an environment variable, returning Maybe.
 getEnvMaybe :: String -> Effect (Maybe String)
 getEnvMaybe = lookupEnv
 

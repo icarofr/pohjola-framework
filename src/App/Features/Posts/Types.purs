@@ -32,7 +32,7 @@ derive newtype instance showPost :: Show Post
 derive newtype instance eqPost :: Eq Post
 
 -- | DecodeJson is the contract: the compiler verifies field names match.
--- | JSONPlaceholder returns { id, userId, title, body } — already snake_case,
+-- | JSONPlaceholder returns { id, userId, title, body } — already camelCase,
 -- | so no transform needed. For camelCase domain fields from snake_case JSON,
 -- | see docs/examples/Snake.purs.
 instance decodeJsonPost :: DecodeJson Post where

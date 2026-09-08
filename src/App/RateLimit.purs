@@ -59,18 +59,17 @@ instance showRateDecision :: Show RateDecision where
   show (Allow w) = "Allow " <> show w
   show (Deny w) = "Deny " <> show w
 
--- | Fixed-window decision.
--- | - No prior window → allow, start a fresh window (count 1).
--- | - Window expired (nowMs - startedAt >= windowMs) → allow, fresh window.
--- | - Inside window: allow iff count < limit; count increments only when
--- |   allowed (denied requests do not grow the counter).
--- | Parameters for rate limiting decision
 type RateLimitParams =
   { limit :: Int
   , windowMs :: Number
   , nowMs :: Number
   }
 
+-- | Fixed-window decision.
+-- | - No prior window → allow, start a fresh window (count 1).
+-- | - Window expired (nowMs - startedAt >= windowMs) → allow, fresh window.
+-- | - Inside window: allow iff count < limit; count increments only when
+-- |   allowed (denied requests do not grow the counter).
 shouldAllow :: RateLimitParams -> Maybe Window -> RateDecision
 shouldAllow { limit, windowMs, nowMs } maybeWindow =
   case maybeWindow of
