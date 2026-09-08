@@ -10,6 +10,12 @@ module App.Layout.Head
 
 import Prelude
 
+import App.Alpine
+  ( dataPageDescriptionAttr
+  , dataPageHrefPrefix
+  , dataPageOgAltsAttr
+  , dataPageOgLocaleAttr
+  )
 import App.Html (Attr, Html, attr, content_, el, href, name_, property_, rel_, text)
 import App.Layout.Scripts (HeadScript(..), renderHeadScript, renderJsonLdScript)
 import App.Layout.Styles (stylesCss)
@@ -66,12 +72,12 @@ renderHead baseUrl nonce lang route =
 
 pageSyncAttrs :: Lang -> Route -> Array Attr
 pageSyncAttrs lang route =
-  [ attr "data-page-description" (seoDescription lang route)
-  , attr "data-page-og-locale" (ogLocale lang)
-  , attr "data-page-og-alts" (S.joinWith "," (map ogLocale allLangs))
+  [ attr dataPageDescriptionAttr (seoDescription lang route)
+  , attr dataPageOgLocaleAttr (ogLocale lang)
+  , attr dataPageOgAltsAttr (S.joinWith "," (map ogLocale allLangs))
   ]
-    <> [ attr "data-page-href-default" (routeUrl defaultLang route) ]
-    <> map (\l -> attr ("data-page-href-" <> langTag l) (routeUrl l route)) allLangs
+    <> [ attr (dataPageHrefPrefix <> "default") (routeUrl defaultLang route) ]
+    <> map (\l -> attr (dataPageHrefPrefix <> langTag l) (routeUrl l route)) allLangs
 
 hreflangTag :: String -> Route -> Lang -> Html
 hreflangTag baseUrl route lang =

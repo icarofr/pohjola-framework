@@ -17,6 +17,8 @@ import App.Alpine
   , classWhenFlag
   , classWhenTheme
   , contentTarget
+  , dataPageLangAttr
+  , dataPageTitleAttr
   , langLink
   , navLink
   , navLinkClasses
@@ -118,8 +120,8 @@ sitePageTitled lang route title labels status content =
   el "div"
     ( [ class_ "drawer drawer-end min-h-full bg-base-100 text-base-content"
       , id_ contentTarget
-      , attr "data-page-title" title
-      , attr "data-page-lang" (langTag lang)
+      , attr dataPageTitleAttr title
+      , attr dataPageLangAttr (langTag lang)
       ]
         <> pageSyncAttrs lang route
         <>

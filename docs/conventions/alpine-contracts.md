@@ -42,8 +42,18 @@ Three constants bind the server-fragment layer to the Alpine AJAX layer:
   Twitter, canonical, `og:url`, `og:locale` alternates, and `hreflang` links
   after every fragment merge (`App.Layout.Head.pageSyncAttrs`).
 
-If you rename any of these, grep the whole repo: `App.Alpine`, `Main.purs`,
-`Layout/Page.purs`, and the inline head scripts all participate.
+All of these names are constants in `App.Alpine` (`contentTarget`,
+`alpineRequestHeader`, `dataPageTitleAttr`, `dataPageLangAttr`,
+`dataPageDescriptionAttr`, `dataPageOgLocaleAttr`, `dataPageOgAltsAttr`,
+`dataPageHrefPrefix`) — `Layout/Head.purs`, `Ui/Templates/SiteShell.purs`,
+and the inline head-sync script in `Layout/Scripts.purs` all reference these
+exports rather than restating the literals, so a rename is a single-file,
+compiler-checked change instead of a repo-wide grep. The inline script's
+JS-side `dataset` field names (e.g. `d.pageTitle`) still read as prose
+matching each attribute name — that transformation is the DOM's own
+spec-defined kebab-case → camelCase `dataset` mapping, not a second
+hand-typed copy of the name, so it isn't a source of drift the way the
+attribute names themselves used to be.
 
 ## Typed constructors
 

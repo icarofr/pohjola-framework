@@ -3,6 +3,12 @@
 module App.Alpine
   ( contentTarget
   , alpineRequestHeader
+  , dataPageTitleAttr
+  , dataPageLangAttr
+  , dataPageDescriptionAttr
+  , dataPageOgLocaleAttr
+  , dataPageOgAltsAttr
+  , dataPageHrefPrefix
   , spaLink
   , langLink
   , navLink
@@ -61,6 +67,32 @@ contentTarget = "content"
 
 alpineRequestHeader :: String
 alpineRequestHeader = "x-alpine-request"
+
+-- | data-page-* attribute names — the fragment/head-sync payload contract
+-- | (App.Layout.Head's pageSyncAttrs, App.Ui.Templates.SiteShell, and the
+-- | inline head-sync script in App.Layout.Scripts all read/write these).
+-- | The inline script's camelCase dataset field names (e.g. `d.pageTitle`)
+-- | are the DOM's own kebab-case -> camelCase `dataset` mapping applied to
+-- | these, not a second hand-typed copy of the name.
+dataPageTitleAttr :: String
+dataPageTitleAttr = "data-page-title"
+
+dataPageLangAttr :: String
+dataPageLangAttr = "data-page-lang"
+
+dataPageDescriptionAttr :: String
+dataPageDescriptionAttr = "data-page-description"
+
+dataPageOgLocaleAttr :: String
+dataPageOgLocaleAttr = "data-page-og-locale"
+
+dataPageOgAltsAttr :: String
+dataPageOgAltsAttr = "data-page-og-alts"
+
+-- | Prefix only — the per-language suffix (langTag, or "default") is
+-- | appended by the caller (App.Layout.Head.pageSyncAttrs).
+dataPageHrefPrefix :: String
+dataPageHrefPrefix = "data-page-href-"
 
 -- ============================================================================
 -- Flag — the closed set of boolean UI state names
