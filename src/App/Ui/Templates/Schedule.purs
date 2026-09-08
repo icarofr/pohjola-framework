@@ -23,7 +23,7 @@ renderSchedule lang route slots =
     [ class_ "py-16 sm:py-20"
     , attr Contract.marker Contract.schedulePage
     ]
-    [ Container.container "max-w-4xl" "px-4 sm:px-6"
+    [ Container.container Container.ContainerW4xl "px-4 sm:px-6"
         [ PageHeader.render lang route
             ( PageHeader.pageHeaderSlots slots.title (Just slots.subtitle) slots.breadcrumbs
             )

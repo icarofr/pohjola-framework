@@ -24,7 +24,7 @@ renderHub lang route slots =
     [ class_ "py-16 sm:py-20"
     , attr Contract.marker Contract.hubPage
     ]
-    [ Container.container "max-w-6xl" "px-4 sm:px-6"
+    [ Container.container Container.ContainerW6xl "px-4 sm:px-6"
         [ PageHeader.render lang route
             ( PageHeader.pageHeaderSlots slots.title (Just slots.subtitle) slots.breadcrumbs
             )
@@ -43,7 +43,7 @@ renderCard card =
         [ Card.cardBody
             [ Card.cardTitle card.title
             , el "p" [ class_ "flex-auto opacity-70" ] [ text card.description ]
-            , Card.cardActions true
+            , Card.cardActions Card.ActionsEnd
                 [ ActionLink.actionTarget Button.ButtonPrimary Md card.target card.buttonLabel ]
             ]
         ]

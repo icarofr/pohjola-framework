@@ -25,7 +25,7 @@ renderEditorial lang route slots =
         [ class_ "py-16 sm:py-20"
         , attr Contract.marker Contract.editorialMission
         ]
-        [ Container.container "max-w-6xl" "px-4 sm:px-6"
+        [ Container.container Container.ContainerW6xl "px-4 sm:px-6"
             [ PageHeader.render lang route
                 ( PageHeader.pageHeaderSlots slots.heading slots.subtitle slots.breadcrumbs
                 )
@@ -45,7 +45,7 @@ renderValues values =
     [ class_ "border-t border-base-200 py-16 sm:py-20"
     , attr Contract.marker Contract.editorialValues
     ]
-    [ Container.container "max-w-6xl" "px-4 sm:px-6"
+    [ Container.container Container.ContainerW6xl "px-4 sm:px-6"
         [ el "div" [ class_ "max-w-2xl" ]
             [ el "h2" [ class_ "text-3xl font-bold" ] [ text values.heading ]
             , el "p" [ class_ "mt-4 opacity-70" ] [ text values.intro ]

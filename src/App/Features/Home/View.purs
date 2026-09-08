@@ -1,8 +1,6 @@
 -- | Home page view — fills Landing template slots only.
 module App.Features.Home.View where
 
-import Prelude
-
 import App.Form (FormStatus)
 import App.Html (Html)
 import App.Ui.Templates.Render (renderPage)
@@ -11,7 +9,6 @@ import App.Ui.Templates.Types
   , FeatureTriple
   , LandingSlots
   , PageTemplate(..)
-  , ServiceFeature
   , landingFeatures
   , landingSlots
   )
@@ -60,11 +57,7 @@ serviceFeatureTriple lang =
     toFeature service =
       { title: (copy service.id).title, description: (copy service.id).description }
   in
-    case map toFeature services of
-      [ one, two, three ] ->
-        { one, two, three }
-      _ ->
-        { one: emptyFeature, two: emptyFeature, three: emptyFeature }
-
-emptyFeature :: ServiceFeature
-emptyFeature = { title: "", description: "" }
+    { one: toFeature services.one
+    , two: toFeature services.two
+    , three: toFeature services.three
+    }

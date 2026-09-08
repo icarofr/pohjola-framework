@@ -54,7 +54,7 @@ renderFeatureSection section =
     [ class_ "py-16 sm:py-20"
     , attr Contract.marker Contract.landingFeatures
     ]
-    [ Container.container "max-w-6xl" "px-4 sm:px-6"
+    [ Container.container Container.ContainerW6xl "px-4 sm:px-6"
         [ el "div" [ class_ "mx-auto max-w-2xl text-center" ]
             [ Badge.badge Badge.BadgePrimary section.eyebrow
             , el "h2" [ class_ "mt-4 text-3xl font-bold sm:text-4xl" ]
@@ -83,7 +83,7 @@ renderFinalCta cta =
     [ class_ "bg-primary text-primary-content"
     , attr Contract.marker Contract.landingCta
     ]
-    [ Container.container "max-w-3xl" "px-4 py-16 text-center sm:px-6"
+    [ Container.container Container.ContainerW3xl "px-4 py-16 text-center sm:px-6"
         [ el "h2" [ class_ "text-3xl font-bold sm:text-4xl" ] [ text cta.heading ]
         , el "p" [ class_ "mt-4" ] [ text cta.body ]
         , el "div" [ class_ "mt-8" ]

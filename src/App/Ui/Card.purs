@@ -2,6 +2,7 @@
 module App.Ui.Card
   ( CardSize(..)
   , CardOptions
+  , CardActionsAlign(..)
   , defaultCardOptions
   , card
   , cardBody
@@ -79,10 +80,14 @@ cardText copy =
   el "p" [] [ text copy ]
 
 -- | DaisyUI card-actions
-cardActions :: Boolean -> Array Html -> Html
-cardActions end actions =
+data CardActionsAlign = ActionsStart | ActionsEnd
+
+cardActions :: CardActionsAlign -> Array Html -> Html
+cardActions align actions =
   let
-    justify = if end then " justify-end" else ""
+    justify = case align of
+      ActionsEnd -> " justify-end"
+      ActionsStart -> ""
   in
     el "div" [ class_ ("card-actions" <> justify) ] actions
 

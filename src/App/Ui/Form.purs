@@ -29,7 +29,6 @@ type InputProps =
   { id :: String
   , name :: String
   , label :: String
-  , inputType :: String
   , required :: Boolean
   , placeholder :: Maybe String
   }

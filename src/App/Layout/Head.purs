@@ -130,7 +130,9 @@ renderJsonLd baseUrl nonce lang route = case route of
     -- A real app would render JSON-LD after data fetch, outside renderHead.
     , Tuple "headline" "Blog Post"
     ]
-  _ -> Nothing
+  About -> Nothing
+  Contact -> Nothing
+  Fixtures -> Nothing
 
 -- | Render a JSON-LD <script> tag with XSS-safe escaping.
 -- | Replaces < with \u003c to prevent </script> injection.

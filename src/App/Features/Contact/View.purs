@@ -12,6 +12,7 @@ import App.Ui.Templates.Types
   , hubCardTriple
   , hubSlots
   )
+import Data.Content (bookingUrl, discussionsUrl, issuesUrl)
 import Data.I18n (Lang, dict)
 import Data.Maybe (Maybe)
 import Data.Route (Route(..))
@@ -33,17 +34,17 @@ contactSlots lang =
           { title: d.issuesTitle
           , description: d.issuesText
           , buttonLabel: d.issuesButton
-          , target: External { href: "https://github.com/icarofr/pohjola-framework/issues" }
+          , target: External { href: issuesUrl }
           }
           { title: d.discussionsTitle
           , description: d.discussionsText
           , buttonLabel: d.discussionsButton
-          , target: External { href: "https://github.com/icarofr/pohjola-framework/discussions" }
+          , target: External { href: discussionsUrl }
           }
           { title: d.sourceTitle
           , description: d.sourceText
           , buttonLabel: d.sourceButton
-          , target: External { href: "https://github.com/icarofr/pohjola-framework" }
+          , target: External { href: bookingUrl }
           }
       )
       [ PageHeader.breadcrumbHome lang nav.home

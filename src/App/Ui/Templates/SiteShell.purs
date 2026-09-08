@@ -171,7 +171,7 @@ renderHeader lang route labels =
     [ class_ "sticky top-0 z-50 border-b border-base-200 bg-base-100"
     , attr Contract.marker Contract.siteHeader
     ]
-    [ Container.container "max-w-6xl" "px-4 sm:px-6"
+    [ Container.container Container.ContainerW6xl "px-4 sm:px-6"
         [ el "div" [ class_ "navbar min-h-16 px-0" ]
             [ el "div" [ class_ "navbar-start" ]
                 [ navLink { lang, current: route, target: Home }
@@ -233,9 +233,9 @@ renderDrawerSide lang route labels =
             , mobileNavLink lang route PostList labels.postsLabel
             , mobileNavLink lang route Contact labels.contactLabel
             , el "li" [ class_ "menu-title mt-4" ] [ text labels.themeLabel ]
-            , themeMenuItem false ThemeLight labels.themeLight
-            , themeMenuItem false ThemeDark labels.themeDark
-            , themeMenuItem false ThemeSystem labels.themeSystem
+            , themeMenuItem DrawerMenu ThemeLight labels.themeLight
+            , themeMenuItem DrawerMenu ThemeDark labels.themeDark
+            , themeMenuItem DrawerMenu ThemeSystem labels.themeSystem
             , el "li" [ class_ "menu-title mt-4" ] [ text labels.langToggleLabel ]
             , el "li" []
                 [ el "div" [ class_ "join join-vertical w-full" ]
@@ -292,26 +292,29 @@ renderThemeDropdown labels =
         , class_
             "menu menu-sm dropdown-content rounded-box z-50 mt-3 w-52 bg-base-100 p-2 shadow"
         ]
-        [ themeMenuItem true ThemeLight labels.themeLight
-        , themeMenuItem true ThemeDark labels.themeDark
-        , themeMenuItem true ThemeSystem labels.themeSystem
+        [ themeMenuItem DropdownMenu ThemeLight labels.themeLight
+        , themeMenuItem DropdownMenu ThemeDark labels.themeDark
+        , themeMenuItem DropdownMenu ThemeSystem labels.themeSystem
         ]
     ]
 
-themeMenuItem :: Boolean -> ThemeMode -> String -> Html
-themeMenuItem closeMenu mode label =
+-- | Which surface a theme menu item renders in — the desktop dropdown is a
+-- | popover that needs to close itself (ThemeMenuOpen) on selection; the
+-- | mobile drawer's theme buttons are flat list items with no popover flag
+-- | of their own to close.
+data MenuContext = DropdownMenu | DrawerMenu
+
+themeMenuItem :: MenuContext -> ThemeMode -> String -> Html
+themeMenuItem context mode label =
   el "li" []
     [ el "button"
         ( [ class_ "btn btn-ghost btn-sm w-full justify-start"
           , classWhenTheme "btn-active" mode
           , attrTypeButton
           ]
-            <>
-              if closeMenu then
-                [ xSetThemeAndClose mode ThemeMenuOpen ]
-
-              else
-                [ xSetTheme mode ]
+            <> case context of
+              DrawerMenu -> [ xSetTheme mode ]
+              DropdownMenu -> [ xSetThemeAndClose mode ThemeMenuOpen ]
         )
         [ text label ]
     ]

@@ -607,12 +607,34 @@ if (wire) {
     }
   }
 
+  // renderJsonLd is exhaustive on Route with no wildcard arm (closes the
+  // same "a new route silently gets no decision" gap fixed elsewhere this
+  // pass) -- a new route needs an explicit arm, defaulting to Nothing like
+  // About/Contact/Fixtures already do. Anchor on the blank line before the
+  // next function, not a specific last arm, so repeated scaffolding (two
+  // routes added in sequence) keeps matching.
+  const jsonLdCase = `  ${name} -> Nothing`;
+  if (!headContent.includes(jsonLdCase)) {
+    const before = headContent;
+    headContent = headContent.replace(
+      /(renderJsonLd baseUrl nonce lang route = case route of\n)([\s\S]*?)(\n\n)/,
+      (match, header, cases, footer) => {
+        const trimmed = cases.endsWith("\n") ? cases : `${cases}\n`;
+        return `${header}${trimmed}${jsonLdCase}\n${footer}`;
+      }
+    );
+    if (headContent === before) {
+      throw new Error("Auto-wiring failed: could not find the renderJsonLd route case insertion point in src/App/Layout/Head.purs.");
+    }
+  }
+
   await writeText("src/App/Layout/Head.purs", headContent);
   if (headContent.includes(headMarker)) {
     requireMarker(headContent, headMarker, "src/App/Layout/Head.purs", "seoDescription route case");
   } else {
     requireMarker(headContent, headSeoMarker, "src/App/Layout/Head.purs", "seoDescription route case");
   }
+  requireMarker(headContent, jsonLdCase, "src/App/Layout/Head.purs", "renderJsonLd route case");
   console.log("  ✓ Updated src/App/Layout/Head.purs");
 
   if (chrome) {

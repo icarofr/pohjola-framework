@@ -74,7 +74,7 @@ toPascalCase str =
     singular =
       if contains (Pattern "s") camel && length (toCharArray camel) > 1 then
         case uncons (toCharArray (toLower (drop (length (toCharArray camel) - 1) camel))) of
-          Just { head: 's' } -> fromCharArray (filter (\_ -> true) (toCharArray camel)) -- keep or strip
+          Just { head: 's' } -> fromCharArray (Array.dropEnd 1 (toCharArray camel))
           _ -> camel
       else camel
   in

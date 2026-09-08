@@ -24,7 +24,7 @@ renderArticle lang route slots =
       [ class_ "py-12 sm:py-16"
       , attr Contract.marker Contract.articlePage
       ]
-      [ Container.container "max-w-6xl" "px-4 sm:px-6"
+      [ Container.container Container.ContainerW6xl "px-4 sm:px-6"
           [ PageHeader.renderDetail lang route
               [ Badge.badge Badge.BadgeSecondary slots.metaTag ]
               ( PageHeader.pageHeaderSlots slots.title Nothing slots.breadcrumbs

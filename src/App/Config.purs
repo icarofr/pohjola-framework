@@ -16,7 +16,7 @@ import Data.String (stripSuffix) as S
 import Data.String.Common (split, toLower)
 import Data.String.Pattern (Pattern(..))
 import Data.Tuple (Tuple(..))
-import Data.Email (EmailAddress(..), mkEmailAddress)
+import Data.Email (EmailAddress, defaultEmailAddress, mkEmailAddress)
 import Effect (Effect)
 import Effect.Console (log)
 
@@ -93,9 +93,7 @@ parseEmailConfig label value fallback =
     Just e -> pure e
     Nothing -> do
       log ("Warning: Invalid " <> label <> " env var, falling back to " <> fallback)
-      case mkEmailAddress fallback of
-        Just e -> pure e
-        Nothing -> pure (EmailAddress "fallback@example.com") -- unreachable: fallback is always valid
+      pure (defaultEmailAddress fallback)
 
 -- | Remove trailing slash from URL so `baseUrl <> routeUrl ...` never doubles it.
 stripTrailingSlash :: String -> String

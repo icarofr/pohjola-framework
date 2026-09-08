@@ -26,9 +26,9 @@ import Data.Content (services)
 import Data.Either (Either(..))
 import Data.Foldable (any, for_)
 import Data.I18n (Lang(..), dict, langTag)
-import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Maybe (Maybe(..))
 import Data.Route (Route(..), allLangs, allRoutes, routeUrl, staticRoutes)
-import Data.Email (EmailAddress(..), mkEmailAddress)
+import Data.Email (EmailAddress, defaultEmailAddress)
 import Data.String.CodeUnits (stripPrefix) as CodeUnits
 import Data.String.Pattern (Pattern(..))
 import Data.Tuple (Tuple(..), snd)
@@ -63,7 +63,7 @@ stubConfig =
   }
 
 testEmail :: String -> EmailAddress
-testEmail s = fromMaybe (EmailAddress "fallback@example.com") (mkEmailAddress s)
+testEmail = defaultEmailAddress
 
 -- | Full SSR document for a static route, composed from the feature page
 -- | module (pure content) through the Layout.Page shell. The `Left` branch
@@ -599,7 +599,7 @@ spec = do
 
   describe "serviceCopy non-fallback coverage" do
     it "every service has non-empty title, description, and action label in both languages" do
-      for_ services \service ->
+      for_ [ services.one, services.two, services.three ] \service ->
         for_ allLangs \lang -> do
           let copy = (dict lang).services.serviceCopy service.id
           copy.title `shouldNotEqual` ""

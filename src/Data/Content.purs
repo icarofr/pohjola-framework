@@ -19,14 +19,6 @@ derive newtype instance showPrice :: Show Price
 derive newtype instance eqPrice :: Eq Price
 derive newtype instance ordPrice :: Ord Price
 
-formatPrice :: String -> Price -> String
-formatPrice "en" (Price 0) = "Open Source"
-formatPrice "en" (Price n) = "€" <> show n <> ".00"
-formatPrice "fr" (Price 0) = "Open Source"
-formatPrice "fr" (Price n) = show n <> ",00 €"
-formatPrice _ (Price 0) = "Open Source"
-formatPrice _ (Price n) = show n <> ",00 €"
-
 newtype ServiceId = ServiceId String
 
 derive instance newtypeServiceId :: Newtype ServiceId _
@@ -40,6 +32,14 @@ derive newtype instance eqServiceId :: Eq ServiceId
 -- | GitHub repository URL
 bookingUrl :: String
 bookingUrl = "https://github.com/icarofr/pohjola-framework"
+
+-- | GitHub issues URL — for the Contact/Community page.
+issuesUrl :: String
+issuesUrl = bookingUrl <> "/issues"
+
+-- | GitHub discussions URL — for the Contact/Community page.
+discussionsUrl :: String
+discussionsUrl = bookingUrl <> "/discussions"
 
 -- ============================================================================
 -- Domain types
@@ -85,29 +85,37 @@ siteInfo =
   , instagramUrl: "https://github.com/icarofr/pohjola-framework"
   }
 
--- | Service ids referenced by the Dictionary — add a service here AND a
--- | serviceCopy case in each language (Data.I18n) to keep parity.
-services :: Array Service
+-- | Fixed-arity, matching App.Ui.Templates.Types.FeatureTriple — a 4th
+-- | service is a type change (a new field), not an array append, so a
+-- | length mismatch can't compile. Add a service id here, a serviceCopy
+-- | case in each language (Data.I18n), and a field name below to keep
+-- | parity; the compiler forces the third.
+type ServiceTriple = { one :: Service, two :: Service, three :: Service }
+
+services :: ServiceTriple
 services =
-  [ { id: ServiceId "service-1"
-    , price: Price 0
-    , imageUrl: "/images/service-1.svg"
-    , imageWidth: 400
-    , imageHeight: 300
-    }
-  , { id: ServiceId "service-2"
-    , price: Price 0
-    , imageUrl: "/images/service-2.svg"
-    , imageWidth: 400
-    , imageHeight: 300
-    }
-  , { id: ServiceId "service-3"
-    , price: Price 0
-    , imageUrl: "/images/service-3.svg"
-    , imageWidth: 400
-    , imageHeight: 300
-    }
-  ]
+  { one:
+      { id: ServiceId "service-1"
+      , price: Price 0
+      , imageUrl: "/images/service-1.svg"
+      , imageWidth: 400
+      , imageHeight: 300
+      }
+  , two:
+      { id: ServiceId "service-2"
+      , price: Price 0
+      , imageUrl: "/images/service-2.svg"
+      , imageWidth: 400
+      , imageHeight: 300
+      }
+  , three:
+      { id: ServiceId "service-3"
+      , price: Price 0
+      , imageUrl: "/images/service-3.svg"
+      , imageWidth: 400
+      , imageHeight: 300
+      }
+  }
 
 -- ============================================================================
 -- Tottenham Hotspur fixtures (OneFootball — temporary demo data)

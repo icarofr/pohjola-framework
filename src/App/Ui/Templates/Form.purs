@@ -21,7 +21,7 @@ renderForm lang route slots =
     [ class_ "py-16 sm:py-20"
     , attr Contract.marker Contract.formPage
     ]
-    [ Container.container "max-w-2xl" "px-4 sm:px-6"
+    [ Container.container Container.ContainerW2xl "px-4 sm:px-6"
         [ PageHeader.render lang route
             ( PageHeader.pageHeaderSlots slots.title slots.subtitle slots.breadcrumbs
             )
@@ -46,7 +46,6 @@ renderField = case _ of
       { id: field.name
       , name: field.name
       , label: field.label
-      , inputType: "text"
       , required: field.required
       , placeholder: Nothing
       }
@@ -55,7 +54,6 @@ renderField = case _ of
       { id: field.name
       , name: field.name
       , label: field.label
-      , inputType: "email"
       , required: field.required
       , placeholder: Nothing
       }
