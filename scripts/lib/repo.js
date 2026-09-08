@@ -4,6 +4,7 @@
  */
 import { dirname, join, resolve, relative } from "node:path";
 import { tmpdir } from "node:os";
+import { chmodSync, lstatSync, mkdirSync, readlinkSync, symlinkSync } from "node:fs";
 import { file, write, spawnSync, Glob, $ } from "bun";
 
 const ROOT_MARKER = "spago.yaml";
@@ -88,15 +89,38 @@ export async function mkdtemp(prefix = "pohjola-") {
 
 const COPY_BATCH = 64;
 
-/** Copy a file tree with Glob + Bun.write(Bun.file) — clonefile/copy_file_range. */
+/**
+ * Copy a file tree with Glob + Bun.write(Bun.file) — clonefile/copy_file_range.
+ *
+ * `onlyFiles: true` silently excludes symlinks (verified: Bun.Glob treats
+ * them as neither files nor directories under that flag), which drops the
+ * entire node_modules/.bin/* tree — every package's CLI entry point is a
+ * symlink. Bun.write also does not preserve the source file's permission
+ * bits, which drops the executable bit on the underlying target scripts
+ * those symlinks point to. Both silently broke `bun x <tool>` inside a
+ * copy (empty stdout/stderr, exit 1) without any error naming the cause —
+ * found via a real failure, not by inspection. Symlinks are recreated as
+ * symlinks (not flattened to their target's content) so relative-path
+ * targets (as node_modules/.bin entries use) keep resolving correctly;
+ * regular files get their exact source mode re-applied after the copy.
+ */
 export async function cpRecursive(src, dest) {
   const pending = [];
   for (const relPath of new Glob("**/*").scanSync({
     cwd: src,
     dot: true,
-    onlyFiles: true,
+    onlyFiles: false,
   })) {
-    pending.push(write(join(dest, relPath), file(join(src, relPath))));
+    const srcPath = join(src, relPath);
+    const destPath = join(dest, relPath);
+    const st = lstatSync(srcPath);
+    if (st.isDirectory()) continue;
+    if (st.isSymbolicLink()) {
+      mkdirSync(dirname(destPath), { recursive: true });
+      symlinkSync(readlinkSync(srcPath), destPath);
+      continue;
+    }
+    pending.push(write(destPath, file(srcPath)).then(() => chmodSync(destPath, st.mode)));
     if (pending.length >= COPY_BATCH) {
       await Promise.all(pending);
       pending.length = 0;

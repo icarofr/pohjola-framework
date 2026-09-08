@@ -1,6 +1,6 @@
 {
   "_comment": "Baseline snapshot of App.Bun's Bun.* surface, checked by scripts/verify-bun-ffi-surface.js. This is informational only (make audit-style) — it never fails the build. When it prints a diff, update this file deliberately if the change is intentional; that is what re-arms the tripwire for the next PR.",
-  "foreignImportCount": 11,
+  "foreignImportCount": 13,
   "bunGlobals": [
     "Bun.Glob",
     "Bun.SHA256.hash",
