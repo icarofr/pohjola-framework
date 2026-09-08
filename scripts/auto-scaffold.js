@@ -368,12 +368,15 @@ if (wire) {
     }
   );
 
-  // prefetchFor
+  // routeMeta — one arm covers both the static/dynamic caching decision
+  // (staticRoutes derives from isStatic) and the prefetch targets.
   routeContent = routeContent.replace(
-    /prefetchFor :: Route -> Array Route\s*\n([\s\S]*?)(-- ==)/,
+    /routeMeta = case _ of\s*\n([\s\S]*?)(\n\n)/,
     (match, p1, p2) => {
-      if (p1.includes(`prefetchFor ${name} =`)) return match;
-      return `prefetchFor :: Route -> Array Route\n${p1}prefetchFor ${name} = [ Home ]\n\n${p2}`;
+      if (p1.includes(`${name} ->`)) return match;
+      const isStatic = type === "static" ? "true" : "false";
+      const trimmed = p1.endsWith("\n") ? p1 : `${p1}\n`;
+      return `routeMeta = case _ of\n${trimmed}  ${name} -> { isStatic: ${isStatic}, prefetch: [ Home ] }\n${p2}`;
     }
   );
 
@@ -385,17 +388,6 @@ if (wire) {
       return `allRoutes = [${p1.trim()}, ${name} ]`;
     }
   );
-
-  // staticRoutes (if static)
-  if (type === "static") {
-    routeContent = routeContent.replace(
-      /staticRoutes = \[([\s\S]*?)\]/,
-      (match, p1) => {
-        if (p1.includes(name)) return match;
-        return `staticRoutes = [${p1.trim()}, ${name} ]`;
-      }
-    );
-  }
 
   // routeTitle
   routeContent = routeContent.replace(
@@ -413,16 +405,16 @@ if (wire) {
     `"${name}": "${slugEn}"`,
     `"${name}": "${slugFr}"`,
     `"${name}": "${slugPt}"`,
-    `prefetchFor ${name} =`,
+    `${name} -> { isStatic: `,
     `allRoutes = [`,
     `routeTitle lang route =`,
     `${name} -> d.nav.${lower}`,
   ]) requireMarker(routeContent, marker, "src/Data/Route.purs", `Route marker ${marker}`);
   const allRoutesLine = routeContent.match(/allRoutes = \[[^\n]*\n?/);
   if (!allRoutesLine || !allRoutesLine[0].includes(name)) throw new Error(`Auto-wiring failed: allRoutes was not updated in src/Data/Route.purs.`);
-  if (type === "static") {
-    const staticRoutesLine = routeContent.match(/staticRoutes = \[[^\n]*\n?/);
-    if (!staticRoutesLine || !staticRoutesLine[0].includes(name)) throw new Error(`Auto-wiring failed: staticRoutes was not updated in src/Data/Route.purs.`);
+  const expectedIsStatic = type === "static" ? "true" : "false";
+  if (!routeContent.includes(`${name} -> { isStatic: ${expectedIsStatic},`)) {
+    throw new Error(`Auto-wiring failed: routeMeta's isStatic for ${name} was not set to ${expectedIsStatic} in src/Data/Route.purs.`);
   }
   console.log("  ✓ Updated src/Data/Route.purs");
 
@@ -463,57 +455,13 @@ if (wire) {
     }
   }
 
-  const handleRouteCase =
-    type === "data"
-      ? `    ${name} -> cachedDynamicPage ctx`
-      : `    ${name} -> cachedStaticPage ctx`;
-
-  if (!mainContent.includes(handleRouteCase)) {
-    const handleRouteRe =
-      /(else case ctx\.route of\n)([\s\S]*?)(\n\n-- \| True when)/;
-    if (handleRouteRe.test(mainContent)) {
-      mainContent = mainContent.replace(handleRouteRe, (match, header, cases, footer) => {
-        if (cases.includes(handleRouteCase)) return match;
-        const trimmed = cases.endsWith("\n") ? cases : `${cases}\n`;
-        return `${header}${trimmed}${handleRouteCase}\n${footer}`;
-      });
-    } else {
-      mainContent = mainContent.replace(
-        /(handleRoute :: RequestCtx -> Aff Server\.Response[\s\S]*?else case ctx\.route of\s*\n[\s\S]*?PostDetail.*?\n)/,
-        (match) => `${match}${handleRouteCase}\n`
-      );
-    }
-  }
-
-  // Second exhaustive Route case (shared fragment cache). Anchor on the
-  // footer after fragmentHtml so we never double-patch handleRoute above.
-  const fragmentHtmlCase =
-    type === "data"
-      ? `    ${name} -> cachedInnerDynamic ctx`
-      : `    ${name} -> cachedInner ctx`;
-
-  if (!mainContent.includes(fragmentHtmlCase)) {
-    const fragmentHtmlRe =
-      /(else case ctx\.route of\n)([\s\S]*?)(\n\n-- \| Pure page cached)/;
-    if (fragmentHtmlRe.test(mainContent)) {
-      mainContent = mainContent.replace(fragmentHtmlRe, (match, header, cases, footer) => {
-        if (cases.includes(fragmentHtmlCase)) return match;
-        const trimmed = cases.endsWith("\n") ? cases : `${cases}\n`;
-        return `${header}${trimmed}${fragmentHtmlCase}\n${footer}`;
-      });
-    } else {
-      mainContent = mainContent.replace(
-        /(fragmentHtml :: RequestCtx -> Aff \(Either AppError Html\)[\s\S]*?else case ctx\.route of\s*\n[\s\S]*?PostDetail.*?\n)/,
-        (match) => `${match}${fragmentHtmlCase}\n`
-      );
-    }
-  }
+  // handleRoute/fragmentHtml no longer have per-route cases — both dispatch
+  // on `isStaticRoute ctx.route`, derived from Data.Route's routeMeta table
+  // (set above), so a new route needs no wiring here at all.
 
   await writeText("src/App/Main.purs", mainContent);
   requireMarker(mainContent, importLine, "src/App/Main.purs", "feature import");
   requireMarker(mainContent, renderCase, "src/App/Main.purs", "pageRenderer case");
-  requireMarker(mainContent, handleRouteCase, "src/App/Main.purs", "handleRoute case");
-  requireMarker(mainContent, fragmentHtmlCase, "src/App/Main.purs", "fragmentHtml case");
   console.log("  ✓ Updated src/App/Main.purs");
 
   // C. Update src/Data/I18n.purs

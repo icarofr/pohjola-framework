@@ -31,7 +31,7 @@ import Data.I18n (Lang, defaultLang, parseLang)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe, isJust, isNothing)
-import Data.Route (Route(..), parseRoute, routeUrl)
+import Data.Route (Route(..), isStaticRoute, parseRoute, routeUrl)
 import Data.String.Common (split, toLower)
 import Data.String.Pattern (Pattern(..))
 import Data.Tuple (Tuple(..))
@@ -200,13 +200,10 @@ handleRoute ctx =
     -- and silently dropped it on a hit — the same URL answering differently
     -- depending on cache warmth.
     freshPage ctx
-  else case ctx.route of
-    Home -> cachedStaticPage ctx
-    About -> cachedStaticPage ctx
-    Contact -> cachedStaticPage ctx
-    Fixtures -> cachedStaticPage ctx
-    PostList -> cachedDynamicPage ctx
-    PostDetail _ -> cachedDynamicPage ctx
+  else if isStaticRoute ctx.route then
+    cachedStaticPage ctx
+  else
+    cachedDynamicPage ctx
 
 -- | True when the request carries a form-status banner query.
 hasStatusQuery :: RequestCtx -> Boolean
@@ -234,13 +231,10 @@ fragmentHtml :: RequestCtx -> Aff (Either AppError Html)
 fragmentHtml ctx =
   if hasStatusQuery ctx then
     pageRenderer ctx.cfg ctx.route ctx.lang (statusFor ctx)
-  else case ctx.route of
-    Home -> cachedInner ctx
-    About -> cachedInner ctx
-    Contact -> cachedInner ctx
-    Fixtures -> cachedInner ctx
-    PostList -> cachedInnerDynamic ctx
-    PostDetail _ -> cachedInnerDynamic ctx
+  else if isStaticRoute ctx.route then
+    cachedInner ctx
+  else
+    cachedInnerDynamic ctx
 
 -- | Pure page cached per (route, lang) for the process lifetime.
 cachedStaticPage :: RequestCtx -> Aff Server.Response

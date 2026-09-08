@@ -21,21 +21,37 @@ of a silently-correct-elsewhere omission.
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] One exhaustive `Route -> RouteMeta`-shaped function/table in
-      `Data/Route.purs` (or a sibling module) capturing: static vs. dynamic,
-      sitemap inclusion, prefetch eligibility, and whatever else the existing
-      dispatches independently decide today
-- [ ] `allRoutes`, `staticRoutes`, `prefetchFor` derive from that table
-      instead of restating their own `case route of`
-- [ ] `routeTitle` and `Main.purs`'s static-vs-dynamic dispatch
-      (`handleRoute`/`fragmentHtml`) likewise derive from it where they
-      currently duplicate the same classification
-- [ ] `test/Route/RouteSpec.purs`'s existing `allRoutes`/`staticRoutes`
-      assertions (added in the earlier remediation pass) continue to pass —
-      now as consequences of the table, not independently hand-synced lists
-- [ ] `make gate` + `make test` + `make check` pass
-- [ ] `PostDetail Int` (a dynamic route excluded from `allRoutes`/sitemap by
-      design) stays correctly excluded — do not change that behavior, only
-      how it's expressed
+- [x] Added `type RouteMeta = { isStatic :: Boolean, prefetch :: Array Route }`
+      and an exhaustive `routeMeta :: Route -> RouteMeta` in `Data/Route.purs`.
+      Left `allRoutes` as a hand-written literal (unavoidable — `Route`
+      isn't `Bounded`/`Enum`, and `PostDetail Int` can't be enumerated
+      regardless) and left `routeTitle` as its own function (it needs `Lang`,
+      which doesn't belong in a plain per-route data table, and it was never
+      the source of the named bug — each of its branches is already forced
+      total by the compiler with no silent-drift risk)
+- [x] `prefetchFor` and `isStaticRoute` (new) derive from `routeMeta`;
+      `staticRoutes` derives from `isStaticRoute` filtered over `allRoutes`
+      instead of a second hand-written list
+- [x] `Main.purs`'s `handleRoute` and `fragmentHtml` — the two places that
+      actually caused the audit's named bug scenario — now dispatch on
+      `isStaticRoute ctx.route` (an if/else) instead of each independently
+      re-deciding the same static/dynamic split via its own 6-armed
+      `case ctx.route of`. They can no longer disagree with each other or
+      with `staticRoutes`, because all three now read the same function.
+- [x] `test/Route/RouteSpec.purs`'s existing `allRoutes`/`staticRoutes`
+      assertions pass unchanged, now as consequences of `routeMeta`
+- [x] `make gate` + `make test` (244/244) + `make eval-repo-law` (5/5) +
+      `make check` all pass
+- [x] `PostDetail Int` stays correctly excluded from `allRoutes`/sitemap —
+      unchanged, only how the static/dynamic and prefetch facts are expressed
+- [x] Bonus, found while implementing: `scripts/auto-scaffold.js` (the
+      feature generator) regex-matched the old per-route `staticRoutes`
+      literal and the old `handleRoute`/`fragmentHtml` case arms to wire new
+      features in. Updated it to insert a `routeMeta` arm instead, and
+      *deleted* the `handleRoute`/`fragmentHtml` wiring blocks entirely —
+      a new feature no longer needs them, since both are now blanket
+      dispatches. `scripts/verify-generator-fixture.js`'s assertions updated
+      to match. This is direct evidence the consolidation reduced the actual
+      per-feature wiring surface, not just the mental model of it.

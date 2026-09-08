@@ -12,7 +12,7 @@ module Data.Route where
 
 import Prelude hiding ((/))
 
-import Data.Array (concatMap, head)
+import Data.Array (concatMap, filter, head)
 import Data.Either (Either(..))
 import Data.Generic.Rep (class Generic)
 import Data.I18n (Lang(..), dict, parseLang)
@@ -92,20 +92,43 @@ routeCodec Pt = root $ prefix "pt" $ G.sum
 routeUrl :: Lang -> Route -> String
 routeUrl lang = print (routeCodec lang)
 
--- | Which routes should be prefetched when rendering a given route.
--- | Exhaustive on Route — adding a constructor forces a prefetch decision here.
+-- | Per-route facts that used to be independent exhaustive dispatches
+-- | scattered across this module and App.Main — static-vs-dynamic caching
+-- | and prefetch targets. Both `App.Main.handleRoute` and `fragmentHtml`
+-- | previously re-decided the static/dynamic split with their own 6-armed
+-- | `case route of`; a route landing in the wrong branch of one but not the
+-- | other compiled cleanly and silently misrouted caching. Deriving
+-- | `isStaticRoute`/`staticRoutes` and both call sites from this one table
+-- | closes that: there is now exactly one place to get it wrong.
+type RouteMeta =
+  { isStatic :: Boolean
+  , prefetch :: Array Route
+  }
+
+-- | Exhaustive on Route — adding a constructor forces both a caching and a
+-- | prefetch decision here, in one place, instead of two.
+routeMeta :: Route -> RouteMeta
+routeMeta = case _ of
+  Home -> { isStatic: true, prefetch: [ PostList, About, Contact ] }
+  About -> { isStatic: true, prefetch: [ Home, Contact ] }
+  Contact -> { isStatic: true, prefetch: [ Home, About ] }
+  Fixtures -> { isStatic: true, prefetch: [ Home ] }
+  PostList -> { isStatic: false, prefetch: [ PostDetail 1, PostDetail 2 ] } -- Demo IDs matching JSONPlaceholder API; update for real CMS
+  PostDetail _ -> { isStatic: false, prefetch: [ PostList ] }
+
 -- | `renderPrefetch` emits `<link rel="prefetch">` for these routes, using the
 -- | FULL page URL — not a fragment URL. A fragment entry could never be hit,
 -- | because an Alpine click fetches the plain href with the `x-alpine-request`
 -- | header. See `App.Layout.Page.renderPrefetch`, which previously said the
 -- | opposite of this comment.
 prefetchFor :: Route -> Array Route
-prefetchFor Home = [ PostList, About, Contact ]
-prefetchFor PostList = [ PostDetail 1, PostDetail 2 ] -- Demo IDs matching JSONPlaceholder API; update for real CMS
-prefetchFor (PostDetail _) = [ PostList ]
-prefetchFor About = [ Home, Contact ]
-prefetchFor Contact = [ Home, About ]
-prefetchFor Fixtures = [ Home ]
+prefetchFor = _.prefetch <<< routeMeta
+
+-- | True for routes served by the static cache/render path
+-- | (`App.Main.cachedStaticPage`/`cachedInner`); false for data-backed
+-- | routes (`cachedDynamicPage`/`cachedInnerDynamic`).
+isStaticRoute :: Route -> Boolean
+isStaticRoute = _.isStatic <<< routeMeta
 
 -- ============================================================================
 -- Parsing (derived from codec)
@@ -139,8 +162,9 @@ routeTable = Map.fromFoldable
 allRoutes :: Array Route
 allRoutes = [ Home, About, Contact, PostList, Fixtures ]
 
+-- | Derived from `routeMeta`, not hand-listed — see `RouteMeta` above.
 staticRoutes :: Array Route
-staticRoutes = [ Home, About, Contact, Fixtures ]
+staticRoutes = filter isStaticRoute allRoutes
 
 -- | Re-export of Data.I18n.allLangs (single source of truth).
 allLangs :: Array Lang

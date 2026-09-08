@@ -45,7 +45,7 @@ async function runFixture(cwd, name, type, slug) {
     `| ${name}`,
     `${name} -> "${name}"`,
     `"${name}": "${slug}"`,
-    `prefetchFor ${name} =`,
+    `${name} -> { isStatic: `,
   ]) {
     assertIncludes(route, marker, `Route insertion (${name})`);
   }
@@ -56,16 +56,18 @@ async function runFixture(cwd, name, type, slug) {
     process.exit(1);
   }
 
+  // routeMeta's isStatic drives handleRoute/fragmentHtml (both blanket
+  // if/else, no per-route case) as well as staticRoutes — one place to get
+  // right instead of three.
+  assertIncludes(
+    route,
+    `${name} -> { isStatic: ${type === "data" ? "false" : "true"},`,
+    `Route isStatic (${name})`,
+  );
+
   assertIncludes(route, `${name} -> d.nav.${lower}`, `Route title (${name})`);
   assertIncludes(main, `${name} ->`, `Main insertion (${name})`);
   assertIncludes(main, `${name}.`, `Main renderer (${name})`);
-  assertIncludes(main, `${name} -> cached`, `Main handler (${name})`);
-  // Shared fragment cache has its own exhaustive case (must stay in sync with handleRoute).
-  assertIncludes(
-    main,
-    type === "data" ? `${name} -> cachedInnerDynamic` : `${name} -> cachedInner`,
-    `Main fragmentHtml (${name})`,
-  );
   assertIncludes(i18n, `${lower} :: String`, `I18n type (${name})`);
   assertIncludes(i18n, `${lower}: "${name}"`, `I18n English (${name})`);
 
