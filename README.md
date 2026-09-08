@@ -7,11 +7,11 @@
 [![Bun](https://img.shields.io/badge/Bun-1.4-000000?style=flat&logo=bun&logoColor=white)](https://bun.sh)
 [![Alpine.js](https://img.shields.io/badge/Alpine.js-3.15-8BC0D0?style=flat&logo=alpinedotjs&logoColor=white)](https://alpinejs.dev)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4.0-06B6D4?style=flat&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
-[![Licence](https://img.shields.io/badge/Licence-AGPL-334155?style=flat)](LICENCE.md)
+[![Licence](https://img.shields.io/badge/Licence-Apache-334155?style=flat)](LICENCE.md)
 
-**Pohjola is an opinionated full-stack web framework where routes, data decoding, errors, translations, and HTML share a single, unbroken compile-time model.**
+**Pohjola is the safest way to vibe code a web app** — an opinionated full-stack framework where routes, data decoding, errors, translations, and HTML share a single, unbroken compile-time model.
 
-The compiler is your contract. Pohjola turns brittle architectural conventions into mechanically enforced invariants. Built on **PureScript** and **Bun**, it is designed around server-authoritative hypermedia: the server renders complete HTML and owns application state. Alpine.js is an optional progressive-enhancement seam, not a second application runtime.
+A lot of what gets shipped as an AI-assisted "framework" today is unsafe slop held together by convention alone. Pohjola is a deliberate bet on the opposite: that a compiler-enforced contract, not developer discipline or code review, is what actually stops an AI agent from drifting into inconsistent routes, missing translations, or unescaped HTML. The compiler is your contract. Pohjola turns brittle architectural conventions into mechanically enforced invariants. Built on **PureScript** and **Bun**, it is designed around server-authoritative hypermedia: the server renders complete HTML and owns application state. Alpine.js is an optional progressive-enhancement seam, not a second application runtime.
 
 ---
 
@@ -112,9 +112,11 @@ Pohjola makes a deliberate architectural choice: the **PureScript application ow
 
 ### When Pohjola is the Right Fit
 - **Request and response web applications** demanding ultra-fast initial render and low latency.
-- **Content, dashboard, commerce, and SaaS platforms** requiring real semantic URLs, automated SEO, and pristine Core Web Vitals.
+- **Content and dashboard platforms** requiring real semantic URLs, automated SEO, and pristine Core Web Vitals.
 - **Systems demanding strict correctness**, typed failure handling, and bounded application-level failure modes.
 - **Teams partnering with AI coding agents** that need the compiler to mechanically reject hallucinations.
+
+**Not yet a fit:** commerce and SaaS platforms that need real user accounts. Auth, sessions, and CSRF protection are an accepted, fixed target design (`ADR-002`, `ADR-004`, `ADR-005`) but implementation is still pending — see `docs/GUARANTEES.md`. This line moves up once that lands.
 
 ### When to Choose an Alternative
 - **Offline-first client applications** with complex local sync engines.
@@ -240,4 +242,4 @@ E2E jobs are required; run `make test/integration` and `make test/e2e` separatel
 
 ## Licence
 
-Distributed under the [AGPL Licence](LICENCE.md).
+Distributed under the [Apache Licence](LICENCE.md).

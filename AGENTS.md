@@ -9,7 +9,7 @@ PureScript 0.15.16 + Bun SSR MPA. Alpine AJAX swaps the SiteShell drawer `#conte
 - make gate = Policy.Contract. No class_ in Features. Every View.purs imports App.Ui.Templates.Render.
 - CSP pinned in ContractSpec. Do not widen. unsafe-eval is required by Alpine (new Function).
 - Do not implement ADR-010. Do not import App.Auth.Scaffold into Main or Features (ADR-002 pending).
-- Licence: AGPL. Do not paste private app names into this public tree.
+- Licence: Apache 2.0 (spirit: `LICENCE.md`). Do not paste private app names into this public tree.
 
 ## Commands
 make deps | make dev | make gate | make test | make check | make new-feature NAME=X WIRE=1 [CHROME=1] [TYPE=data]
