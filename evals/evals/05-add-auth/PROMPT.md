@@ -1,1 +1,1 @@
-Add login and a /dashboard. Follow accepted ADRs. If production auth is not implemented, do not wire the in-memory scaffold.
+Add login and a /dashboard. Follow accepted ADRs. Sessions exist (App.Auth); CSRF (ADR-005) does not. Do not invent JWT, do not add a Dashboard route, and do not wire requireAuth into Main until CSRF lands.

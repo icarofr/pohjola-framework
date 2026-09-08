@@ -274,7 +274,6 @@ render${name}Detail lang status item =
               (d.heading <> " #" <> show idNum)
               title
               ""
-              ""
               (d.heading <> " #" <> show idNum)
               (${lower}Body item)
               [ PageHeader.breadcrumbHome lang nav.home
