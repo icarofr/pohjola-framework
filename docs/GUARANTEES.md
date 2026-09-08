@@ -143,6 +143,14 @@ table, registration, or login-form handling — a caller obtains a `UserId`
 however the application does (password check, OAuth) and passes it to
 `createSession`. No login UI exists yet.
 
+**Who a user *is* — `App.Users`, also implemented 2026-09-08.** Password
+registration/login (`createUser`, `verifyUserPassword` — Argon2id tuned to
+Lucia's stated minimum: `memoryCost: 16384` KiB, `timeCost: 3`) and OAuth
+account linking (`linkOAuthAccount`, `findUserByOAuthAccount` — Arctic's
+callback seam). Same SQL-integration test limitation as `App.Auth`; the pure
+row-decode logic is unit-tested. No HTTP route calls any of this yet — see
+`docs/conventions/auth-lucia-arctic.md`.
+
 **CSRF (ADR-005) is still "Accepted — implementation pending," and that is a
 real, currently-open gap, not a formality.** Lucia's own documentation is
 explicit that a cookie-carried session token requires CSRF protection

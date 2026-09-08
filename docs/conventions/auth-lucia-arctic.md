@@ -143,6 +143,55 @@ new capability:
 No new `foreign import` module, no new `ffiAllowlist` entry. Everything
 above lands inside the already-approved `App.Bun`/`App.Data.SQL` boundary.
 
+## Users table (App.Users) — implemented 2026-09-08
+
+`migrations/003_create_users_and_oauth.sql` + `src/App/Users.purs`. Separate
+module from `App.Auth` on purpose — `App.Auth` owns session lifecycle only;
+`App.Users` owns who a user *is* (password registration/login, OAuth account
+linking). `App.Auth.UserId` is reused, not duplicated.
+
+**Schema:**
+
+```
+users(id, email UNIQUE, password_hash NULL, email_verified, created_at)
+oauth_accounts(provider, provider_user_id, user_id -> users.id, created_at)
+  PRIMARY KEY (provider, provider_user_id)
+```
+
+`password_hash` is nullable — an OAuth-only account is valid.
+`oauth_accounts` is a separate table (not columns on `users`) so linking a
+new provider later needs no schema change, and multiple providers can link
+to one account. `sessions.user_id` (migration 002) gets a real FK to
+`users.id` in this migration, `ON DELETE CASCADE` — deleting a user logs
+them out everywhere.
+
+**Password hashing parameters** (`App.Bun.hashPasswordImpl`): Argon2id,
+`memoryCost: 16384` (16 MiB, KiB), `timeCost: 3` — Lucia's own stated
+minimum from the Passwords chapter (`auth.pilcrowonpaper.com/passwords`):
+*"Argon2id with at least 16MiB of memory, 3 iterations."* `Bun.password.verify`
+reads these back out of the stored hash string itself; they don't need to be
+passed again at verify time — confirmed against Bun's own docs, not assumed.
+
+**`App.Users`'s functions** (all require a live DB, `Config.databaseUrl`):
+`createUser`, `findUserByEmail`, `verifyUserPassword` (the full login check:
+uniform `Nothing` for "no such user" / "no password set" / "wrong password"
+— never distinguish which in a response, same principle as
+`App.Auth.requireAuth`), `linkOAuthAccount`, `findUserByOAuthAccount`
+(Arctic's callback seam — resolves a `UserId` from a provider identity; the
+caller decides whether to create a new user on a first-time OAuth login).
+
+**Rate-limiting a future login handler:** Lucia's own guidance —
+*"A rate limit of 1 attempt per minute per user is a good starting point...
+use a token bucket algorithm"*, explicitly **against** account lockouts,
+exponential throttling, or strict IP-based limits. `App.RateLimit.shouldAllow`
+(fixed-window, already implemented) is the equivalent mechanism already in
+this codebase — a login handler should call it keyed by email/user, not IP.
+
+**Not built:** any HTTP route, registration form, or login form. No
+live-database test coverage (none available in this environment) — the one
+pure, DB-independent piece (`decodeLoginCandidate`) is directly tested in
+`test/UsersSpec.purs`.
+
 ## What's NOT decided yet
 
 - OAuth provider(s) to support first — not picked, don't guess (ticket `09`).

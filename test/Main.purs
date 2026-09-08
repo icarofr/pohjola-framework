@@ -19,6 +19,7 @@ import Test.LoggerSpec as LoggerSpec
 import Test.ServerSpec as ServerSpec
 import Test.ShellSpec as ShellSpec
 import Test.PolicySpec as PolicySpec
+import Test.UsersSpec as UsersSpec
 import Test.Spec.Reporter (consoleReporter)
 import Test.Spec.Runner.Node (runSpecAndExitProcess)
 
@@ -39,3 +40,4 @@ main = runSpecAndExitProcess [ consoleReporter ] do
   ServerSpec.spec
   PolicySpec.spec
   ShellSpec.spec
+  UsersSpec.spec
