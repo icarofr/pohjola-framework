@@ -300,7 +300,6 @@ toCard lang item =
     , title: ${lower}Title item
     , excerpt: ${lower}Body item
     , authorName: ""
-    , authorRole: ""
     , target: Internal { lang, route: ${name} }
     }
 `

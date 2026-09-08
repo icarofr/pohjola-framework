@@ -42,7 +42,6 @@ renderArticle lang route slots =
                       [ Card.cardBody
                           [ Card.cardTitle d.authorLabel
                           , el "p" [ class_ "font-medium" ] [ text slots.authorName ]
-                          , el "p" [ class_ "text-sm opacity-70" ] [ text slots.authorRole ]
                           , el "div" [ class_ "divider my-4" ] []
                           , el "p" [ class_ "font-medium" ] [ text d.publishedLabel ]
                           , el "p" [ class_ "text-sm opacity-70" ] [ text slots.date ]

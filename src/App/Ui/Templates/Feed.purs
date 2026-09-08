@@ -55,7 +55,6 @@ renderPostCard card =
                       [ Avatar.avatarPlaceholder Avatar.Avatar8 (String.take 1 card.authorName)
                       , el "div" [ class_ "text-sm" ]
                           [ el "p" [ class_ "font-medium" ] [ text card.authorName ]
-                          , el "p" [ class_ "opacity-60" ] [ text card.authorRole ]
                           ]
                       ]
                   ]

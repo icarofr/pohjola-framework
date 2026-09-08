@@ -14,7 +14,13 @@ Handlers decode through `App.Form`. Keep field names and paths in
   server-side with the request id; log the request id only, never the
   honeypot value or PII. Property-tested for all inputs.
 - **Same-origin gate** (`Main.sameOriginOk`) — `Origin` header present → must
-  equal `cfg.baseUrl`; absent → allowed. POSTs only.
+  equal `cfg.baseUrl`; absent → allowed. POSTs only. This is the CSRF
+  mitigation for the current unauthenticated forms (Contact, Newsletter) —
+  a real, standard defense (origin-checking), not a token. It does **not**
+  cover session-cookie-authenticated requests once real auth exists:
+  `ADR-005` (a dedicated CSRF token) is still "Accepted — implementation
+  pending" for that case — see `docs/GUARANTEES.md`. Don't read this gate
+  as "CSRF is solved" for anything built on top of `App.Auth`.
 - **Parsing** — `Data.FormURLEncoded.decode`. Use this, not hand-rolled
   parsing.
 - **Status banners** — `?status=success|error|subscribed` rendered via

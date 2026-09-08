@@ -233,7 +233,7 @@ E2E jobs are required; run `make test/integration` and `make test/e2e` separatel
 
 - **Architecture and Philosophy:** [`docs/conventions/adding-pages.md`](docs/conventions/adding-pages.md)
 - **Data Layer and Fetching:** [`docs/conventions/data-layer.md`](docs/conventions/data-layer.md)
-- **Forms and CSRF Security:** [`docs/conventions/forms.md`](docs/conventions/forms.md)
+- **Forms and Same-Origin Checking:** [`docs/conventions/forms.md`](docs/conventions/forms.md) — the CSRF mitigation for today's unauthenticated forms; session-cookie CSRF (`ADR-005`) is still pending
 - **Alpine Seams and Contracts:** [`docs/conventions/alpine-contracts.md`](docs/conventions/alpine-contracts.md)
 - **Strict Invariant Guarantees:** [`docs/GUARANTEES.md`](docs/GUARANTEES.md)
 - **Agent Guide and Safety Floor:** [`AGENTS.md`](AGENTS.md)

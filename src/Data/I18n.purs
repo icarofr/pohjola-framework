@@ -135,7 +135,6 @@ type Dictionary =
       , loadingError :: String
       , notFound :: String
       , byAuthor :: String
-      , authorRole :: String
       , unknownAuthor :: String
       }
   , fixtures ::
@@ -203,7 +202,7 @@ en =
   , hero:
       { eyebrow: "PureScript · Bun · Alpine.js"
       , headline: "The Type-Safe Functional Web Framework for Bun"
-      , body: "MPA simplicity with a seamless SPA experience. Built in PureScript with Bun runtime speed, Alpine.js micro-interactivity, and zero runtime exceptions."
+      , body: "MPA simplicity with Alpine-powered fragment navigation. Built in PureScript with Bun runtime speed, typed Alpine.js micro-interactivity, and errors handled as values end to end."
       , ctaLabel: "About Pohjola"
       , secondaryLabel: "Browse notes"
       }
@@ -218,8 +217,8 @@ en =
             , actionLabel: "See the stack"
             }
           ServiceId "service-2" ->
-            { title: "Sub-Millisecond SSR on Bun"
-            , description: "Native Bun server runtime delivering sub-millisecond route responses, lightweight streaming SSR, and instant dev server restarts."
+            { title: "Fast SSR on Bun"
+            , description: "Native Bun server runtime with buffered SSR by default — no Node cold-start or module-resolution overhead. Streaming SSR is available as an experimental opt-in, and the dev server restarts instantly."
             , actionLabel: "Read the notes"
             }
           ServiceId "service-3" ->
@@ -239,8 +238,8 @@ en =
       , subtitle: "A type-safe functional web framework for Bun — bedrock-first, agent-verified."
       , mission:
           { heading: "Our mission"
-          , lead: "Pohjola takes its name from Swallow the Sun's Songs from the North — Finnish lore where pohja is both bedrock and the direction North. We built the framework on that ethos: deliberate craft that survives production."
-          , body: "Rather than piling transient JavaScript frameworks on top of one another, Pohjola rests on solid bedrock. PureScript proves correctness at compile time, Bun serves responses in sub-milliseconds, and the server renders clean, semantic HTML with light Alpine.js seams."
+          , lead: "Pohjola takes its name from Swallow the Sun's Songs from the North — Finnish lore where pohja is both bedrock and the direction North. We built the framework on that ethos: deliberate craft built to survive production."
+          , body: "Rather than piling transient JavaScript frameworks on top of one another, Pohjola rests on solid bedrock. PureScript proves correctness at compile time, Bun serves responses natively without Node's module-resolution overhead, and the server renders clean, semantic HTML with light Alpine.js seams."
           }
       , values:
           { heading: "Our values"
@@ -281,7 +280,6 @@ en =
       , loadingError: "Failed to load articles. Please check your connection."
       , notFound: "Article not found."
       , byAuthor: "By"
-      , authorRole: "Engineering"
       , unknownAuthor: "Pohjola"
       }
   , fixtures:
@@ -345,7 +343,7 @@ fr =
   , hero:
       { eyebrow: "PureScript · Bun · Alpine.js"
       , headline: "Le framework web fonctionnel et typé pour Bun"
-      , body: "La simplicité d'une MPA avec la fluidité d'une SPA. Conçu en PureScript avec la vitesse de Bun, la réactivité d'Alpine.js et zéro exception à l'exécution."
+      , body: "La simplicité d'une MPA avec une navigation par fragments propulsée par Alpine. Conçu en PureScript avec la vitesse de Bun, une réactivité Alpine.js typée, et des erreurs traitées comme des valeurs de bout en bout."
       , ctaLabel: "En savoir plus"
       , secondaryLabel: "Lire les articles"
       }
@@ -360,8 +358,8 @@ fr =
             , actionLabel: "Voir l'approche"
             }
           ServiceId "service-2" ->
-            { title: "SSR instantané sous Bun"
-            , description: "Moteur d'exécution Bun natif offrant des temps de réponse sous la milliseconde, du streaming SSR et un rechargement instantané."
+            { title: "SSR rapide sous Bun"
+            , description: "Moteur d'exécution Bun natif avec SSR mis en tampon par défaut — sans le coût de démarrage à froid ni de résolution de modules de Node. Le SSR en streaming est disponible en option expérimentale, et le serveur de développement redémarre instantanément."
             , actionLabel: "Lire les notes"
             }
           ServiceId "service-3" ->
@@ -381,8 +379,8 @@ fr =
       , subtitle: "Un framework web fonctionnel et typé pour Bun — fondations solides, vérifié par les agents."
       , mission:
           { heading: "Notre mission"
-          , lead: "Pohjola tire son nom de Songs from the North de Swallow the Sun — la mythologie finnoise où pohja est à la fois le socle et la direction du Nord. Nous avons bâti le framework sur cette exigence : un artisanat délibéré qui tient en production."
-          , body: "Plutôt que d'empiler des frameworks JavaScript éphémères, Pohjola repose sur un socle solide. PureScript garantit la correction à la compilation, Bun répond en moins d'une milliseconde, et le serveur produit du HTML sémantique avec des coutures Alpine.js légères."
+          , lead: "Pohjola tire son nom de Songs from the North de Swallow the Sun — la mythologie finnoise où pohja est à la fois le socle et la direction du Nord. Nous avons bâti le framework sur cette exigence : un artisanat délibéré conçu pour tenir en production."
+          , body: "Plutôt que d'empiler des frameworks JavaScript éphémères, Pohjola repose sur un socle solide. PureScript garantit la correction à la compilation, Bun répond nativement sans le coût de résolution de modules de Node, et le serveur produit du HTML sémantique avec des coutures Alpine.js légères."
           }
       , values:
           { heading: "Nos valeurs"
@@ -423,7 +421,6 @@ fr =
       , loadingError: "Impossible de charger les articles. Veuillez vérifier votre connexion."
       , notFound: "Article introuvable."
       , byAuthor: "Par"
-      , authorRole: "Ingénierie"
       , unknownAuthor: "Pohjola"
       }
   , fixtures:
@@ -487,7 +484,7 @@ pt =
   , hero:
       { eyebrow: "PureScript · Bun · Alpine.js"
       , headline: "O framework web funcional e tipado para Bun"
-      , body: "A simplicidade de uma MPA com a fluidez de uma SPA. Construído em PureScript com a velocidade do Bun, a micro-interatividade do Alpine.js e zero exceções em tempo de execução."
+      , body: "A simplicidade de uma MPA com navegação por fragmentos via Alpine. Construído em PureScript com a velocidade do Bun, micro-interatividade Alpine.js tipada, e erros tratados como valores de ponta a ponta."
       , ctaLabel: "Sobre o Pohjola"
       , secondaryLabel: "Ver notas"
       }
@@ -502,8 +499,8 @@ pt =
             , actionLabel: "Ver a stack"
             }
           ServiceId "service-2" ->
-            { title: "SSR em submilissegundos no Bun"
-            , description: "Runtime Bun nativo com respostas de rota em submilissegundos, SSR em streaming leve e reinícios instantâneos do servidor de desenvolvimento."
+            { title: "SSR rápido no Bun"
+            , description: "Runtime Bun nativo com SSR em buffer por padrão — sem o custo de arranque a frio nem resolução de módulos do Node. O SSR em streaming está disponível como opção experimental, e o servidor de desenvolvimento reinicia instantaneamente."
             , actionLabel: "Ler as notas"
             }
           ServiceId "service-3" ->
@@ -523,8 +520,8 @@ pt =
       , subtitle: "Um framework web funcional e tipado para Bun — base sólida, verificado por agentes."
       , mission:
           { heading: "A nossa missão"
-          , lead: "Pohjola toma o nome de Songs from the North de Swallow the Sun — o folclore finlandês onde pohja é ao mesmo tempo a base e a direção Norte. Construímos o framework sobre esse ethos: artesanato deliberado que aguenta produção."
-          , body: "Em vez de empilhar frameworks JavaScript transitórios, o Pohjola assenta numa base sólida. PureScript prova correção na compilação, Bun serve respostas em submilissegundos, e o servidor produz HTML semântico com costuras Alpine.js leves."
+          , lead: "Pohjola toma o nome de Songs from the North de Swallow the Sun — o folclore finlandês onde pohja é ao mesmo tempo a base e a direção Norte. Construímos o framework sobre esse ethos: artesanato deliberado construído para aguentar produção."
+          , body: "Em vez de empilhar frameworks JavaScript transitórios, o Pohjola assenta numa base sólida. PureScript prova correção na compilação, Bun serve respostas nativamente sem o custo de resolução de módulos do Node, e o servidor produz HTML semântico com costuras Alpine.js leves."
           }
       , values:
           { heading: "Os nossos valores"
@@ -565,7 +562,6 @@ pt =
       , loadingError: "Falha ao carregar artigos. Verifique sua conexão."
       , notFound: "Artigo não encontrado."
       , byAuthor: "Por"
-      , authorRole: "Engenharia"
       , unknownAuthor: "Pohjola"
       }
   , fixtures:

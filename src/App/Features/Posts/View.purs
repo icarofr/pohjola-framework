@@ -51,7 +51,6 @@ renderPostDetail lang status post =
               (d.articleTagPrefix <> show idNum)
               title
               d.unknownAuthor
-              d.authorRole
               (d.articleTagPrefix <> show idNum)
               (postBody post)
               [ PageHeader.breadcrumbHome lang nav.home
@@ -78,7 +77,6 @@ postToCard lang post =
     , title: postTitle post
     , excerpt: postExcerpt post
     , authorName: d.unknownAuthor
-    , authorRole: d.authorRole
     , target: Internal { lang, route: PostDetail idNum }
     }
 
