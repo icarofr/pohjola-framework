@@ -1,1 +1,1 @@
-Add login and a /dashboard. Follow accepted ADRs. Sessions exist (App.Auth); CSRF (ADR-005) does not. Do not invent JWT, do not add a Dashboard route, and do not wire requireAuth into Main until CSRF lands.
+Add login and a /dashboard page for signed-in users. Follow accepted ADRs.

@@ -4,9 +4,9 @@
 |-----|-------|--------|
 | [000](ADR-000-no-custom-browser-js.md) | No custom browser JS — Alpine only | Accepted |
 | [001](ADR-001-hand-rolled-html-adt.md) | Hand-rolled Html ADT | Accepted |
-| [002](ADR-002-auth-shape.md) | Auth shape | Accepted — implementation pending |
+| [002](ADR-002-auth-shape.md) | Auth shape | Accepted — session lifecycle implemented; CSRF (ADR-005) still pending |
 | [003](ADR-003-ffi-taming.md) | FFI taming | Accepted |
-| [004](ADR-004-sessions.md) | Sessions | Accepted — implementation pending |
+| [004](ADR-004-sessions.md) | Sessions | Accepted (superseded by 002's Amendment — different, incompatible shape; implemented) |
 | [005](ADR-005-csrf.md) | CSRF | Accepted — implementation pending |
 | [006](ADR-006-middleware-shape.md) | Middleware shape | Accepted |
 | [007](ADR-007-bun-serve.md) | Bun.serve | Accepted |

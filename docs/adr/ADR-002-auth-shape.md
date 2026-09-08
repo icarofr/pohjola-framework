@@ -51,7 +51,11 @@ only if the implementation requires one (it should not — see Amendment).
 
 ## Amendment (2026-09-08): full adoption of Lucia's session pattern
 
-Supersedes the original single-opaque-token, fixed-24h-expiry design below.
+Supersedes the original single-opaque-token, fixed-24h-expiry design below,
+**and also supersedes `ADR-004`'s session-shape decision** (module name
+`App.Session`, a CSRF token embedded in the session row, an injected
+repository) — `ADR-004` pinned a different, now-incompatible shape before
+this amendment existed; see `ADR-004`'s own "Superseded by ADR-002" note.
 This project standardizes on Lucia's model exactly, so that every Pohjola-based
 project shares one tried-and-tested auth approach rather than each fork
 re-deriving its own token/expiry policy. OAuth (Arctic's reference pattern)
