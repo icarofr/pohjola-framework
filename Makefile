@@ -57,6 +57,7 @@ gate:
 .PHONY: generator-policy design-policy
 generator-policy:
 	@$(BUN) scripts/verify-generator-fixture.js
+	@$(BUN) scripts/verify-bun-ffi-surface.js
 
 ## audit: dependency vulnerability scan (informational — see target for why it does not gate)
 .PHONY: audit
