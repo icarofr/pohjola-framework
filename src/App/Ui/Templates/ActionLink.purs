@@ -7,7 +7,7 @@ module App.Ui.Templates.ActionLink
 
 import Prelude
 
-import App.Alpine (spaLink)
+import App.Datastar (dsSpaLink)
 import App.Html (Attr, Html, class_, el, href, text)
 import App.Ui.Button (ButtonVariant, Size, buttonLink, buttonLinkExternal)
 import App.Ui.Templates.Types (ActionTarget(..))
@@ -24,10 +24,10 @@ actionTarget variant size target label = case target of
 titleLink :: ActionTarget -> String -> Html
 titleLink target label = case target of
   Internal { lang, route } ->
-    spaLink lang route [ class_ "link link-hover" ] [ text label ]
+    dsSpaLink lang route [ class_ "link link-hover" ] [ text label ]
   External { href: url } ->
     el "a" [ href url, class_ "link link-hover" ] [ text label ]
 
 navAction :: Lang -> Route -> Array Attr -> Array Html -> Html
 navAction lang route attrs children =
-  spaLink lang route ([ class_ "btn btn-ghost btn-sm" ] <> attrs) children
+  dsSpaLink lang route ([ class_ "btn btn-ghost btn-sm" ] <> attrs) children

@@ -1,29 +1,36 @@
--- | Spike-only (datastar-shell-nav-port branch): App.Datastar's rendered
--- | constructor output, mirroring ContractSpec/ShellSpec's App.Alpine
--- | pattern -- asserts the attribute string a constructor produces, not
--- | Datastar's own runtime behavior (that's the e2e seam).
+-- | App.Datastar's rendered constructor output, mirroring ContractSpec/
+-- | ShellSpec's pattern -- asserts the attribute string a constructor
+-- | produces, not Datastar's own runtime behavior (that's the e2e seam).
 module Test.DatastarSpec (spec) where
 
 import Prelude
 
 import App.Datastar
   ( DsFlag(..)
+  , contentTarget
   , dataPageLangAttr
   , dataPageTitleAttr
   , datastarRequestHeader
-  , dsClassWhenEq
   , dsClassWhenFlag
+  , dsClassWhenTheme
   , dsNavGet
+  , dsNavLinkRecord
   , dsOnClickOutside
   , dsOnKeydownEscape
+  , dsPrefetchHover
   , dsSetFlag
+  , dsSetTheme
   , dsShowFlag
   , dsShowNotFlag
+  , dsShowTheme
   , dsSignalsInit
+  , dsSpaLink
   , dsToggleFlag
   , flagName
   )
 import App.Html (render, el, text)
+import App.Theme (ThemeMode(..))
+import Data.Array (length, nubEq)
 import Data.I18n (Lang(..))
 import Data.Route (Route(..))
 import Test.Spec (Spec, describe, it)
@@ -42,6 +49,13 @@ spec = do
       flagName DsThemeMenuOpen `shouldEqual` "themeOpen"
       flagName DsLangMenuOpen `shouldEqual` "langOpen"
       flagName DsDrawerOpen `shouldEqual` "drawerOpen"
+
+    it "flagName is injective — two flags cannot share an identifier" do
+      -- A collision would silently wire two unrelated controls to one piece
+      -- of client state. Exhaustive on DsFlag: adding a constructor without
+      -- listing it here leaves a possible collision untested.
+      let names = map flagName [ DsThemeMenuOpen, DsLangMenuOpen, DsDrawerOpen ]
+      length (nubEq names) `shouldEqual` length names
 
     it "dsSignalsInit initializes theme and every flag to false" do
       let html = render (el "div" [ dsSignalsInit ] [])
@@ -63,15 +77,43 @@ spec = do
       render (el "button" [ dsSetFlag DsLangMenuOpen false ] [])
         `StrAssert.shouldContain` "data-on:click=\"$langOpen = false\""
 
-    it "dsClassWhenFlag/dsClassWhenEq render data-class bindings" do
+    it "dsClassWhenFlag/dsClassWhenTheme render data-class bindings" do
       render (el "li" [ dsClassWhenFlag "btn-active" DsThemeMenuOpen ] [])
         `StrAssert.shouldContain` "data-class:btn-active=\"$themeOpen\""
-      render (el "li" [ dsClassWhenEq "btn-active" "theme" "dark" ] [])
+      render (el "li" [ dsClassWhenTheme "btn-active" ThemeDark ] [])
         `StrAssert.shouldContain` "data-class:btn-active=\"$theme === &#x27;dark&#x27;\""
+
+    it "dsShowTheme renders data-show against the theme signal" do
+      render (el "svg" [ dsShowTheme ThemeSystem ] [])
+        `StrAssert.shouldContain` "data-show=\"$theme === &#x27;system&#x27;\""
+
+    it "dsSetTheme is exhaustive over ThemeMode and closes the theme menu" do
+      render (el "button" [ dsSetTheme ThemeDark ] [])
+        `StrAssert.shouldContain` "document.documentElement.setAttribute(&#x27;data-theme&#x27;, &#x27;pohjola-dark&#x27;)"
+      render (el "button" [ dsSetTheme ThemeSystem ] [])
+        `StrAssert.shouldContain` "document.documentElement.removeAttribute(&#x27;data-theme&#x27;)"
 
     it "dsNavGet renders preventDefault + @get to the route's real URL" do
       render (el "a" [ dsNavGet En About ] [ text "About" ])
         `StrAssert.shouldContain` "data-on:click=\"evt.preventDefault(); @get(&#x27;/en/about&#x27;)\""
+
+    it "dsPrefetchHover fires a warming fetch tagged with the Datastar header, using el not $el" do
+      let html = render (el "a" [ dsPrefetchHover ] [])
+      html `StrAssert.shouldContain` "data-on:mouseenter=\"fetch(el.href, {headers: {&#x27;datastar-request&#x27;: &#x27;true&#x27;}})\""
+      html `StrAssert.shouldNotContain` "fetch($el.href"
+
+    it "dsSpaLink renders href + nav + prefetch, no gating" do
+      render (dsSpaLink En About [] [ text "About" ])
+        `StrAssert.shouldContain` "href=\"/en/about\""
+
+    it "dsNavLinkRecord marks aria-current on the active route and skips its own prefetch" do
+      let onSelf = render (dsNavLinkRecord { lang: En, current: About, target: About } [] [ text "About" ])
+      onSelf `StrAssert.shouldContain` "aria-current=\"page\""
+      let toOther = render (dsNavLinkRecord { lang: En, current: About, target: Home } [] [ text "Home" ])
+      toOther `StrAssert.shouldContain` "data-on:mouseenter="
+
+    it "contentTarget is the shared #content id" do
+      contentTarget `shouldEqual` "content"
 
     it "dsOnClickOutside/dsOnKeydownEscape render the verified event modifiers" do
       render (el "div" [ dsOnClickOutside DsThemeMenuOpen ] [])

@@ -35,7 +35,6 @@ renderHead baseUrl nonce lang route =
     <> el "meta" [ name_ "theme-color", content_ siteInfo.themeColor ] []
     -- Pinned inline head scripts (closed HeadScript ADT per ADR-000)
     <> renderHeadScript nonce DarkModeInit
-    <> renderHeadScript nonce TitleSync
     <> renderHeadScript nonce DevLiveReload
     -- Canonical
     <> el "link" [ rel_ "canonical", href (baseUrl <> routeUrl lang route) ] []
@@ -45,7 +44,7 @@ renderHead baseUrl nonce lang route =
     -- Favicon
     <> el "link" [ rel_ "icon", attr "type" "image/svg+xml", href "/favicon.svg" ] []
     -- Inlined CSS (eliminates render-blocking CSS network roundtrip)
-    <> el "style" [] [ text (stylesCss <> "\n[x-cloak]{display:none!important}") ]
+    <> el "style" [] [ text stylesCss ]
     -- Open Graph
     <> el "meta" [ property_ "og:type", content_ "website" ] []
     <> el "meta" [ property_ "og:title", content_ (routeTitle lang route) ] []

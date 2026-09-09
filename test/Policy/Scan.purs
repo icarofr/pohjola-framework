@@ -2,7 +2,6 @@
 module Test.Policy.Scan
   ( containsBanned
   , containsForeignImport
-  , containsRawAlpine
   , containsRawDatastar
   , containsRawWord
   , containsSubstring
@@ -20,7 +19,6 @@ module Test.Policy.Scan
   , findForbiddenInFiles
   , findForeignImportsOutsideAllowlist
   , findHardcodedTextInFiles
-  , findRawAlpineOutsideAlpine
   , findRawDatastarOutsideDatastar
   , findRawInSrc
   , findScriptsOutsideAllowlist
@@ -82,14 +80,6 @@ containsBanned :: Array String -> String -> Boolean
 containsBanned patterns str =
   any (\b -> containsSubstring b str) patterns
 
-containsRawAlpine :: String -> Boolean
-containsRawAlpine str =
-  let
-    banned = [ "attr \"x-", "attr \"@", "attr \":", "flag \"x-" ]
-  in
-    any (\b -> containsSubstring b str) banned
-
--- | Spike-only (datastar-shell-nav-port branch) — mirrors containsRawAlpine.
 -- | Datastar's actual reactive-attribute vocabulary only (data-signals,
 -- | data-show, data-on:, data-bind, data-class, data-text) — NOT a blanket
 -- | "data-" ban, since Pohjola already legitimately uses plain data-*
@@ -164,19 +154,6 @@ findScriptsOutsideAllowlist allowlist root = do
         Left _ -> Nothing
   pure (mapMaybe identity results)
 
-findRawAlpineOutsideAlpine :: String -> Aff (Array String)
-findRawAlpineOutsideAlpine root = do
-  files <- liftEffect $ pursFilesUnder root
-  results <- for files \file -> do
-    if file == "src/App/Alpine.purs" then pure Nothing
-    else do
-      content <- readTextFile file
-      pure case content of
-        Right c -> if containsRawAlpine c then Just file else Nothing
-        Left _ -> Nothing
-  pure (mapMaybe identity results)
-
--- | Spike-only (datastar-shell-nav-port branch) — mirrors findRawAlpineOutsideAlpine.
 findRawDatastarOutsideDatastar :: String -> Aff (Array String)
 findRawDatastarOutsideDatastar root = do
   files <- liftEffect $ pursFilesUnder root

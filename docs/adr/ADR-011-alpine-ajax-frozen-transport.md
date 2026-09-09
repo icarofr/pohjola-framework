@@ -1,6 +1,6 @@
 # ADR-011: Freeze Alpine AJAX as shell transport; defer HTMX
 
-**Status:** Accepted  
+**Status:** Accepted — superseded by `ADR-015` (2026-09-09); a real, measured spike (not the estimate this ADR's Datastar rejection rested on) found the transport-swap cost lower than projected. See ADR-015 before reading the Datastar rejection below as current.
 **Date:** 2026-08-30  
 **Amends:** ADR-000 (client seam tiers), ADR-007 (fragment protocol — reaffirmed)  
 **Deferred:** HTMX 4 migration — see spike criterion below

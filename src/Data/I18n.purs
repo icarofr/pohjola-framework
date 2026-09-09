@@ -187,7 +187,7 @@ en =
   , hero:
       { eyebrow: "PureScript on Bun"
       , headline: "A framework built to make AI-written code safer to ship"
-      , body: "Pohjola pairs an agent-friendly page generator with a compiler that refuses common mistakes. Pages feel instant (Alpine prefetches on hover and swaps fragments in place) while PureScript proves every route is handled, every string is escaped, and a crash never reaches your users."
+      , body: "Pohjola pairs an agent-friendly page generator with a compiler that refuses common mistakes. Pages feel instant (Datastar prefetches on hover and swaps HTML patches in place) while PureScript proves every route is handled, every string is escaped, and a crash never reaches your users."
       , ctaLabel: "See the guarantees"
       , secondaryLabel: "View the repository"
       }
@@ -207,7 +207,7 @@ en =
             , actionLabel: "Learn more"
             }
           ServiceId "service-3" ->
-            { title: "Typed Alpine Seams"
+            { title: "Typed Datastar Seams"
             , description: "Client interactivity comes from closed PureScript types, not hand-rolled scripts. There's no way to slip an unchecked onclick string past the policy gate."
             , actionLabel: "Learn more"
             }
@@ -246,10 +246,10 @@ en =
           , intro: "Six choices that shape every decision in this codebase."
           , items:
               { one: { title: "The compiler over the reviewer", description: "A missing case, an unescaped string, a forbidden import, caught by `spago build` and `make gate`, not by whoever happens to review the PR." }
-              , two: { title: "Built for agents", description: "The page generator, the typed Alpine constructors, and the policy gate exist so an agent gets a narrow, checkable path instead of a blank file and good intentions." }
+              , two: { title: "Built for agents", description: "The page generator, the typed Datastar constructors, and the policy gate exist so an agent gets a narrow, checkable path instead of a blank file and good intentions." }
               , three: { title: "Honest about scope", description: "GUARANTEES.md states exactly what's proven and what isn't. A claim with no check next to it doesn't ship." }
               , four: { title: "Bun-native, not Node-adjacent", description: "No compatibility shims. Bun's own primitives (Bun.serve, Bun.sql, Bun.password) are the FFI boundary itself, tamed and explicitly allowlisted." }
-              , five: { title: "Small surface, edges filed off", description: "Four pages, one Html type, one Alpine module. Depth comes from what each piece proves, not from how many pieces exist." }
+              , five: { title: "Small surface, edges filed off", description: "Four pages, one Html type, one Datastar module. Depth comes from what each piece proves, not from how many pieces exist." }
               , six: { title: "Built in the open", description: "ADRs, conventions, and eval prompts are part of the repository, not tribal knowledge. Anyone, human or agent, can reconstruct why a decision was made." }
               }
           }
@@ -273,7 +273,7 @@ en =
       , items:
           [ { title: "Getting started", description: "Clone the repository, run `make dev`, and have a working page in minutes, written up as a real walkthrough, not just this paragraph." }
           , { title: "Page architectures", description: "When a page should be static versus data-backed, and what the template layer actually gives you." }
-          , { title: "Conventions", description: "Alpine contracts, forms, and the chrome checklist: the rules `make gate` already enforces, explained instead of just checked." }
+          , { title: "Conventions", description: "Datastar contracts, forms, and the chrome checklist: the rules `make gate` already enforces, explained instead of just checked." }
           , { title: "Architecture decisions", description: "The ADR index: why Bun instead of Node, why the Html type has no escape hatch, why the CSP is pinned instead of configurable." }
           , { title: "Guarantees, explained", description: "The reasoning behind each guarantee on the previous page, and how to verify it yourself." }
           , { title: "Contributing", description: "How to open an issue, propose an ADR, and where the test suite expects new coverage." }
@@ -314,7 +314,7 @@ fr =
   , hero:
       { eyebrow: "PureScript sur Bun"
       , headline: "Un framework conçu pour sécuriser le code écrit par l'IA"
-      , body: "Pohjola associe un générateur de pages pensé pour les agents à un compilateur qui refuse les erreurs courantes. Les pages semblent instantanées (Alpine précharge au survol et remplace les fragments sur place) tandis que PureScript garantit que chaque route est gérée, chaque chaîne est échappée, et qu'aucun plantage n'atteint vos utilisateurs."
+      , body: "Pohjola associe un générateur de pages pensé pour les agents à un compilateur qui refuse les erreurs courantes. Les pages semblent instantanées (Datastar précharge au survol et remplace les fragments HTML sur place) tandis que PureScript garantit que chaque route est gérée, chaque chaîne est échappée, et qu'aucun plantage n'atteint vos utilisateurs."
       , ctaLabel: "Voir les garanties"
       , secondaryLabel: "Voir le dépôt"
       }
@@ -334,7 +334,7 @@ fr =
             , actionLabel: "En savoir plus"
             }
           ServiceId "service-3" ->
-            { title: "Coutures Alpine typées"
+            { title: "Coutures Datastar typées"
             , description: "L'interactivité côté client provient de types PureScript fermés, jamais de scripts écrits à la main. Impossible de glisser un onclick brut au-delà du contrôle de politique."
             , actionLabel: "En savoir plus"
             }
@@ -373,10 +373,10 @@ fr =
           , intro: "Six choix qui façonnent chaque décision de ce dépôt."
           , items:
               { one: { title: "Le compilateur plutôt que le relecteur", description: "Un cas manquant, une chaîne non échappée, un import interdit, intercepté par `spago build` et `make gate`, pas par qui relit la PR ce jour-là." }
-              , two: { title: "Pensé pour les agents", description: "Le générateur de pages, les constructeurs Alpine typés et le contrôle de politique existent pour offrir à un agent un chemin étroit et vérifiable plutôt qu'un fichier vide et de bonnes intentions." }
+              , two: { title: "Pensé pour les agents", description: "Le générateur de pages, les constructeurs Datastar typés et le contrôle de politique existent pour offrir à un agent un chemin étroit et vérifiable plutôt qu'un fichier vide et de bonnes intentions." }
               , three: { title: "Honnête sur son périmètre", description: "GUARANTEES.md indique précisément ce qui est prouvé et ce qui ne l'est pas. Une promesse sans contrôle en face n'est pas livrée." }
               , four: { title: "Natif Bun, pas adjacent à Node", description: "Aucune couche de compatibilité. Les primitives de Bun (Bun.serve, Bun.sql, Bun.password) sont la frontière FFI elle-même, maîtrisée et listée explicitement." }
-              , five: { title: "Surface réduite, arêtes limées", description: "Quatre pages, un seul type Html, un seul module Alpine. La profondeur vient de ce que chaque pièce prouve, pas de leur nombre." }
+              , five: { title: "Surface réduite, arêtes limées", description: "Quatre pages, un seul type Html, un seul module Datastar. La profondeur vient de ce que chaque pièce prouve, pas de leur nombre." }
               , six: { title: "Construit à ciel ouvert", description: "ADRs, conventions et prompts d'évaluation font partie du dépôt, pas d'un savoir informel. Chacun, humain ou agent, peut reconstituer pourquoi une décision a été prise." }
               }
           }
@@ -400,7 +400,7 @@ fr =
       , items:
           [ { title: "Premiers pas", description: "Clonez le dépôt, lancez `make dev`, et obtenez une page fonctionnelle en quelques minutes, présenté comme un vrai guide, pas juste ce paragraphe." }
           , { title: "Architectures de page", description: "Quand choisir une page statique plutôt qu'une page adossée à des données, et ce que la couche de gabarits offre réellement." }
-          , { title: "Conventions", description: "Contrats Alpine, formulaires, checklist de l'habillage: les règles que `make gate` impose déjà, expliquées plutôt que simplement vérifiées." }
+          , { title: "Conventions", description: "Contrats Datastar, formulaires, checklist de l'habillage: les règles que `make gate` impose déjà, expliquées plutôt que simplement vérifiées." }
           , { title: "Décisions d'architecture", description: "L'index des ADRs : pourquoi Bun plutôt que Node, pourquoi le type Html n'a pas d'échappatoire, pourquoi la CSP est figée plutôt que configurable." }
           , { title: "Les garanties expliquées", description: "Le raisonnement derrière chaque garantie de la page précédente, et comment le vérifier vous-même." }
           , { title: "Contribuer", description: "Comment ouvrir une issue, proposer un ADR, et où la suite de tests attend une nouvelle couverture." }
@@ -441,7 +441,7 @@ pt =
   , hero:
       { eyebrow: "PureScript no Bun"
       , headline: "Um framework feito para tornar o código escrito por IA mais seguro"
-      , body: "O Pohjola combina um gerador de páginas pensado para agentes com um compilador que recusa erros comuns. As páginas parecem instantâneas (o Alpine pré-carrega ao passar o rato e substitui fragmentos no lugar) enquanto o PureScript garante que cada rota é tratada, cada string é escapada, e nenhuma falha chega aos seus utilizadores."
+      , body: "O Pohjola combina um gerador de páginas pensado para agentes com um compilador que recusa erros comuns. As páginas parecem instantâneas (o Datastar pré-carrega ao passar o rato e substitui fragmentos no lugar) enquanto o PureScript garante que cada rota é tratada, cada string é escapada, e nenhuma falha chega aos seus utilizadores."
       , ctaLabel: "Ver as garantias"
       , secondaryLabel: "Ver o repositório"
       }
@@ -461,7 +461,7 @@ pt =
             , actionLabel: "Saiba mais"
             }
           ServiceId "service-3" ->
-            { title: "Costuras Alpine tipadas"
+            { title: "Costuras Datastar tipadas"
             , description: "A interatividade do lado do cliente vem de tipos PureScript fechados, nunca de scripts escritos à mão. Não há forma de passar um onclick em bruto pelo portão de política."
             , actionLabel: "Saiba mais"
             }
@@ -500,10 +500,10 @@ pt =
           , intro: "Seis escolhas que moldam cada decisão neste repositório."
           , items:
               { one: { title: "O compilador em vez do revisor", description: "Um caso em falta, uma string não escapada, um import proibido, apanhados pelo `spago build` e `make gate`, não por quem revê o PR nesse dia." }
-              , two: { title: "Pensado para agentes", description: "O gerador de páginas, os construtores Alpine tipados e o portão de política existem para dar a um agente um caminho estreito e verificável, em vez de um ficheiro vazio e boas intenções." }
+              , two: { title: "Pensado para agentes", description: "O gerador de páginas, os construtores Datastar tipados e o portão de política existem para dar a um agente um caminho estreito e verificável, em vez de um ficheiro vazio e boas intenções." }
               , three: { title: "Honesto quanto ao alcance", description: "O GUARANTEES.md diz exatamente o que está provado e o que não está. Uma promessa sem uma verificação ao lado não é publicada." }
               , four: { title: "Nativo do Bun, não um substituto do Node", description: "Sem camadas de compatibilidade. As primitivas do Bun (Bun.serve, Bun.sql, Bun.password) são a própria fronteira FFI, controlada e listada explicitamente." }
-              , five: { title: "Superfície pequena, arestas limadas", description: "Quatro páginas, um único tipo Html, um único módulo Alpine. A profundidade vem do que cada peça prova, não de quantas existem." }
+              , five: { title: "Superfície pequena, arestas limadas", description: "Quatro páginas, um único tipo Html, um único módulo Datastar. A profundidade vem do que cada peça prova, não de quantas existem." }
               , six: { title: "Construído a céu aberto", description: "ADRs, convenções e prompts de avaliação fazem parte do repositório, não são conhecimento informal. Qualquer pessoa, humana ou agente, pode reconstruir porque é que uma decisão foi tomada." }
               }
           }
@@ -527,7 +527,7 @@ pt =
       , items:
           [ { title: "Primeiros passos", description: "Clone o repositório, execute `make dev`, e tenha uma página a funcionar em minutos, escrito como um guia real, não apenas este parágrafo." }
           , { title: "Arquiteturas de página", description: "Quando usar uma página estática em vez de uma apoiada em dados, e o que a camada de modelos realmente oferece." }
-          , { title: "Convenções", description: "Contratos Alpine, formulários, a checklist do chrome: as regras que o `make gate` já impõe, explicadas em vez de apenas verificadas." }
+          , { title: "Convenções", description: "Contratos Datastar, formulários, a checklist do chrome: as regras que o `make gate` já impõe, explicadas em vez de apenas verificadas." }
           , { title: "Decisões de arquitetura", description: "O índice de ADRs: porque Bun em vez de Node, porque o tipo Html não tem escape, porque a CSP é fixa em vez de configurável." }
           , { title: "As garantias, explicadas", description: "O raciocínio por trás de cada garantia da página anterior, e como a verificar você mesmo." }
           , { title: "Contribuir", description: "Como abrir uma issue, propor um ADR, e onde a suite de testes espera nova cobertura." }

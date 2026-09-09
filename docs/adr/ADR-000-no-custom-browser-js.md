@@ -1,6 +1,6 @@
 # ADR-000: No custom browser JavaScript — Alpine.js only, pinned and self-hosted
 
-**Status:** Accepted
+**Status:** Accepted — amended by `ADR-015` (2026-09-09): the seam module is now `App.Datastar`, not `App.Alpine` (Alpine deleted from the tree), and the CSP threat-model closure below is narrower for Datastar's constructors than it was for Alpine's `Expr`/`Flag`. See ADR-015's "ADR-000 amendment" section before reading the vector analysis below as a description of the current codebase.
 **Date:** 2026-08
 
 ## Context

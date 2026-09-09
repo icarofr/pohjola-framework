@@ -5,13 +5,13 @@
 [![Live Website](https://img.shields.io/badge/Live-pohjola.icaro.fr-059669?style=flat)](https://pohjola.icaro.fr)
 [![PureScript](https://img.shields.io/badge/PureScript-0.15.16-1D222D?style=flat&logo=purescript&logoColor=white)](https://www.purescript.org)
 [![Bun](https://img.shields.io/badge/Bun-1.4-000000?style=flat&logo=bun&logoColor=white)](https://bun.sh)
-[![Alpine.js](https://img.shields.io/badge/Alpine.js-3.15-8BC0D0?style=flat&logo=alpinedotjs&logoColor=white)](https://alpinejs.dev)
+[![Datastar](https://img.shields.io/badge/Datastar-1.0--RC-000000?style=flat)](https://data-star.dev)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4.0-06B6D4?style=flat&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
 [![Licence](https://img.shields.io/badge/Licence-Apache-334155?style=flat)](LICENCE.md)
 
 **Pohjola is the safest way to vibe code a web app** — an opinionated full-stack framework where routes, data decoding, errors, translations, and HTML share a single, unbroken compile-time model.
 
-A lot of what gets shipped as an AI-assisted "framework" today is unsafe slop held together by convention alone. Pohjola is a deliberate bet on the opposite: that a compiler-enforced contract, not developer discipline or code review, is what actually stops an AI agent from drifting into inconsistent routes, missing translations, or unescaped HTML. The compiler is your contract. Pohjola turns brittle architectural conventions into mechanically enforced invariants. Built on **PureScript** and **Bun**, it is designed around server-authoritative hypermedia: the server renders complete HTML and owns application state. Alpine.js is an optional progressive-enhancement seam, not a second application runtime.
+A lot of what gets shipped as an AI-assisted "framework" today is unsafe slop held together by convention alone. Pohjola is a deliberate bet on the opposite: that a compiler-enforced contract, not developer discipline or code review, is what actually stops an AI agent from drifting into inconsistent routes, missing translations, or unescaped HTML. The compiler is your contract. Pohjola turns brittle architectural conventions into mechanically enforced invariants. Built on **PureScript** and **Bun**, it is designed around server-authoritative hypermedia: the server renders complete HTML and owns application state. Datastar is an optional progressive-enhancement seam, not a second application runtime.
 
 ---
 
@@ -31,12 +31,12 @@ Pohjola embraces **Hypermedia as the Engine of Application State (HATEOAS)** wit
 
 Instead of shipping megabytes of client JavaScript to parse JSON and maintain out-of-band state, the server returns self-contained, semantic HTML. When resource state changes (such as an account balance update or a validation error), the server emits the updated hypermedia representation: valid links, enabled actions, and localized error banners.
 
-Alpine AJAX acts as the hypermedia transport: navigation links and form submissions automatically fetch and morph HTML fragments without full page reloads.
+Datastar acts as the hypermedia transport: navigation links fetch server-sent `datastar-patch-elements` events that morph HTML into the page without full reloads.
 
 ```text
 Incoming Request -> PureScript Route Codec -> Typed Service -> Algebraic Html ADT -> Bun Response
                                                                                         |
-                                    Browser receives semantic HTML (instant morph via Alpine AJAX)
+                                      Browser receives semantic HTML (instant morph via Datastar)
 ```
 
 ---
@@ -78,7 +78,7 @@ aboutSlots lang =
       ]
 ```
 
-Feature logic lives in isolated domain modules. Asynchronous effects compose cleanly through `Aff`. Alpine.js provides reactive micro-interactivity through typed constructors: the browser always receives complete, semantic HTML first.
+Feature logic lives in isolated domain modules. Asynchronous effects compose cleanly through `Aff`. Datastar provides reactive micro-interactivity through typed constructors: the browser always receives complete, semantic HTML first.
 
 ---
 
@@ -94,21 +94,21 @@ Feature logic lives in isolated domain modules. Asynchronous effects compose cle
 - **Instant Hot Reload:** Fast file watcher and dev server restarts with `make dev`.
 - **Minimal Asset Footprint:** No heavy client JavaScript bundle is required for the baseline experience; performance depends on deployment, network, content, and runtime conditions.
 
-### Alpine.js Reactive Seams
-- **Progressive enhancement without a SPA:** Optional navigation helpers can fetch and morph HTML fragments; the server remains authoritative and ordinary links and forms remain the baseline.
+### Datastar Reactive Seams
+- **Progressive enhancement without a SPA:** Navigation links fetch and morph server-sent HTML patches; the server remains authoritative and ordinary links and forms remain the baseline.
 - **Zero-JS Resilience:** If JavaScript fails or is disabled, routes and forms use ordinary accessible HTML documents.
 
 ### Built for AI Agents: Zero-Drift by Construction
 In loosely typed stacks, AI coding assistants frequently hallucinate missing properties, drop edge cases, forget localized translation keys, or produce inconsistent "utility soup" layouts.
 - **Mechanical Logic Enforcement:** An agent cannot declare a route without completing its bidirectional codec, sitemap entry, and dictionary entries for every language in `allLangs`.
 - **Visual Drift Prevention (daisyUI + page templates):** Raw layout utility soup in views is forbidden. `App.Ui.Templates` owns page chrome and section recipes on **daisyUI 5**; agents fill typed slot records (`Landing`, `Hub`, `Editorial`, `Feed`, `Article`, `Schedule`, `Form`). This limits structural drift; the type system does not guarantee pixels or intent.
-- **Fast Guardrails:** `Policy.Contract` (`src/Policy/Contract.purs`) is the single source of truth. `make gate` (`Test.Gate`) enforces structural policy; `PolicySpec` (`make test`) adds reference-page archetypes; `ContractSpec` pins CSP, Alpine seams, and security headers.
+- **Fast Guardrails:** `Policy.Contract` (`src/Policy/Contract.purs`) is the single source of truth. `make gate` (`Test.Gate`) enforces structural policy; `PolicySpec` (`make test`) adds reference-page archetypes; `ContractSpec` pins CSP, Datastar seams, and security headers.
 
 ---
 
 ## Architectural Trade-offs and Comparisons
 
-Pohjola makes a deliberate architectural choice: the **PureScript application owns server-authoritative semantic hypermedia**, **feature code owns its async lifecycle**, and **PureScript unifies routing, decoding, errors, and rendering in one typed codebase**. Alpine adds optional progressive enhancement without turning the application into a client-side runtime.
+Pohjola makes a deliberate architectural choice: the **PureScript application owns server-authoritative semantic hypermedia**, **feature code owns its async lifecycle**, and **PureScript unifies routing, decoding, errors, and rendering in one typed codebase**. Datastar adds optional progressive enhancement without turning the application into a client-side runtime.
 
 ### When Pohjola is the Right Fit
 - **Request and response web applications** demanding ultra-fast initial render and low latency.
@@ -167,7 +167,7 @@ Pohjola's guarantees are not documentation conventions. They are mechanically ve
 git clone https://github.com/icarofr/pohjola-framework.git
 cd pohjola-framework
 
-# 2. Install dependencies & Alpine assets
+# 2. Install dependencies & the Datastar asset
 make deps
 
 # 3. Start development environment with live reload
@@ -196,7 +196,7 @@ Policy is defined once in [`src/Policy/Contract.purs`](src/Policy/Contract.purs)
 |:---|:---|:---|
 | Structural (fast) | `make gate` | `Test.Gate` — banned unsafe imports, FFI allowlist, content firewall, closed Ui/Templates, feature-view contract |
 | Design | `make design-policy` | Generator/`App.Ui` boundary + compiled CSS primary token |
-| Behavioral | `make test` | `PolicySpec` (reference pages) + `ContractSpec` (CSP, Alpine seam, security headers) |
+| Behavioral | `make test` | `PolicySpec` (reference pages) + `ContractSpec` (CSP, Datastar seam, security headers) |
 
 ```bash
 # Structural policy from Policy.Contract (build + Test.Gate)
@@ -235,7 +235,7 @@ E2E jobs are required; run `make test/integration` and `make test/e2e` separatel
 - **Architecture and Philosophy:** [`docs/conventions/adding-pages.md`](docs/conventions/adding-pages.md)
 - **Data Layer and Fetching:** [`docs/conventions/data-layer.md`](docs/conventions/data-layer.md)
 - **Forms and Same-Origin Checking:** [`docs/conventions/forms.md`](docs/conventions/forms.md) — the CSRF mitigation for today's unauthenticated forms; session-cookie CSRF (`ADR-005`) is still pending
-- **Alpine Seams and Contracts:** [`docs/conventions/alpine-contracts.md`](docs/conventions/alpine-contracts.md)
+- **Datastar Seams and Contracts:** [`docs/conventions/datastar-contracts.md`](docs/conventions/datastar-contracts.md)
 - **Strict Invariant Guarantees:** [`docs/GUARANTEES.md`](docs/GUARANTEES.md)
 - **Agent Guide and Safety Floor:** [`AGENTS.md`](AGENTS.md)
 

@@ -13,8 +13,8 @@
 -- | .scratch/clean-sheet-homepage/, ticket 02): `Home` is the first route
 -- | back after ticket 01's purge. `routing-duplex`'s `GRouteDuplex` class has
 -- | no instance for a zero-constructor Generic rep, so this file — and
--- | `App.Main`/`Data.I18n`/`App.Layout.Head`/`App.Ui.Templates.SiteShell`,
--- | which all anchor their auto-wiring regexes on an existing route entry —
+-- | `App.Main`/`Data.I18n`/`App.Layout.Head`/`App.DatastarShell`, which all
+-- | anchor their auto-wiring regexes on an existing route entry —
 -- | had to be hand-wired for `Home` specifically; `make new-feature --wire`
 -- | could not bootstrap the very first route from a genuinely empty file
 -- | (confirmed by running it directly, not assumed). It wires the next
@@ -22,9 +22,10 @@
 -- | to append after — also confirmed directly, after fixing two real bugs
 -- | the empty-to-one transition surfaced in scripts/auto-scaffold.js: the
 -- | `data Route` regex assumed a fixed multi-line shape (purs-tidy collapses
--- | a single constructor to `data Route = Home`), and the SiteShell chrome
--- | wiring anchored on `copyright` as if it were always the last
--- | `ShellLabels` field, which it never was.
+-- | a single constructor to `data Route = Home`), and the chrome wiring
+-- | (now App.DatastarShell, App.Ui.Templates.SiteShell's replacement)
+-- | anchored on `copyright` as if it were always the last `ShellLabels`
+-- | field, which it never was.
 module Data.Route where
 
 import Prelude hiding ((/))
@@ -126,10 +127,10 @@ routeMeta = case _ of
   Docs -> { isStatic: true, inSitemap: true, prefetch: [ Home ] }
 
 -- | `renderPrefetch` emits `<link rel="prefetch">` for these routes, using the
--- | FULL page URL — not a fragment URL. A fragment entry could never be hit,
--- | because an Alpine click fetches the plain href with the `x-alpine-request`
--- | header. See `App.Layout.Page.renderPrefetch`, which previously said the
--- | opposite of this comment.
+-- | FULL page URL — not a patch URL. A patch entry could never be hit: a
+-- | browser-native `rel="prefetch"` hint can't set the `datastar-request`
+-- | header a Datastar patch request needs, so it always fetches the full
+-- | document. See `App.Layout.Page.renderPrefetch`.
 prefetchFor :: Route -> Array Route
 prefetchFor = _.prefetch <<< routeMeta
 

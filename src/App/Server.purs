@@ -57,7 +57,6 @@ module App.Server
 
 import Prelude
 
-import App.Alpine (alpineRequestHeader)
 import App.Datastar (datastarRequestHeader)
 import App.Logger (Level(..))
 import App.Logger as AppLog
@@ -134,13 +133,13 @@ type Response =
 -- | allowlisted modules (`ffiAllowlist`); and ContractSpec property-tests
 -- | that rendered text never contains unescaped `<`/`>`. CSP is
 -- | defense-in-depth for future developer mistakes (user data flowing into
--- | an Alpine constructor argument). `unsafe-eval` is required by Alpine's
--- | standard build (it evaluates attribute expressions via `new Function()`);
--- | the CSP build can't call global functions like the `fetch()` in
--- | `prefetchHover` and would force a custom-JS seam violating ADR-000.
--- | `unsafe-inline` was dropped in favour of per-request nonces on the three
--- | `HeadScript`s (DarkModeInit, TitleSync, DevLiveReload) and the JSON-LD
--- | script. See ADR-000 addendum.
+-- | a Datastar constructor argument). `unsafe-eval` is required by Datastar's
+-- | expression evaluation (it evaluates attribute expressions via
+-- | `new Function()`); a CSP-safe build has not been evaluated for Datastar
+-- | (unlike Alpine's now-moot `@alpinejs/csp` variant, see ADR-014).
+-- | `unsafe-inline` was dropped in favour of per-request nonces on the
+-- | `HeadScript`s (DarkModeInit, DevLiveReload, DsShellRouter) and the JSON-LD
+-- | script. See ADR-000 addendum and ADR-015.
 securityHeaders :: Array (Tuple String String)
 securityHeaders =
   [ Tuple "X-Content-Type-Options" "nosniff"
@@ -150,10 +149,10 @@ securityHeaders =
   , Tuple "Permissions-Policy" "camera=(), microphone=(), geolocation=()" -- Restrictive defaults
   ]
 
--- | CSP with a per-request nonce. `unsafe-eval` is required by Alpine's
--- | standard build; `strict-dynamic` lets the nonced Alpine script load its
--- | AJAX plugin without separate allowlisting. `'self'` is a fallback for
--- | browsers without `strict-dynamic` support.
+-- | CSP with a per-request nonce. `unsafe-eval` is required by Datastar's
+-- | expression evaluation; `strict-dynamic` lets the nonced Datastar script
+-- | load without separate allowlisting. `'self'` is a fallback for browsers
+-- | without `strict-dynamic` support.
 cspWithNonce :: String -> String
 cspWithNonce nonce =
   "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'nonce-"
@@ -444,24 +443,24 @@ fileResponse contentType body =
   }
 
 -- | Streaming response — shell arrives immediately, content streams in.
+-- | Dormant (zero call sites; see App.ServerBun.streamResponseImpl's doc).
 -- |
--- | Carries `Vary: x-alpine-request` like every other HTML response. Without
--- | it a cache could serve this full streamed document to a request that asked
--- | for a fragment, since the two differ only by that request header. This was
--- | the one HTML response missing it.
+-- | Carries `Vary: datastar-request` like every other HTML response. Without
+-- | it a cache could serve this full streamed document to a request that
+-- | asked for an SSE patch, since the two differ only by that request header.
 streamResponse :: ReadableStream -> Response
 streamResponse stream =
   { status: 200
   , headers: securityHeaders <>
       [ Tuple "Content-Type" "text/html; charset=utf-8"
       , Tuple "Cache-Control" "no-cache"
-      , Tuple "Vary" alpineRequestHeader
+      , Tuple "Vary" datastarRequestHeader
       ]
   , body: StreamBody stream
   }
 
--- | Spike-only (datastar-shell-nav-port branch): one `datastar-patch-elements`
--- | SSE event, morphing `#content`'s replacement in by id (Datastar's default
+-- | One `datastar-patch-elements` SSE event, morphing `#content`'s
+-- | replacement in by id (Datastar's default
 -- | merge strategy — no `mode`/`selector` line needed since the fragment
 -- | carries its own `id="content"`). Pohjola's Html renderer never emits
 -- | embedded newlines in a rendered fragment (verified: every rendered

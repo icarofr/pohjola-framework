@@ -146,7 +146,15 @@ decision still needs:
   call itself, just a reminder that this spike's own plumbing is
   spike-shaped, not production-shaped.
 
-Recommendation: don't merge this branch. Keep it as evidence. If a real
-feature need for Datastar's actual differentiator (ticket 01's scenario)
-materializes, that's the moment to decide on a full migration — informed
-by this spike's real numbers, not estimates.
+Recommendation (at spike close): don't merge this branch. Keep it as evidence.
+If a real feature need for Datastar's actual differentiator (ticket 01's
+scenario) materializes, that's the moment to decide on a full migration —
+informed by this spike's real numbers, not estimates.
+
+**Update (2026-09-09, post-spike):** the user reviewed this spike's numbers
+and decided to proceed with the full migration anyway, without waiting for
+ticket 01's differentiator scenario — the measured bundle/parity/CSP results
+alone were judged sufficient. See ADR-015 for the resulting decision (Alpine
+deleted entirely, all four routes ported, chrome rebuilt to full production
+parity) and its full accounting of what changed beyond this spike's Home/About
+scope.

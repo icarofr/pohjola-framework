@@ -91,44 +91,25 @@ deps:
 # ALPINE.JS ASSETS — pinned, self-hosted
 # ==================================================================================== #
 
-ALPINE_VERSION := 3.15.12
-ALPINE_AJAX_VERSION := 0.12.7
 ASSETS_DIR := static/assets/js
 
-## assets: download pinned Alpine.js + Alpine AJAX into static/assets/js/
+# Datastar is pinned by commit SHA (jsdelivr's gh provider), not a moving
+# @main ref: two fetches of the same @main-labeled build produced different
+# bytes during evaluation, so a floating ref isn't safe to redeploy from.
+DATASTAR_COMMIT := ab49c217c3d17578f262e7356b84808e892667dc
+
+## assets: download the pinned Datastar build into static/assets/js/
 .PHONY: assets
 assets:
 	mkdir -p $(ASSETS_DIR)
-	curl -fsSL "https://cdn.jsdelivr.net/npm/alpinejs@$(ALPINE_VERSION)/dist/cdn.min.js" -o $(ASSETS_DIR)/alpinejs.min.js
-	curl -fsSL "https://cdn.jsdelivr.net/npm/@imacrayon/alpine-ajax@$(ALPINE_AJAX_VERSION)/dist/cdn.min.js" -o $(ASSETS_DIR)/alpine-ajax.min.js
-	@echo "Alpine.js $(ALPINE_VERSION) + Alpine AJAX $(ALPINE_AJAX_VERSION) downloaded to $(ASSETS_DIR)/"
+	curl -fsSL "https://cdn.jsdelivr.net/gh/starfederation/datastar@$(DATASTAR_COMMIT)/bundles/datastar.js" -o $(ASSETS_DIR)/datastar.js
+	@echo "Datastar (commit $(DATASTAR_COMMIT)) downloaded to $(ASSETS_DIR)/"
 
 ## assets-check: verify assets against SHA256SUMS (no download)
 .PHONY: assets-check
 assets-check:
-	@echo "Verifying Alpine.js assets..."
-	@shasum -a 256 static/assets/js/alpinejs.min.js static/assets/js/alpine-ajax.min.js | diff -u static/assets/SHA256SUMS -
-	@echo "Asset verification OK"
-
-# ==================================================================================== #
-# DATASTAR ASSET — spike only (spike/datastar-shell-nav-port branch), pinned by
-# commit SHA (jsdelivr's gh provider), not a moving @main ref -- checksummed the
-# same way, tracked in the same SHA256SUMS file as the Alpine assets above.
-# ==================================================================================== #
-
-DATASTAR_COMMIT := ab49c217c3d17578f262e7356b84808e892667dc
-
-## assets-datastar-spike: download the pinned Datastar build (spike only)
-.PHONY: assets-datastar-spike
-assets-datastar-spike:
-	curl -fsSL "https://cdn.jsdelivr.net/gh/starfederation/datastar@$(DATASTAR_COMMIT)/bundles/datastar.js" -o $(ASSETS_DIR)/datastar.js
-	@echo "Datastar (commit $(DATASTAR_COMMIT)) downloaded to $(ASSETS_DIR)/"
-
-## assets-check-datastar-spike: verify the Datastar asset against SHA256SUMS
-.PHONY: assets-check-datastar-spike
-assets-check-datastar-spike:
-	@echo "Verifying Datastar asset (spike)..."
-	@shasum -a 256 static/assets/js/datastar.js | grep -qF "$$(grep datastar.js static/assets/SHA256SUMS)" && echo "Datastar asset verification OK" || (echo "Datastar asset checksum MISMATCH" && exit 1)
+	@echo "Verifying Datastar asset..."
+	@shasum -a 256 static/assets/js/datastar.js | grep -qF "$$(grep datastar.js static/assets/SHA256SUMS)" && echo "Asset verification OK" || (echo "Asset checksum MISMATCH" && exit 1)
 
 # ==================================================================================== #
 # DEVELOPMENT

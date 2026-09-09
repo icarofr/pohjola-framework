@@ -1,7 +1,7 @@
 -- | Behavioural invariant tests the compiler cannot express.
 -- |
 -- | The type system can't see the stringly-typed seams this suite pins:
--- | security header tuples on every Response, the Alpine contentTarget /
+-- | security header tuples on every Response, the Datastar contentTarget /
 -- | data-page-title contract, i18n wildcard fallbacks, the layout shell,
 -- | and the total `raw` ban. If a future refactor breaks one of
 -- | these contracts, this suite fails loudly instead of misbehaving in
@@ -16,29 +16,29 @@ module Test.ContractSpec where
 
 import Prelude
 
-import App.Alpine (Flag(..), NavChrome(..), ThemeMode(..), contentTarget, cycleTheme, dropdownItemClass, dropdownItemClasses, dropdownPanelClass, flagName, navLinkClasses, renderExpr, setFlag, setTheme, spaLink, themeToggle, toggleFlag)
-import App.Theme (themeInitScript, themeDarkName, themeLightName)
+import App.DatastarShell (dsActiveNavClass, dsDropdownItemClass, dsDropdownItemClasses, dsDropdownPanelClass, dsSiteErrorPage)
+import App.Datastar (contentTarget, dsSpaLink)
+import App.Theme (themeDarkName, themeLightName)
 import App.Config (Config)
 import App.Features.Home.View as Home
 import App.Form (FormStatus(..), contactFields, newsletterFields)
 import App.Layout.Head (escapeJson, renderJsonLd)
-import App.Layout.Page (renderErrorFragment, renderErrorPage, renderFragment, renderDocument, renderShellOpen, renderShellClose, renderPrefetch)
+import App.Layout.Page (renderErrorFragment, renderErrorPage, renderDocument, renderShellOpen, renderShellClose, renderPrefetch)
 import App.Main (pageRenderer)
 import App.Server (RedirectKind(..), Response, cspWithNonce, errorStatusCode, fileResponse, htmlErrorResponse, internalError, methodNotAllowed, notFound, notModified, ok, okText, okTextPublic, okWith, redirect, redirectVary, securityHeaders, tooManyRequests)
-import App.Html (render, text)
-import Data.Array (find, last, length, mapMaybe, nubEq)
+import App.Html (render)
+import Data.Array (find, last, mapMaybe)
 import Data.Content (services)
 import Data.Either (Either(..))
 import Data.Foldable (any, for_)
 import Data.I18n (Lang(..), dict)
 import Data.Maybe (Maybe(..), isJust)
-import Data.Route (Route(..), allLangs, routeUrl, staticRoutes)
+import Data.Route (Route(..), allLangs, staticRoutes)
 import Data.Email (EmailAddress, defaultEmailAddress)
 import Data.Tuple (Tuple(..), snd)
 import Effect.Aff (Aff)
 import App.Bun (readTextFile)
 import Policy.Contract as Policy
-import Test.Policy.Scan as PolicyScan
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldEqual, shouldNotEqual, shouldSatisfy)
 import Test.Spec.Assertions.String as StrAssert
@@ -175,8 +175,8 @@ spec = do
         Right src -> src `StrAssert.shouldContain` ("Content-Security-Policy\": \"" <> expectedFallbackCsp)
         Left err -> StrAssert.shouldContain "" ("expected file to be readable: " <> err)
 
-  describe "Alpine seam — contentTarget" do
-    it "every static page renders div#content on the SiteShell drawer for allLangs" do
+  describe "Datastar seam — contentTarget" do
+    it "every static page renders div#content on the DatastarShell drawer for allLangs" do
       for_ staticRoutes \route ->
         for_ allLangs \lang -> do
           html <- renderStaticPage route lang
@@ -199,20 +199,17 @@ spec = do
       html `StrAssert.shouldContain` "<!DOCTYPE html"
       html `StrAssert.shouldContain` "<script"
 
-  describe "Alpine seam — data-page-title" do
+  describe "Datastar seam — data-page-title" do
     it "every static page renders data-page-title in both languages" do
       for_ staticRoutes \route ->
         for_ allLangs \lang -> do
           html <- renderStaticPage route lang
           html `StrAssert.shouldContain` "data-page-title"
 
-  describe "Alpine seam — attribute literals" do
-    it "head carries the x-cloak style reset" do
+  describe "Datastar seam — attribute literals" do
+    it "nav links carry data-on:click @get pointing at a route URL" do
       html <- renderStaticPage Home En
-      html `StrAssert.shouldContain` "[x-cloak]{display:none!important}"
-    it "nav links carry x-target.push pointing at contentTarget" do
-      html <- renderStaticPage Home En
-      html `StrAssert.shouldContain` "x-target.push=\"content\""
+      html `StrAssert.shouldContain` "data-on:click=\"evt.preventDefault(); @get("
 
   describe "FFI allowlist has one meaning" do
     -- Policy.Contract is the single source of truth; Test.Gate scans src/
@@ -254,21 +251,22 @@ spec = do
 
   describe "the success cache policy rests on a checked premise" do
     -- The policy is documented as `private` because a full page embeds a
-    -- per-request CSP nonce. That premise is true for pages and FALSE for AJAX
-    -- fragments, which carry no nonce at all — they take `private` as a
-    -- conservative default, not a requirement. Both facts are pinned here so
-    -- the justification cannot quietly stop matching the code.
+    -- per-request CSP nonce. That premise is true for pages and FALSE for
+    -- Datastar SSE patches, which carry no nonce at all — they take
+    -- `private` as a conservative default, not a requirement. Both facts are
+    -- pinned here so the justification cannot quietly stop matching the code.
     it "a full page carries a nonce" do
       for_ staticRoutes \route ->
         for_ allLangs \lang -> do
           html <- renderStaticPage route lang
           html `StrAssert.shouldContain` "nonce=\"test-nonce-123\""
-    it "a fragment carries NO nonce" do
-      -- renderFragment emits no <script> tags, so there is nothing to nonce.
-      -- If a nonce ever appears here, the fragment cache policy needs
+    it "a patch's shell content carries NO nonce" do
+      -- The SSE-patch body is exactly the same #content shell a full page
+      -- embeds, minus the surrounding <head>/<script> — so there is nothing
+      -- to nonce. If a nonce ever appears here, the patch cache policy needs
       -- rethinking and this test forces that conversation.
       for_ allLangs \lang -> do
-        let frag = renderFragment lang Home (text "content")
+        let frag = render (Home.renderHome lang Nothing)
         frag `StrAssert.shouldNotContain` "nonce="
 
   describe "form status in fragment" do
@@ -277,9 +275,9 @@ spec = do
       html `StrAssert.shouldContain` "data-form-status"
       html `StrAssert.shouldContain` ("id=\"" <> contentTarget <> "\"")
 
-  describe "fragment responses are fragment-shaped" do
-    it "fragments are full template page div#content" do
-      let frag = renderFragment En Home (Home.renderHome En Nothing)
+  describe "patch responses are patch-shaped" do
+    it "the shell content is a full template page div#content, no document wrapper" do
+      let frag = render (Home.renderHome En Nothing)
       frag `StrAssert.shouldContain` "id=\"content\""
       frag `StrAssert.shouldContain` "data-template=\"site-header\""
       frag `StrAssert.shouldContain` "sticky top-0 z-50"
@@ -287,20 +285,20 @@ spec = do
       frag `StrAssert.shouldNotContain` "<html"
       frag `StrAssert.shouldNotContain` "<script"
 
-    -- A fragment response is swapped into #content by Alpine AJAX. If an error
-    -- path answers with a full document, the client nests a complete
-    -- <!DOCTYPE> document inside the page body. ADR-007 states this principle
-    -- for the streaming path; it was never applied to the AJAX error path.
+    -- A patch response morphs #content via Datastar. If an error path
+    -- answers with a full document, the client's SSE parser fails on it
+    -- (it isn't one event). ADR-007 states this principle for the streaming
+    -- path; the same principle applies here.
     it "the error fragment is not a full document" do
       for_ allLangs \lang -> do
         let frag = renderErrorFragment lang 500
         frag `StrAssert.shouldNotContain` "<!DOCTYPE"
         frag `StrAssert.shouldNotContain` "<html"
         frag `StrAssert.shouldNotContain` "<body"
-    it "the error fragment carries the swap target so Alpine can replace it" do
+    it "the error fragment carries the patch target so Datastar can morph it" do
       let frag = renderErrorFragment En 404
       frag `StrAssert.shouldContain` ("id=\"" <> contentTarget <> "\"")
-    it "error fragment is a SiteShell drawer with data-page-title" do
+    it "error fragment is a DatastarShell drawer with data-page-title" do
       let html = renderErrorFragment En 404
       html `StrAssert.shouldContain` ("id=\"" <> contentTarget <> "\"")
       html `StrAssert.shouldContain` "data-page-title"
@@ -315,6 +313,10 @@ spec = do
       let full = renderErrorPage "nonce123" En 500
       full `StrAssert.shouldContain` "<!DOCTYPE"
       full `StrAssert.shouldContain` "<html"
+    it "dsSiteErrorPage (App.DatastarShell) is what renderErrorFragment wraps" do
+      -- renderErrorFragment delegates to dsSiteErrorPage — pinned directly so
+      -- the two can't silently diverge behind App.Layout.Page's re-export.
+      render (dsSiteErrorPage En 404) `shouldEqual` renderErrorFragment En 404
 
   describe "error responses are never stored" do
     -- htmlCacheControl's max-age exists so a hover prefetch can be reused by
@@ -426,133 +428,28 @@ spec = do
 
   describe "nav link chrome classes" do
     it "desktop active uses the brand color, not a neutral fill" do
-      navLinkClasses NavDesktop true `shouldEqual` "btn btn-ghost btn-sm text-primary font-semibold"
+      dsActiveNavClass "btn btn-ghost btn-sm" true `shouldEqual` "btn btn-ghost btn-sm text-primary font-semibold"
     it "desktop inactive omits the active treatment" do
-      navLinkClasses NavDesktop false `shouldEqual` "btn btn-ghost btn-sm"
+      dsActiveNavClass "btn btn-ghost btn-sm" false `shouldEqual` "btn btn-ghost btn-sm"
     it "mobile active uses the brand color, not a neutral fill" do
-      navLinkClasses NavMobile true `shouldEqual` "btn btn-ghost justify-start text-primary font-semibold"
+      dsActiveNavClass "btn btn-ghost justify-start" true `shouldEqual` "btn btn-ghost justify-start text-primary font-semibold"
     it "mobile inactive omits the active treatment" do
-      navLinkClasses NavMobile false `shouldEqual` "btn btn-ghost justify-start"
-    it "footer link hover uses the brand color" do
-      navLinkClasses NavFooter true `shouldEqual` "link link-hover hover:text-primary"
-      navLinkClasses NavFooter false `shouldEqual` "link link-hover hover:text-primary"
+      dsActiveNavClass "btn btn-ghost justify-start" false `shouldEqual` "btn btn-ghost justify-start"
     it "desktop dropdown items use the same ghost-button recipe" do
-      dropdownItemClasses false `shouldEqual` "btn btn-ghost btn-sm w-full justify-start"
-      dropdownItemClasses true `shouldEqual` "btn btn-ghost btn-sm w-full justify-start btn-active"
+      dsDropdownItemClasses false `shouldEqual` "btn btn-ghost btn-sm w-full justify-start"
+      dsDropdownItemClasses true `shouldEqual` "btn btn-ghost btn-sm w-full justify-start btn-active"
 
     it "the rendered page does not prefetch its own route" do
-      for_ staticRoutes \route ->
-        for_ allLangs \lang -> do
-          html <- renderStaticPage route lang
-          let selfPrefetch = "@mouseenter=\"fetch($el.href" -- any link with prefetch
-          -- The page must not contain a prefetching link whose href is its own URL.
-          html `StrAssert.shouldNotContain`
-            ("href=\"" <> routeUrl lang route <> "\" x-target.push=\"" <> contentTarget <> "\" " <> selfPrefetch)
-
-  describe "Alpine seam — generated expressions (ADR-000 Vector B)" do
-    -- These are the JavaScript strings that reach the browser. Nothing else in
-    -- the stack can check them: a typo here compiles and fails at runtime.
-    -- The expressions are generated in one place precisely so they can be
-    -- pinned here.
-    it "setFlag renders a boolean assignment" do
-      renderExpr (setFlag MenuOpen false) `shouldEqual` "menuOpen = false"
-      renderExpr (setFlag MenuOpen true) `shouldEqual` "menuOpen = true"
-    it "toggleFlag inverts the same flag it assigns" do
-      renderExpr (toggleFlag LangMenuOpen) `shouldEqual` "open = !open"
-    it "flagName is injective — two flags cannot share an identifier" do
-      -- A collision would silently wire two unrelated controls to one piece of
-      -- state, which renders and tests fine until a user opens both.
-      -- Exhaustive on Flag: adding a constructor without listing it here
-      -- leaves a possible `open`/`themeOpen` collision untested.
-      let
-        names = map flagName
-          [ MenuOpen
-          , LangMenuOpen
-          , ThemeMenuOpen
-          , ModalOpen
-          , ToastVisible
-          , AccordionOpen
-          , TabActive
-          ]
-      length (nubEq names) `shouldEqual` length names
-    it "themeToggle flips data-theme and persists preference" do
-      renderExpr themeToggle `StrAssert.shouldContain` "getAttribute('data-theme')==='"
-      renderExpr themeToggle `StrAssert.shouldContain` themeDarkName
-      renderExpr themeToggle `StrAssert.shouldContain` "setAttribute('data-theme'"
-      renderExpr themeToggle `StrAssert.shouldContain` "localStorage.setItem('theme'"
-    it "setTheme maps to DaisyUI data-theme names" do
-      renderExpr (setTheme ThemeLight) `StrAssert.shouldContain` ("setAttribute('data-theme','" <> themeLightName <> "')")
-      renderExpr (setTheme ThemeDark) `StrAssert.shouldContain` ("setAttribute('data-theme','" <> themeDarkName <> "')")
-      renderExpr (setTheme ThemeSystem) `StrAssert.shouldContain` "removeAttribute('data-theme')"
-    it "themeInitScript applies stored data-theme before paint" do
-      themeInitScript `StrAssert.shouldContain` "setAttribute('data-theme'"
-      themeInitScript `StrAssert.shouldContain` themeLightName
-      themeInitScript `StrAssert.shouldContain` themeDarkName
-      themeInitScript `StrAssert.shouldNotContain` "classList"
-    it "cycleTheme cycles between system, dark, and light" do
-      renderExpr cycleTheme `StrAssert.shouldContain` "localStorage.setItem('theme',theme)"
-      renderExpr cycleTheme `StrAssert.shouldContain` ("setAttribute('data-theme','" <> themeDarkName <> "')")
-      renderExpr cycleTheme `StrAssert.shouldContain` ("setAttribute('data-theme','" <> themeLightName <> "')")
-      renderExpr cycleTheme `StrAssert.shouldContain` "removeAttribute('data-theme')"
-    it "mobile nav uses DaisyUI drawer" do
+      -- The Home nav link on the Home page: aria-current, then straight to
+      -- class — no data-on:mouseenter prefetch attribute in between, unlike
+      -- every other (non-current) nav link.
       html <- renderStaticPage Home En
-      html `StrAssert.shouldContain` "drawer drawer-end"
-      html `StrAssert.shouldContain` "drawer-toggle"
-      html `StrAssert.shouldContain` "drawer-side"
-      html `StrAssert.shouldContain` "id=\"site-drawer\""
-    it "theme switcher uses Alpine disclosure in navbar" do
-      html <- renderStaticPage Home En
-      html `StrAssert.shouldContain` "themeOpen: false"
-      html `StrAssert.shouldContain` "aria-haspopup=\"menu\""
-      html `StrAssert.shouldContain` ":aria-expanded=\"themeOpen.toString()\""
-      html `StrAssert.shouldContain` "x-show=\"themeOpen\""
-      html `StrAssert.shouldContain` ("setAttribute(&#x27;data-theme&#x27;,&#x27;" <> themeLightName <> "&#x27;)")
-      html `StrAssert.shouldContain` "dropdown dropdown-end"
-    it "language switcher uses Alpine disclosure in navbar" do
-      html <- renderStaticPage Home En
-      -- Must be a distinct x-data field, not the substring inside themeOpen: false.
-      html `StrAssert.shouldContain` "themeOpen: false, open: false"
-      html `StrAssert.shouldContain` ":aria-expanded=\"open.toString()\""
-      html `StrAssert.shouldContain` "x-show=\"open\""
-      html `StrAssert.shouldContain` "open = !open"
-    it "theme and language dropdowns share one item and panel recipe" do
-      html <- renderStaticPage Home En
-      html `StrAssert.shouldContain` dropdownPanelClass
-      html `StrAssert.shouldNotContain` "mt-3 w-44 bg-base-100"
-      html `StrAssert.shouldContain` dropdownItemClass
-      html `StrAssert.shouldContain` dropdownItemClasses true
-    it "language switcher uses route links in marketing header" do
-      html <- renderStaticPage Home En
-      html `StrAssert.shouldContain` "/en"
-      html `StrAssert.shouldContain` "/fr"
-      html `StrAssert.shouldContain` "/pt"
-      html `StrAssert.shouldContain` "English"
-      html `StrAssert.shouldContain` "Français"
-      html `StrAssert.shouldContain` "Português"
-      html `StrAssert.shouldContain` ("href=\"/fr\" x-target.push=\"" <> contentTarget <> "\"")
-      html `StrAssert.shouldContain` "data-page-lang"
-    it "template pages use bg-base-100 content wrapper" do
-      html <- renderStaticPage Home En
-      html `StrAssert.shouldContain` "bg-base-100"
-      html `StrAssert.shouldContain` "id=\"content\""
-
-  describe "serviceCopy non-fallback coverage" do
-    it "every service has non-empty title, description, and action label in both languages" do
-      for_ [ services.one, services.two, services.three ] \service ->
-        for_ allLangs \lang -> do
-          let copy = (dict lang).services.serviceCopy service.id
-          copy.title `shouldNotEqual` ""
-          copy.description `shouldNotEqual` ""
-          copy.actionLabel `shouldNotEqual` ""
-
-  describe "Alpine seam — typed constructors" do
-    it "no raw Alpine attribute strings outside App.Alpine" do
-      offenders <- PolicyScan.findRawAlpineOutsideAlpine "src"
-      offenders `shouldEqual` []
+      html `StrAssert.shouldContain`
+        "href=\"/en\" data-on:click=\"evt.preventDefault(); @get(&#x27;/en&#x27;)\" aria-current=\"page\" class=\"btn btn-ghost btn-sm text-primary font-semibold\""
 
   describe "no external script src" do
     -- PostList/PostDetail are data-backed (network fetch at render time)
-    -- and are excluded — see `staticRoutes`. The two script tags must
+    -- and are excluded — see `staticRoutes`. The one script tag must
     -- stay self-hosted (/assets/js/…); an external CDN src is a regression.
     it "static pages only reference self-hosted scripts" do
       for_ staticRoutes \route ->
@@ -567,14 +464,13 @@ spec = do
           StrAssert.shouldContain html "setAttribute('data-theme'"
           StrAssert.shouldContain html themeLightName
           StrAssert.shouldContain html themeDarkName
-          -- Fragment swaps (nav, language) and popstate restore both go
-          -- through ajax:merged; syncing title/lang without scrolling left
-          -- the previous page's scroll position on the new view.
-          StrAssert.shouldContain html "document.addEventListener('ajax:merged',function(){sync();window.scrollTo({top:0,left:0,behavior:'instant'})});"
+          -- The shell-router glue: forward nav pushes state after Datastar's
+          -- own "finished" event, and popstate re-fetches + replaces #content.
+          StrAssert.shouldContain html "document.addEventListener('datastar-fetch',function(e){if(e.detail.type!=='finished')return;"
+          StrAssert.shouldContain html "history.pushState({__ds:true},'',href);afterPatch()"
           StrAssert.shouldContain html "document.documentElement.lang=d.pageLang"
           StrAssert.shouldContain html "window.addEventListener('popstate',restore,true);"
-          StrAssert.shouldContain html "function restore(event){event.stopImmediatePropagation();fetch(location.href"
-          StrAssert.shouldContain html "history.replaceState({__ajax:true},'',location.href)"
+          StrAssert.shouldContain html "if(!history.state)history.replaceState({__ds:true},'',location.href)"
           html `StrAssert.shouldContain` "var es=new EventSource('/dev/live-reload')"
 
   describe "pages flow through the layout shell" do
@@ -586,12 +482,16 @@ spec = do
           html `StrAssert.shouldContain` "<footer"
 
   describe "Bun.serve migration invariants" do
-    it "spaLink includes @mouseenter fragment prefetch with $el (not this)" do
-      let html = render (spaLink En Home [] [])
+    it "dsSpaLink includes @mouseenter fragment prefetch with el (not $el, not this)" do
+      let html = render (dsSpaLink En Home [] [])
       -- Single quotes are escaped to &#x27; in the attribute value;
-      -- the browser un-escapes them before Alpine executes the expression.
-      html `StrAssert.shouldContain` "@mouseenter=\"fetch($el.href, {headers: {&#x27;x-alpine-request&#x27;: &#x27;true&#x27;}})\""
+      -- the browser un-escapes them before Datastar evaluates the expression.
+      -- `el` (no `$`): `$el` compiles to a signal lookup in Datastar, not
+      -- the element reference — a real bug this pinned after being caught
+      -- live (see App.Datastar.dsPrefetchHover's doc comment).
+      html `StrAssert.shouldContain` "data-on:mouseenter=\"fetch(el.href, {headers: {&#x27;datastar-request&#x27;: &#x27;true&#x27;}})\""
       html `StrAssert.shouldNotContain` "fetch(this.href)"
+      html `StrAssert.shouldNotContain` "fetch($el.href"
 
     it "renderPrefetch emits <link rel=\"prefetch\">" do
       let html = render (renderPrefetch En [ Home ])
@@ -622,3 +522,53 @@ spec = do
       -- Backslash must be escaped before quotes to avoid malformed JSON
       escapeJson "\\" `shouldEqual` "\\\\"
       escapeJson "\"" `shouldEqual` "\\\""
+
+  describe "serviceCopy non-fallback coverage" do
+    it "every service has non-empty title, description, and action label in both languages" do
+      for_ [ services.one, services.two, services.three ] \service ->
+        for_ allLangs \lang -> do
+          let copy = (dict lang).services.serviceCopy service.id
+          copy.title `shouldNotEqual` ""
+          copy.description `shouldNotEqual` ""
+          copy.actionLabel `shouldNotEqual` ""
+
+  describe "Datastar seam — chrome invariants" do
+    it "mobile nav uses DaisyUI drawer" do
+      html <- renderStaticPage Home En
+      html `StrAssert.shouldContain` "drawer drawer-end"
+      html `StrAssert.shouldContain` "drawer-toggle"
+      html `StrAssert.shouldContain` "drawer-side"
+      html `StrAssert.shouldContain` "id=\"site-drawer\""
+    it "theme switcher uses Datastar disclosure in navbar" do
+      html <- renderStaticPage Home En
+      html `StrAssert.shouldContain` "themeOpen: false"
+      html `StrAssert.shouldContain` "aria-haspopup=\"menu\""
+      html `StrAssert.shouldContain` "data-show=\"$themeOpen\""
+      html `StrAssert.shouldContain` ("setAttribute(&#x27;data-theme&#x27;, &#x27;" <> themeLightName <> "&#x27;)")
+      html `StrAssert.shouldContain` "dropdown dropdown-end"
+    it "language switcher uses Datastar disclosure in navbar" do
+      html <- renderStaticPage Home En
+      -- Must be a distinct signal, not the substring inside themeOpen: false.
+      html `StrAssert.shouldContain` "themeOpen: false, langOpen: false"
+      html `StrAssert.shouldContain` "data-show=\"$langOpen\""
+      html `StrAssert.shouldContain` "$langOpen = !$langOpen"
+    it "theme and language dropdowns share one item and panel recipe" do
+      html <- renderStaticPage Home En
+      html `StrAssert.shouldContain` dsDropdownPanelClass
+      html `StrAssert.shouldNotContain` "mt-3 w-44 bg-base-100"
+      html `StrAssert.shouldContain` dsDropdownItemClass
+      html `StrAssert.shouldContain` dsDropdownItemClasses true
+    it "language switcher uses route links in marketing header" do
+      html <- renderStaticPage Home En
+      html `StrAssert.shouldContain` "/en"
+      html `StrAssert.shouldContain` "/fr"
+      html `StrAssert.shouldContain` "/pt"
+      html `StrAssert.shouldContain` "English"
+      html `StrAssert.shouldContain` "Français"
+      html `StrAssert.shouldContain` "Português"
+      html `StrAssert.shouldContain` "href=\"/fr\" data-on:click=\"evt.preventDefault(); @get(&#x27;/fr&#x27;)\""
+      html `StrAssert.shouldContain` "data-page-lang"
+    it "template pages use bg-base-100 content wrapper" do
+      html <- renderStaticPage Home En
+      html `StrAssert.shouldContain` "bg-base-100"
+      html `StrAssert.shouldContain` "id=\"content\""
