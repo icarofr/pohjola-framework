@@ -33,6 +33,27 @@ derive newtype instance eqServiceId :: Eq ServiceId
 bookingUrl :: String
 bookingUrl = "https://github.com/icarofr/pohjola-framework"
 
+-- | Link to a specific file at the repo's default branch — for guarantee
+-- | cards that back a claim with the actual code/config enforcing it, not
+-- | just the repo root.
+repoFileUrl :: String -> String
+repoFileUrl path = bookingUrl <> "/blob/master/" <> path
+
+-- | Backs "No unsafe code paths" — the module `make gate`'s policy scan
+-- | reads (see docs/GUARANTEES.md rows 1-3).
+policyGateUrl :: String
+policyGateUrl = repoFileUrl "src/Policy/Contract.purs"
+
+-- | Backs "Locked-down browser surface" — the Html ADT with no
+-- | general-purpose unescaped-HTML constructor (docs/GUARANTEES.md row 4).
+htmlSourceUrl :: String
+htmlSourceUrl = repoFileUrl "src/App/Html.purs"
+
+-- | Backs "Proven on every push" — matches docs/GUARANTEES.md row 19's own
+-- | "Verify with" column exactly.
+ciConfigUrl :: String
+ciConfigUrl = repoFileUrl ".github/workflows/ci.yml"
+
 -- ============================================================================
 -- Domain types
 -- ============================================================================

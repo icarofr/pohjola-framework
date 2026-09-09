@@ -36,6 +36,7 @@ import App.Alpine
   , xSetTheme
   , xSetThemeAndClose
   , xShowFlag
+  , xShowTheme
   )
 import App.Form (FormStatus(..), formStatusQuery, statusText)
 import App.Html
@@ -333,7 +334,7 @@ renderThemeDropdown labels =
         , ariaExpandedFlag ThemeMenuOpen
         , onClick (toggleFlag ThemeMenuOpen)
         ]
-        [ themeIcon ]
+        [ sunIcon, moonIcon, systemIcon ]
     , el "ul"
         [ xShowFlag ThemeMenuOpen
         , class_ dropdownPanelClass
@@ -418,8 +419,12 @@ hamburgerIcon =
         []
     ]
 
-themeIcon :: Html
-themeIcon =
+-- | Trigger icon reflects the *selected* preference, not the resolved
+-- | color scheme — all three sit in the DOM and toggle via `xShowTheme`
+-- | against the same `theme` x-data value `classWhenTheme` reads for the
+-- | active menu item, so the icon and the checked entry always agree.
+sunIcon :: Html
+sunIcon =
   el "svg"
     [ attr "xmlns" "http://www.w3.org/2000/svg"
     , class_ "h-5 w-5"
@@ -429,6 +434,7 @@ themeIcon =
     , attr "stroke-width" "2"
     , attr "stroke-linecap" "round"
     , attr "stroke-linejoin" "round"
+    , xShowTheme ThemeLight
     ]
     [ el "circle" [ attr "cx" "12", attr "cy" "12", attr "r" "5" ] []
     , el "path"
@@ -436,6 +442,41 @@ themeIcon =
             "M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"
         ]
         []
+    ]
+
+moonIcon :: Html
+moonIcon =
+  el "svg"
+    [ attr "xmlns" "http://www.w3.org/2000/svg"
+    , class_ "h-5 w-5"
+    , attr "fill" "none"
+    , attr "viewBox" "0 0 24 24"
+    , attr "stroke" "currentColor"
+    , attr "stroke-width" "2"
+    , attr "stroke-linecap" "round"
+    , attr "stroke-linejoin" "round"
+    , xShowTheme ThemeDark
+    ]
+    [ el "path"
+        [ attr "d" "M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" ]
+        []
+    ]
+
+systemIcon :: Html
+systemIcon =
+  el "svg"
+    [ attr "xmlns" "http://www.w3.org/2000/svg"
+    , class_ "h-5 w-5"
+    , attr "fill" "none"
+    , attr "viewBox" "0 0 24 24"
+    , attr "stroke" "currentColor"
+    , attr "stroke-width" "2"
+    , attr "stroke-linecap" "round"
+    , attr "stroke-linejoin" "round"
+    , xShowTheme ThemeSystem
+    ]
+    [ el "rect" [ attr "x" "3", attr "y" "4", attr "width" "18", attr "height" "13", attr "rx" "2" ] []
+    , el "path" [ attr "d" "M8 21h8M12 17v4" ] []
     ]
 
 globeIcon :: Html
