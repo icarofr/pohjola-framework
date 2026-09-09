@@ -121,8 +121,10 @@ behaviour belongs on the server, not that the seam needs loosening.
   Fragments never stream (small, already fast).
 - **Scroll on swap** — `TitleSync` listens for `ajax:merged` (Alpine AJAX
   navigation *and* the popstate restore path, which re-dispatches that event)
-  and calls `window.scrollTo({ top: 0 })`. A fragment swap does not otherwise
-  move the window, so without this the previous page's scroll would stick.
+  and calls `window.scrollTo({ top: 0, left: 0, behavior: 'instant' })`. A
+  fragment swap does not otherwise move the window, so without this the
+  previous page's scroll would stick; `behavior: 'instant'` avoids a janky
+  smooth-scroll on what should read as a fresh page.
 
 ## Scopes
 

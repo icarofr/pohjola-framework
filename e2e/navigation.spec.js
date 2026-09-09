@@ -220,6 +220,36 @@ test.describe("Alpine AJAX navigation", () => {
     }
   });
 
+  test("scrolls to top on nav-link swap", async ({ page }) => {
+    await page.goto("/en");
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await expect
+      .poll(() => page.evaluate(() => window.scrollY))
+      .toBeGreaterThan(0);
+
+    await page
+      .locator('header nav.hidden.md\\:flex a[href="/en/about"]')
+      .click();
+
+    await expect(page).toHaveURL(/\/en\/about/);
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+  });
+
+  test("scrolls to top on browser back (popstate restore)", async ({ page }) => {
+    await page.goto("/en");
+    await page.click('a[href="/en/about"]');
+    await expect(page).toHaveURL(/\/en\/about/);
+
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await expect
+      .poll(() => page.evaluate(() => window.scrollY))
+      .toBeGreaterThan(0);
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\/en$/);
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+  });
+
   test("404 fragment keeps drawer chrome and data-page-title", async ({ page }) => {
     await page.goto("/en");
     await page.evaluate(async () => {
