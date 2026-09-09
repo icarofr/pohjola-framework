@@ -327,9 +327,12 @@ if (wire) {
   // one line (`data Route = Home`), which a purely-textual "insert before
   // the anchor" replace can't reliably extend back to multi-line. Anchoring
   // on the constructor list itself instead of its formatting is robust to
-  // that reformatting either way.
+  // that reformatting either way. `^…/m` (start-of-line, not start-of-file)
+  // matters here specifically: this very doc comment says "data Route" in
+  // backticks a few lines up, and without the anchor the regex matched
+  // that prose instead of the real declaration.
   routeContent = routeContent.replace(
-    /data Route\b[\s\S]*?(?=\n\nderive instance genericRoute)/,
+    /^data Route\b[\s\S]*?(?=\n\nderive instance genericRoute)/m,
     (match) => {
       const ctors = [...match.matchAll(/(?:=|\|)\s*([A-Z]\w*)/g)].map((m) => m[1]);
       if (ctors.includes(name)) return match;
@@ -550,18 +553,26 @@ if (wire) {
   const headUsesSeoDescriptions =
     /d\.seo\.\w+Description/.test(headPreview) && !/PostDetail _ ->/.test(headPreview);
   if (headUsesSeoDescriptions && !i18nContent.includes(`${lower}Description :: String`)) {
+    // `[^}]*` rather than the lazy `[\s\S]*?` used elsewhere in this file:
+    // a `seo` record has no nested braces, so matching up to the FIRST `}`
+    // is exact and correct whether purs-tidy printed it multi-line or
+    // collapsed it to one line (`{ homeDescription: "..." }`) — the lazy
+    // form's closing anchor (`\n\s*}\s*\n\s*, `) requires a newline right
+    // before the brace, which a single-line record doesn't have, so it was
+    // skipping straight past `seo`'s own close into the next record
+    // (`footer`) and inserting there instead.
     i18nContent = i18nContent.replace(
-      /(,\s*seo\s*::\s*\{[\s\S]*?)(\n\s*\}\s*\n\s*, )/,
+      /(,\s*seo\s*::\s*\{[^}]*)(\})/,
       (match, p1, p2) => {
         if (p1.includes(`${lower}Description :: String`)) return match;
-        return `${p1}\n      , ${lower}Description :: String${p2}`;
+        return `${p1}\n      , ${lower}Description :: String\n      ${p2}`;
       }
     );
     i18nContent = i18nContent.replace(
-      /(,\s*seo:\s*\{[\s\S]*?)(\n\s*\}\s*\n\s*, )/g,
+      /(,\s*seo:\s*\{[^}]*)(\})/g,
       (match, p1, p2) => {
         if (p1.includes(`${lower}Description:`)) return match;
-        return `${p1}\n      , ${lower}Description: "SEO for ${name}."${p2}`;
+        return `${p1}\n      , ${lower}Description: "SEO for ${name}."\n      ${p2}`;
       }
     );
   }
