@@ -19,7 +19,11 @@ import App.Features.Docs.Page (render) as Docs
 import App.Features.Guarantees.Page (render) as Guarantees
 import App.Features.About.Page (render) as About
 import App.DatastarShell as DatastarShell
-import App.Html (Html, text)
+import App.Features.Home.View (homeSlots)
+import App.Features.About.View (pageSlots) as AboutView
+import App.Ui.Templates.Landing (renderLanding)
+import App.Ui.Templates.Editorial (renderEditorial)
+import App.Html (Html, render, text)
 import App.Layout.Page (renderErrorFragment, renderErrorPage, renderFragment, renderDocument)
 import App.Logger as Log
 import App.Server as Server
@@ -215,41 +219,55 @@ handleFragment ctx = do
     Right html ->
       pure $ htmlOk (hasStatusQuery ctx) [ varyHeader ] $ renderFragment ctx.lang ctx.route html
 
--- | Spike-only (datastar-shell-nav-port branch): same fragment rendering
--- | path as handleFragment, wrapped in a Datastar `datastar-patch-elements`
--- | SSE event instead of a bare HTML body. Deliberately reuses
--- | `fragmentHtml`/`renderFragment` rather than a second render path -- the
--- | content is identical to what an Alpine AJAX request would get for the
--- | same route, only the transport encoding differs.
+-- | Spike-only (datastar-shell-nav-port branch): the same #content shell
+-- | (header/main/footer/drawer, via DatastarShell.dsSitePage) a forward
+-- | @get nav needs to morph in -- NOT fragmentHtml/renderFragment, which
+-- | is Alpine-chrome content (see datastarInnerContent's doc comment for
+-- | why calling those here was a real, caught bug). Home/About are both
+-- | static (staticPage, no AppError path), so this has no error branch to
+-- | mirror handleFragment's -- if a data-backed route ever joins this
+-- | spike's scope, that gap needs closing then, not assumed away now.
 handleDatastarFragment :: RequestCtx -> Aff Server.Response
-handleDatastarFragment ctx = do
-  result <- fragmentHtml ctx
-  case result of
-    Left err -> do
-      logRenderFailure ctx err
-      liftEffect $ Server.sseEventResponse
-        (Server.datastarPatchElementsEvent (renderErrorFragment ctx.lang (errorStatus err)))
-    Right html ->
-      liftEffect $ Server.sseEventResponse
-        (Server.datastarPatchElementsEvent (renderFragment ctx.lang ctx.route html))
+handleDatastarFragment ctx =
+  liftEffect $ Server.sseEventResponse
+    ( Server.datastarPatchElementsEvent
+        ( render
+            (DatastarShell.dsSitePage ctx.lang ctx.route (routeTitle ctx.lang ctx.route) (datastarInnerContent ctx.route ctx.lang))
+        )
+    )
+
+-- | Spike-only (datastar-shell-nav-port branch): the *inner* content only
+-- | (Landing.renderLanding/Editorial.renderEditorial), bypassing
+-- | pageRenderer/renderPage entirely -- those always wrap in
+-- | Shell.sitePage's Alpine chrome (a real bug this fixed: the first
+-- | version called pageRenderer here, which nested a whole Alpine-chrome
+-- | page inside DatastarShell.dsSitePage's <main>, a double-shell). Only
+-- | Home and About -- the same two routes wantsDatastarTransport guards on.
+datastarInnerContent :: Route -> Lang -> Html
+datastarInnerContent route lang = case route of
+  Home -> renderLanding (homeSlots lang)
+  About -> renderEditorial lang About (AboutView.pageSlots lang)
+  _ -> text ""
 
 -- | Spike-only (datastar-shell-nav-port branch): the full-document,
--- | Datastar-powered version of Home/About. Reuses pageRenderer for the
--- | inner content -- identical content to the Alpine version, only the
--- | chrome differs -- then wraps it with App.DatastarShell instead of
--- | App.Layout.Page.renderDocument/App.Ui.Templates.SiteShell.
+-- | Datastar-powered version of Home/About. Same content as the Alpine
+-- | version (datastarInnerContent), wrapped with App.DatastarShell instead
+-- | of App.Layout.Page.renderDocument/App.Ui.Templates.SiteShell.
 handleDatastarTransportPage :: RequestCtx -> Aff Server.Response
-handleDatastarTransportPage ctx = do
-  result <- pageRenderer ctx.cfg ctx.route ctx.lang Nothing
-  pure case result of
-    Left err ->
-      Server.htmlErrorResponse
-        (DatastarShell.renderDsDocument ctx.nonce ctx.lang (DatastarShell.dsSitePage ctx.lang ctx.route (routeTitle ctx.lang ctx.route) (text "error")))
-        [ ]
-        (Server.errorStatusCode (errorStatus err))
-    Right html ->
-      htmlOk false [ ]
-        (DatastarShell.renderDsDocument ctx.nonce ctx.lang (DatastarShell.dsSitePage ctx.lang ctx.route (routeTitle ctx.lang ctx.route) html))
+handleDatastarTransportPage ctx =
+  pure $ htmlOk false [ dsVaryHeader ]
+    ( DatastarShell.renderDsDocument ctx.nonce ctx.lang
+        (DatastarShell.dsSitePage ctx.lang ctx.route (routeTitle ctx.lang ctx.route) (datastarInnerContent ctx.route ctx.lang))
+    )
+
+-- | Same reasoning as varyHeader (Alpine): without this, a cache (including
+-- | the browser's own HTTP cache) can't tell that a request to the same URL
+-- | with a different Datastar-Request header value needs a different
+-- | response -- caught for real: the popstate restore fetch in
+-- | dsShellRouterScript was silently served the cached full document
+-- | instead of an SSE patch, because this Vary header was missing.
+dsVaryHeader :: Tuple String String
+dsVaryHeader = Tuple "Vary" Datastar.datastarRequestHeader
 
 -- | Html for a fragment request: statusful → fresh; otherwise the shared cache.
 fragmentHtml :: RequestCtx -> Aff (Either AppError Html)

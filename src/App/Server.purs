@@ -476,6 +476,12 @@ datastarPatchElementsEvent fragmentHtmlString =
 
 -- | Wraps an already-built SSE event body in the ReadableStream + headers a
 -- | Datastar `@get`/`@post` action expects: `text/event-stream`, no caching.
+-- | `Vary` on the same header `isDatastarRequest` keys off (App.Main) --
+-- | `no-cache` alone still lets a cache store the response; without Vary
+-- | it can't tell this response differs from a plain-GET response to the
+-- | same URL. Caught for real during e2e verification: a browser served a
+-- | stale full-document response to this exact request once, before this
+-- | header existed.
 sseEventResponse :: String -> Effect Response
 sseEventResponse eventBody = do
   stream <- sseEventStreamImpl eventBody
@@ -484,6 +490,7 @@ sseEventResponse eventBody = do
     , headers: securityHeaders <>
         [ Tuple "Content-Type" "text/event-stream"
         , Tuple "Cache-Control" "no-cache"
+        , Tuple "Vary" "datastar-request"
         ]
     , body: StreamBody stream
     }

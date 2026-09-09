@@ -13,6 +13,7 @@ module App.DatastarShell (dsSitePage, renderDsDocument) where
 import Prelude
 
 import App.Layout.Scripts (HeadScript(..), renderHeadScript)
+import App.Layout.Styles (stylesCss)
 import App.Datastar
   ( DsFlag(..)
   , dataPageLangAttr
@@ -27,7 +28,7 @@ import App.Datastar
   , dsSignalsInit
   , dsToggleFlag
   )
-import App.Html (Html, ariaLabel, attr, class_, doctype, el, flag, for_, href, id_, rel_, render, src, target_, text, type_)
+import App.Html (Html, ariaLabel, attr, class_, doctype, el, for_, href, id_, rel_, render, src, target_, text, type_)
 import App.Ui.Container as Container
 import App.Ui.Templates.Contract as Contract
 import App.Ui.Templates.SiteShell (ShellLabels, shellLabels)
@@ -265,10 +266,11 @@ renderDsDocument nonce lang content =
             [ el "meta" [ attr "charset" "UTF-8" ] []
             , el "meta" [ attr "name" "viewport", attr "content" "width=device-width, initial-scale=1.0" ] []
             , el "title" [] [ text "Pohjola (Datastar spike)" ]
+            , el "style" [] [ text stylesCss ]
             ]
         , el "body" []
             [ content
-            , el "script" [ flag "defer", src "/assets/js/datastar.js", attr "nonce" nonce ] []
+            , el "script" [ type_ "module", src "/assets/js/datastar.js", attr "nonce" nonce ] []
             , renderHeadScript nonce DsShellRouter
             ]
         ]
