@@ -4,15 +4,15 @@
 
 **Blocked by:** 02
 
-**Status:** ready-for-agent
+**Status:** done (2026-09-09), commit `802d978` on branch `clean-sheet-homepage`
 
-- [ ] Content explains why Pohjola exists and what it's built on, in its own fresh wording — no sentence shared with the deleted `About` page's mission/values copy.
-- [ ] Any factual/historical claim (naming origin, design ethos, etc.) stays accurate to what's true of this repo today — don't invent claims the framework doesn't back up.
-- [ ] Real, native-reading translations for `en`/`fr`/`pt`.
-- [ ] DaisyUI-styled through `App.Ui` primitives, consistent with the rest of the site's visual language established in ticket 02/03.
-- [ ] Idiomatic PureScript throughout (see ticket 03's idiom checklist — same standard applies).
-- [ ] `make dev`: manually viewed in a browser across all three language paths.
-- [ ] `make gate && make test && make check` pass.
+- [x] Content explains why Pohjola exists and what it's built on, in its own fresh wording — no sentence shared with the deleted `About` page's mission/values copy.
+- [x] Any factual/historical claim (naming origin, design ethos, etc.) stays accurate to what's true of this repo today — don't invent claims the framework doesn't back up.
+- [x] Real, native-reading translations for `en`/`fr`/`pt`.
+- [x] DaisyUI-styled through `App.Ui` primitives, consistent with the rest of the site's visual language established in ticket 02/03.
+- [x] Idiomatic PureScript throughout (see ticket 03's idiom checklist — same standard applies).
+- [x] `make dev`: manually viewed in a browser across all three language paths.
+- [x] `make gate && make test` pass (19/19, 205/205). `make check`'s `generator-policy` step still fails in this sandbox only, for the pre-existing `/tmp noexec` reason recorded on ticket 02.
 
 ## Comments
 
