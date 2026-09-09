@@ -89,6 +89,14 @@ components:
     textColor: "{colors.on-error}"
     rounded: "{rounded.md}"
     padding: "{spacing.md}"
+  navbar:
+    backgroundColor: "{colors.secondary}"
+    textColor: "{colors.on-secondary}"
+    border: "1px solid zinc-700"
+  footer:
+    backgroundColor: "{colors.secondary}"
+    textColor: "{colors.on-secondary}"
+    border: "1px solid zinc-700"
 ---
 
 ## Overview
@@ -131,7 +139,11 @@ Layout follows a strict **Architectural Grid**:
 No soft blurry drop-shadows. Depth is created through **hairline border rings, crisp 1px borders, and tonal layering**:
 - Level 0 (Canvas): `#FAFAFA` (Dark: `#09090B`)
 - Level 1 (Card): `#FFFFFF` with `border border-zinc-200 dark:border-zinc-800` (Dark: `#121215`)
-- Level 2 (Dock / Terminal): `#18181B` with `border border-zinc-700`
+- Level 2 (Dock / Terminal): `#18181B` with `border border-zinc-700` — the
+  site's own navbar and footer (`App.Ui.Templates.SiteShell`). One value,
+  no dark variant: Level 2 stays this color regardless of the page's own
+  light/dark theme, the way a persistent dock stays put under whatever
+  content sits above it.
 
 ## Shapes
 

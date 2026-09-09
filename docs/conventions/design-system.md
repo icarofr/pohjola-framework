@@ -74,3 +74,5 @@ Contract markers: `App.Ui.Templates.Contract` (`data-template="…"`). Shell chr
 6. [ ] Keyboard focus / ARIA on interactive elements.
 7. [ ] Empty and error states handled via typed slots/primitives.
 8. [ ] Muted text uses `App.Ui.TextTone` (or Daisy opacity utilities *inside* Templates) — no raw `text-base-content/N` in features.
+9. [ ] The surface uses a `DESIGN.md` color (`primary`/`secondary`/`accent`/`error`) somewhere, not `base-*`/neutral only — an all-neutral surface is the bug this line exists to catch, not a style choice.
+10. [ ] Any new full-width chrome (header/footer/banner) wraps its content in `Container.container` at the same width every page uses — `grep -c "Container.container" src/App/Ui/Templates/SiteShell.purs` should be ≥ 2 (header, footer).

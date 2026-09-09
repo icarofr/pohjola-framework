@@ -22,6 +22,8 @@ check "Team linked in SiteShell" "grep -q 'Team' src/App/Ui/Templates/SiteShell.
 check "uses navLinkClasses for chrome" "grep -q 'navLinkClasses NavDesktop' src/App/Ui/Templates/SiteShell.purs"
 check "uses navLinkClasses for mobile" "grep -q 'navLinkClasses NavMobile' src/App/Ui/Templates/SiteShell.purs"
 check "i18n has team copy" "grep -i 'team' src/Data/I18n.purs | grep -iv 'import\|--' | head -1 | grep -q ."
+check "chrome uses a DESIGN.md color, not neutral-only (design-system.md #9)" "grep -qE 'text-primary|bg-secondary|text-secondary-content|text-accent|bg-accent' src/App/Ui/Templates/SiteShell.purs"
+check "header and footer both wrap in Container.container (design-system.md #10)" "[ \$(grep -c 'Container.container' src/App/Ui/Templates/SiteShell.purs) -ge 2 ]"
 
 echo ""
 echo "Running gate + tests..."

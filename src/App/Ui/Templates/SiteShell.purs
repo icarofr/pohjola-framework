@@ -184,10 +184,19 @@ errorMessage lang status =
   in
     if status == 404 then d.common.error404 else d.common.error500
 
+-- | DESIGN.md's Elevation & Depth "Level 2 (Dock / Terminal)": always the
+-- | secondary/obsidian surface, independent of the site's own light/dark
+-- | toggle (the doc gives it a single color, not a light/dark pair, unlike
+-- | Level 0/1). `data-theme` is scoped here, not just on `<html>`, so every
+-- | descendant — including the theme/lang dropdown popups nested inside —
+-- | resolves its DaisyUI CSS vars (base-content, base-100, …) against the
+-- | dark theme regardless of the page's own theme. No shadow: DESIGN.md's
+-- | Do's/Don'ts rules out soft drop-shadows in favor of crisp 1px borders.
 renderHeader :: Lang -> Route -> ShellLabels -> Html
 renderHeader lang route labels =
   el "header"
-    [ class_ "sticky top-0 z-50 border-b border-primary/20 bg-base-200 shadow-sm"
+    [ class_ "sticky top-0 z-50 border-b border-base-300 bg-secondary text-secondary-content"
+    , attr "data-theme" "pohjola-dark"
     , attr Contract.marker Contract.siteHeader
     ]
     [ Container.container Container.ContainerW6xl "px-4 sm:px-6"
@@ -394,10 +403,14 @@ mobileNavLink lang current target label =
 -- | bleed, and the `footer` grid class + content go on the div Container
 -- | wraps, so its columns land under the same left/right edge as the
 -- | header logo and every page's content above it.
+-- | Same Level 2 (Dock / Terminal) treatment as `renderHeader` — see its
+-- | doc comment for why `data-theme` is scoped here rather than left to
+-- | the page.
 renderFooter :: Lang -> Route -> ShellLabels -> Html
 renderFooter lang route labels =
   el "footer"
-    [ class_ "border-t border-primary/20 bg-base-200 text-base-content"
+    [ class_ "border-t border-base-300 bg-secondary text-secondary-content"
+    , attr "data-theme" "pohjola-dark"
     , attr Contract.marker Contract.siteFooter
     ]
     [ Container.container Container.ContainerW6xl "px-4 py-10 sm:px-6"

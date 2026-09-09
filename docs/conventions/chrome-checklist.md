@@ -5,6 +5,12 @@ Shell chrome is **not** feature code — it lives only in `App.Ui.Templates.Site
 
 Full recipe: `docs/superpowers/specs/2026-08-30-shell-recipe.md`.
 
+Chrome color: `DESIGN.md`'s Elevation & Depth **Level 2 (Dock / Terminal)**
+— navbar and footer are always the secondary/obsidian surface
+(`bg-secondary text-secondary-content`, `data-theme="pohjola-dark"`
+scoped on the element), never `base-*`. One color, no light/dark variant:
+Level 2 doesn't follow the page's own theme toggle.
+
 ## Where things live
 
 | Concern | Module | Never in |
