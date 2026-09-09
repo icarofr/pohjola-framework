@@ -259,22 +259,21 @@ xDataTheme =
 
 -- | Shell chrome scope: theme preference plus the two disclosure flags.
 -- | Closed so ThemeMenuOpen/LangMenuOpen cannot be omitted or duplicated the
--- | way a positional `Flag -> Flag` pair still allowed.
-xDataSiteChrome :: Boolean -> Attr
-xDataSiteChrome b =
+-- | way a positional `Flag -> Flag` pair still allowed. Both flags always
+-- | start closed — no call site has ever wanted otherwise.
+xDataSiteChrome :: Attr
+xDataSiteChrome =
   attr "x-data"
     ( "{ theme: (localStorage.getItem('"
         <> Theme.themeStorageKey
         <> "') || 'system'), "
-        <> flagName ThemeMenuOpen
-        <> ": "
-        <> boolLit b
+        <> field ThemeMenuOpen
         <> ", "
-        <> flagName LangMenuOpen
-        <> ": "
-        <> boolLit b
+        <> field LangMenuOpen
         <> " }"
     )
+  where
+  field f = flagName f <> ": " <> boolLit false
 
 xShowFlag :: Flag -> Attr
 xShowFlag f = attr "x-show" (flagName f)

@@ -102,6 +102,7 @@ Run `make ui-coverage` to regenerate `docs/conventions/ui-coverage.md` (App.Ui �
 
 - [ ] Feature views: `renderPage` + slots only; no forbidden imports (`make gate`).
 - [ ] New classes only in `App.Ui` / Templates; new primitives via `make new-ui-primitive` (§3), new templates still need `Policy.Contract.uiTemplateModules` + an ADR by hand.
+- [ ] New `App.Ui.Templates.*` module: `grep -n "Container\." src/App/Ui/Templates/*.purs` and match the prevailing `ContainerWidth` your siblings use (currently `ContainerW6xl` for every full-page template), or write one sentence in the module's doc comment justifying a narrower width. This is a checklist step, not a `make gate` rule — a mechanical width-majority check would false-positive on templates that are legitimately narrower (`Form` at `ContainerW2xl`).
 - [ ] All `allLangs` copy in `Data.I18n` when user-visible strings change.
 - [ ] `make gate && make test && make test/e2e` pass.
 - [ ] Eval: `make eval EVAL=12-add-ui-component CHECK=1` after component/template UI work.

@@ -40,6 +40,7 @@ Skip docs/SETUP.md unless a human asks. Exemplars: Home or About (static — Lan
 
 ## Verify
 make gate after the first compile. make test if you touched Alpine, cache, forms, templates, or Main. make check before commit.
+Touched `App.Ui.Templates/*`, `SiteShell.purs`, or a feature `View.purs`'s visual output: render the changed route(s) and screenshot with raw `playwright-core` before calling it done — `make gate`/`make test` never render a page, so a broken dropdown or a layout regression passes them silently. Use raw `playwright-core` (launch Chromium yourself, e.g. via `node -e`), not `make test/e2e` — that target hangs in this sandboxed environment.
 When the verify method is unclear, ask.
 
 ## Evals

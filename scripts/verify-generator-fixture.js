@@ -20,6 +20,13 @@ function assertIncludes(haystack, needle, label) {
   }
 }
 
+function assertIncludesAny(haystack, needles, label) {
+  if (!needles.some((needle) => haystack.includes(needle))) {
+    console.error(`Missing ${label}: ${needles[0]}`);
+    process.exit(1);
+  }
+}
+
 async function runFixture(cwd, name, type, slug) {
   const lower = name.toLowerCase();
   run(
@@ -78,15 +85,11 @@ async function runFixture(cwd, name, type, slug) {
   }
 
   assertIncludes(i18n, `  , ${lower}:`, `I18n dictionary (${name})`);
-  if (
-    !head.includes(`${name} -> d.seo.${lower}Description`) &&
-    !head.includes(`${name} -> d.${lower}.body`)
-  ) {
-    console.error(
-      `Missing Head insertion (${name}): ${name} -> d.seo.${lower}Description`,
-    );
-    process.exit(1);
-  }
+  assertIncludesAny(
+    head,
+    [`${name} -> d.seo.${lower}Description`, `${name} -> d.${lower}.body`],
+    `Head insertion (${name})`,
+  );
 
   const view = await readText(join(cwd, `src/App/Features/${name}/View.purs`));
   assertIncludes(view, "App.Ui.Templates.Render", `View Templates.Render (${name})`);

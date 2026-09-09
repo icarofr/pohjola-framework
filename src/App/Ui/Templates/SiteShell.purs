@@ -135,7 +135,7 @@ sitePageTitled lang route title labels status content =
       , attr dataPageLangAttr (langTag lang)
       ]
         <>
-          [ xDataSiteChrome false
+          [ xDataSiteChrome
           , onKeydownEscapeWindow closeSiteDrawer
           ]
     )
@@ -271,7 +271,7 @@ githubLink labels =
     [ href bookingUrl
     , target_ "_blank"
     , rel_ "noopener noreferrer"
-    , class_ "btn btn-ghost btn-sm"
+    , class_ dropdownTriggerClass
     , ariaLabel labels.githubLabel
     ]
     [ githubIcon ]
