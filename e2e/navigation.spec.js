@@ -162,7 +162,11 @@ test.describe("Datastar navigation", () => {
     await page.goto("/en");
 
     let fragmentBody;
-    await page.route("**/en/about", async (route) => {
+    // "**/en/about**" (not "**/en/about"): dsPrefetchHover now appends a
+    // ?datastar={...} query param matching the real @get() URL (see
+    // ADR-015's "hover-prefetch cache-hit" entry), so the intercepted URL
+    // no longer ends exactly in "/en/about".
+    await page.route("**/en/about**", async (route) => {
       const headers = route.request().headers();
       if (headers["datastar-request"] === "true") {
         const response = await route.fetch();
