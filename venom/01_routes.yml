@@ -123,6 +123,6 @@ testcases:
     headers: { datastar-request: "true" }
     assertions:
     - result.statuscode ShouldEqual 200
-    - result.body ShouldContainSubstring "event: datastar-patch-elements"
+    - 'result.body ShouldContainSubstring "event: datastar-patch-elements"'
     - result.body ShouldContainSubstring "data-page-title"
     - result.body ShouldNotContainSubstring "<!DOCTYPE"
