@@ -7,6 +7,7 @@ module App.Main (main, pageRenderer, detectLang, htmlOk) where
 import Prelude
 
 import App.Alpine (alpineRequestHeader)
+import App.Datastar as Datastar
 import App.Cache (PageCache, defaultTtlMs, insertDynamic, insertStatic, lookupDynamic, lookupStatic, mkPageCache)
 import App.Config (Config, loadConfig)
 import App.Env (getEnvMaybe)
@@ -173,7 +174,9 @@ failureFragment ctx err = do
 -- | Fragment requests always use the buffered fragment path.
 handleRoute :: RequestCtx -> Aff Server.Response
 handleRoute ctx =
-  if isFragmentRequest ctx.headers ctx.query then
+  if isDatastarRequest ctx.headers then
+    handleDatastarFragment ctx
+  else if isFragmentRequest ctx.headers ctx.query then
     handleFragment ctx
   else if hasStatusQuery ctx then
     -- A form-status banner is per-request state. A cached body would drop it,
@@ -208,6 +211,24 @@ handleFragment ctx = do
     Left err -> failureFragment ctx err
     Right html ->
       pure $ htmlOk (hasStatusQuery ctx) [ varyHeader ] $ renderFragment ctx.lang ctx.route html
+
+-- | Spike-only (datastar-shell-nav-port branch): same fragment rendering
+-- | path as handleFragment, wrapped in a Datastar `datastar-patch-elements`
+-- | SSE event instead of a bare HTML body. Deliberately reuses
+-- | `fragmentHtml`/`renderFragment` rather than a second render path -- the
+-- | content is identical to what an Alpine AJAX request would get for the
+-- | same route, only the transport encoding differs.
+handleDatastarFragment :: RequestCtx -> Aff Server.Response
+handleDatastarFragment ctx = do
+  result <- fragmentHtml ctx
+  case result of
+    Left err -> do
+      logRenderFailure ctx err
+      liftEffect $ Server.sseEventResponse
+        (Server.datastarPatchElementsEvent (renderErrorFragment ctx.lang (errorStatus err)))
+    Right html ->
+      liftEffect $ Server.sseEventResponse
+        (Server.datastarPatchElementsEvent (renderFragment ctx.lang ctx.route html))
 
 -- | Html for a fragment request: statusful → fresh; otherwise the shared cache.
 fragmentHtml :: RequestCtx -> Aff (Either AppError Html)
@@ -295,6 +316,16 @@ renderThen ctx store = do
 isFragmentRequest :: Map String String -> Map String String -> Boolean
 isFragmentRequest headers query =
   Map.lookup alpineRequestHeader headers == Just "true" || Map.lookup "_frag" query == Just "1"
+
+-- | Spike-only (datastar-shell-nav-port branch): a Datastar @get/@post action.
+-- | A separate signal from isFragmentRequest on purpose (spec.md's
+-- | Implementation Decisions) -- the two must never be conflated, since
+-- | pages remaining on Alpine still rely on isFragmentRequest exercising
+-- | unmodified paths. Datastar sends this header automatically; verified
+-- | against data-star.dev/docs.md.
+isDatastarRequest :: Map String String -> Boolean
+isDatastarRequest headers =
+  Map.lookup Datastar.datastarRequestHeader headers == Just "true"
 
 -- | Map AppError to HTTP status code
 errorStatus :: AppError -> Int

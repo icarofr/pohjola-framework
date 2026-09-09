@@ -44,6 +44,8 @@ module App.Server
   , notModified
   , fileResponse
   , streamResponse
+  , sseEventResponse
+  , datastarPatchElementsEvent
   , serve
   , nextRequestId
   , parseMethod
@@ -58,7 +60,7 @@ import Prelude
 import App.Alpine (alpineRequestHeader)
 import App.Logger (Level(..))
 import App.Logger as AppLog
-import App.ServerBun (JsRequest, JsResponse, ReadableStream, generateNonce, serveImpl)
+import App.ServerBun (JsRequest, JsResponse, ReadableStream, generateNonce, serveImpl, sseEventStreamImpl)
 import Data.Array (cons, filter, mapMaybe, tail)
 import Data.Either (Either(..))
 import Data.Foldable (any, intercalate)
@@ -456,6 +458,35 @@ streamResponse stream =
       ]
   , body: StreamBody stream
   }
+
+-- | Spike-only (datastar-shell-nav-port branch): one `datastar-patch-elements`
+-- | SSE event, morphing `#content`'s replacement in by id (Datastar's default
+-- | merge strategy — no `mode`/`selector` line needed since the fragment
+-- | carries its own `id="content"`). Pohjola's Html renderer never emits
+-- | embedded newlines in a rendered fragment (verified: every rendered
+-- | fragment this session has been one continuous line), so the SSE `data:`
+-- | line doesn't need per-line splitting for a multi-line payload.
+-- | Format verified against data-star.dev/docs.md:
+-- |   event: datastar-patch-elements
+-- |   data: elements <div id="hal">Content</div>
+-- |   <blank line>
+datastarPatchElementsEvent :: String -> String
+datastarPatchElementsEvent fragmentHtmlString =
+  "event: datastar-patch-elements\ndata: elements " <> fragmentHtmlString <> "\n\n"
+
+-- | Wraps an already-built SSE event body in the ReadableStream + headers a
+-- | Datastar `@get`/`@post` action expects: `text/event-stream`, no caching.
+sseEventResponse :: String -> Effect Response
+sseEventResponse eventBody = do
+  stream <- sseEventStreamImpl eventBody
+  pure
+    { status: 200
+    , headers: securityHeaders <>
+        [ Tuple "Content-Type" "text/event-stream"
+        , Tuple "Cache-Control" "no-cache"
+        ]
+    , body: StreamBody stream
+    }
 
 -- ============================================================================
 -- Server

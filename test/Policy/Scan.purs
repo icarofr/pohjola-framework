@@ -3,6 +3,7 @@ module Test.Policy.Scan
   ( containsBanned
   , containsForeignImport
   , containsRawAlpine
+  , containsRawDatastar
   , containsRawWord
   , containsSubstring
   , featureOfModule
@@ -20,6 +21,7 @@ module Test.Policy.Scan
   , findForeignImportsOutsideAllowlist
   , findHardcodedTextInFiles
   , findRawAlpineOutsideAlpine
+  , findRawDatastarOutsideDatastar
   , findRawInSrc
   , findScriptsOutsideAllowlist
   , findTextToneViolations
@@ -87,6 +89,33 @@ containsRawAlpine str =
   in
     any (\b -> containsSubstring b str) banned
 
+-- | Spike-only (datastar-shell-nav-port branch) — mirrors containsRawAlpine.
+-- | Datastar's actual reactive-attribute vocabulary only (data-signals,
+-- | data-show, data-on:, data-bind, data-class, data-text) — NOT a blanket
+-- | "data-" ban, since Pohjola already legitimately uses plain data-*
+-- | attributes for its own purposes (data-theme, data-form-status,
+-- | data-page-title, data-template, ...) that have nothing to do with
+-- | Datastar.
+containsRawDatastar :: String -> Boolean
+containsRawDatastar str =
+  let
+    banned =
+      [ "attr \"data-signals"
+      , "attr \"data-show"
+      , "attr \"data-on:"
+      , "attr \"data-bind"
+      , "attr \"data-class"
+      , "attr \"data-text"
+      , "attr (\"data-signals"
+      , "attr (\"data-show"
+      , "attr (\"data-on:"
+      , "attr (\"data-bind"
+      , "attr (\"data-class"
+      , "attr (\"data-text"
+      ]
+  in
+    any (\b -> containsSubstring b str) banned
+
 containsForeignImport :: String -> Boolean
 containsForeignImport str =
   containsSubstring "foreign import" str
@@ -144,6 +173,19 @@ findRawAlpineOutsideAlpine root = do
       content <- readTextFile file
       pure case content of
         Right c -> if containsRawAlpine c then Just file else Nothing
+        Left _ -> Nothing
+  pure (mapMaybe identity results)
+
+-- | Spike-only (datastar-shell-nav-port branch) — mirrors findRawAlpineOutsideAlpine.
+findRawDatastarOutsideDatastar :: String -> Aff (Array String)
+findRawDatastarOutsideDatastar root = do
+  files <- liftEffect $ pursFilesUnder root
+  results <- for files \file -> do
+    if file == "src/App/Datastar.purs" then pure Nothing
+    else do
+      content <- readTextFile file
+      pure case content of
+        Right c -> if containsRawDatastar c then Just file else Nothing
         Left _ -> Nothing
   pure (mapMaybe identity results)
 

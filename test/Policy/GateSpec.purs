@@ -68,6 +68,10 @@ gateSpec =
       offenders <- Scan.findRawAlpineOutsideAlpine "src"
       offenders `shouldEqual` []
 
+    it "no raw Datastar strings outside App.Datastar (spike)" do
+      offenders <- Scan.findRawDatastarOutsideDatastar "src"
+      offenders `shouldEqual` []
+
     it "no cross-feature imports" do
       offenders <- Scan.findCrossFeatureImports "src/App/Features"
       offenders `shouldEqual` []

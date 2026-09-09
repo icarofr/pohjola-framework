@@ -73,3 +73,11 @@ foreign import streamResponseImpl
   -> String
   -> String
   -> Effect ReadableStream
+
+-- | Spike-only (datastar-shell-nav-port branch): a ReadableStream that
+-- | enqueues one already-formatted SSE event body and closes. Unlike
+-- | streamResponseImpl (built for "shell now, fetched content later"),
+-- | Datastar's patch events are a single complete string PS already has in
+-- | hand — no shell/fetch/close choreography needed, just the stream
+-- | plumbing Bun.serve requires for a text/event-stream response.
+foreign import sseEventStreamImpl :: String -> Effect ReadableStream
