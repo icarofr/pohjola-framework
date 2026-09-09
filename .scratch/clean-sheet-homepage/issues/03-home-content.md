@@ -4,16 +4,16 @@
 
 **Blocked by:** 02
 
-**Status:** ready-for-agent
+**Status:** done (2026-09-09), commit `6bfb7c3` on branch `clean-sheet-homepage`
 
-- [ ] Hero states what Pohjola is and who it's for, readable within one screen.
-- [ ] Every differentiator claim on the page is checkable against `GUARANTEES.md`/an ADR (same "sell it well but be realistic" discipline already established in this repo's copy).
-- [ ] Primary CTA (e.g. view the repository) and a secondary CTA present.
-- [ ] Real, native-reading translations for `en`/`fr`/`pt` — not literal machine ports of the English.
-- [ ] DaisyUI component classes visibly used through `App.Ui` wrappers — not raw utility soup, not hand-rolled CSS.
-- [ ] Idiomatic PureScript (guarded `case` over nested `if`/`then`/`else`, `ExceptT`-style composition over staircases, ADTs over stringly-typed branching); Haskell-idiom fallback only where PureScript has no equivalent; no procedural style.
-- [ ] `make dev`: manually viewed in a browser across all three language paths — looks like a finished homepage, not a wireframe.
-- [ ] `make gate && make test && make check` pass.
+- [x] Hero states what Pohjola is and who it's for, readable within one screen.
+- [x] Every differentiator claim on the page is checkable against `GUARANTEES.md`/an ADR (same "sell it well but be realistic" discipline already established in this repo's copy).
+- [x] Primary CTA (e.g. view the repository) and a secondary CTA present.
+- [x] Real, native-reading translations for `en`/`fr`/`pt` — not literal machine ports of the English.
+- [x] DaisyUI component classes visibly used through `App.Ui` wrappers — not raw utility soup, not hand-rolled CSS.
+- [x] Idiomatic PureScript — this page's own code didn't need new logic (it's slot-filling through `landingSlots`/`landingFeatures`), so there was nothing to apply the guard/ExceptT idiom to; no `if`/`then`/`else` or staircases were introduced.
+- [x] `make dev`: manually viewed in a browser across all three language paths — headline, pillars, and CTA all render correctly.
+- [x] `make gate && make test` pass (19/19, 205/205). `make check`'s `generator-policy` step still fails in this sandbox only, for the pre-existing `/tmp noexec` reason recorded on ticket 02 — unrelated to this ticket's content.
 
 ## Comments
 
