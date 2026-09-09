@@ -89,10 +89,13 @@ comment). Otherwise: `Path=/`, `Secure` (when applicable), `HttpOnly`,
 
 **CSRF is not optional alongside this.** Lucia's own docs state it plainly:
 a cookie-carried session token needs CSRF protection regardless of
-`SameSite`. `ADR-005` (CSRF, itself "Accepted — implementation pending")
-must land alongside or before real session auth ships — not after.
-Lucia's own mitigation is a `Sec-Fetch-Site` header check on non-GET
-requests; worth using as `ADR-005`'s own reference when that lands.
+`SameSite`. `ADR-005` (amended 2026-09-09 to match Lucia's actual
+hierarchy — `Sec-Fetch-Site` primary, `Origin` secondary, a token demoted
+to an explicit legacy-browser fallback, not a requirement) must land
+alongside or before real session auth ships — not after. The
+`Sec-Fetch-Site` check itself is still unimplemented (`sameOriginOk` only
+covers the secondary `Origin` layer); see `ADR-005` for the full reasoning
+and outstanding work.
 
 ## Arctic's OAuth pattern
 

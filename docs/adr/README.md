@@ -7,7 +7,7 @@
 | [002](ADR-002-auth-shape.md) | Auth shape | Accepted — session lifecycle implemented; CSRF (ADR-005) still pending |
 | [003](ADR-003-ffi-taming.md) | FFI taming | Accepted |
 | [004](ADR-004-sessions.md) | Sessions | Accepted (superseded by 002's Amendment — different, incompatible shape; implemented) |
-| [005](ADR-005-csrf.md) | CSRF | Accepted — implementation pending |
+| [005](ADR-005-csrf.md) | CSRF | Accepted — decision amended to Lucia's header-based hierarchy (Sec-Fetch-Site/Origin, token demoted to optional legacy fallback); Sec-Fetch-Site check itself still pending |
 | [006](ADR-006-middleware-shape.md) | Middleware shape | Accepted |
 | [007](ADR-007-bun-serve.md) | Bun.serve | Accepted |
 | [008](ADR-008-component-architecture.md) | Component architecture | Accepted (Layout amendment superseded by 012) |

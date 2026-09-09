@@ -151,14 +151,16 @@ callback seam). Same SQL-integration test limitation as `App.Auth`; the pure
 row-decode logic is unit-tested. No HTTP route calls any of this yet — see
 `docs/conventions/auth-lucia-arctic.md`.
 
-**CSRF (ADR-005) is still "Accepted — implementation pending," and that is a
-real, currently-open gap, not a formality.** Lucia's own documentation is
-explicit that a cookie-carried session token requires CSRF protection
-regardless of `SameSite` — ADR-002's own Amendment section says the same.
+**CSRF (ADR-005) is a real, currently-open gap, not a formality.** ADR-005
+was amended (2026-09-09) to Lucia's actual header-based hierarchy —
+`Sec-Fetch-Site` primary, `Origin` secondary (the existing `sameOriginOk`),
+an anti-CSRF token demoted to an explicit legacy-browser fallback, not a
+requirement. The primary layer (`Sec-Fetch-Site`) is not implemented yet.
 Any code that wires `App.Auth.requireAuth` into a real protected, mutating
-route (a form submission, not a GET) before ADR-005 lands reopens exactly
-the risk both documents warn about. Read-only protected pages are lower
-risk; anything that writes is not safe to ship without CSRF alongside it.
+route (a form submission, not a GET) before that check lands reopens
+exactly the risk ADR-005 and Lucia's own docs warn about. Read-only
+protected pages are lower risk; anything that writes is not safe to ship
+without it.
 
 ## Keeping it true
 
