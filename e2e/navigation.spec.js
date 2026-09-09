@@ -156,6 +156,44 @@ test.describe("Datastar navigation", () => {
     expect(await page.evaluate(() => history.length)).toBe(historyLength);
   });
 
+  test("popstate restore of HTTP 304 falls back to a full document load", async ({
+    page,
+  }) => {
+    // restore() is the popstate handler: the browser has already committed
+    // location.href. HTTP 304 is !ok and has an empty body; .catch()
+    // location.reload() of that URL so the visitor still gets a document.
+    await page.goto("/en");
+    await page
+      .locator('header nav.hidden.md\\:flex a[href="/en/about"]')
+      .click();
+    await expect(page).toHaveURL(/\/en\/about/);
+    await expect(page.locator("div#content[data-page-title]")).toContainText(
+      "About Pohjola",
+    );
+
+    await page.evaluate(() => {
+      window.__marker = 1;
+    });
+
+    await page.route("**/*", async (route) => {
+      if (route.request().headers()["datastar-request"] === "true") {
+        await route.fulfill({
+          status: 304,
+          body: "",
+        });
+        return;
+      }
+      await route.continue();
+    });
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\/en\/?$/);
+    expect(await page.evaluate(() => window.__marker)).toBeUndefined();
+    await expect(page.locator("div#content[data-page-title]")).toContainText(
+      "A framework built to make AI-written code safer to ship",
+    );
+  });
+
   test("hover prefetch requests a patch, not a full page", async ({
     page,
   }) => {

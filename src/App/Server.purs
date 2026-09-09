@@ -213,12 +213,14 @@ htmlCacheControl :: Tuple String String
 htmlCacheControl = Tuple "Cache-Control" "private, max-age=10"
 
 -- | Datastar SSE patches embed no CSP nonce, so they can live longer than a
--- | full document in the visitor's HTTP cache. `private` caps the blast
--- | radius of a stale patch to the one visitor holding it: a deploy that
--- | changes a patch's HTML costs that visitor up to 180s of staleness in
--- | their own browser, never a shared/CDN-wide window. ETag on
--- | sseEventResponse is the revalidation half: after max-age a later GET can
--- | 304 instead of re-sending the body.
+-- | full document in the visitor's HTTP cache. Two independent knobs:
+-- | `private` is the sharing rule (a stale patch cannot be replayed by a
+-- | shared cache or CDN to other visitors); `max-age=180` is a product
+-- | choice for freshness (long enough that hover → click and back/forward
+-- | inside a short session reuse the stored patch without revalidation;
+-- | short enough that a deploy's stale copy dies in minutes, not hours).
+-- | ETag on sseEventResponse is the revalidation half: after max-age a
+-- | later GET can 304 instead of re-sending the body.
 patchCacheControl :: Tuple String String
 patchCacheControl = Tuple "Cache-Control" "private, max-age=180"
 
@@ -491,13 +493,14 @@ datastarPatchElementsEvent fragmentHtmlString =
 
 -- | Wraps an already-built SSE event body in the ReadableStream + headers a
 -- | Datastar `@get` action expects: `text/event-stream`, `patchCacheControl`
--- | (`private, max-age=180` — no nonce on this body), an ETag of the event
--- | bytes (`wyhash` — a cache validator needs good distribution against
--- | accidental collisions, not cryptographic collision-resistance against an
--- | adversary; `sha256Hex` is reserved for security-sensitive hashing
--- | elsewhere, e.g. `App.Auth`), and `Vary` on `datastar-request`. Hover,
--- | click, and popstate share one GET identity (`?datastar={}`); this policy
--- | is what makes that identity reusable. See `e2e/prefetch-cache.spec.js`.
+-- | (`private, max-age=180` — no nonce on this body), a strong ETag of the
+-- | event bytes (RFC 9110: quoted, not `W/`; wyhash of those bytes — a cache
+-- | validator needs distribution against accidental collisions, not
+-- | cryptographic collision-resistance; `sha256Hex` stays reserved for
+-- | security-sensitive hashing, e.g. `App.Auth`), and `Vary` on
+-- | `datastar-request`. Hover, click, and popstate share one GET identity
+-- | (`?datastar={}`); this policy is what makes that identity reusable. See
+-- | `e2e/prefetch-cache.spec.js`.
 sseEventResponse :: String -> Effect Response
 sseEventResponse = sseEventResponseMatching Nothing
 

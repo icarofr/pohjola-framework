@@ -192,9 +192,9 @@ for Alpine: Datastar evaluates attribute expressions via `new Function()`.
   **Current contract (2026-09-09):** chrome signals are `_`-prefixed (Datastar
   omits them from GET by default); `@get(url, {payload: {}})` and
   `dsPrefetchHover` both send `?datastar={}`; popstate does the same.
-  Successful patches are `private, max-age=180` with a `wyhash`-based ETag
-  (a cache validator needs collision avoidance, not cryptographic
-  strength — `sha256Hex` stays reserved for security-sensitive hashing).
+  Successful patches are `private, max-age=180` with a strong ETag
+  (`wyhash` of the SSE bytes — RFC 9110 strong means byte-identity, not
+  cryptographic; `sha256Hex` stays reserved for security-sensitive hashing).
   `e2e/prefetch-cache.spec.js` pins the click-from-cache and If-None-Match 304.
 - `App.Datastar`'s security closure is narrower than Alpine's `Expr`
   abstraction was (see ADR-000 amendment above) — accepted because every

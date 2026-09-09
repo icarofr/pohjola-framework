@@ -44,18 +44,17 @@ spec = do
           _ -> shouldEqual true false
 
     describe "sseEventResponse cache policy" do
-      -- Patches have no CSP nonce, so a stale one only costs the single
-      -- visitor holding it (private) up to 180s of staleness after a
-      -- deploy, never a shared/CDN-wide window. ETag lets a later visit 304
-      -- instead of shipping the SSE body again.
+      -- `private` is the sharing rule (no CDN). `max-age=180` is a separate
+      -- product choice: long enough for hover → click inside a short session,
+      -- short enough that a deploy's stale copy dies in minutes. The ETag is
+      -- a strong validator (RFC 9110: byte-identity, not W/) of the SSE
+      -- bytes via wyhash.
       let event = "event: datastar-patch-elements\ndata: elements <div id=\"content\"></div>\n\n"
-      it "successful patches are private, max-age=180, and carry an ETag" do
+      it "successful patches are private, max-age=180, and carry a strong ETag of the event bytes" do
         resp <- liftEffect $ sseEventResponse event
         resp.status `shouldEqual` 200
         headerValue "Cache-Control" resp.headers `shouldEqual` Just "private, max-age=180"
-        case lastHeaderValue "ETag" resp.headers of
-          Just tag -> tag `shouldNotEqual` ""
-          Nothing -> shouldEqual true false
+        lastHeaderValue "ETag" resp.headers `shouldEqual` Just ("\"" <> wyhash event <> "\"")
       it "the same body produces the same ETag" do
         a <- liftEffect $ sseEventResponse event
         b <- liftEffect $ sseEventResponse event

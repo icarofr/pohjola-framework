@@ -53,10 +53,11 @@ renderHeadScript nonce = case _ of
 -- | "data: elements " payload out of the unparsed SSE body, and replace
 -- | #content wholesale (a full replace, not Datastar's own morph — simpler
 -- | to hand-roll correctly than reimplementing morphing by hand). A non-ok
--- | response, an empty body, or an unparseable patch each throw; `.catch()`
--- | falls back to `location.reload()` so a failure here still lands the
--- | visitor on the URL `pushState` already committed to, as a real page
--- | instead of a silently unhandled rejection.
+-- | response (including HTTP 304, whose body is empty), an empty body, or
+-- | an unparseable patch each throw; `.catch()` falls back to
+-- | `location.reload()` of the URL the browser already committed on this
+-- | history traversal, as a real document instead of a silently unhandled
+-- | rejection. This handler does not pushState.
 dsShellRouterScript :: String
 dsShellRouterScript =
   "(function(){function sync(){var m=document.getElementById('"
