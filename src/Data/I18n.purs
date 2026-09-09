@@ -202,7 +202,7 @@ en =
   , hero:
       { eyebrow: "PureScript · Bun · Alpine.js"
       , headline: "The Type-Safe Functional Web Framework for Bun"
-      , body: "MPA simplicity with Alpine-powered fragment navigation. Built in PureScript with Bun runtime speed, typed Alpine.js micro-interactivity, and errors handled as values end to end."
+      , body: "MPA simplicity with Alpine-powered fragment navigation. Built in PureScript with Bun runtime speed, typed Alpine.js micro-interactivity, and failures contained at one boundary — the server answers, it never crashes."
       , ctaLabel: "About Pohjola"
       , secondaryLabel: "Browse notes"
       }
@@ -213,7 +213,7 @@ en =
       , serviceCopy: \sid -> case sid of
           ServiceId "service-1" ->
             { title: "PureScript Type Safety"
-            , description: "Total pattern matching, no nulls, and an XSS-safe Html ADT that guarantees correctness at compile time."
+            , description: "Total pattern matching, no nulls, and an XSS-safe Html ADT that guarantees correctness at compile time. Errors are typed values, not exceptions — failures are contained at one boundary, so the server answers instead of crashing."
             , actionLabel: "See the stack"
             }
           ServiceId "service-2" ->
@@ -343,7 +343,7 @@ fr =
   , hero:
       { eyebrow: "PureScript · Bun · Alpine.js"
       , headline: "Le framework web fonctionnel et typé pour Bun"
-      , body: "La simplicité d'une MPA avec une navigation par fragments propulsée par Alpine. Conçu en PureScript avec la vitesse de Bun, une réactivité Alpine.js typée, et des erreurs traitées comme des valeurs de bout en bout."
+      , body: "La simplicité d'une MPA avec une navigation par fragments propulsée par Alpine. Conçu en PureScript avec la vitesse de Bun, une réactivité Alpine.js typée, et des défaillances contenues à une seule frontière — le serveur répond toujours, il ne plante jamais."
       , ctaLabel: "En savoir plus"
       , secondaryLabel: "Lire les articles"
       }
@@ -354,7 +354,7 @@ fr =
       , serviceCopy: \sid -> case sid of
           ServiceId "service-1" ->
             { title: "Sécurité de typage PureScript"
-            , description: "Filtrage total par motif, aucun null, et un ADT Html typé sans faille XSS qui garantit la correction à la compilation."
+            , description: "Filtrage total par motif, aucun null, et un ADT Html typé sans faille XSS qui garantit la correction à la compilation. Les erreurs sont des valeurs typées, jamais des exceptions — les défaillances sont contenues à une seule frontière, le serveur répond au lieu de planter."
             , actionLabel: "Voir l'approche"
             }
           ServiceId "service-2" ->
@@ -484,7 +484,7 @@ pt =
   , hero:
       { eyebrow: "PureScript · Bun · Alpine.js"
       , headline: "O framework web funcional e tipado para Bun"
-      , body: "A simplicidade de uma MPA com navegação por fragmentos via Alpine. Construído em PureScript com a velocidade do Bun, micro-interatividade Alpine.js tipada, e erros tratados como valores de ponta a ponta."
+      , body: "A simplicidade de uma MPA com navegação por fragmentos via Alpine. Construído em PureScript com a velocidade do Bun, micro-interatividade Alpine.js tipada, e falhas contidas numa única fronteira — o servidor sempre responde, nunca cai."
       , ctaLabel: "Sobre o Pohjola"
       , secondaryLabel: "Ver notas"
       }
@@ -495,7 +495,7 @@ pt =
       , serviceCopy: \sid -> case sid of
           ServiceId "service-1" ->
             { title: "Segurança de tipos PureScript"
-            , description: "Correspondência de padrões total, sem nulls, e um ADT Html tipado que garante correção na compilação."
+            , description: "Correspondência de padrões total, sem nulls, e um ADT Html tipado que garante correção na compilação. Erros são valores tipados, nunca exceções — falhas são contidas numa única fronteira, o servidor responde em vez de cair."
             , actionLabel: "Ver a stack"
             }
           ServiceId "service-2" ->

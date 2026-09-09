@@ -87,7 +87,7 @@ Feature logic lives in isolated domain modules. Asynchronous effects compose cle
 ### PureScript Type Safety
 - **Totality and Exhaustive Matching:** The compiler rejects missing route handlers, forgotten dictionary translations, and unhandled failure branches.
 - **Algebraic Html ADT:** HTML is constructed through closed, typed data structures with centralized escaping, reducing risks from raw string concatenation; runtime, FFI, and intent remain outside the guarantee.
-- **Errors as Values:** I/O boundaries return `Either AppError a`. Exceptions are never thrown into the wild.
+- **Errors as Values, Failures Contained:** I/O boundaries return `Either AppError a`; nothing is thrown into the wild. Runtime exceptions (socket errors, JS failures) are caught at one boundary and answered with a 500 — the process never crashes.
 
 ### Buffered SSR on Bun
 - **Native Bun Server Runtime:** Server-side rendering is buffered by default; experimental streaming is opt-in.
@@ -144,6 +144,7 @@ Pohjola's guarantees are not documentation conventions. They are mechanically ve
 
 - [x] **Closed `Html` ADT**: General-purpose or untrusted HTML escape hatches and raw string concatenation are forbidden (`make gate` via `Policy.Contract`). The explicitly reviewed experimental streaming shell is a scoped exception; buffered SSR remains the default.
 - [x] **Errors as Values**: Async data boundaries strictly return `Aff (Either AppError a)`.
+- [x] **Contained Runtime Exceptions**: Socket errors and JS failures are caught at one boundary and answered with a 500 — never a process crash (`make test`).
 - [x] **Scrutinized FFI Floor**: Foreign JavaScript imports are restricted to four allowlisted modules in `Policy.Contract` (`App.ServerBun`, `App.FetchBun`, `App.Bun`, `App.Data.SQL`).
 - [x] **Pinned Security Policy (CSP)**: Nonce-based Content Security Policy verified byte-exact in `test/ContractSpec.purs`.
 - [x] **UI Archetype Policy**: UI: gate requires Templates.Render in every View; class_ banned (`Policy.Contract` + `Test.Gate`).
