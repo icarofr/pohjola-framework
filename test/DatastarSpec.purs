@@ -98,10 +98,12 @@ spec = do
       render (el "a" [ dsNavGet En About ] [ text "About" ])
         `StrAssert.shouldContain` "data-on:click=\"evt.preventDefault(); @get(&#x27;/en/about&#x27;)\""
 
-    it "dsPrefetchHover fires a warming fetch tagged with the Datastar header, using el not $el" do
+    it "dsPrefetchHover appends the signals snapshot, matching a real @get() URL" do
       let html = render (el "a" [ dsPrefetchHover ] [])
-      html `StrAssert.shouldContain` "data-on:mouseenter=\"fetch(el.href, {headers: {&#x27;datastar-request&#x27;: &#x27;true&#x27;}})\""
+      html `StrAssert.shouldContain`
+        "data-on:mouseenter=\"var u = new URL(el.href); u.searchParams.set(&#x27;datastar&#x27;, JSON.stringify($)); fetch(u.href, {headers: {&#x27;datastar-request&#x27;: &#x27;true&#x27;}})\""
       html `StrAssert.shouldNotContain` "fetch($el.href"
+      html `StrAssert.shouldNotContain` "fetch(el.href,"
 
     it "dsSpaLink renders href + nav + prefetch, no gating" do
       render (dsSpaLink En About [] [ text "About" ])

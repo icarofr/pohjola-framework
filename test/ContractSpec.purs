@@ -482,14 +482,19 @@ spec = do
           html `StrAssert.shouldContain` "<footer"
 
   describe "Bun.serve migration invariants" do
-    it "dsSpaLink includes @mouseenter fragment prefetch with el (not $el, not this)" do
+    it "dsSpaLink includes @mouseenter prefetch with el (not $el, not this), signals-matched to a real @get() URL" do
       let html = render (dsSpaLink En Home [] [])
       -- Single quotes are escaped to &#x27; in the attribute value;
       -- the browser un-escapes them before Datastar evaluates the expression.
       -- `el` (no `$`): `$el` compiles to a signal lookup in Datastar, not
       -- the element reference — a real bug this pinned after being caught
-      -- live (see App.Datastar.dsPrefetchHover's doc comment).
-      html `StrAssert.shouldContain` "data-on:mouseenter=\"fetch(el.href, {headers: {&#x27;datastar-request&#x27;: &#x27;true&#x27;}})\""
+      -- live (see App.Datastar.dsPrefetchHover's doc comment). The
+      -- searchParams.set('datastar', JSON.stringify($)) call is the fix for
+      -- a second, separate finding: without it, the hover fetch and the
+      -- click's real @get() request were different URLs, so a click could
+      -- never reuse its own hover's cached response.
+      html `StrAssert.shouldContain`
+        "data-on:mouseenter=\"var u = new URL(el.href); u.searchParams.set(&#x27;datastar&#x27;, JSON.stringify($)); fetch(u.href, {headers: {&#x27;datastar-request&#x27;: &#x27;true&#x27;}})\""
       html `StrAssert.shouldNotContain` "fetch(this.href)"
       html `StrAssert.shouldNotContain` "fetch($el.href"
 

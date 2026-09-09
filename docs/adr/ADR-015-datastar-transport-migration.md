@@ -184,23 +184,26 @@ for Alpine: Datastar evaluates attribute expressions via `new Function()`.
   responsibility instead
 - No header-free patch-request fallback (see above) — a real, disclosed
   capability loss with no current consumer
-- **Hover-prefetch no longer reliably makes the click a cache hit** — Alpine
-  AJAX's `prefetchHover` and `spaLink` fetched the identical plain URL on
-  hover and click, so a `private, max-age=10` response cached by the hover
-  was reused by the click (confirmed live via CDP `fromDiskCache` tracing,
-  the same methodology `e2e/prefetch-cache.spec.js` already used). Datastar's
-  own `@get()` action appends the current signals snapshot as a
-  `?datastar={...}` query param; `dsPrefetchHover`'s bare `fetch(el.href, …)`
-  has no such param, so the two requests are different URLs and the second
-  is confirmed live to still hit the network. `sseEventResponse`'s
-  `Cache-Control` was fixed to the same `private, max-age=10` policy anyway
-  (strictly better than the `no-cache` it shipped with in the spike, and
-  correct for any case where the URLs do match), but the marketing claim
-  "hits cache with zero round-trip" is false for the general case and has
-  been corrected in `docs/conventions/datastar-contracts.md`. Not fixed
-  here: serializing the same signals snapshot into the hand-written prefetch
-  handler would restore it, at the cost of duplicating Datastar's own
-  internal serialization logic in JS this codebase doesn't otherwise touch
+- **Hover-prefetch cache-hit — initially lost, then resolved.** Alpine AJAX's
+  `prefetchHover`/`spaLink` fetched the identical plain URL on hover and
+  click, so a `private, max-age=10` response cached by the hover was reused
+  by the click. The first Datastar port lost this: Datastar's own `@get()`
+  action appends the current signals snapshot as a `?datastar={...}` query
+  param, while `dsPrefetchHover`'s bare `fetch(el.href, …)` had no such
+  param, so hover and click fetched different URLs — confirmed live via CDP
+  `fromDiskCache` tracing that the click still hit the network.
+  `sseEventResponse`'s `Cache-Control` was fixed to `private, max-age=10`
+  regardless (strictly better than the `no-cache` it shipped with in the
+  spike), but that alone didn't restore the cache hit — the query-param
+  mismatch was the actual cause. **Resolved**: `dsPrefetchHover` now builds
+  the identical query param itself (`new URL(el.href)` +
+  `searchParams.set('datastar', JSON.stringify($))`) — `$` bare (no property
+  access) is the whole signals store passed directly into Datastar's
+  compiled expression function (confirmed against the vendored source), so
+  this produces the byte-for-byte same URL a real `@get()` action would.
+  Verified live: the click is served from disk cache again, matching
+  Alpine's original behavior. `e2e/prefetch-cache.spec.js`'s
+  `"the click is served from cache, not the network"` test pins this.
 - `App.Datastar`'s security closure is narrower than Alpine's `Expr`
   abstraction was (see ADR-000 amendment above) — accepted because every
   current call site is already closed in practice, revisited if a future

@@ -113,17 +113,19 @@ behaviour belongs on the server, not that the seam needs loosening.
   primitives that render inside page content, not just chrome (`App.Ui.Button`,
   `App.Ui.Templates.ActionLink`). The prefetch sends `datastarRequestHeader` so
   the server returns a cacheable patch (`private, max-age=10`, same policy as
-  every other successful HTML response). **This does not reliably make the
-  click itself a cache hit** — confirmed live via CDP `fromDiskCache` tracing:
-  Datastar's own `@get()` action appends the current signals snapshot as a
-  `?datastar={...}` query param, so the URL the click actually fetches rarely
-  matches the URL the hover's bare `fetch(el.href, …)` warmed. Alpine AJAX's
-  equivalent hit cache reliably because both hover and click fetched the
-  identical plain URL — Datastar's stateful-query-param GET convention breaks
-  that symmetry. See `e2e/prefetch-cache.spec.js` and ADR-015 for the full
-  account; fixing this properly would mean serializing the same signals
-  snapshot in the hand-written prefetch handler, not attempted here. Degrades
-  to a normal `<a>` without JS regardless.
+  every other successful HTML response), **and the click hits that cache**:
+  `dsPrefetchHover` builds the exact same `?datastar={...}` query param a real
+  `@get()` action would (`new URL(el.href)` +
+  `searchParams.set('datastar', JSON.stringify($))` — `$` bare is the whole
+  signals store, passed directly into Datastar's compiled expression
+  function), so hover and click fetch the byte-for-byte identical URL,
+  confirmed live via CDP `fromDiskCache` tracing. If the signals change
+  between hover and click (a theme toggle, say), the URLs differ and the
+  click correctly falls through to the network instead of serving stale
+  content — see `e2e/prefetch-cache.spec.js` and ADR-015 for the full
+  account, including the gap this closed (an earlier version's hover used a
+  bare `fetch(el.href, …)` with no query param at all). Degrades to a normal
+  `<a>` without JS regardless.
 - **`dsLangLink`** — same `@get` action-based navigation as `dsNavLinkRecord`,
   but compares **Lang**, not Route (staying on the same page, switching which
   language it renders in) — a language switch never full-reloads. Only

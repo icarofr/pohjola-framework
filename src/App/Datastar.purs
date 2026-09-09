@@ -178,9 +178,25 @@ dsNavGet lang route =
 -- | `fetch($el.href, …)` warmed `/en/undefined` on every hover instead of
 -- | the real link — the browser's own URL-coercion of `fetch(undefined)`
 -- | masked it as a plausible-looking request rather than a thrown error.
+-- | Appends the current signals snapshot as a `?datastar={...}` query param,
+-- | matching exactly what Datastar's own `@get()` action would send for the
+-- | same link — verified live (byte-for-byte URL comparison against a real
+-- | click) rather than assumed: `$` bare (no property access) is the whole
+-- | signals store passed directly into the compiled expression function
+-- | (confirmed against the vendored source), so `JSON.stringify($)` inside
+-- | a `data-on:*` expression produces the identical string `@get()` itself
+-- | serializes. Without this, the hover fetch and the click's real `@get()`
+-- | request are different URLs (the click always carries the query param,
+-- | the hover previously never did), so a click could never reuse its own
+-- | hover's cached response — see ADR-015's now-resolved "hover-prefetch"
+-- | accepted cost.
 dsPrefetchHover :: Attr
 dsPrefetchHover =
-  attr "data-on:mouseenter" ("fetch(el.href, {headers: {'" <> datastarRequestHeader <> "': 'true'}})")
+  attr "data-on:mouseenter"
+    ( "var u = new URL(el.href); u.searchParams.set('datastar', JSON.stringify($)); fetch(u.href, {headers: {'"
+        <> datastarRequestHeader
+        <> "': 'true'}})"
+    )
 
 -- | Internal navigation link — the shell-nav equivalent of App.Alpine's
 -- | spaLink, used by shared UI primitives (App.Ui.Button, ActionLink) that

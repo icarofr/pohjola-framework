@@ -187,7 +187,7 @@ test("a normal request for an unknown route still gets a full document", async (
   expect(body).toContain("<html");
 });
 
-test("hover prefetch fires and warms the cache, but the click's URL doesn't match it (ADR-015)", async ({
+test("the click is served from cache, not the network", async ({
   page,
   context,
 }) => {
@@ -266,29 +266,26 @@ test("hover prefetch fires and warms the cache, but the click's URL doesn't matc
 
   const clickResponses = seen.filter((r) => clickRequestIds.has(r.requestId));
 
-  // W6 outcome, asserted on the CLICK specifically — and it is a confirmed
-  // network hit, not a cache hit. This is a deliberate, disclosed regression
-  // from Alpine AJAX's version of this test (see ADR-015's "protocol
-  // constraint" section): Alpine's spaLink/navLink and prefetchHover fetched
-  // the IDENTICAL plain URL on hover and click, so the click reused the
-  // hover's `private, max-age=10` response from disk cache. Datastar's own
-  // `@get()` action appends the current signals snapshot as a
-  // `?datastar={...}` query param the hover's bare `fetch(el.href, …)` never
-  // includes, so the two are different URLs and the click cannot reuse the
-  // hover's cache entry — confirmed here, and separately via same-URL reuse
-  // in the patch signal matrix test (fetching the identical URL twice DOES
-  // hit cache, isolating the query-param mismatch as the actual cause, not
-  // the cache-control header, which was fixed to `private, max-age=10` in
-  // App.Server.sseEventResponse and is no longer the blocker).
+  // W6 outcome, asserted on the CLICK specifically.
+  //
+  // Datastar's own `@get()` action appends the current signals snapshot as a
+  // `?datastar={...}` query param -- `App.Datastar.dsPrefetchHover`'s hover
+  // fetch constructs the SAME query param the same way (`new URL(el.href)` +
+  // `searchParams.set('datastar', JSON.stringify($))`, verified byte-for-byte
+  // identical to a real `@get()` request), so hover and click now fetch the
+  // identical URL. See ADR-015's "protocol constraint" section for the
+  // account of the gap this closed (an earlier version's hover used a bare
+  // `fetch(el.href, …)` with no query param at all, so the click's real
+  // `@get()` URL never matched it).
   const clickFromCache = clickResponses.filter(
     (r) => r.fromDiskCache || r.fromPrefetchCache,
   );
   expect(
     clickFromCache.length,
-    "The click is expected to be a network hit, not a cache hit (ADR-015) — " +
-      "if this ever becomes >0, the query-param mismatch was fixed (nice!), " +
-      "update this test and ADR-015's accepted-costs section to match.",
-  ).toBe(0);
+    "Every click response must come from cache — not merely some response in " +
+      "the trace. If this fails, dsPrefetchHover's signals-matching broke; see " +
+      "App.Datastar.dsPrefetchHover and ADR-015.",
+  ).toBe(clickResponses.length);
 
   // The post-swap re-fire (a THIRD request, prefetching the page already on
   // screen) is still fixed: after the patch re-renders the header, the new
