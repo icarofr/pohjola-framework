@@ -70,22 +70,22 @@ Every Datastar attribute is a named constructor in `App.Datastar`:
 
 | Constructor | Produces |
 |---|---|
-| `dsSignalsInit` | `data-signals="{theme: …, themeOpen: false, langOpen: false, drawerOpen: false}"` |
-| `dsShowFlag DsThemeMenuOpen` | `data-show="$themeOpen"` |
-| `dsShowNotFlag DsThemeMenuOpen` | `data-show="!$themeOpen"` |
-| `dsShowTheme ThemeLight` | `data-show="$theme === 'light'"` |
-| `dsClassWhenFlag "dropdown-open" DsLangMenuOpen` | `data-class:dropdown-open="$langOpen"` |
-| `dsClassWhenTheme "btn-active" ThemeDark` | `data-class:btn-active="$theme === 'dark'"` |
-| `dsPrefetchHover` | `data-on:mouseenter="fetch($el.href, …)"` |
+| `dsSignalsInit` | `data-signals="{_theme: …, _themeOpen: false, _langOpen: false, _drawerOpen: false}"` |
+| `dsShowFlag DsThemeMenuOpen` | `data-show="$_themeOpen"` |
+| `dsShowNotFlag DsThemeMenuOpen` | `data-show="!$_themeOpen"` |
+| `dsShowTheme ThemeLight` | `data-show="$_theme === 'light'"` |
+| `dsClassWhenFlag "dropdown-open" DsLangMenuOpen` | `data-class:dropdown-open="$_langOpen"` |
+| `dsClassWhenTheme "btn-active" ThemeDark` | `data-class:btn-active="$_theme === 'dark'"` |
+| `dsPrefetchHover` | `data-on:mouseenter` fetch of `el.href` + `?datastar={}` |
 
 ### The only sources of `data-on:*` expressions
 
 | Builder | Produces |
 |---|---|
-| `dsSetFlag f b` | `$themeOpen = true` / `$themeOpen = false` |
-| `dsToggleFlag f` | `$themeOpen = !$themeOpen` |
-| `dsSetTheme mode` | sets `$theme`, localStorage, `document.documentElement`'s `data-theme`, and closes the theme menu — exhaustive `case` over `ThemeMode` |
-| `dsNavGet lang route` | `evt.preventDefault(); @get('/en/about')` |
+| `dsSetFlag f b` | `$_themeOpen = true` / `$_themeOpen = false` |
+| `dsToggleFlag f` | `$_themeOpen = !$_themeOpen` |
+| `dsSetTheme mode` | sets `$_theme`, localStorage, `document.documentElement`'s `data-theme`, and closes the theme menu — exhaustive `case` over `ThemeMode` |
+| `dsNavGet lang route` | `evt.preventDefault(); @get('/en/about', {payload: {}})` |
 | `dsOnClickOutside f` / `dsOnKeydownEscape f` | `$flag = false` on the matching Datastar event modifier |
 
 So a menu button is `dsToggleFlag DsThemeMenuOpen`, its panel is
@@ -112,19 +112,11 @@ behaviour belongs on the server, not that the seam needs loosening.
 - **`dsSpaLink`** — bakes `@get` + `dsPrefetchHover` + real href, for shared UI
   primitives that render inside page content, not just chrome (`App.Ui.Button`,
   `App.Ui.Templates.ActionLink`). The prefetch sends `datastarRequestHeader` so
-  the server returns a cacheable patch (`private, max-age=10`, same policy as
-  every other successful HTML response), **and the click hits that cache**:
-  `dsPrefetchHover` builds the exact same `?datastar={...}` query param a real
-  `@get()` action would (`new URL(el.href)` +
-  `searchParams.set('datastar', JSON.stringify($))` — `$` bare is the whole
-  signals store, passed directly into Datastar's compiled expression
-  function), so hover and click fetch the byte-for-byte identical URL,
-  confirmed live via CDP `fromDiskCache` tracing. If the signals change
-  between hover and click (a theme toggle, say), the URLs differ and the
-  click correctly falls through to the network instead of serving stale
-  content — see `e2e/prefetch-cache.spec.js` and ADR-015 for the full
-  account, including the gap this closed (an earlier version's hover used a
-  bare `fetch(el.href, …)` with no query param at all). Degrades to a normal
+  the server returns a cacheable patch (`private, max-age=180` plus ETag),
+  **and the click hits that cache**: `dsPrefetchHover` and `@get(url, {payload: {}})`
+  both send `?datastar={}`, and chrome signals are `_`-prefixed so Datastar's
+  default filter would have dropped them anyway. Hover, click, and popstate
+  share that identity — see `e2e/prefetch-cache.spec.js` and ADR-015. Degrades to a normal
   `<a>` without JS regardless.
 - **`dsLangLink`** — same `@get` action-based navigation as `dsNavLinkRecord`,
   but compares **Lang**, not Route (staying on the same page, switching which
@@ -140,7 +132,8 @@ behaviour belongs on the server, not that the seam needs loosening.
   instead). Forward nav listens for Datastar's own `datastar-fetch`
   `{type:"finished"}` event (dispatched *after* the SSE patch is already
   applied) and only needs to `pushState` + sync title/lang + scroll to top.
-  Back/forward re-fetches as a Datastar request, parses the `data: elements `
+  Back/forward re-fetches as a Datastar request with the same `?datastar={}`
+  identity, parses the `data: elements `
   payload out of the SSE body, and replaces `#content` wholesale.
 
 ## Scopes
@@ -152,7 +145,7 @@ machine, and Datastar flags are the wrong representation. Move the work to the
 server.
 
 The site shell is the one documented exception: `dsSignalsInit` is a closed
-constructor that always emits `theme`, `themeOpen`, `langOpen`, and
-`drawerOpen` together. Do not reopen it as a positional per-flag signal
+constructor that always emits `_theme`, `_themeOpen`, `_langOpen`, and
+`_drawerOpen` together. Do not reopen it as a positional per-flag signal
 declaration — that is how `LangMenuOpen` shipped uninitialized in this
 project's earlier Alpine-based chrome.

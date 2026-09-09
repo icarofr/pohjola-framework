@@ -5,13 +5,15 @@
 // and reading CDP's fromDiskCache / fromPrefetchCache, which the Playwright
 // request API does not expose.
 //
-// Current policy: successful full pages and AJAX fragments are
-// `private, max-age=10`; errors are `no-store`, and redirects derive their
-// policy from the closed RedirectKind set.
+// Current policy: successful full pages are `private, max-age=10` (CSP
+// nonce); successful Datastar patches are `private, max-age=180` plus a
+// strong ETag; errors are `no-store`; redirects derive their policy from the
+// closed RedirectKind set.
 //   * Full pages use `private` because they embed a per-request CSP nonce - a
 //     shared cache would replay one visitor's nonce to everyone else.
-//   * Fragments contain no nonce, but retain `private` as the conservative
-//     browser-cache policy.
+//   * Patches contain no nonce. `max-age=180` plus ETag is the HTTP equivalent
+//     of Solid Router's idle query cache: hover/click reuse inside the window,
+//     304 after it.
 //   * `max-age` because without a freshness lifetime the response is explicit
 //     but never fresh, with no validator to revalidate against, so nothing is
 //     reused and the hover prefetch becomes pure overhead.
@@ -102,13 +104,14 @@ test("patch signal matrix — header present or absent (W2)", async ({
     const h = c.res.headers();
     expect(c.res.status(), `${c.name}: status`).toBe(200);
     expect(h["cache-control"], `${c.name}: success cache policy`).toBe(
-      "private, max-age=10",
+      c.patch ? "private, max-age=180" : "private, max-age=10",
     );
     if (c.patch) {
       expect(h["content-type"], `${c.name}: content-type`).toContain("text/event-stream");
       expect(h["vary"], `${c.name}: must vary on the datastar header`).toContain(
         "datastar-request",
       );
+      expect(h["etag"], `${c.name}: patch ETag`).toBeTruthy();
       expect(raw).toContain("event: datastar-patch-elements");
       const body = extractDatastarPatch(raw);
       expect(body, `${c.name}: is a datastar-patch-elements event`).toBeTruthy();
@@ -125,6 +128,20 @@ test("patch signal matrix — header present or absent (W2)", async ({
       expect(raw.includes('id="content"'), `${c.name}: carries the swap target`).toBe(true);
     }
   }
+});
+
+test("a matching If-None-Match on a patch is 304", async ({ request }) => {
+  const first = await request.get("/en/about", {
+    headers: { "datastar-request": "true" },
+  });
+  expect(first.status()).toBe(200);
+  const etag = first.headers()["etag"];
+  expect(etag, "successful patch must advertise an ETag").toBeTruthy();
+  const again = await request.get("/en/about", {
+    headers: { "datastar-request": "true", "if-none-match": etag },
+  });
+  expect(again.status()).toBe(304);
+  expect(again.headers()["etag"]).toBe(etag);
 });
 
 test("the emitted Cache-Control survives the Bun bridge", async ({
@@ -169,6 +186,7 @@ test("a datastar-request for an unknown route gets a patch, not a document", asy
   // Always 200, not 404 — Datastar's client only applies a patch when
   // status === 200 (see ADR-015); the "not found"-ness is in the content.
   expect(res.status()).toBe(200);
+  expect(res.headers()["cache-control"]).toBe("no-store");
   const raw = await res.text();
   expect(raw).toContain("event: datastar-patch-elements");
   const body = extractDatastarPatch(raw);
@@ -268,15 +286,9 @@ test("the click is served from cache, not the network", async ({
 
   // W6 outcome, asserted on the CLICK specifically.
   //
-  // Datastar's own `@get()` action appends the current signals snapshot as a
-  // `?datastar={...}` query param -- `App.Datastar.dsPrefetchHover`'s hover
-  // fetch constructs the SAME query param the same way (`new URL(el.href)` +
-  // `searchParams.set('datastar', JSON.stringify($))`, verified byte-for-byte
-  // identical to a real `@get()` request), so hover and click now fetch the
-  // identical URL. See ADR-015's "protocol constraint" section for the
-  // account of the gap this closed (an earlier version's hover used a bare
-  // `fetch(el.href, …)` with no query param at all, so the click's real
-  // `@get()` URL never matched it).
+  // Hover, click, and popstate all fetch `?datastar={}`: `@get(url, {payload: {}})`
+  // and `dsPrefetchHover` both set that empty payload, so chrome `_` signals
+  // cannot bust the cache key. See ADR-015.
   const clickFromCache = clickResponses.filter(
     (r) => r.fromDiskCache || r.fromPrefetchCache,
   );

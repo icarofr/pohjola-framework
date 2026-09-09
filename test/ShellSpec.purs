@@ -26,11 +26,11 @@ spec = do
       let html = render (Home.renderHome En Nothing)
       html
         `shouldContain`
-          ( "href=\"/en\" data-on:click=\"evt.preventDefault(); @get(&#x27;/en&#x27;)\" aria-current=\"page\" class=\"btn btn-ghost btn-sm text-primary font-semibold\""
+          ( "href=\"/en\" data-on:click=\"evt.preventDefault(); @get(&#x27;/en&#x27;, {payload: {}})\" aria-current=\"page\" class=\"btn btn-ghost btn-sm text-primary font-semibold\""
           )
     it "marks the current route in mobile drawer with the brand color" do
       let html = render (Home.renderHome En Nothing)
       html
         `shouldContain`
-          ( "href=\"/en\" data-on:click=\"evt.preventDefault(); @get(&#x27;/en&#x27;)\" aria-current=\"page\" class=\"btn btn-ghost justify-start text-primary font-semibold\""
+          ( "href=\"/en\" data-on:click=\"evt.preventDefault(); @get(&#x27;/en&#x27;, {payload: {}})\" aria-current=\"page\" class=\"btn btn-ghost justify-start text-primary font-semibold\""
           )

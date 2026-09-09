@@ -69,7 +69,7 @@ handleGet cfg cache nonce headers query path = case path of
 routeMiss404 :: String -> Boolean -> Lang -> Aff Server.Response
 routeMiss404 nonce wantsPatch lang =
   if wantsPatch then
-    liftEffect $ Server.sseEventResponse (Server.datastarPatchElementsEvent (renderErrorFragment lang 404))
+    liftEffect $ Server.sseErrorEventResponse (Server.datastarPatchElementsEvent (renderErrorFragment lang 404))
   else
     pure $ Server.htmlErrorResponse (renderErrorPage nonce lang 404) [ varyHeader ] (Server.errorStatusCode 404)
 
@@ -152,7 +152,7 @@ failurePage ctx err = do
 failureDatastarPatch :: RequestCtx -> AppError -> Aff Server.Response
 failureDatastarPatch ctx err = do
   logRenderFailure ctx err
-  liftEffect $ Server.sseEventResponse
+  liftEffect $ Server.sseErrorEventResponse
     (Server.datastarPatchElementsEvent (renderErrorFragment ctx.lang (errorStatus err)))
 
 -- | Serve a route.
@@ -204,7 +204,11 @@ handleDatastarPatch ctx = do
   result <- patchHtml ctx
   case result of
     Left err -> failureDatastarPatch ctx err
-    Right html -> liftEffect $ Server.sseEventResponse (Server.datastarPatchElementsEvent (render html))
+    Right html ->
+      let
+        event = Server.datastarPatchElementsEvent (render html)
+      in
+        liftEffect $ Server.sseEventResponseMatching (Map.lookup "if-none-match" ctx.headers) event
 
 -- | Html for a Datastar patch request: statusful → fresh; otherwise the
 -- | shared cache (the same cache full-document requests use).

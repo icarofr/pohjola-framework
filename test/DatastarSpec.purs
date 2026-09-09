@@ -47,9 +47,12 @@ spec = do
       dataPageLangAttr `shouldEqual` "data-page-lang"
 
     it "flagName is stable for every DsFlag" do
-      flagName DsThemeMenuOpen `shouldEqual` "themeOpen"
-      flagName DsLangMenuOpen `shouldEqual` "langOpen"
-      flagName DsDrawerOpen `shouldEqual` "drawerOpen"
+      -- Underscore prefix: Datastar omits these from GET ?datastar= (exclude
+      -- /(^|\.)_/). Chrome is client-only; putting it on the cache key made
+      -- hover/click/popstate miss each other.
+      flagName DsThemeMenuOpen `shouldEqual` "_themeOpen"
+      flagName DsLangMenuOpen `shouldEqual` "_langOpen"
+      flagName DsDrawerOpen `shouldEqual` "_drawerOpen"
 
     it "flagName is injective — two flags cannot share an identifier" do
       -- A collision would silently wire two unrelated controls to one piece
@@ -61,47 +64,53 @@ spec = do
     it "dsSignalsInit initializes theme and every flag to false" do
       let html = render (el "div" [ dsSignalsInit ] [])
       html `StrAssert.shouldContain` "data-signals=\""
-      html `StrAssert.shouldContain` "themeOpen: false"
-      html `StrAssert.shouldContain` "langOpen: false"
-      html `StrAssert.shouldContain` "drawerOpen: false"
+      html `StrAssert.shouldContain` "_theme:"
+      html `StrAssert.shouldContain` "_themeOpen: false"
+      html `StrAssert.shouldContain` "_langOpen: false"
+      html `StrAssert.shouldContain` "_drawerOpen: false"
       html `StrAssert.shouldContain` "localStorage.getItem(&#x27;theme&#x27;)"
 
     it "dsShowFlag/dsShowNotFlag render data-show against the $signal" do
       render (el "div" [ dsShowFlag DsThemeMenuOpen ] [])
-        `StrAssert.shouldContain` "data-show=\"$themeOpen\""
+        `StrAssert.shouldContain` "data-show=\"$_themeOpen\""
       render (el "div" [ dsShowNotFlag DsThemeMenuOpen ] [])
-        `StrAssert.shouldContain` "data-show=\"!$themeOpen\""
+        `StrAssert.shouldContain` "data-show=\"!$_themeOpen\""
 
     it "dsToggleFlag/dsSetFlag render data-on:click assignments" do
       render (el "button" [ dsToggleFlag DsLangMenuOpen ] [])
-        `StrAssert.shouldContain` "data-on:click=\"$langOpen = !$langOpen\""
+        `StrAssert.shouldContain` "data-on:click=\"$_langOpen = !$_langOpen\""
       render (el "button" [ dsSetFlag DsLangMenuOpen false ] [])
-        `StrAssert.shouldContain` "data-on:click=\"$langOpen = false\""
+        `StrAssert.shouldContain` "data-on:click=\"$_langOpen = false\""
 
     it "dsClassWhenFlag/dsClassWhenTheme render data-class bindings" do
       render (el "li" [ dsClassWhenFlag "btn-active" DsThemeMenuOpen ] [])
-        `StrAssert.shouldContain` "data-class:btn-active=\"$themeOpen\""
+        `StrAssert.shouldContain` "data-class:btn-active=\"$_themeOpen\""
       render (el "li" [ dsClassWhenTheme "btn-active" ThemeDark ] [])
-        `StrAssert.shouldContain` "data-class:btn-active=\"$theme === &#x27;dark&#x27;\""
+        `StrAssert.shouldContain` "data-class:btn-active=\"$_theme === &#x27;dark&#x27;\""
 
     it "dsShowTheme renders data-show against the theme signal" do
       render (el "svg" [ dsShowTheme ThemeSystem ] [])
-        `StrAssert.shouldContain` "data-show=\"$theme === &#x27;system&#x27;\""
+        `StrAssert.shouldContain` "data-show=\"$_theme === &#x27;system&#x27;\""
 
     it "dsSetTheme is exhaustive over ThemeMode and closes the theme menu" do
       render (el "button" [ dsSetTheme ThemeDark ] [])
         `StrAssert.shouldContain` "document.documentElement.setAttribute(&#x27;data-theme&#x27;, &#x27;pohjola-dark&#x27;)"
       render (el "button" [ dsSetTheme ThemeSystem ] [])
         `StrAssert.shouldContain` "document.documentElement.removeAttribute(&#x27;data-theme&#x27;)"
+      render (el "button" [ dsSetTheme ThemeLight ] [])
+        `StrAssert.shouldContain` "$_theme = &#x27;light&#x27;"
 
     it "dsNavGet renders preventDefault + @get to the route's real URL" do
       render (el "a" [ dsNavGet En About ] [ text "About" ])
-        `StrAssert.shouldContain` "data-on:click=\"evt.preventDefault(); @get(&#x27;/en/about&#x27;)\""
+        `StrAssert.shouldContain` "data-on:click=\"evt.preventDefault(); @get(&#x27;/en/about&#x27;, {payload: {}})\""
 
-    it "dsPrefetchHover appends the signals snapshot, matching a real @get() URL" do
+    it "dsPrefetchHover appends empty datastar payload, matching @get({payload: {}})" do
+      -- JSON.stringify($) would include _-prefixed locals and diverge from
+      -- Datastar's filtered() GET. Shell nav identity is the route; payload {}.
       let html = render (el "a" [ dsPrefetchHover ] [])
       html `StrAssert.shouldContain`
-        "data-on:mouseenter=\"var u = new URL(el.href); u.searchParams.set(&#x27;datastar&#x27;, JSON.stringify($)); fetch(u.href, {headers: {&#x27;datastar-request&#x27;: &#x27;true&#x27;}})\""
+        "data-on:mouseenter=\"var u = new URL(el.href); u.searchParams.set(&#x27;datastar&#x27;, &#x27;{}&#x27;); fetch(u.href, {headers: {&#x27;datastar-request&#x27;: &#x27;true&#x27;}})\""
+      html `StrAssert.shouldNotContain` "JSON.stringify($)"
       html `StrAssert.shouldNotContain` "fetch($el.href"
       html `StrAssert.shouldNotContain` "fetch(el.href,"
 
@@ -120,13 +129,13 @@ spec = do
 
     it "dsOnClickOutside/dsOnKeydownEscape render the verified event modifiers" do
       render (el "div" [ dsOnClickOutside DsThemeMenuOpen ] [])
-        `StrAssert.shouldContain` "data-on:click__outside=\"$themeOpen = false\""
+        `StrAssert.shouldContain` "data-on:click__outside=\"$_themeOpen = false\""
       render (el "div" [ dsOnKeydownEscape DsThemeMenuOpen ] [])
-        `StrAssert.shouldContain` "data-on:keydown__window__escape=\"$themeOpen = false\""
+        `StrAssert.shouldContain` "data-on:keydown__window__escape=\"$_themeOpen = false\""
 
     it "dsBindFlag renders a bare signal name, no $ prefix" do
       -- Unlike every other constructor here, data-bind identifies which
       -- signal to bind, it doesn't evaluate a JS expression -- verified
       -- against the vendored datastar.js "bind" plugin source.
       render (el "input" [ dsBindFlag DsDrawerOpen ] [])
-        `StrAssert.shouldContain` "data-bind=\"drawerOpen\""
+        `StrAssert.shouldContain` "data-bind=\"_drawerOpen\""

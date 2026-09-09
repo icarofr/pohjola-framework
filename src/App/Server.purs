@@ -25,6 +25,7 @@ module App.Server
   , cspWithNonce
   , withCsp
   , htmlCacheControl
+  , patchCacheControl
   , publicDocumentCacheControl
   , errorCacheControl
   , ok
@@ -45,6 +46,8 @@ module App.Server
   , fileResponse
   , streamResponse
   , sseEventResponse
+  , sseEventResponseMatching
+  , sseErrorEventResponse
   , datastarPatchElementsEvent
   , serve
   , nextRequestId
@@ -57,6 +60,7 @@ module App.Server
 
 import Prelude
 
+import App.Bun (sha256Hex)
 import App.Datastar (datastarRequestHeader)
 import App.Logger (Level(..))
 import App.Logger as AppLog
@@ -206,6 +210,14 @@ withCsp nonce response =
 -- | the browser's own cache, which handles it correctly.
 htmlCacheControl :: Tuple String String
 htmlCacheControl = Tuple "Cache-Control" "private, max-age=10"
+
+-- | Datastar SSE patches embed no CSP nonce, so they can live longer than a
+-- | full document in the visitor's HTTP cache. 180s is the same idle window
+-- | Solid Router documents for unsubscribed query() entries, implemented as
+-- | HTTP instead of a JS Map. ETag on sseEventResponse is the revalidation
+-- | half: after max-age a later GET can 304 instead of re-sending the body.
+patchCacheControl :: Tuple String String
+patchCacheControl = Tuple "Cache-Control" "private, max-age=180"
 
 -- | Nonce-free public documents (robots.txt, sitemap.xml). Shared-cacheable.
 publicDocumentCacheControl :: Tuple String String
@@ -475,27 +487,52 @@ datastarPatchElementsEvent fragmentHtmlString =
   "event: datastar-patch-elements\ndata: elements " <> fragmentHtmlString <> "\n\n"
 
 -- | Wraps an already-built SSE event body in the ReadableStream + headers a
--- | Datastar `@get`/`@post` action expects: `text/event-stream`,
--- | `htmlCacheControl` (same reusable `private, max-age=10` policy as every
--- | other successful HTML response — this SSE event embeds no per-request
--- | nonce, same situation the old Alpine fragment path was in, so `private`
--- | here is the same conservative default, not a requirement), and
--- | `Vary` on the same header `isDatastarRequest` keys off (App.Main), so a
--- | cache can tell this response apart from a plain GET to the same URL.
--- |
--- | This cache policy does not reliably make a hover-prefetch-then-click a
--- | cache hit: Datastar's own `@get()` action appends the current signals
--- | snapshot as a `?datastar={...}` query param, so the URL a real click
--- | fetches rarely matches the URL a bare `fetch()` hover-prefetch warmed.
--- | See `e2e/prefetch-cache.spec.js` and ADR-015 for the measured account.
+-- | Datastar `@get` action expects: `text/event-stream`, `patchCacheControl`
+-- | (`private, max-age=180` — no nonce on this body), a strong ETag of the
+-- | event bytes, and `Vary` on `datastar-request`. Hover, click, and popstate
+-- | share one GET identity (`?datastar={}`); this policy is what makes that
+-- | identity reusable. See `e2e/prefetch-cache.spec.js`.
 sseEventResponse :: String -> Effect Response
-sseEventResponse eventBody = do
+sseEventResponse = sseEventResponseMatching Nothing
+
+-- | Same as `sseEventResponse`, but a matching `If-None-Match` becomes 304.
+-- | Datastar only applies a patch when `status === 200`; the browser HTTP
+-- | cache turns a revalidated 304 into a cached 200 before JS sees it.
+-- | Direct clients (Playwright `request.get`, curl) observe the 304.
+sseEventResponseMatching :: Maybe String -> String -> Effect Response
+sseEventResponseMatching ifNoneMatch eventBody = do
+  etagHex <- sha256Hex eventBody
+  let etag = "\"" <> etagHex <> "\""
+  if ifNoneMatch == Just etag then
+    pure $ notModified
+      [ Tuple "ETag" etag
+      , patchCacheControl
+      , Tuple "Vary" datastarRequestHeader
+      ]
+  else do
+    stream <- sseEventStreamImpl eventBody
+    pure
+      { status: 200
+      , headers: securityHeaders <>
+          [ Tuple "Content-Type" "text/event-stream"
+          , patchCacheControl
+          , Tuple "ETag" etag
+          , Tuple "Vary" datastarRequestHeader
+          ]
+      , body: StreamBody stream
+      }
+
+-- | Error-shaped Datastar patch: still HTTP 200 (Datastar will not morph a
+-- | 4xx/5xx — ADR-015), but `no-store` so a transient 404/500 cannot answer
+-- | the next hover from cache.
+sseErrorEventResponse :: String -> Effect Response
+sseErrorEventResponse eventBody = do
   stream <- sseEventStreamImpl eventBody
   pure
     { status: 200
     , headers: securityHeaders <>
         [ Tuple "Content-Type" "text/event-stream"
-        , htmlCacheControl
+        , errorCacheControl
         , Tuple "Vary" datastarRequestHeader
         ]
     , body: StreamBody stream

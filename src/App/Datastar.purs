@@ -81,9 +81,14 @@ derive instance eqDsFlag :: Eq DsFlag
 
 flagName :: DsFlag -> String
 flagName = case _ of
-  DsThemeMenuOpen -> "themeOpen"
-  DsLangMenuOpen -> "langOpen"
-  DsDrawerOpen -> "drawerOpen"
+  DsThemeMenuOpen -> "_themeOpen"
+  DsLangMenuOpen -> "_langOpen"
+  DsDrawerOpen -> "_drawerOpen"
+
+-- | Client-only theme preference. Underscore so Datastar's default GET
+-- | filter omits it from `?datastar=`. localStorage key stays `theme`.
+themeSignalName :: String
+themeSignalName = "_theme"
 
 -- ============================================================================
 -- Signals — data-signals:name="value" (Datastar's data-signals syntax,
@@ -91,11 +96,15 @@ flagName = case _ of
 -- ============================================================================
 
 -- | Initializes every flag the shell chrome needs, all false, plus the
--- | `theme` signal read from localStorage (App.Theme.themeStorageKey).
+-- | `_theme` signal read from localStorage (App.Theme.themeStorageKey).
 dsSignalsInit :: Attr
 dsSignalsInit =
   attr "data-signals"
-    ( "{theme: (localStorage.getItem('" <> themeStorageKey <> "') || 'system'), "
+    ( "{"
+        <> themeSignalName
+        <> ": (localStorage.getItem('"
+        <> themeStorageKey
+        <> "') || 'system'), "
         <> flagName DsThemeMenuOpen
         <> ": false, "
         <> flagName DsLangMenuOpen
@@ -143,14 +152,14 @@ dsClassWhenFlag className f = attr ("data-class:" <> className) ("$" <> flagName
 -- | for Alpine's Flag/Expr types holds here too.
 dsClassWhenTheme :: String -> ThemeMode -> Attr
 dsClassWhenTheme className mode =
-  attr ("data-class:" <> className) ("$theme === '" <> themeModeName mode <> "'")
+  attr ("data-class:" <> className) ("$" <> themeSignalName <> " === '" <> themeModeName mode <> "'")
 
 -- | Icon visibility keyed off the *selected* theme preference, not the
 -- | resolved color scheme — see App.Ui.Templates.SiteShell's sunIcon/
 -- | moonIcon/systemIcon doc for why (the active menu item and the visible
 -- | icon must always agree, both read off the same `theme` signal).
 dsShowTheme :: ThemeMode -> Attr
-dsShowTheme mode = attr "data-show" ("$theme === '" <> themeModeName mode <> "'")
+dsShowTheme mode = attr "data-show" ("$" <> themeSignalName <> " === '" <> themeModeName mode <> "'")
 
 -- ============================================================================
 -- Shell nav — hand-rolled on top of @get, since Datastar has no built-in
@@ -164,36 +173,21 @@ dsShowTheme mode = attr "data-show" ("$theme === '" <> themeModeName mode <> "'"
 -- | @get(url) is Datastar's real, verified action syntax (data-star.dev/docs.md).
 dsNavGet :: Lang -> Route -> Attr
 dsNavGet lang route =
-  attr "data-on:click" ("evt.preventDefault(); @get('" <> routeUrl lang route <> "')")
+  attr "data-on:click" ("evt.preventDefault(); @get('" <> routeUrl lang route <> "', {payload: {}})")
 
--- | Warm the browser's HTTP cache on hover, same effect as Alpine's
--- | prefetchHover: a bare fetch with the transport's own detection header,
--- | response discarded — the point is priming the cache, not consuming
--- | the result here. `el` (no `$`), not `$el` — verified against the
--- | vendored datastar.js source: the compiled expression evaluator binds
--- | the element reference to the bare identifier `el`; `$el` is instead
--- | parsed as a *signal* lookup (`$foo` compiles to `$['foo']`), which
--- | silently creates and reads an empty-string "el" signal instead. Caught
--- | live: `$el.href` on that empty string is `undefined`, so
--- | `fetch($el.href, …)` warmed `/en/undefined` on every hover instead of
--- | the real link — the browser's own URL-coercion of `fetch(undefined)`
--- | masked it as a plausible-looking request rather than a thrown error.
--- | Appends the current signals snapshot as a `?datastar={...}` query param,
--- | matching exactly what Datastar's own `@get()` action would send for the
--- | same link — verified live (byte-for-byte URL comparison against a real
--- | click) rather than assumed: `$` bare (no property access) is the whole
--- | signals store passed directly into the compiled expression function
--- | (confirmed against the vendored source), so `JSON.stringify($)` inside
--- | a `data-on:*` expression produces the identical string `@get()` itself
--- | serializes. Without this, the hover fetch and the click's real `@get()`
--- | request are different URLs (the click always carries the query param,
--- | the hover previously never did), so a click could never reuse its own
--- | hover's cached response — see ADR-015's now-resolved "hover-prefetch"
--- | accepted cost.
+-- | Warm the browser's HTTP cache on hover. Bare `fetch` with the transport
+-- | header, response discarded — Datastar `@get` would apply the patch, which
+-- | is wrong on mouseenter. `el` (no `$`): `$el` compiles to a signal lookup.
+-- |
+-- | The query param is the empty object, not `JSON.stringify($)`. `@get` with
+-- | `{payload: {}}` (and `_`-prefixed chrome) serializes to `?datastar={}`;
+-- | stringify of the live store would include locals Datastar's `filtered()`
+-- | drops. Hover, click, and popstate must share that identity or the click
+-- | cannot reuse the hover's `private, max-age=180` response.
 dsPrefetchHover :: Attr
 dsPrefetchHover =
   attr "data-on:mouseenter"
-    ( "var u = new URL(el.href); u.searchParams.set('datastar', JSON.stringify($)); fetch(u.href, {headers: {'"
+    ( "var u = new URL(el.href); u.searchParams.set('datastar', '{}'); fetch(u.href, {headers: {'"
         <> datastarRequestHeader
         <> "': 'true'}})"
     )
@@ -255,7 +249,13 @@ dsOnKeydownEscape f = attr "data-on:keydown__window__escape" ("$" <> flagName f 
 dsSetTheme :: ThemeMode -> Attr
 dsSetTheme mode =
   attr "data-on:click"
-    ( "$theme = '" <> themeModeName mode <> "'; localStorage.setItem('" <> themeStorageKey <> "', '"
+    ( "$"
+        <> themeSignalName
+        <> " = '"
+        <> themeModeName mode
+        <> "'; localStorage.setItem('"
+        <> themeStorageKey
+        <> "', '"
         <> themeModeName mode
         <> "'); "
         <>

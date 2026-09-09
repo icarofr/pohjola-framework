@@ -445,7 +445,7 @@ spec = do
       -- every other (non-current) nav link.
       html <- renderStaticPage Home En
       html `StrAssert.shouldContain`
-        "href=\"/en\" data-on:click=\"evt.preventDefault(); @get(&#x27;/en&#x27;)\" aria-current=\"page\" class=\"btn btn-ghost btn-sm text-primary font-semibold\""
+        "href=\"/en\" data-on:click=\"evt.preventDefault(); @get(&#x27;/en&#x27;, {payload: {}})\" aria-current=\"page\" class=\"btn btn-ghost btn-sm text-primary font-semibold\""
 
   describe "no external script src" do
     -- PostList/PostDetail are data-backed (network fetch at render time)
@@ -469,6 +469,7 @@ spec = do
           StrAssert.shouldContain html "document.addEventListener('datastar-fetch',function(e){if(e.detail.type!=='finished')return;"
           StrAssert.shouldContain html "history.pushState({__ds:true},'',href);afterPatch()"
           StrAssert.shouldContain html "document.documentElement.lang=d.pageLang"
+          StrAssert.shouldContain html "u.searchParams.set('datastar','{}')"
           StrAssert.shouldContain html "window.addEventListener('popstate',restore,true);"
           StrAssert.shouldContain html "if(!history.state)history.replaceState({__ds:true},'',location.href)"
           html `StrAssert.shouldContain` "var es=new EventSource('/dev/live-reload')"
@@ -482,19 +483,16 @@ spec = do
           html `StrAssert.shouldContain` "<footer"
 
   describe "Bun.serve migration invariants" do
-    it "dsSpaLink includes @mouseenter prefetch with el (not $el, not this), signals-matched to a real @get() URL" do
+    it "dsSpaLink includes @mouseenter prefetch with el (not $el, not this), empty datastar payload matching @get" do
       let html = render (dsSpaLink En Home [] [])
       -- Single quotes are escaped to &#x27; in the attribute value;
       -- the browser un-escapes them before Datastar evaluates the expression.
       -- `el` (no `$`): `$el` compiles to a signal lookup in Datastar, not
-      -- the element reference — a real bug this pinned after being caught
-      -- live (see App.Datastar.dsPrefetchHover's doc comment). The
-      -- searchParams.set('datastar', JSON.stringify($)) call is the fix for
-      -- a second, separate finding: without it, the hover fetch and the
-      -- click's real @get() request were different URLs, so a click could
-      -- never reuse its own hover's cached response.
+      -- the element reference. `?datastar={}` matches `@get(url, {payload: {}})`
+      -- so hover, click, and popstate share one HTTP cache key.
       html `StrAssert.shouldContain`
-        "data-on:mouseenter=\"var u = new URL(el.href); u.searchParams.set(&#x27;datastar&#x27;, JSON.stringify($)); fetch(u.href, {headers: {&#x27;datastar-request&#x27;: &#x27;true&#x27;}})\""
+        "data-on:mouseenter=\"var u = new URL(el.href); u.searchParams.set(&#x27;datastar&#x27;, &#x27;{}&#x27;); fetch(u.href, {headers: {&#x27;datastar-request&#x27;: &#x27;true&#x27;}})\""
+      html `StrAssert.shouldNotContain` "JSON.stringify($)"
       html `StrAssert.shouldNotContain` "fetch(this.href)"
       html `StrAssert.shouldNotContain` "fetch($el.href"
 
@@ -546,17 +544,17 @@ spec = do
       html `StrAssert.shouldContain` "id=\"site-drawer\""
     it "theme switcher uses Datastar disclosure in navbar" do
       html <- renderStaticPage Home En
-      html `StrAssert.shouldContain` "themeOpen: false"
+      html `StrAssert.shouldContain` "_themeOpen: false"
       html `StrAssert.shouldContain` "aria-haspopup=\"menu\""
-      html `StrAssert.shouldContain` "data-show=\"$themeOpen\""
+      html `StrAssert.shouldContain` "data-show=\"$_themeOpen\""
       html `StrAssert.shouldContain` ("setAttribute(&#x27;data-theme&#x27;, &#x27;" <> themeLightName <> "&#x27;)")
       html `StrAssert.shouldContain` "dropdown dropdown-end"
     it "language switcher uses Datastar disclosure in navbar" do
       html <- renderStaticPage Home En
       -- Must be a distinct signal, not the substring inside themeOpen: false.
-      html `StrAssert.shouldContain` "themeOpen: false, langOpen: false"
-      html `StrAssert.shouldContain` "data-show=\"$langOpen\""
-      html `StrAssert.shouldContain` "$langOpen = !$langOpen"
+      html `StrAssert.shouldContain` "_themeOpen: false, _langOpen: false"
+      html `StrAssert.shouldContain` "data-show=\"$_langOpen\""
+      html `StrAssert.shouldContain` "$_langOpen = !$_langOpen"
     it "theme and language dropdowns share one item and panel recipe" do
       html <- renderStaticPage Home En
       html `StrAssert.shouldContain` dsDropdownPanelClass
@@ -571,7 +569,7 @@ spec = do
       html `StrAssert.shouldContain` "English"
       html `StrAssert.shouldContain` "Français"
       html `StrAssert.shouldContain` "Português"
-      html `StrAssert.shouldContain` "href=\"/fr\" data-on:click=\"evt.preventDefault(); @get(&#x27;/fr&#x27;)\""
+      html `StrAssert.shouldContain` "href=\"/fr\" data-on:click=\"evt.preventDefault(); @get(&#x27;/fr&#x27;, {payload: {}})\""
       html `StrAssert.shouldContain` "data-page-lang"
     it "template pages use bg-base-100 content wrapper" do
       html <- renderStaticPage Home En

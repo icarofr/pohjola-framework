@@ -48,7 +48,8 @@ renderHeadScript nonce = case _ of
 -- | the target URL, since @get(url) itself never touches location.href.
 -- |
 -- | Back/forward: Datastar has no history awareness at all, so popstate is
--- | wholly hand-rolled here: re-fetch as a Datastar request, parse the
+-- | wholly hand-rolled here: re-fetch as a Datastar request with the same
+-- | `?datastar={}` identity hover and `@get({payload: {}})` use, parse the
 -- | "data: elements " payload out of the unparsed SSE body, and replace
 -- | #content wholesale (a full replace, not Datastar's own morph — simpler
 -- | to hand-roll correctly than reimplementing morphing by hand).
@@ -56,7 +57,7 @@ dsShellRouterScript :: String
 dsShellRouterScript =
   "(function(){function sync(){var m=document.getElementById('"
     <> contentTarget
-    <> "');if(!m)return;var d=m.dataset;if(d.pageTitle)document.title=d.pageTitle;if(d.pageLang)document.documentElement.lang=d.pageLang;}function afterPatch(){sync();window.scrollTo({top:0,left:0,behavior:'instant'})}document.addEventListener('datastar-fetch',function(e){if(e.detail.type!=='finished')return;var el=e.detail.el;var href=el&&el.getAttribute&&el.getAttribute('href');if(!href)return;history.pushState({__ds:true},'',href);afterPatch()});function restore(){fetch(location.href,{headers:{'datastar-request':'true'}}).then(function(r){return r.text()}).then(function(sse){var marker='data: elements ';var i=sse.indexOf(marker);if(i===-1)throw new Error('invalid datastar patch event');var html=sse.slice(i+marker.length).split('\\n\\n')[0];var d=new DOMParser().parseFromString(html,'text/html'),n=d.getElementById('"
+    <> "');if(!m)return;var d=m.dataset;if(d.pageTitle)document.title=d.pageTitle;if(d.pageLang)document.documentElement.lang=d.pageLang;}function afterPatch(){sync();window.scrollTo({top:0,left:0,behavior:'instant'})}document.addEventListener('datastar-fetch',function(e){if(e.detail.type!=='finished')return;var el=e.detail.el;var href=el&&el.getAttribute&&el.getAttribute('href');if(!href)return;history.pushState({__ds:true},'',href);afterPatch()});function restore(){var u=new URL(location.href);u.searchParams.set('datastar','{}');fetch(u.href,{headers:{'datastar-request':'true'}}).then(function(r){return r.text()}).then(function(sse){var marker='data: elements ';var i=sse.indexOf(marker);if(i===-1)throw new Error('invalid datastar patch event');var html=sse.slice(i+marker.length).split('\\n\\n')[0];var d=new DOMParser().parseFromString(html,'text/html'),n=d.getElementById('"
     <> contentTarget
     <> "'),o=document.getElementById('"
     <> contentTarget

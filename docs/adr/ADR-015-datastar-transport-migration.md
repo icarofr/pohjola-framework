@@ -184,26 +184,16 @@ for Alpine: Datastar evaluates attribute expressions via `new Function()`.
   responsibility instead
 - No header-free patch-request fallback (see above) — a real, disclosed
   capability loss with no current consumer
-- **Hover-prefetch cache-hit — initially lost, then resolved.** Alpine AJAX's
+- **Hover-prefetch cache-hit — initially lost, then resolved twice.** Alpine AJAX's
   `prefetchHover`/`spaLink` fetched the identical plain URL on hover and
-  click, so a `private, max-age=10` response cached by the hover was reused
-  by the click. The first Datastar port lost this: Datastar's own `@get()`
-  action appends the current signals snapshot as a `?datastar={...}` query
-  param, while `dsPrefetchHover`'s bare `fetch(el.href, …)` had no such
-  param, so hover and click fetched different URLs — confirmed live via CDP
-  `fromDiskCache` tracing that the click still hit the network.
-  `sseEventResponse`'s `Cache-Control` was fixed to `private, max-age=10`
-  regardless (strictly better than the `no-cache` it shipped with in the
-  spike), but that alone didn't restore the cache hit — the query-param
-  mismatch was the actual cause. **Resolved**: `dsPrefetchHover` now builds
-  the identical query param itself (`new URL(el.href)` +
-  `searchParams.set('datastar', JSON.stringify($))`) — `$` bare (no property
-  access) is the whole signals store passed directly into Datastar's
-  compiled expression function (confirmed against the vendored source), so
-  this produces the byte-for-byte same URL a real `@get()` action would.
-  Verified live: the click is served from disk cache again, matching
-  Alpine's original behavior. `e2e/prefetch-cache.spec.js`'s
-  `"the click is served from cache, not the network"` test pins this.
+  click. The first Datastar port lost this because `@get()` appends
+  `?datastar=`. Mirroring `JSON.stringify($)` onto the hover URL restored the
+  click hit but made the cache key the live chrome store (open menus, theme).
+  **Current contract (2026-09-09):** chrome signals are `_`-prefixed (Datastar
+  omits them from GET by default); `@get(url, {payload: {}})` and
+  `dsPrefetchHover` both send `?datastar={}`; popstate does the same.
+  Successful patches are `private, max-age=180` with a strong ETag.
+  `e2e/prefetch-cache.spec.js` pins the click-from-cache and If-None-Match 304.
 - `App.Datastar`'s security closure is narrower than Alpine's `Expr`
   abstraction was (see ADR-000 amendment above) — accepted because every
   current call site is already closed in practice, revisited if a future
