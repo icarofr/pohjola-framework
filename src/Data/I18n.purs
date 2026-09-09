@@ -153,7 +153,24 @@ type Dictionary =
       }
   , docs ::
       { heading :: String
-      , body :: String
+      , subtitle :: String
+      , mission ::
+          { heading :: String
+          , lead :: String
+          , body :: String
+          }
+      , values ::
+          { heading :: String
+          , intro :: String
+          , items ::
+              { one :: { title :: String, description :: String }
+              , two :: { title :: String, description :: String }
+              , three :: { title :: String, description :: String }
+              , four :: { title :: String, description :: String }
+              , five :: { title :: String, description :: String }
+              , six :: { title :: String, description :: String }
+              }
+          }
       }
   , common ::
       { siteTitle :: String
@@ -284,7 +301,24 @@ en =
       }
   , docs:
       { heading: "Docs"
-      , body: "Explore our Docs."
+      , subtitle: "An honest placeholder while the real documentation gets written."
+      , mission:
+          { heading: "Docs are coming"
+          , lead: "There's no documentation site yet — this page exists so that's a visible, honest gap instead of a silent one."
+          , body: "Until then, the source is the documentation: the ADRs and convention docs live in the repository itself, and the eval prompts double as worked examples. When the docs site lands, it'll cover the sections below first."
+          }
+      , values:
+          { heading: "What's coming first"
+          , intro: "Six sections already scoped, in the order they'll be written."
+          , items:
+              { one: { title: "Getting started", description: "Clone the repository, run `make dev`, and have a working page in minutes — written up as a real walkthrough, not just this paragraph." }
+              , two: { title: "Page architectures", description: "When a page should be static versus data-backed, and what the template layer actually gives you." }
+              , three: { title: "Conventions", description: "Alpine contracts, forms, and the chrome checklist — the rules `make gate` already enforces, explained instead of just checked." }
+              , four: { title: "Architecture decisions", description: "The ADR index: why Bun instead of Node, why the Html type has no escape hatch, why the CSP is pinned instead of configurable." }
+              , five: { title: "Guarantees, explained", description: "The reasoning behind each guarantee on the previous page, and how to verify it yourself." }
+              , six: { title: "Contributing", description: "How to open an issue, propose an ADR, and where the test suite expects new coverage." }
+              }
+          }
       }
   , common:
       { siteTitle: "Pohjola"
@@ -410,8 +444,25 @@ fr =
           }
       }
   , docs:
-      { heading: "Docs"
-      , body: "Description de Docs."
+      { heading: "Documentation"
+      , subtitle: "Un espace réservé honnête, le temps d'écrire la vraie documentation."
+      , mission:
+          { heading: "La documentation arrive"
+          , lead: "Il n'existe pas encore de site de documentation — cette page rend cette lacune visible et honnête plutôt que silencieuse."
+          , body: "En attendant, la source fait office de documentation : les ADRs et les docs de convention vivent dans le dépôt lui-même, et les prompts d'évaluation servent d'exemples concrets. Quand le site de documentation arrivera, il couvrira d'abord les sections ci-dessous."
+          }
+      , values:
+          { heading: "Ce qui arrive en premier"
+          , intro: "Six sections déjà identifiées, dans l'ordre où elles seront écrites."
+          , items:
+              { one: { title: "Premiers pas", description: "Clonez le dépôt, lancez `make dev`, et obtenez une page fonctionnelle en quelques minutes — présenté comme un vrai guide, pas juste ce paragraphe." }
+              , two: { title: "Architectures de page", description: "Quand choisir une page statique plutôt qu'une page adossée à des données, et ce que la couche de gabarits offre réellement." }
+              , three: { title: "Conventions", description: "Contrats Alpine, formulaires, checklist de l'habillage — les règles que `make gate` impose déjà, expliquées plutôt que simplement vérifiées." }
+              , four: { title: "Décisions d'architecture", description: "L'index des ADRs : pourquoi Bun plutôt que Node, pourquoi le type Html n'a pas d'échappatoire, pourquoi la CSP est figée plutôt que configurable." }
+              , five: { title: "Les garanties expliquées", description: "Le raisonnement derrière chaque garantie de la page précédente, et comment le vérifier vous-même." }
+              , six: { title: "Contribuer", description: "Comment ouvrir une issue, proposer un ADR, et où la suite de tests attend une nouvelle couverture." }
+              }
+          }
       }
   , common:
       { siteTitle: "Pohjola"
@@ -537,8 +588,25 @@ pt =
           }
       }
   , docs:
-      { heading: "Docs"
-      , body: "Explore o Docs."
+      { heading: "Documentação"
+      , subtitle: "Um espaço reservado honesto, enquanto a documentação real é escrita."
+      , mission:
+          { heading: "A documentação está a chegar"
+          , lead: "Ainda não existe um site de documentação — esta página torna essa lacuna visível e honesta, em vez de silenciosa."
+          , body: "Até lá, o código-fonte serve de documentação: os ADRs e os documentos de convenção vivem no próprio repositório, e os prompts de avaliação funcionam como exemplos práticos. Quando o site de documentação chegar, vai cobrir primeiro as secções abaixo."
+          }
+      , values:
+          { heading: "O que vem primeiro"
+          , intro: "Seis secções já identificadas, pela ordem em que serão escritas."
+          , items:
+              { one: { title: "Primeiros passos", description: "Clone o repositório, execute `make dev`, e tenha uma página a funcionar em minutos — escrito como um guia real, não apenas este parágrafo." }
+              , two: { title: "Arquiteturas de página", description: "Quando usar uma página estática em vez de uma apoiada em dados, e o que a camada de modelos realmente oferece." }
+              , three: { title: "Convenções", description: "Contratos Alpine, formulários, a checklist do chrome — as regras que o `make gate` já impõe, explicadas em vez de apenas verificadas." }
+              , four: { title: "Decisões de arquitetura", description: "O índice de ADRs: porque Bun em vez de Node, porque o tipo Html não tem escape, porque a CSP é fixa em vez de configurável." }
+              , five: { title: "As garantias, explicadas", description: "O raciocínio por trás de cada garantia da página anterior, e como a verificar você mesmo." }
+              , six: { title: "Contribuir", description: "Como abrir uma issue, propor um ADR, e onde a suite de testes espera nova cobertura." }
+              }
+          }
       }
   , common:
       { siteTitle: "Pohjola"
