@@ -4,11 +4,11 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** done (2026-09-09), commit `9fdd516` on branch `master`
 
-- [ ] `xDataSiteChrome` has no parameter it doesn't use meaningfully (either zero-arg, or a signature that matches real variability)
-- [ ] Call site in `SiteShell.purs` updated accordingly
-- [ ] `make gate && make test` pass
+- [x] `xDataSiteChrome` has no parameter it doesn't use meaningfully (either zero-arg, or a signature that matches real variability)
+- [x] Call site in `SiteShell.purs` updated accordingly
+- [x] `make gate && make test` pass
 
 ## Comments
 

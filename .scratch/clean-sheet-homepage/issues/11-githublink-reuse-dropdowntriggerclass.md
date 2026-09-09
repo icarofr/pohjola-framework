@@ -4,11 +4,11 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** done (2026-09-09), commit `9fdd516` on branch `master`
 
-- [ ] `githubLink`'s two call sites (desktop navbar, mobile drawer) use `dropdownTriggerClass` instead of a hand-written `"btn btn-ghost btn-sm"` literal
-- [ ] No visual change (same rendered classes)
-- [ ] `make gate && make test` pass
+- [x] `githubLink`'s two call sites (desktop navbar, mobile drawer) use `dropdownTriggerClass` instead of a hand-written `"btn btn-ghost btn-sm"` literal
+- [x] No visual change (same rendered classes)
+- [x] `make gate && make test` pass
 
 ## Comments
 

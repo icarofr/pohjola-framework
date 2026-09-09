@@ -4,10 +4,10 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** done (2026-09-09), commit `9fdd516` on branch `master`
 
-- [ ] CLAUDE.md's Verify section names the visual-check step explicitly, including the "use raw playwright-core, not `make test/e2e`" caveat and why
-- [ ] The step is scoped (which file globs trigger it), not a blanket "always screenshot everything"
+- [x] CLAUDE.md's Verify section names the visual-check step explicitly, including the "use raw playwright-core, not `make test/e2e`" caveat and why
+- [x] The step is scoped (which file globs trigger it), not a blanket "always screenshot everything"
 
 ## Comments
 

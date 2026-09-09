@@ -4,11 +4,11 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** done (2026-09-09), commit `9fdd516` on branch `master`
 
-- [ ] `xDataSiteChrome` no longer repeats the `flagName _ <> ": " <> boolLit _` literal inline
-- [ ] Behaviour unchanged (same rendered `x-data` string) — covered by existing `ContractSpec`/`ShellSpec` assertions
-- [ ] `make gate && make test` pass
+- [x] `xDataSiteChrome` no longer repeats the `flagName _ <> ": " <> boolLit _` literal inline
+- [x] Behaviour unchanged (same rendered `x-data` string) — covered by existing `ContractSpec`/`ShellSpec` assertions
+- [x] `make gate && make test` pass
 
 ## Comments
 

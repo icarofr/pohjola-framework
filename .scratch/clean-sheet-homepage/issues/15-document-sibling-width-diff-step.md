@@ -6,10 +6,10 @@ Deliberately **not** a mechanical gate rule (considered and rejected during gril
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** done (2026-09-09), commit `9fdd516` on branch `master`
 
-- [ ] `chrome-checklist.md` or `component-checklist.md` has the sibling-diff step
-- [ ] The doc explicitly notes this is a checklist step, not a gate check, and why (existing legitimate width outliers)
+- [x] `chrome-checklist.md` or `component-checklist.md` has the sibling-diff step
+- [x] The doc explicitly notes this is a checklist step, not a gate check, and why (existing legitimate width outliers)
 
 ## Comments
 

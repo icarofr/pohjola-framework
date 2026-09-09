@@ -13,11 +13,11 @@ Add an `assertIncludesAny(haystack, needles, label)` helper next to the existing
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** done (2026-09-09), commit `9fdd516` on branch `master`
 
-- [ ] `assertIncludesAny` exists alongside `assertIncludes` in `scripts/verify-generator-fixture.js`
-- [ ] The Head-insertion check uses it instead of the inline `if`/`console.error`/`process.exit`
-- [ ] `make gate` (which runs the generator fixture check) still passes
+- [x] `assertIncludesAny` exists alongside `assertIncludes` in `scripts/verify-generator-fixture.js`
+- [x] The Head-insertion check uses it instead of the inline `if`/`console.error`/`process.exit`
+- [x] `make gate` (which runs the generator fixture check) still passes
 
 ## Comments
 
