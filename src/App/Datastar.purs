@@ -24,6 +24,7 @@ module App.Datastar
   , dsShowNotFlag
   , dsToggleFlag
   , dsSetFlag
+  , dsBindFlag
   , dsClassWhenFlag
   , dsClassWhenTheme
   , dsShowTheme
@@ -115,6 +116,22 @@ dsToggleFlag f = attr "data-on:click" ("$" <> flagName f <> " = !$" <> flagName 
 dsSetFlag :: DsFlag -> Boolean -> Attr
 dsSetFlag f value =
   attr "data-on:click" ("$" <> flagName f <> " = " <> if value then "true" else "false")
+
+-- | Two-way binds a form element's value to a flag's signal — verified
+-- | against the vendored datastar.js source (the "bind" plugin's checkbox
+-- | case: `e.checked = ...` / `i = (f) => f.checked`). Bare signal name, no
+-- | `$` prefix (unlike every other constructor here, which builds a JS
+-- | expression string) — `data-bind` identifies which signal to bind, it
+-- | doesn't evaluate an expression.
+-- |
+-- | Real bug this closed: the mobile drawer's checkbox toggled its own
+-- | `:checked` state purely via native `<label for>` clicks, entirely
+-- | independent of `DsDrawerOpen` — so `dsOnKeydownEscape DsDrawerOpen`
+-- | correctly set `$drawerOpen = false` on Escape, but nothing observed
+-- | that signal, and the drawer stayed open. Caught live: the checkbox's
+-- | `.checked` DOM property was still `true` after pressing Escape.
+dsBindFlag :: DsFlag -> Attr
+dsBindFlag f = attr "data-bind" (flagName f)
 
 -- | Active-item highlight for a boolean flag's signal (e.g. current theme
 -- | menu item) — data-class:CLASS="expr", per docs.md's data-class syntax.

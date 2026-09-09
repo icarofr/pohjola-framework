@@ -11,6 +11,7 @@ import App.Datastar
   , dataPageLangAttr
   , dataPageTitleAttr
   , datastarRequestHeader
+  , dsBindFlag
   , dsClassWhenFlag
   , dsClassWhenTheme
   , dsNavGet
@@ -120,3 +121,10 @@ spec = do
         `StrAssert.shouldContain` "data-on:click__outside=\"$themeOpen = false\""
       render (el "div" [ dsOnKeydownEscape DsThemeMenuOpen ] [])
         `StrAssert.shouldContain` "data-on:keydown__window__escape=\"$themeOpen = false\""
+
+    it "dsBindFlag renders a bare signal name, no $ prefix" do
+      -- Unlike every other constructor here, data-bind identifies which
+      -- signal to bind, it doesn't evaluate a JS expression -- verified
+      -- against the vendored datastar.js "bind" plugin source.
+      render (el "input" [ dsBindFlag DsDrawerOpen ] [])
+        `StrAssert.shouldContain` "data-bind=\"drawerOpen\""

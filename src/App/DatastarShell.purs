@@ -24,6 +24,7 @@ import App.Datastar
   , contentTarget
   , dataPageLangAttr
   , dataPageTitleAttr
+  , dsBindFlag
   , dsClassWhenFlag
   , dsClassWhenTheme
   , dsLangLink
@@ -158,7 +159,7 @@ dsSitePageTitled lang route title status content =
       , dsSignalsInit
       , dsOnKeydownEscape DsDrawerOpen
       ]
-      [ el "input" [ type_ "checkbox", class_ "drawer-toggle", id_ siteDrawerId ] []
+      [ el "input" [ type_ "checkbox", class_ "drawer-toggle", id_ siteDrawerId, dsBindFlag DsDrawerOpen ] []
       , el "div" [ class_ "drawer-content flex min-h-full flex-col" ]
           [ renderHeader lang route labels
           , maybeStatusBanner lang status
