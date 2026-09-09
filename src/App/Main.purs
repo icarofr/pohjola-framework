@@ -18,7 +18,8 @@ import App.Features.Home.Page (render) as Home
 import App.Features.Docs.Page (render) as Docs
 import App.Features.Guarantees.Page (render) as Guarantees
 import App.Features.About.Page (render) as About
-import App.Html (Html)
+import App.DatastarShell as DatastarShell
+import App.Html (Html, text)
 import App.Layout.Page (renderErrorFragment, renderErrorPage, renderFragment, renderDocument)
 import App.Logger as Log
 import App.Server as Server
@@ -29,7 +30,7 @@ import Data.I18n (Lang, defaultLang, parseLang)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe, isJust)
-import Data.Route (Route(..), isStaticRoute, parseRoute, routeUrl)
+import Data.Route (Route(..), isStaticRoute, parseRoute, routeTitle, routeUrl)
 import Data.String.Common (split, toLower)
 import Data.String.Pattern (Pattern(..))
 import Data.Tuple (Tuple(..))
@@ -176,6 +177,8 @@ handleRoute :: RequestCtx -> Aff Server.Response
 handleRoute ctx =
   if isDatastarRequest ctx.headers then
     handleDatastarFragment ctx
+  else if wantsDatastarTransport ctx then
+    handleDatastarTransportPage ctx
   else if isFragmentRequest ctx.headers ctx.query then
     handleFragment ctx
   else if hasStatusQuery ctx then
@@ -229,6 +232,24 @@ handleDatastarFragment ctx = do
     Right html ->
       liftEffect $ Server.sseEventResponse
         (Server.datastarPatchElementsEvent (renderFragment ctx.lang ctx.route html))
+
+-- | Spike-only (datastar-shell-nav-port branch): the full-document,
+-- | Datastar-powered version of Home/About. Reuses pageRenderer for the
+-- | inner content -- identical content to the Alpine version, only the
+-- | chrome differs -- then wraps it with App.DatastarShell instead of
+-- | App.Layout.Page.renderDocument/App.Ui.Templates.SiteShell.
+handleDatastarTransportPage :: RequestCtx -> Aff Server.Response
+handleDatastarTransportPage ctx = do
+  result <- pageRenderer ctx.cfg ctx.route ctx.lang Nothing
+  pure case result of
+    Left err ->
+      Server.htmlErrorResponse
+        (DatastarShell.renderDsDocument ctx.nonce ctx.lang (DatastarShell.dsSitePage ctx.lang ctx.route (routeTitle ctx.lang ctx.route) (text "error")))
+        [ ]
+        (Server.errorStatusCode (errorStatus err))
+    Right html ->
+      htmlOk false [ ]
+        (DatastarShell.renderDsDocument ctx.nonce ctx.lang (DatastarShell.dsSitePage ctx.lang ctx.route (routeTitle ctx.lang ctx.route) html))
 
 -- | Html for a fragment request: statusful → fresh; otherwise the shared cache.
 fragmentHtml :: RequestCtx -> Aff (Either AppError Html)
@@ -326,6 +347,13 @@ isFragmentRequest headers query =
 isDatastarRequest :: Map String String -> Boolean
 isDatastarRequest headers =
   Map.lookup Datastar.datastarRequestHeader headers == Just "true"
+
+-- | Spike-only (datastar-shell-nav-port branch): the initial full-page load
+-- | for the Datastar-transport comparison, ?ds=1 on Home/About only --
+-- | every other route keeps rendering the unmodified Alpine path.
+wantsDatastarTransport :: RequestCtx -> Boolean
+wantsDatastarTransport ctx =
+  Map.lookup "ds" ctx.query == Just "1" && (ctx.route == Home || ctx.route == About)
 
 -- | Map AppError to HTTP status code
 errorStatus :: AppError -> Int

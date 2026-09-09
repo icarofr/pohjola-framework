@@ -49,7 +49,7 @@ spec = do
       html `StrAssert.shouldContain` "themeOpen: false"
       html `StrAssert.shouldContain` "langOpen: false"
       html `StrAssert.shouldContain` "drawerOpen: false"
-      html `StrAssert.shouldContain` "localStorage.getItem(&#x27;pohjola-theme&#x27;)"
+      html `StrAssert.shouldContain` "localStorage.getItem(&#x27;theme&#x27;)"
 
     it "dsShowFlag/dsShowNotFlag render data-show against the $signal" do
       render (el "div" [ dsShowFlag DsThemeMenuOpen ] [])

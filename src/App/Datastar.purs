@@ -26,11 +26,13 @@ module App.Datastar
   , dsNavGet
   , dsOnClickOutside
   , dsOnKeydownEscape
+  , dsSetTheme
   ) where
 
 import Prelude
 
 import App.Html (Attr, attr)
+import App.Theme (themeDarkName, themeLightName, themeStorageKey)
 import Data.Route (Route, routeUrl)
 import Data.I18n (Lang)
 
@@ -79,11 +81,14 @@ flagName = case _ of
 -- ============================================================================
 
 -- | Initializes every flag this page's chrome needs, all false, plus the
--- | `theme` signal read from localStorage the same way xDataTheme does.
+-- | `theme` signal read from the *same* localStorage key App.Alpine's
+-- | xDataTheme uses (App.Theme.themeStorageKey) -- so switching theme on
+-- | either transport's version of a page is reflected consistently for a
+-- | real side-by-side comparison, not two independent theme stores.
 dsSignalsInit :: Attr
 dsSignalsInit =
   attr "data-signals"
-    ( "{theme: (localStorage.getItem('pohjola-theme') || 'system'), "
+    ( "{theme: (localStorage.getItem('" <> themeStorageKey <> "') || 'system'), "
         <> flagName DsThemeMenuOpen
         <> ": false, "
         <> flagName DsLangMenuOpen
@@ -136,3 +141,23 @@ dsOnClickOutside f = attr "data-on:click__outside" ("$" <> flagName f <> " = fal
 
 dsOnKeydownEscape :: DsFlag -> Attr
 dsOnKeydownEscape f = attr "data-on:keydown__window__escape" ("$" <> flagName f <> " = false")
+
+-- | Sets the theme signal + localStorage (App.Theme.themeStorageKey) +
+-- | document.documentElement's data-theme, then closes the theme menu --
+-- | same three effects as App.Alpine's xSetThemeAndClose, same storage
+-- | key/theme names (App.Theme.themeLightName/themeDarkName), just a
+-- | Datastar signal assignment instead of an Alpine expression.
+dsSetTheme :: String -> Attr
+dsSetTheme mode =
+  attr "data-on:click"
+    ( "$theme = '" <> mode <> "'; localStorage.setItem('" <> themeStorageKey <> "', '" <> mode <> "'); "
+        <>
+          if mode == "system" then "document.documentElement.removeAttribute('data-theme')"
+          else
+            "document.documentElement.setAttribute('data-theme', '"
+              <> (if mode == "dark" then themeDarkName else themeLightName)
+              <> "')"
+        <> "; $"
+        <> flagName DsThemeMenuOpen
+        <> " = false"
+    )

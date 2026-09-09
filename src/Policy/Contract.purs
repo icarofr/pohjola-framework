@@ -49,6 +49,7 @@ scriptAllowlist :: Array String
 scriptAllowlist =
   [ "src/App/Layout/Scripts.purs"
   , "src/App/Layout/Page.purs"
+  , "src/App/DatastarShell.purs" -- spike-only (datastar-shell-nav-port branch)
   ]
 
 envReadAllowlist :: Array String
