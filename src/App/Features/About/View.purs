@@ -9,7 +9,6 @@ import App.Ui.Templates.Types
   ( EditorialSlots
   , PageTemplate(..)
   , editorialSlots
-  , emptyValue
   , valueSextuple
   , valuesSlots
   )
@@ -26,15 +25,18 @@ pageSlots lang =
   let
     d = (dict lang).about
     nav = (dict lang).nav
+    items = d.values.items
   in
     editorialSlots
       d.heading
-      (Just d.body)
-      { heading: d.heading
-      , lead: d.body
-      , body: d.body
+      (Just d.subtitle)
+      { heading: d.mission.heading
+      , lead: d.mission.lead
+      , body: d.mission.body
       }
-      (valuesSlots d.heading d.body (valueSextuple emptyValue emptyValue emptyValue emptyValue emptyValue emptyValue))
+      ( valuesSlots d.values.heading d.values.intro
+          (valueSextuple items.one items.two items.three items.four items.five items.six)
+      )
       [ PageHeader.breadcrumbHome lang nav.home
       , PageHeader.breadcrumbHere d.heading
       ]
