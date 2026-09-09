@@ -208,7 +208,13 @@ handleDatastarPatch ctx = do
       let
         event = Server.datastarPatchElementsEvent (render html)
       in
-        liftEffect $ Server.sseEventResponseMatching (Map.lookup "if-none-match" ctx.headers) event
+        -- Statusful banners are per-request. The full-document path is
+        -- no-store (`htmlOk`); the patch path must match or popstate on
+        -- `?status=` would keep a success banner for max-age=180.
+        if hasStatusQuery ctx then
+          liftEffect $ Server.sseNoStoreEventResponse event
+        else
+          liftEffect $ Server.sseEventResponseMatching (Map.lookup "if-none-match" ctx.headers) event
 
 -- | Html for a Datastar patch request: statusful → fresh; otherwise the
 -- | shared cache (the same cache full-document requests use).

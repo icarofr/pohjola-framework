@@ -47,6 +47,7 @@ module App.Server
   , streamResponse
   , sseEventResponse
   , sseEventResponseMatching
+  , sseNoStoreEventResponse
   , sseErrorEventResponse
   , datastarPatchElementsEvent
   , serve
@@ -522,11 +523,10 @@ sseEventResponseMatching ifNoneMatch eventBody = do
       , body: StreamBody stream
       }
 
--- | Error-shaped Datastar patch: still HTTP 200 (Datastar will not morph a
--- | 4xx/5xx — ADR-015), but `no-store` so a transient 404/500 cannot answer
--- | the next hover from cache.
-sseErrorEventResponse :: String -> Effect Response
-sseErrorEventResponse eventBody = do
+-- | One-shot SSE with `no-store`: statusful banners and error-shaped patches.
+-- | Still HTTP 200 (Datastar will not morph a 4xx/5xx — ADR-015).
+sseNoStoreEventResponse :: String -> Effect Response
+sseNoStoreEventResponse eventBody = do
   stream <- sseEventStreamImpl eventBody
   pure
     { status: 200
@@ -537,6 +537,9 @@ sseErrorEventResponse eventBody = do
         ]
     , body: StreamBody stream
     }
+
+sseErrorEventResponse :: String -> Effect Response
+sseErrorEventResponse = sseNoStoreEventResponse
 
 -- ============================================================================
 -- Server

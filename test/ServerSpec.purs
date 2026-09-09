@@ -3,7 +3,7 @@ module Test.ServerSpec where
 import Prelude
 
 import App.Bun (wyhash)
-import App.Server (ResponseBody(..), isUnsafePath, notModified, sseErrorEventResponse, sseEventResponse, sseEventResponseMatching)
+import App.Server (ResponseBody(..), isUnsafePath, notModified, sseErrorEventResponse, sseEventResponse, sseEventResponseMatching, sseNoStoreEventResponse)
 import Data.Array (find, mapMaybe, last)
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..), snd)
@@ -79,3 +79,6 @@ spec = do
         resp.status `shouldEqual` 200
         headerValue "Cache-Control" resp.headers `shouldEqual` Just "no-store"
         lastHeaderValue "ETag" resp.headers `shouldEqual` Nothing
+      it "no-store patches share that policy (statusful banners)" do
+        resp <- liftEffect $ sseNoStoreEventResponse event
+        headerValue "Cache-Control" resp.headers `shouldEqual` Just "no-store"
