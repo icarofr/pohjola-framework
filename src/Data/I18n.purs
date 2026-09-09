@@ -202,7 +202,7 @@ en =
   , hero:
       { eyebrow: "PureScript · Bun · Alpine.js"
       , headline: "The Type-Safe Functional Web Framework for Bun"
-      , body: "MPA simplicity with Alpine-powered fragment navigation. Built in PureScript with Bun runtime speed, typed Alpine.js micro-interactivity, and failures contained at one boundary — the server answers, it never crashes."
+      , body: "MPA simplicity with the instant feel of an SPA — Alpine prefetches on hover and morphs page fragments in place, no full reload. Built in PureScript with Bun runtime speed, typed micro-interactivity, and failures contained at one boundary — the server answers, it never crashes."
       , ctaLabel: "About Pohjola"
       , secondaryLabel: "Browse notes"
       }
@@ -343,7 +343,7 @@ fr =
   , hero:
       { eyebrow: "PureScript · Bun · Alpine.js"
       , headline: "Le framework web fonctionnel et typé pour Bun"
-      , body: "La simplicité d'une MPA avec une navigation par fragments propulsée par Alpine. Conçu en PureScript avec la vitesse de Bun, une réactivité Alpine.js typée, et des défaillances contenues à une seule frontière — le serveur répond toujours, il ne plante jamais."
+      , body: "La simplicité d'une MPA avec l'instantanéité d'une SPA — Alpine précharge au survol et remplace les fragments de page sur place, sans rechargement complet. Conçu en PureScript avec la vitesse de Bun, une micro-interactivité typée, et des défaillances contenues à une seule frontière — le serveur répond toujours, il ne plante jamais."
       , ctaLabel: "En savoir plus"
       , secondaryLabel: "Lire les articles"
       }
@@ -484,7 +484,7 @@ pt =
   , hero:
       { eyebrow: "PureScript · Bun · Alpine.js"
       , headline: "O framework web funcional e tipado para Bun"
-      , body: "A simplicidade de uma MPA com navegação por fragmentos via Alpine. Construído em PureScript com a velocidade do Bun, micro-interatividade Alpine.js tipada, e falhas contidas numa única fronteira — o servidor sempre responde, nunca cai."
+      , body: "A simplicidade de uma MPA com a instantaneidade de uma SPA — o Alpine pré-carrega ao passar o rato e substitui fragmentos da página no lugar, sem recarregar a página inteira. Construído em PureScript com a velocidade do Bun, micro-interatividade tipada, e falhas contidas numa única fronteira — o servidor sempre responde, nunca cai."
       , ctaLabel: "Sobre o Pohjola"
       , secondaryLabel: "Ver notas"
       }
