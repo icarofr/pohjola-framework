@@ -2,9 +2,9 @@
 /**
  * e2e/src drift gate for the data-page-* fragment-swap contract.
  *
- * App.Alpine.purs's `dataPage*Attr` constants are the single source of
+ * App.Datastar.purs's `dataPage*Attr` constants are the single source of
  * truth for which data-page-* attributes the app actually emits/syncs
- * (docs/conventions/alpine-contracts.md). Nothing statically stops an
+ * (docs/conventions/datastar-contracts.md). Nothing statically stops an
  * e2e spec from asserting on a data-page-* attribute that source no
  * longer defines -- that's exactly how e2e/i18n.spec.js broke CI this
  * session (it kept asserting on synced metadata after the sync script
@@ -16,19 +16,19 @@
  */
 import { globSync, ok, readText, rel, ROOT } from "./lib/repo.js";
 
-const ALPINE_PURS = `${ROOT}/src/App/Alpine.purs`;
+const DATASTAR_PURS = `${ROOT}/src/App/Datastar.purs`;
 
-const alpineSource = await readText(ALPINE_PURS);
+const datastarSource = await readText(DATASTAR_PURS);
 const definedAttrs = new Set(
-  [...alpineSource.matchAll(/^dataPage\w+Attr = "(data-page-[a-z-]+)"/gm)].map(
+  [...datastarSource.matchAll(/^dataPage\w+Attr = "(data-page-[a-z-]+)"/gm)].map(
     (m) => m[1],
   ),
 );
 
 if (definedAttrs.size === 0) {
   console.error(
-    `Error: found no \`dataPage*Attr = "data-page-..."\` definitions in ${ALPINE_PURS}. ` +
-      "Either App.Alpine.purs moved/was renamed, or this script's pattern needs updating.",
+    `Error: found no \`dataPage*Attr = "data-page-..."\` definitions in ${DATASTAR_PURS}. ` +
+      "Either App.Datastar.purs moved/was renamed, or this script's pattern needs updating.",
   );
   process.exit(1);
 }
@@ -52,7 +52,7 @@ if (unknownRefs.length === 0) {
   );
 } else {
   console.error(
-    "e2e spec(s) reference a data-page-* attribute App.Alpine.purs no longer defines:",
+    "e2e spec(s) reference a data-page-* attribute App.Datastar.purs no longer defines:",
   );
   for (const { file, attr } of unknownRefs) {
     console.error(`  ${file}: "${attr}"`);

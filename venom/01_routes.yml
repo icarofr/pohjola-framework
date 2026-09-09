@@ -115,13 +115,14 @@ testcases:
     assertions:
     - result.statuscode ShouldEqual 405
 
-- name: GET /en with X-Alpine-Request returns fragment
+- name: GET /en with datastar-request returns a patch
   steps:
   - type: http
     method: GET
     url: "{{.app}}/en"
-    headers: { X-Alpine-Request: "true" }
+    headers: { datastar-request: "true" }
     assertions:
     - result.statuscode ShouldEqual 200
+    - result.body ShouldContainSubstring "event: datastar-patch-elements"
     - result.body ShouldContainSubstring "data-page-title"
     - result.body ShouldNotContainSubstring "<!DOCTYPE"
