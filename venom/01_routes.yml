@@ -44,27 +44,10 @@ testcases:
   steps:
   - type: http
     method: GET
-    url: "{{.app}}/fr/a-propos"
+    url: "{{.app}}/fr/about"
     assertions:
     - result.statuscode ShouldEqual 200
     - result.body ShouldContainSubstring "À propos"
-
-- name: en contact returns 200
-  steps:
-  - type: http
-    method: GET
-    url: "{{.app}}/en/contact"
-    assertions:
-    - result.statuscode ShouldEqual 200
-    - result.body ShouldContainSubstring "Contact"
-
-- name: fr contact returns 200
-  steps:
-  - type: http
-    method: GET
-    url: "{{.app}}/fr/contact"
-    assertions:
-    - result.statuscode ShouldEqual 200
 
 - name: robots.txt returns 200
   steps:

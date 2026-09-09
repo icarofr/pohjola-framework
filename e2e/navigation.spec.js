@@ -98,12 +98,12 @@ test.describe("Alpine AJAX navigation", () => {
       window.__marker = 1;
     });
 
-    await page.locator('main a[href="/en/about"]').first().click();
+    await page.locator('main a[href="/en/guarantees"]').first().click();
 
-    await expect(page).toHaveURL(/\/en\/about/);
-    await expect(page).toHaveTitle(/About/);
+    await expect(page).toHaveURL(/\/en\/guarantees/);
+    await expect(page).toHaveTitle(/Guarantees/);
     await expect(page.locator('div#content[data-page-title]')).toContainText(
-      "About Pohjola",
+      "Guarantees",
     );
 
     expect(await page.evaluate(() => window.__marker)).toBe(1);

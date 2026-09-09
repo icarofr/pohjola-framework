@@ -20,7 +20,12 @@
 // change should be a visible decision, not a silent behaviour shift.
 import { test, expect } from "@playwright/test";
 
-const TARGET = "/en/posts";
+// TARGET was /en/posts, the data-backed route, until the clean-sheet rebuild
+// removed it (see .scratch/clean-sheet-homepage/) -- no data-backed exemplar
+// exists in the tree right now (see CLAUDE.md). Guarantees stands in as an
+// ordinary static route; the cache-policy assertions below don't depend on
+// static vs. data-backed, only on "a second full page distinct from About".
+const TARGET = "/en/guarantees";
 
 test("HTML responses are private and carry no validators (W6)", async ({
   request,
@@ -34,7 +39,7 @@ test("HTML responses are private and carry no validators (W6)", async ({
   // prefetch becomes pure overhead. No ETag/Last-Modified is emitted; the
   // max-age is the whole freshness story.
   // See App.Server.htmlCacheControl.
-  for (const path of ["/en", "/en/about", "/en/posts", "/en/posts/1"]) {
+  for (const path of ["/en", "/en/about", TARGET]) {
     const res = await request.get(path);
     expect(res.status()).toBe(200);
     const h = res.headers();
@@ -45,16 +50,6 @@ test("HTML responses are private and carry no validators (W6)", async ({
     expect(h["last-modified"], `${path} last-modified`).toBeUndefined();
     expect(h["expires"], `${path} expires`).toBeUndefined();
   }
-});
-
-test("the posts route varies on the Alpine header like every other page", async ({
-  request,
-}) => {
-  // /en/posts is the data-backed route. It must vary like every other page,
-  // so a cache could serve this full document to a request that asked for a
-  // fragment — the two differ only by that request header.
-  const res = await request.get("/en/posts");
-  expect(res.headers()["vary"]).toContain("x-alpine-request");
 });
 
 test("public documents are shared-cacheable", async ({ request }) => {
@@ -89,9 +84,9 @@ test("fragment signal matrix — header, query, both, neither (W2)", async ({
   // Asserts the full response, not just body shape: an earlier version checked
   // only for <!DOCTYPE>/id="content" while the comment called it the fragment
   // protocol contract. Status, Content-Type and Vary are part of that contract.
-  // Covers BOTH the static route and TARGET, the data-backed route the click test
+  // Covers BOTH /en/about and TARGET, the route the click test below
   // navigates to. Previously only /en/about was checked, so a fragment-shape
-  // regression on /en/posts could pass the matrix AND the cache-provenance test
+  // regression on TARGET could pass the matrix AND the cache-provenance test
   // — the click test asserts provenance, not shape, and deliberately tolerates
   // an unavailable cached body. This closes that gap without making body
   // retrieval a cache-policy prerequisite: these are plain requests, no cache.

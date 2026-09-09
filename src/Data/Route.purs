@@ -97,7 +97,8 @@ routeCodec Pt = root $ prefix "pt" $ G.sum
 -- URL generation (derived from codec)
 -- ============================================================================
 
--- | Full URL path: /en/about, /fr/a-propos
+-- | Full URL path: /en/about, /fr/about (the slug is unified across
+-- | languages; only the page's own copy is translated)
 routeUrl :: Lang -> Route -> String
 routeUrl lang = print (routeCodec lang)
 
