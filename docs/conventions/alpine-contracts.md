@@ -65,6 +65,7 @@ Every Alpine attribute is a named constructor in `App.Alpine`:
 | Constructor | Produces |
 |---|---|
 | `xDataFlag MenuOpen false` | `x-data="{ menuOpen: false }"` |
+| `xDataThemeWithFlag ThemeMenuOpen LangMenuOpen false` | `x-data="{ theme: …, themeOpen: false, open: false }"` |
 | `xShowFlag MenuOpen` | `x-show="menuOpen"` |
 | `xShowNotFlag MenuOpen` | `x-show="!menuOpen"` |
 | `ariaExpandedFlag MenuOpen` | `:aria-expanded="menuOpen.toString()"` |
@@ -102,8 +103,9 @@ behaviour belongs on the server, not that the seam needs loosening.
 - **`navLink`** — route-aware internal link: `x-target.push`, `aria-current="page"` when
   `target == current`, hover prefetch only when inactive. Use with
   **`navLinkClasses`** for shell surfaces (`NavDesktop` → `btn-active`,
-  `NavMobile` → `menu-active`, `NavFooter` → `link link-hover`). See
-  `docs/conventions/chrome-checklist.md`.
+  `NavMobile` → `menu-active`, `NavFooter` → `link link-hover`). Theme and
+  language dropdown **items** use **`dropdownItemClasses`** (same ghost-button
+  recipe for both menus). See `docs/conventions/chrome-checklist.md`.
 - **`spaLink`** — bakes `x-target.push` + `prefetchHover` + real href. The
   prefetch sends `alpineRequestHeader` so the server returns a fragment the
   browser caches; the click hits cache with zero round-trip. Degrades to a
@@ -117,6 +119,10 @@ behaviour belongs on the server, not that the seam needs loosening.
   in `App.Ui.Templates.SiteShell`.
 - **`renderFragment`** — shared fragment builder (`Page.purs` + `Main.purs`).
   Fragments never stream (small, already fast).
+- **Scroll on swap** — `TitleSync` listens for `ajax:merged` (Alpine AJAX
+  navigation *and* the popstate restore path, which re-dispatches that event)
+  and calls `window.scrollTo({ top: 0 })`. A fragment swap does not otherwise
+  move the window, so without this the previous page's scroll would stick.
 
 ## Scopes
 

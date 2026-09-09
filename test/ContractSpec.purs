@@ -16,7 +16,7 @@ module Test.ContractSpec where
 
 import Prelude
 
-import App.Alpine (Flag(..), NavChrome(..), ThemeMode(..), contentTarget, cycleTheme, flagName, navLinkClasses, renderExpr, setFlag, setTheme, spaLink, themeToggle, toggleFlag)
+import App.Alpine (Flag(..), NavChrome(..), ThemeMode(..), contentTarget, cycleTheme, dropdownItemClass, dropdownItemClasses, dropdownPanelClass, flagName, navLinkClasses, renderExpr, setFlag, setTheme, spaLink, themeToggle, toggleFlag)
 import App.Theme (themeInitScript, themeDarkName, themeLightName)
 import App.Config (Config)
 import App.Features.Home.View as Home
@@ -181,6 +181,13 @@ spec = do
         for_ allLangs \lang -> do
           html <- renderStaticPage route lang
           html `StrAssert.shouldContain` ("id=\"" <> contentTarget <> "\"")
+
+    it "rendered pages contain no em dashes" do
+      for_ staticRoutes \route ->
+        for_ allLangs \lang -> do
+          html <- renderStaticPage route lang
+          html `StrAssert.shouldNotContain` "—"
+      renderErrorPage "test-nonce-123" En 404 `StrAssert.shouldNotContain` "—"
 
     it "full documents carry the template page shell" do
       html <- renderStaticPage Home En
@@ -428,6 +435,9 @@ spec = do
     it "footer uses link link-hover" do
       navLinkClasses NavFooter true `shouldEqual` "link link-hover"
       navLinkClasses NavFooter false `shouldEqual` "link link-hover"
+    it "desktop dropdown items use the same ghost-button recipe" do
+      dropdownItemClasses false `shouldEqual` "btn btn-ghost btn-sm w-full justify-start"
+      dropdownItemClasses true `shouldEqual` "btn btn-ghost btn-sm w-full justify-start btn-active"
 
     it "the rendered page does not prefetch its own route" do
       for_ staticRoutes \route ->
@@ -485,6 +495,19 @@ spec = do
       html `StrAssert.shouldContain` "x-show=\"themeOpen\""
       html `StrAssert.shouldContain` ("setAttribute(&#x27;data-theme&#x27;,&#x27;" <> themeLightName <> "&#x27;)")
       html `StrAssert.shouldContain` "dropdown dropdown-end"
+    it "language switcher uses Alpine disclosure in navbar" do
+      html <- renderStaticPage Home En
+      -- Must be a distinct x-data field, not the substring inside themeOpen: false.
+      html `StrAssert.shouldContain` "themeOpen: false, open: false"
+      html `StrAssert.shouldContain` ":aria-expanded=\"open.toString()\""
+      html `StrAssert.shouldContain` "x-show=\"open\""
+      html `StrAssert.shouldContain` "open = !open"
+    it "theme and language dropdowns share one item and panel recipe" do
+      html <- renderStaticPage Home En
+      html `StrAssert.shouldContain` dropdownPanelClass
+      html `StrAssert.shouldNotContain` "mt-3 w-44 bg-base-100"
+      html `StrAssert.shouldContain` dropdownItemClass
+      html `StrAssert.shouldContain` dropdownItemClasses true
     it "language switcher uses route links in marketing header" do
       html <- renderStaticPage Home En
       html `StrAssert.shouldContain` "/en"
@@ -531,7 +554,10 @@ spec = do
           StrAssert.shouldContain html "setAttribute('data-theme'"
           StrAssert.shouldContain html themeLightName
           StrAssert.shouldContain html themeDarkName
-          StrAssert.shouldContain html "document.addEventListener('ajax:merged',sync);"
+          -- Fragment swaps (nav, language) and popstate restore both go
+          -- through ajax:merged; syncing title/lang without scrolling left
+          -- the previous page's scroll position on the new view.
+          StrAssert.shouldContain html "document.addEventListener('ajax:merged',function(){sync();window.scrollTo({top:0,left:0,behavior:'instant'})});"
           StrAssert.shouldContain html "document.documentElement.lang=d.pageLang"
           StrAssert.shouldContain html "window.addEventListener('popstate',restore,true);"
           StrAssert.shouldContain html "function restore(event){event.stopImmediatePropagation();fetch(location.href"

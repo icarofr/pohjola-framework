@@ -35,15 +35,16 @@ renderHeadScript nonce = case _ of
 
 -- | Fragment head-sync: reads data-page-title/data-page-lang from #content
 -- | and patches <title>/<html lang> after a fragment swap or history
--- | restore. Deliberately just these two — the only fields with a real
--- | client-side observer (browser tab title; screen-reader language on
--- | navigation). SEO/social metadata (description, OG, canonical,
--- | hreflang) is correct in the server-rendered <head> on every direct
--- | request; crawlers and unfurlers never execute this script, so it isn't
--- | synced here — see App.Alpine's dataPageTitleAttr/dataPageLangAttr doc.
+-- | restore, then scrolls to the top of the new view. Deliberately just
+-- | those two fields — the only ones with a real client-side observer
+-- | (browser tab title; screen-reader language on navigation). SEO/social
+-- | metadata (description, OG, canonical, hreflang) is correct in the
+-- | server-rendered <head> on every direct request; crawlers and unfurlers
+-- | never execute this script, so it isn't synced here — see App.Alpine's
+-- | dataPageTitleAttr/dataPageLangAttr doc.
 pageSyncScript :: String
 pageSyncScript =
-  "(function(){function sync(){var m=document.getElementById('" <> contentTarget <> "');if(!m)return;var d=m.dataset;if(d.pageTitle)document.title=d.pageTitle;if(d.pageLang)document.documentElement.lang=d.pageLang;}function restore(event){event.stopImmediatePropagation();fetch(location.href,{headers:{'X-Alpine-Request':'true'}}).then(function(r){if(!r.ok)throw new Error('fragment restore failed');return r.text()}).then(function(h){var d=new DOMParser().parseFromString(h,'text/html'),n=d.getElementById('" <> contentTarget <> "'),o=document.getElementById('" <> contentTarget <> "');if(!n||!o||n.tagName!=='DIV'||!n.hasAttribute('" <> dataPageTitleAttr <> "'))throw new Error('invalid navigation fragment');o.replaceWith(n);sync();document.dispatchEvent(new CustomEvent('ajax:merged',{detail:{url:location.href}}));window.scrollTo({top:0,left:0,behavior:'instant'})})}if(!history.state)history.replaceState({__ajax:true},'',location.href);document.addEventListener('ajax:merged',sync);window.addEventListener('popstate',restore,true);sync()})();"
+  "(function(){function sync(){var m=document.getElementById('" <> contentTarget <> "');if(!m)return;var d=m.dataset;if(d.pageTitle)document.title=d.pageTitle;if(d.pageLang)document.documentElement.lang=d.pageLang;}function restore(event){event.stopImmediatePropagation();fetch(location.href,{headers:{'X-Alpine-Request':'true'}}).then(function(r){if(!r.ok)throw new Error('fragment restore failed');return r.text()}).then(function(h){var d=new DOMParser().parseFromString(h,'text/html'),n=d.getElementById('" <> contentTarget <> "'),o=document.getElementById('" <> contentTarget <> "');if(!n||!o||n.tagName!=='DIV'||!n.hasAttribute('" <> dataPageTitleAttr <> "'))throw new Error('invalid navigation fragment');o.replaceWith(n);document.dispatchEvent(new CustomEvent('ajax:merged',{detail:{url:location.href}}))})}if(!history.state)history.replaceState({__ajax:true},'',location.href);document.addEventListener('ajax:merged',function(){sync();window.scrollTo({top:0,left:0,behavior:'instant'})});window.addEventListener('popstate',restore,true);sync()})();"
 
 -- | Nonced JSON-LD structured data script renderer.
 renderJsonLdScript :: String -> String -> Html
