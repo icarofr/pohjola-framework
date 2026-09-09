@@ -6,6 +6,25 @@ drawer), gated behind `?ds=1` so the unmodified Alpine version stays the
 comparison baseline on the same branch. See `spec.md` for the full spec and
 `issues/02`–`05` for the ticket breakdown this executed.
 
+**Update (post-`/code-review`):** the review caught one more real bug this
+document's original parity checklist never exercised — nav links to
+`Guarantees`/`Docs` (out of scope, never ported) still carried `dsNavGet`,
+so clicking them fired a Datastar patch anyway; `handleDatastarFragment` has
+no route guard and `datastarInnerContent`'s catch-all is `text ""`, so the
+page silently went blank instead of navigating. Fixed by only attaching
+`dsNavGet` to `Home`/`About` links (`isDatastarPortedRoute`); every other
+nav target is now a real, unadorned link that falls through to a normal
+page load. Also fixed: a hardcoded `"datastar-request"` string literal
+duplicating `Datastar.datastarRequestHeader` instead of importing it, three
+repeated class-string literals in `DatastarShell.purs` that `App.Alpine`
+already centralizes for the same reason (`navLinkClasses`,
+`dropdownPanelClass`, `dropdownItemClass`), a dead duplicate `contentTarget`
+export, a footer link that silently dropped `aria-current`, and the vendored
+`datastar.js` was pinned to a specific commit SHA + added to
+`static/assets/SHA256SUMS` (ticket 02's checkbox claimed this was done; it
+wasn't — see the code-review's Spec-axis findings below). Re-verified after
+each fix; see the parity checklist below, which held throughout.
+
 ## Bundle size — real, measured
 
 Measured from this branch's actual `make build` output (`dist/assets/js/`),

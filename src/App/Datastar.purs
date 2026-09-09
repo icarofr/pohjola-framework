@@ -10,8 +10,7 @@
 -- | dropdowns, mobile drawer) actually need. Not a full port of every
 -- | App.Alpine constructor.
 module App.Datastar
-  ( contentTarget
-  , datastarRequestHeader
+  ( datastarRequestHeader
   , dataPageTitleAttr
   , dataPageLangAttr
   , DsFlag(..)
@@ -41,9 +40,6 @@ import Data.I18n (Lang)
 -- same data-page-* payload); Datastar's own request-detection header is
 -- separate and sent automatically by @get/@post, per its own docs.
 -- ============================================================================
-
-contentTarget :: String
-contentTarget = "content"
 
 -- | Sent automatically by every Datastar @get/@post call. Server-side
 -- | detection of "is this a Datastar action" must key off this, entirely

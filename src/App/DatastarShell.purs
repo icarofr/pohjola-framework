@@ -12,6 +12,7 @@ module App.DatastarShell (dsSitePage, renderDsDocument) where
 
 import Prelude
 
+import App.Alpine (contentTarget)
 import App.Layout.Scripts (HeadScript(..), renderHeadScript)
 import App.Layout.Styles (stylesCss)
 import App.Datastar
@@ -40,6 +41,21 @@ import Data.String.Common (toUpper)
 siteDrawerId :: String
 siteDrawerId = "ds-site-drawer"
 
+-- | Centralized the same way App.Alpine.dropdownPanelClass/dropdownItemClass
+-- | are -- "so shell edits cannot forget them" (Alpine.purs's own words for
+-- | why this exists there). Both dropdowns share one recipe here too.
+dsDropdownPanelClass :: String
+dsDropdownPanelClass = "menu menu-sm dropdown-content rounded-box z-50 mt-3 w-52 bg-base-100 p-2 shadow"
+
+dsDropdownItemClass :: String
+dsDropdownItemClass = "btn btn-ghost btn-sm w-full justify-start"
+
+-- | Same active-nav treatment App.Alpine.navLinkClasses centralizes for
+-- | NavDesktop/NavMobile (text-primary font-semibold, not a filled pill --
+-- | see this session's earlier chrome-color work).
+dsActiveNavClass :: String -> Boolean -> String
+dsActiveNavClass base isActive = base <> if isActive then " text-primary font-semibold" else ""
+
 -- | Same #content/data-page-* contract App.Alpine's fragment path uses --
 -- | App.Layout.Scripts' dsShellRouterScript reads these exact fields.
 -- | No status-banner param: form status isn't in ticket 03/04's scope
@@ -51,7 +67,7 @@ dsSitePage lang route title content =
   in
     el "div"
       ( [ class_ "drawer drawer-end min-h-dvh bg-base-100 text-base-content"
-        , id_ "content"
+        , id_ contentTarget
         , attr dataPageTitleAttr title
         , attr dataPageLangAttr (langTag lang)
         , dsSignalsInit
@@ -105,13 +121,25 @@ renderHeader lang route labels =
         ]
     ]
 
+-- | Only Home/About are ported (spec.md's scope) -- Guarantees/Docs stay
+-- | real, plain links. A real bug this fixed: dsNavGet on every nav link
+-- | regardless of route meant clicking Guarantees/Docs fired a Datastar
+-- | patch anyway; handleDatastarFragment has no route guard of its own and
+-- | datastarInnerContent's catch-all is `text ""`, so the page silently
+-- | went blank instead of navigating.
+isDatastarPortedRoute :: Route -> Boolean
+isDatastarPortedRoute = case _ of
+  Home -> true
+  About -> true
+  _ -> false
+
 dsNavLink :: Lang -> Route -> Route -> String -> Html
 dsNavLink lang current target label =
   el "a"
-    [ href (routeUrl lang target)
-    , dsNavGet lang target
-    , class_ ("btn btn-ghost btn-sm" <> if target == current then " text-primary font-semibold" else "")
-    ]
+    ( [ href (routeUrl lang target) ]
+        <> (if isDatastarPortedRoute target then [ dsNavGet lang target ] else [])
+        <> [ class_ (dsActiveNavClass "btn btn-ghost btn-sm" (target == current)) ]
+    )
     [ text label ]
 
 renderThemeDropdown :: ShellLabels -> Html
@@ -131,7 +159,7 @@ renderThemeDropdown labels =
         [ text "◐" ]
     , el "ul"
         [ dsShowFlag DsThemeMenuOpen
-        , class_ "menu menu-sm dropdown-content rounded-box z-50 mt-3 w-52 bg-base-100 p-2 shadow"
+        , class_ dsDropdownPanelClass
         ]
         [ themeMenuItem "light" labels.themeLight
         , themeMenuItem "dark" labels.themeDark
@@ -143,7 +171,7 @@ themeMenuItem :: String -> String -> Html
 themeMenuItem value label =
   el "li" []
     [ el "button"
-        [ class_ "btn btn-ghost btn-sm w-full justify-start"
+        [ class_ dsDropdownItemClass
         , dsClassWhenEq "btn-active" "theme" value
         , attr "type" "button"
         , dsSetTheme value
@@ -168,7 +196,7 @@ renderLangDropdown currentLang route labels =
         [ text (toUpper (langTag currentLang)) ]
     , el "ul"
         [ dsShowFlag DsLangMenuOpen
-        , class_ "menu menu-sm dropdown-content rounded-box z-50 mt-3 w-52 bg-base-100 p-2 shadow"
+        , class_ dsDropdownPanelClass
         ]
         [ langMenuItem En currentLang labels.langEn
         , langMenuItem Fr currentLang labels.langFr
@@ -184,7 +212,7 @@ renderLangDropdown currentLang route labels =
       [ el "a"
           [ href (routeUrl targetLang route)
           , dsNavGet targetLang route
-          , class_ ("btn btn-ghost btn-sm w-full justify-start" <> if targetLang == current then " btn-active" else "")
+          , class_ (dsDropdownItemClass <> if targetLang == current then " btn-active" else "")
           , dsSetFlag DsLangMenuOpen false
           ]
           [ text label ]
@@ -214,10 +242,10 @@ mobileNavLink :: Lang -> Route -> Route -> String -> Html
 mobileNavLink lang current target label =
   el "li" []
     [ el "a"
-        [ href (routeUrl lang target)
-        , dsNavGet lang target
-        , class_ ("btn btn-ghost justify-start" <> if target == current then " text-primary font-semibold" else "")
-        ]
+        ( [ href (routeUrl lang target) ]
+            <> (if isDatastarPortedRoute target then [ dsNavGet lang target ] else [])
+            <> [ class_ (dsActiveNavClass "btn btn-ghost justify-start" (target == current)) ]
+        )
         [ text label ]
     ]
 
@@ -245,9 +273,15 @@ renderFooterPlain lang route labels =
         ]
     ]
 
+-- | Real aria-current parity with SiteShell.footerLink (via navLink) --
+-- | the earlier version silently dropped this by discarding `current`.
 footerLink :: Lang -> Route -> Route -> String -> Html
-footerLink lang _ target label =
-  el "a" [ href (routeUrl lang target), class_ "link link-hover" ] [ text label ]
+footerLink lang current target label =
+  el "a"
+    ( [ href (routeUrl lang target), class_ "link link-hover" ]
+        <> if target == current then [ attr "aria-current" "page" ] else []
+    )
+    [ text label ]
 
 -- | Full document wrapper for the Datastar-transport version of a page --
 -- | deliberately NOT App.Layout.Page.renderDocument (that stays untouched,

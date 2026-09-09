@@ -111,6 +111,26 @@ assets-check:
 	@echo "Asset verification OK"
 
 # ==================================================================================== #
+# DATASTAR ASSET — spike only (spike/datastar-shell-nav-port branch), pinned by
+# commit SHA (jsdelivr's gh provider), not a moving @main ref -- checksummed the
+# same way, tracked in the same SHA256SUMS file as the Alpine assets above.
+# ==================================================================================== #
+
+DATASTAR_COMMIT := ab49c217c3d17578f262e7356b84808e892667dc
+
+## assets-datastar-spike: download the pinned Datastar build (spike only)
+.PHONY: assets-datastar-spike
+assets-datastar-spike:
+	curl -fsSL "https://cdn.jsdelivr.net/gh/starfederation/datastar@$(DATASTAR_COMMIT)/bundles/datastar.js" -o $(ASSETS_DIR)/datastar.js
+	@echo "Datastar (commit $(DATASTAR_COMMIT)) downloaded to $(ASSETS_DIR)/"
+
+## assets-check-datastar-spike: verify the Datastar asset against SHA256SUMS
+.PHONY: assets-check-datastar-spike
+assets-check-datastar-spike:
+	@echo "Verifying Datastar asset (spike)..."
+	@shasum -a 256 static/assets/js/datastar.js | grep -qF "$$(grep datastar.js static/assets/SHA256SUMS)" && echo "Datastar asset verification OK" || (echo "Datastar asset checksum MISMATCH" && exit 1)
+
+# ==================================================================================== #
 # DEVELOPMENT
 # ==================================================================================== #
 

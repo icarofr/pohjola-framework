@@ -58,6 +58,7 @@ module App.Server
 import Prelude
 
 import App.Alpine (alpineRequestHeader)
+import App.Datastar (datastarRequestHeader)
 import App.Logger (Level(..))
 import App.Logger as AppLog
 import App.ServerBun (JsRequest, JsResponse, ReadableStream, generateNonce, serveImpl, sseEventStreamImpl)
@@ -490,7 +491,7 @@ sseEventResponse eventBody = do
     , headers: securityHeaders <>
         [ Tuple "Content-Type" "text/event-stream"
         , Tuple "Cache-Control" "no-cache"
-        , Tuple "Vary" "datastar-request"
+        , Tuple "Vary" datastarRequestHeader
         ]
     , body: StreamBody stream
     }
