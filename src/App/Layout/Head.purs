@@ -10,20 +10,16 @@ module App.Layout.Head
 import Prelude
 
 import App.Html (Html, attr, content_, el, href, name_, property_, rel_, text)
-import App.Layout.Scripts (HeadScript(..), renderHeadScript, renderJsonLdScript)
+import App.Layout.Scripts (HeadScript(..), renderHeadScript)
 import App.Layout.Styles (stylesCss)
-import Data.Argonaut.Core (Json, fromObject, fromString, stringify)
 import Data.Array (filter)
 import Data.Content (siteInfo)
 import Data.Foldable (foldMap)
-import Data.I18n (Lang(..), defaultLang, dict, langTag)
+import Data.I18n (Lang(..), defaultLang, langTag)
 import Data.Maybe (Maybe(..))
-import Data.Route (Route(..), allLangs, routeTitle, routeUrl)
+import Data.Route (Route, allLangs, routeTitle, routeUrl)
 import Data.String.Common (replaceAll) as S
 import Data.String.Pattern (Pattern(..), Replacement(..))
-import Data.Tuple (Tuple(..))
-import Foreign.Object (Object)
-import Foreign.Object as Object
 
 renderHead :: String -> String -> Lang -> Route -> Html
 renderHead baseUrl nonce lang route =
@@ -72,18 +68,13 @@ ogLocale En = "en_US"
 ogLocale Fr = "fr_FR"
 ogLocale Pt = "pt_PT"
 
+-- | `Route` is temporarily zero-constructor (clean-sheet rebuild, see
+-- | .scratch/clean-sheet-homepage/) — unreachable body, kept total via the
+-- | wildcard. Goes back to a named, exhaustive case over `dict.seo.*` as
+-- | soon as a route exists to describe.
 seoDescription :: Lang -> Route -> String
-seoDescription lang route =
-  let
-    d = dict lang
-  in
-    case route of
-      Home -> d.seo.homeDescription
-      About -> d.seo.aboutDescription
-      Contact -> d.seo.contactDescription
-      PostList -> d.seo.postsDescription
-      PostDetail _ -> d.seo.postDetailDescription
-      Fixtures -> d.seo.fixturesDescription
+seoDescription _ route = case route of
+  _ -> ""
 
 -- ============================================================================
 -- JSON-LD structured data — type-safe, exhaustive on Route, XSS-escaped
@@ -91,43 +82,15 @@ seoDescription lang route =
 
 -- | JSON-LD structured data for a route. Exhaustive on Route — each route
 -- | type has its own schema. Returns Maybe because not every route has
--- | structured data (About, Contact don't).
+-- | structured data.
+-- |
+-- | `Route` is temporarily zero-constructor (clean-sheet rebuild, see
+-- | .scratch/clean-sheet-homepage/) — unreachable body, kept total via the
+-- | wildcard. Goes back to a named, exhaustive case per route as soon as a
+-- | route exists to describe.
 renderJsonLd :: String -> String -> Lang -> Route -> Maybe Html
-renderJsonLd baseUrl nonce lang route = case route of
-  Home -> Just $ jsonLdScript nonce
-    [ Tuple "@context" "https://schema.org"
-    , Tuple "@type" "WebSite"
-    , Tuple "name" siteInfo.title
-    , Tuple "url" baseUrl
-    , Tuple "inLanguage" (langTag lang)
-    ]
-  PostList -> Just $ jsonLdScript nonce
-    [ Tuple "@context" "https://schema.org"
-    , Tuple "@type" "Blog"
-    , Tuple "name" siteInfo.title
-    , Tuple "url" (baseUrl <> routeUrl lang PostList)
-    ]
-  PostDetail _ -> Just $ jsonLdScript nonce
-    [ Tuple "@context" "https://schema.org"
-    , Tuple "@type" "BlogPosting"
-    -- Placeholder — renderJsonLd receives Route, not the fetched Post.
-    -- A real app would render JSON-LD after data fetch, outside renderHead.
-    , Tuple "headline" "Blog Post"
-    ]
-  About -> Nothing
-  Contact -> Nothing
-  Fixtures -> Nothing
-
--- | Render a JSON-LD <script> tag with XSS-safe escaping.
--- | Replaces < with \u003c to prevent </script> injection.
-jsonLdScript :: String -> Array (Tuple String String) -> Html
-jsonLdScript nonce pairs =
-  let
-    obj :: Object Json
-    obj = Object.fromFoldable (map (\(Tuple k v) -> Tuple k (fromString (escapeJson v))) pairs)
-    json = stringify (fromObject obj)
-  in
-    renderJsonLdScript nonce json
+renderJsonLd _ _ _ route = case route of
+  _ -> Nothing
 
 -- | Escape < as \u003c (the JSON-LD XSS fix from Next.js's guide).
 -- | Also escapes " and \ for valid JSON strings. Order matters:

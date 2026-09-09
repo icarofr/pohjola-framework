@@ -46,8 +46,8 @@ renderFragment :: Lang -> Route -> Html -> String
 renderFragment _ _ content =
   render content
 
-renderErrorFragment :: Lang -> Route -> Int -> String
-renderErrorFragment lang _ status =
+renderErrorFragment :: Lang -> Int -> String
+renderErrorFragment lang status =
   render (Shell.siteErrorPage lang status)
 
 renderErrorPage :: String -> Lang -> Int -> String

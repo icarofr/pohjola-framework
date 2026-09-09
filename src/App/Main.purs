@@ -9,20 +9,13 @@ import Prelude
 import App.Alpine (alpineRequestHeader)
 import App.Cache (PageCache, defaultTtlMs, insertDynamic, insertStatic, lookupDynamic, lookupStatic, mkPageCache)
 import App.Config (Config, loadConfig)
-import App.Email (ResendConfig, parseForm, sendContactEmail, sendNewsletterEmail)
 import App.Env (getEnvMaybe)
 import App.Error (AppError(..))
-import App.Form (ContactSubmission(..), FormStatus(..), NewsletterSubmission(..), decodeContact, decodeNewsletter, formStatusQuery, parseFormStatus)
+import App.Form (FormStatus, parseFormStatus)
 import App.Migration (migrate, renderMigrationError)
-import App.Features.About.Page as About
-import App.Features.Contact.Page as Contact
-import App.Features.Fixtures.Page as Fixtures
-import App.Features.Home.Page as Home
-import App.Features.Posts.Page as Posts
 import App.Html (Html)
 import App.Layout.Page (renderErrorFragment, renderErrorPage, renderFragment, renderDocument)
 import App.Logger as Log
-import App.RateLimit (RateLimiter, RateLimitVerdict(..), checkRateLimit, mkRateLimiter)
 import App.Server as Server
 import App.Sitemap (renderRobots, renderSitemap)
 import Data.Array (head)
@@ -30,8 +23,8 @@ import Data.Either (Either(..))
 import Data.I18n (Lang, defaultLang, parseLang)
 import Data.Map (Map)
 import Data.Map as Map
-import Data.Maybe (Maybe(..), fromMaybe, isJust, isNothing)
-import Data.Route (Route(..), isStaticRoute, parseRoute, routeUrl)
+import Data.Maybe (Maybe(..), fromMaybe, isJust)
+import Data.Route (Route, isStaticRoute, parseRoute, routeUrl)
 import Data.String.Common (split, toLower)
 import Data.String.Pattern (Pattern(..))
 import Data.Tuple (Tuple(..))
@@ -43,27 +36,9 @@ import Effect.Class (liftEffect)
 -- Router
 -- ============================================================================
 
--- | Rate-limit gate for the two form POST endpoints. A `rateLimitMax` of 0
--- | disables limiting (local dev). Denials get a 429 with Retry-After equal
--- | to the current window's remaining lifetime (not a fresh full window) —
--- | telling a denied client to wait 60s when the window opens in 3s is wrong.
-rateGate :: Config -> RateLimiter -> Server.Request -> Aff Server.Response -> Aff Server.Response
-rateGate cfg limiter request next =
-  if cfg.rateLimitMax <= 0 then next
-  else do
-    verdict <- liftEffect $ checkRateLimit limiter cfg.rateLimitMax cfg.rateLimitWindowMs request.ip
-    case verdict of
-      Allowed -> next
-      Denied retryAfterMs -> do
-        liftEffect $ Log.logWarn "rate-limited" [ Tuple "rid" request.id, Tuple "ip" request.ip ]
-        pure $ Server.tooManyRequests (retryAfterMs / 1000.0)
-
-router :: Config -> RateLimiter -> PageCache -> Server.Request -> Aff Server.Response
-router cfg limiter cache request@{ method, path, headers, body, query, nonce } = case method of
-  Server.POST -> case path of
-    [ "api", "contact" ] -> rateGate cfg limiter request (handleContact cfg request.id headers body)
-    [ "api", "newsletter" ] -> rateGate cfg limiter request (handleNewsletter cfg request.id headers body)
-    _ -> pure Server.notFound
+router :: Config -> PageCache -> Server.Request -> Aff Server.Response
+router cfg cache { method, path, headers, query, nonce } = case method of
+  Server.POST -> pure Server.notFound
   Server.GET -> handleGet cfg cache nonce headers query path
   Server.HEAD -> handleGet cfg cache nonce headers query path
   _ -> pure Server.methodNotAllowed
@@ -89,12 +64,14 @@ handleGet cfg cache nonce headers query path = case path of
 -- |
 -- | This is the same defect W1 fixed in `handleFragment`, in a path W1 never
 -- | reached: `handleFragment` only runs after a route parses successfully, so
--- | the fix was narrower than the contract it restored. `Home` stands in for
--- | the missing route, exactly as `renderErrorPage` already does for its header.
+-- | the fix was narrower than the contract it restored. `renderErrorFragment`
+-- | never needed a `Route` value in the first place (see `App.Layout.Page`) —
+-- | now that `Route` is temporarily zero-constructor (clean-sheet rebuild,
+-- | see .scratch/clean-sheet-homepage/), that unused parameter is gone too.
 routeMiss404 :: String -> Boolean -> Lang -> Server.Response
 routeMiss404 nonce wantsFragment lang =
   if wantsFragment then
-    Server.htmlErrorResponse (renderErrorFragment lang Home 404) [ varyHeader ] (Server.errorStatusCode 404)
+    Server.htmlErrorResponse (renderErrorFragment lang 404) [ varyHeader ] (Server.errorStatusCode 404)
   else
     Server.htmlErrorResponse (renderErrorPage nonce lang 404) [ varyHeader ] (Server.errorStatusCode 404)
 
@@ -107,15 +84,15 @@ langFromPath path = fromMaybe defaultLang (head path >>= parseLang)
 
 -- | Select the correct page renderer for a route.
 -- | Static pages use `staticPage` (pure Html, no error path).
--- | Data-backed pages (Posts) fetch via Aff and may return `Left AppError`.
+-- | Data-backed pages fetch via Aff and may return `Left AppError`.
+-- |
+-- | `Route` is temporarily zero-constructor (clean-sheet rebuild, see
+-- | .scratch/clean-sheet-homepage/) — this wildcard is unreachable rather
+-- | than a real dispatch, and goes back to a named, exhaustive case as soon
+-- | as a route exists to name.
 pageRenderer :: Config -> Route -> Lang -> Maybe FormStatus -> Aff (Either AppError Html)
-pageRenderer cfg route lang status = case route of
-  Home -> Home.render lang status
-  About -> About.render lang status
-  Contact -> Contact.render lang status
-  Fixtures -> Fixtures.render lang status
-  PostList -> Posts.renderList cfg lang status
-  PostDetail id -> Posts.renderDetail cfg lang id status
+pageRenderer _ route _ _ = case route of
+  _ -> pure (Left NotFound)
 
 -- | Everything a page render needs about the current request, bundled.
 -- |
@@ -172,7 +149,7 @@ failureFragment :: RequestCtx -> AppError -> Aff Server.Response
 failureFragment ctx err = do
   logRenderFailure ctx err
   pure $ Server.htmlErrorResponse
-    (renderErrorFragment ctx.lang ctx.route (errorStatus err))
+    (renderErrorFragment ctx.lang (errorStatus err))
     [ varyHeader ]
     (Server.errorStatusCode (errorStatus err))
 
@@ -328,13 +305,14 @@ errorStatus = case _ of
 -- Root redirect — / → /fr or /en based on Accept-Language
 -- ============================================================================
 
+-- | `Route` is temporarily zero-constructor (clean-sheet rebuild, see
+-- | .scratch/clean-sheet-homepage/) — there is no route to redirect `/` to
+-- | yet, so this honestly answers 404 instead of fabricating a hand-rolled
+-- | path string that would bypass `Data.Route`'s single source of truth.
+-- | Goes back to a real 302 redirect (`routeUrl lang Home`) once a home
+-- | route exists again.
 redirectRoot :: Map String String -> Aff Server.Response
-redirectRoot headers =
-  -- 302 (not 301): the language preference redirect must be re-evaluated,
-  -- and caches must vary on Accept-Language.
-  pure $ Server.redirectVary Server.Found (routeUrl lang Home) [ Tuple "Vary" "Accept-Language" ]
-  where
-  lang = detectLang $ fromMaybe "" $ Map.lookup "accept-language" headers
+redirectRoot _ = pure Server.notFound
 
 -- | Detect language from Accept-Language header.
 -- | Parses the first token (before q-value and region suffix), delegates to
@@ -348,80 +326,17 @@ detectLang header = fromMaybe defaultLang do
   parseLang prefix
 
 -- ============================================================================
--- POST handlers
--- ============================================================================
-
--- | Detect language from form body (hidden `lang` field), fall back to default.
-formLang :: String -> Lang
-formLang bodyStr = fromMaybe defaultLang (parseForm bodyStr "lang" >>= parseLang)
-
--- | Same-origin gate for form POSTs. If an Origin header is present, it must
--- | match our deployed origin exactly. Absent header (curl, no-JS, privacy
--- | tools) is allowed — CSRF risk without Origin is handled by the honeypot
--- | and redirect-only responses (no body, no side effects beyond email).
-sameOriginOk :: Config -> Map String String -> Boolean
-sameOriginOk cfg headers = case Map.lookup "origin" headers of
-  Nothing -> true
-  Just origin -> origin == cfg.baseUrl
-
--- | Success redirect back to the referring form, with banner status query.
-redirectStatus :: Lang -> Route -> FormStatus -> Aff Server.Response
-redirectStatus lang route status =
-  pure $ Server.redirect Server.SeeOther (routeUrl lang route <> "?status=" <> formStatusQuery status)
-
--- | Build a ResendConfig from the app config when the API key is present.
-resendConfig :: Config -> Maybe ResendConfig
-resendConfig cfg = (\apiKey -> { apiKey, from: cfg.emailFrom, to: cfg.emailTo }) <$> cfg.resendApiKey
-
-handleContact :: Config -> String -> Map String String -> Aff String -> Aff Server.Response
-handleContact cfg rid headers body =
-  if not (sameOriginOk cfg headers) then do
-    liftEffect $ Log.logWarn "form-rejected" [ Tuple "rid" rid, Tuple "reason" "origin" ]
-    pure Server.notFound
-  else do
-    bodyStr <- body
-    let lang = formLang bodyStr
-    case decodeContact bodyStr of
-      HoneypotHit -> do
-        liftEffect $ Log.logWarn "form-rejected" [ Tuple "rid" rid, Tuple "reason" "honeypot" ]
-        redirectStatus lang Contact FormSuccess
-      InvalidContact -> redirectStatus lang Contact FormError
-      SubmitContact contactForm -> case resendConfig cfg of
-        Nothing -> do
-          liftEffect $ Log.logWarn "email-not-configured" [ Tuple "rid" rid, Tuple "form" "contact" ]
-          redirectStatus lang Contact FormError
-        Just rc -> do
-          result <- sendContactEmail rc { name: contactForm.name, email: contactForm.email, message: contactForm.message }
-          case result of
-            Right _ -> redirectStatus lang Contact FormSuccess
-            Left err -> liftEffect (Log.logErr "email-failed" [ Tuple "rid" rid, Tuple "form" "contact", Tuple "error" (show err) ]) *> redirectStatus lang Contact FormError
-
-handleNewsletter :: Config -> String -> Map String String -> Aff String -> Aff Server.Response
-handleNewsletter cfg rid headers body =
-  if not (sameOriginOk cfg headers) then do
-    liftEffect $ Log.logWarn "form-rejected" [ Tuple "rid" rid, Tuple "reason" "origin" ]
-    pure Server.notFound
-  else do
-    bodyStr <- body
-    let lang = formLang bodyStr
-    case decodeNewsletter bodyStr of
-      NewsletterHoneypot -> do
-        liftEffect $ Log.logWarn "form-rejected" [ Tuple "rid" rid, Tuple "reason" "honeypot" ]
-        redirectStatus lang Home FormSubscribed
-      InvalidNewsletter -> redirectStatus lang Home FormError
-      SubmitNewsletter emailAddr -> case resendConfig cfg of
-        Nothing -> do
-          liftEffect $ Log.logWarn "email-not-configured" [ Tuple "rid" rid, Tuple "form" "newsletter" ]
-          redirectStatus lang Home FormError
-        Just rc -> do
-          result <- sendNewsletterEmail rc emailAddr
-          case result of
-            Right _ -> redirectStatus lang Home FormSubscribed
-            Left err -> liftEffect (Log.logErr "email-failed" [ Tuple "rid" rid, Tuple "form" "newsletter", Tuple "error" (show err) ]) *> redirectStatus lang Home FormError
-
--- ============================================================================
 -- Entry point
 -- ============================================================================
+--
+-- POST /api/contact and /api/newsletter were the Contact page's form
+-- submission target and Home's newsletter signup — both deleted in the
+-- clean-sheet rebuild (see .scratch/clean-sheet-homepage/). The handling
+-- they called into (App.Form's decode/honeypot logic, App.Email's send
+-- functions) is untouched kernel, still directly tested by
+-- test/FormSpec.purs; only the page-specific HTTP glue that had no page
+-- left to serve it was removed. Reintroducing a form is a page-content
+-- decision for whichever ticket wants one, not assumed here.
 
 main :: Effect Unit
 main = do
@@ -443,7 +358,5 @@ main = do
             Left err -> Log.logErr "auto-migrate-failed" [ Tuple "error" (renderMigrationError err) ]
             Right n -> if n > 0 then Log.logInfo "auto-migrate-ok" [ Tuple "applied" (show n) ] else pure unit
         Nothing -> pure unit
-      limiter <- mkRateLimiter
       cache <- mkPageCache
-      when (isNothing cfg.resendApiKey) $ Log.logWarn "resend-key-missing" [ Tuple "msg" "contact/newsletter forms will return status=error" ]
-      Server.serve cfg.port cfg.staticRoot (router cfg limiter cache)
+      Server.serve cfg.port cfg.staticRoot (router cfg cache)

@@ -4,7 +4,6 @@ module App.Ui.Templates.PageHeader
   ( PageHeaderSlots
   , breadcrumbHere
   , breadcrumbLink
-  , breadcrumbHome
   , pageHeaderSlots
   , render
   , renderDetail
@@ -21,7 +20,7 @@ import App.Ui.Templates.Types (ActionTarget(..), BreadcrumbItem)
 import Data.Array (length)
 import Data.I18n (Lang)
 import Data.Maybe (Maybe(..), maybe)
-import Data.Route (Route(..))
+import Data.Route (Route)
 
 type PageHeaderSlots =
   { title :: String
@@ -33,12 +32,12 @@ pageHeaderSlots :: String -> Maybe String -> Array BreadcrumbItem -> PageHeaderS
 pageHeaderSlots title subtitle breadcrumbs =
   { title, subtitle, breadcrumbs }
 
-breadcrumbHome :: Lang -> String -> BreadcrumbItem
-breadcrumbHome lang homeLabel =
-  { label: homeLabel
-  , target: Just (Internal { lang, route: Home })
-  }
-
+-- | `breadcrumbHome` is gone for now — it needs a `Route` value for the home
+-- | page and `Route` is temporarily zero-constructor (clean-sheet rebuild,
+-- | see .scratch/clean-sheet-homepage/), unlike the other functions in this
+-- | module there is no wildcard/absurd-body trick available for a function
+-- | that must *produce* a Route, not pattern-match one. Returns once a Home
+-- | route exists again (ticket 02).
 breadcrumbHere :: String -> BreadcrumbItem
 breadcrumbHere label =
   { label, target: Nothing }
