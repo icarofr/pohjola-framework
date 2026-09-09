@@ -102,8 +102,9 @@ behaviour belongs on the server, not that the seam needs loosening.
 
 - **`navLink`** — route-aware internal link: `x-target.push`, `aria-current="page"` when
   `target == current`, hover prefetch only when inactive. Use with
-  **`navLinkClasses`** for shell surfaces (`NavDesktop` → `btn-active`,
-  `NavMobile` → `menu-active`, `NavFooter` → `link link-hover`). Theme and
+  **`navLinkClasses`** for shell surfaces (`NavDesktop`/`NavMobile` →
+  `text-primary font-semibold`, `NavFooter` → `link link-hover
+  hover:text-primary` on hover). Theme and
   language dropdown **items** use **`dropdownItemClasses`** (same ghost-button
   recipe for both menus). See `docs/conventions/chrome-checklist.md`.
 - **`spaLink`** — bakes `x-target.push` + `prefetchHover` + real href. The

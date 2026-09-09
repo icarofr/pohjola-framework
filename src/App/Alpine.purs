@@ -366,6 +366,12 @@ langLink { targetLang, currentLang, route } extraAttrs children =
 
 -- | Where a route-aware nav link is rendered in site chrome.
 -- | Active DaisyUI modifiers are centralized here so shell edits cannot forget them.
+-- | The active state is `text-primary` (brand color), not `btn-active`/
+-- | `menu-active` — both resolve to a flat neutral-gray fill in this theme
+-- | (see App.Theme's palette), same as every other unselected element, so
+-- | "active" carried no visible signal beyond a faint tint. Every other
+-- | chrome accent (this, footer link hover, header border) uses the same
+-- | primary color so the active/hover language is consistent everywhere.
 data NavChrome = NavDesktop | NavMobile | NavFooter
 
 navLinkClasses :: NavChrome -> Boolean -> String
@@ -373,7 +379,7 @@ navLinkClasses NavDesktop isActive =
   "btn btn-ghost btn-sm"
     <>
       if isActive then
-        " btn-active"
+        " text-primary font-semibold"
 
       else
         ""
@@ -382,12 +388,12 @@ navLinkClasses NavMobile isActive =
   "btn btn-ghost justify-start"
     <>
       if isActive then
-        " menu-active"
+        " text-primary font-semibold"
 
       else
         ""
 
-navLinkClasses NavFooter _ = "link link-hover"
+navLinkClasses NavFooter _ = "link link-hover hover:text-primary"
 
 -- | Desktop theme + language disclosure (and the matching drawer rows).
 -- | One recipe so the two menus cannot drift independently.

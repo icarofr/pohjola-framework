@@ -28,11 +28,15 @@ Full recipe: `docs/superpowers/specs/2026-08-30-shell-recipe.md`.
 
 Visual state comes from **`navLinkClasses`** — pick the surface:
 
-| Surface | `NavChrome` | Active DaisyUI class |
+| Surface | `NavChrome` | Active class |
 |---|---|---|
-| Desktop navbar | `NavDesktop` | `btn-active` on `btn btn-ghost btn-sm` |
-| Mobile drawer menu | `NavMobile` | `menu-active` on `btn btn-ghost justify-start` |
-| Footer | `NavFooter` | `link link-hover` (semantic only via `aria-current`) |
+| Desktop navbar | `NavDesktop` | `text-primary font-semibold` on `btn btn-ghost btn-sm` |
+| Mobile drawer menu | `NavMobile` | `text-primary font-semibold` on `btn btn-ghost justify-start` |
+| Footer | `NavFooter` | `link link-hover hover:text-primary` (semantic only via `aria-current`) |
+
+`text-primary` (the brand color), not `btn-active`/`menu-active` — both resolve
+to a flat neutral-gray fill in this theme, indistinguishable enough from an
+unselected item that "active" carried almost no visible signal.
 
 ```purescript
 navLink { lang, current, target }
@@ -40,7 +44,7 @@ navLink { lang, current, target }
   [ text label ]
 ```
 
-Never duplicate `btn-active` / `menu-active` logic in `SiteShell` — extend `navLinkClasses` if a new chrome surface appears.
+Never duplicate this active-state logic in `SiteShell` — extend `navLinkClasses` if a new chrome surface appears.
 
 ## Theme switcher
 

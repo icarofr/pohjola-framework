@@ -28,7 +28,7 @@ spec = do
       html `shouldContain` "data-template=\"site-footer\""
       html `shouldContain` "id=\"content\""
       html `shouldContain` "main class=\"flex-1\""
-    it "marks the current route in desktop nav with btn-active" do
+    it "marks the current route in desktop nav with the brand color" do
       let
         html =
           render
@@ -37,9 +37,9 @@ spec = do
             )
       html
         `shouldContain`
-          ( "href=\"/en/about\" x-target.push=\"content\" aria-current=\"page\" class=\"btn btn-ghost btn-sm btn-active\""
+          ( "href=\"/en/about\" x-target.push=\"content\" aria-current=\"page\" class=\"btn btn-ghost btn-sm text-primary font-semibold\""
           )
-    it "marks the current route in mobile drawer with menu-active" do
+    it "marks the current route in mobile drawer with the brand color" do
       let
         html =
           render
@@ -48,5 +48,5 @@ spec = do
             )
       html
         `shouldContain`
-          ( "href=\"/en/about\" x-target.push=\"content\" aria-current=\"page\" class=\"btn btn-ghost justify-start menu-active\""
+          ( "href=\"/en/about\" x-target.push=\"content\" aria-current=\"page\" class=\"btn btn-ghost justify-start text-primary font-semibold\""
           )

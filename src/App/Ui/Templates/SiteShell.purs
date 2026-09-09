@@ -187,7 +187,7 @@ errorMessage lang status =
 renderHeader :: Lang -> Route -> ShellLabels -> Html
 renderHeader lang route labels =
   el "header"
-    [ class_ "sticky top-0 z-50 border-b border-base-300 bg-base-200 shadow-sm"
+    [ class_ "sticky top-0 z-50 border-b border-primary/20 bg-base-200 shadow-sm"
     , attr Contract.marker Contract.siteHeader
     ]
     [ Container.container Container.ContainerW6xl "px-4 sm:px-6"
@@ -397,7 +397,7 @@ mobileNavLink lang current target label =
 renderFooter :: Lang -> Route -> ShellLabels -> Html
 renderFooter lang route labels =
   el "footer"
-    [ class_ "border-t border-base-300 bg-base-200 text-base-content"
+    [ class_ "border-t border-primary/20 bg-base-200 text-base-content"
     , attr Contract.marker Contract.siteFooter
     ]
     [ Container.container Container.ContainerW6xl "px-4 py-10 sm:px-6"

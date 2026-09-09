@@ -425,17 +425,17 @@ spec = do
       cacheControl (okTextPublic "text/plain" "User-agent: *") `shouldEqual` Just "public, max-age=86400"
 
   describe "nav link chrome classes" do
-    it "desktop active uses btn-active" do
-      navLinkClasses NavDesktop true `shouldEqual` "btn btn-ghost btn-sm btn-active"
-    it "desktop inactive omits btn-active" do
+    it "desktop active uses the brand color, not a neutral fill" do
+      navLinkClasses NavDesktop true `shouldEqual` "btn btn-ghost btn-sm text-primary font-semibold"
+    it "desktop inactive omits the active treatment" do
       navLinkClasses NavDesktop false `shouldEqual` "btn btn-ghost btn-sm"
-    it "mobile active uses menu-active" do
-      navLinkClasses NavMobile true `shouldEqual` "btn btn-ghost justify-start menu-active"
-    it "mobile inactive omits menu-active" do
+    it "mobile active uses the brand color, not a neutral fill" do
+      navLinkClasses NavMobile true `shouldEqual` "btn btn-ghost justify-start text-primary font-semibold"
+    it "mobile inactive omits the active treatment" do
       navLinkClasses NavMobile false `shouldEqual` "btn btn-ghost justify-start"
-    it "footer uses link link-hover" do
-      navLinkClasses NavFooter true `shouldEqual` "link link-hover"
-      navLinkClasses NavFooter false `shouldEqual` "link link-hover"
+    it "footer link hover uses the brand color" do
+      navLinkClasses NavFooter true `shouldEqual` "link link-hover hover:text-primary"
+      navLinkClasses NavFooter false `shouldEqual` "link link-hover hover:text-primary"
     it "desktop dropdown items use the same ghost-button recipe" do
       dropdownItemClasses false `shouldEqual` "btn btn-ghost btn-sm w-full justify-start"
       dropdownItemClasses true `shouldEqual` "btn btn-ghost btn-sm w-full justify-start btn-active"
