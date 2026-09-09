@@ -65,7 +65,7 @@ Every Alpine attribute is a named constructor in `App.Alpine`:
 | Constructor | Produces |
 |---|---|
 | `xDataFlag MenuOpen false` | `x-data="{ menuOpen: false }"` |
-| `xDataThemeWithFlag ThemeMenuOpen LangMenuOpen false` | `x-data="{ theme: …, themeOpen: false, open: false }"` |
+| `xDataSiteChrome false` | `x-data="{ theme: …, themeOpen: false, open: false }"` |
 | `xShowFlag MenuOpen` | `x-show="menuOpen"` |
 | `xShowNotFlag MenuOpen` | `x-show="!menuOpen"` |
 | `ariaExpandedFlag MenuOpen` | `:aria-expanded="menuOpen.toString()"` |
@@ -130,3 +130,8 @@ One `x-data` per component, one concern per scope. `xDataFlag` holds exactly
 one boolean, which is the intended ceiling: once a scope needs several fields
 that must agree with each other, you have a state machine, and Alpine flags are
 the wrong representation. Move the work to the server.
+
+The site shell is the one documented exception: `xDataSiteChrome` is a closed
+constructor that always emits `theme`, `themeOpen`, and `open` together. Do
+not reopen it as a positional `Flag` pair — that is how `LangMenuOpen` shipped
+uninitialized.

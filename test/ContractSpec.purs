@@ -26,7 +26,7 @@ import App.Layout.Page (renderErrorFragment, renderErrorPage, renderFragment, re
 import App.Main (pageRenderer)
 import App.Server (RedirectKind(..), Response, cspWithNonce, errorStatusCode, fileResponse, htmlErrorResponse, internalError, methodNotAllowed, notFound, notModified, ok, okText, okTextPublic, okWith, redirect, redirectVary, securityHeaders, tooManyRequests)
 import App.Html (render, text)
-import Data.Array (find, last, mapMaybe)
+import Data.Array (find, last, length, mapMaybe, nubEq)
 import Data.Content (services)
 import Data.Either (Either(..))
 import Data.Foldable (any, for_)
@@ -188,6 +188,7 @@ spec = do
           html <- renderStaticPage route lang
           html `StrAssert.shouldNotContain` "—"
       renderErrorPage "test-nonce-123" En 404 `StrAssert.shouldNotContain` "—"
+      renderErrorPage "test-nonce-123" En 500 `StrAssert.shouldNotContain` "—"
 
     it "full documents carry the template page shell" do
       html <- renderStaticPage Home En
@@ -461,7 +462,19 @@ spec = do
     it "flagName is injective — two flags cannot share an identifier" do
       -- A collision would silently wire two unrelated controls to one piece of
       -- state, which renders and tests fine until a user opens both.
-      flagName MenuOpen `shouldNotEqual` flagName LangMenuOpen
+      -- Exhaustive on Flag: adding a constructor without listing it here
+      -- leaves a possible `open`/`themeOpen` collision untested.
+      let
+        names = map flagName
+          [ MenuOpen
+          , LangMenuOpen
+          , ThemeMenuOpen
+          , ModalOpen
+          , ToastVisible
+          , AccordionOpen
+          , TabActive
+          ]
+      length (nubEq names) `shouldEqual` length names
     it "themeToggle flips data-theme and persists preference" do
       renderExpr themeToggle `StrAssert.shouldContain` "getAttribute('data-theme')==='"
       renderExpr themeToggle `StrAssert.shouldContain` themeDarkName

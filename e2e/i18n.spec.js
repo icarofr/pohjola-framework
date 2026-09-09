@@ -1,5 +1,13 @@
 import { test, expect } from "@playwright/test";
 
+async function chooseFrench(page) {
+  await page.getByLabel("Switch language").click();
+  await page
+    .locator("header a")
+    .filter({ hasText: /Français/i })
+    .click();
+}
+
 test.describe("Internationalization", () => {
   test("French language detection works", async ({ browser }) => {
     const context = await browser.newContext({ locale: "fr-FR" });
@@ -8,7 +16,7 @@ test.describe("Internationalization", () => {
 
     await expect(page).toHaveURL(/\/fr$/);
     await expect(page.locator("main")).toContainText(
-      "Le framework web fonctionnel",
+      "Un framework conçu pour sécuriser le code écrit par l'IA",
     );
     await expect(page.locator("html")).toHaveAttribute("lang", "fr");
     await context.close();
@@ -18,10 +26,7 @@ test.describe("Internationalization", () => {
     await page.goto("/en");
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
 
-    await page
-      .locator('header a[href="/fr"]')
-      .filter({ hasText: /Français/i })
-      .click();
+    await chooseFrench(page);
     await expect(page).toHaveURL(/\/fr$/);
     await expect(page.locator("html")).toHaveAttribute("lang", "fr");
   });
@@ -32,17 +37,14 @@ test.describe("Internationalization", () => {
       window.__spaMarker = true;
     });
 
-    await page
-      .locator('header a[href="/fr/a-propos"]')
-      .filter({ hasText: /Français/i })
-      .click();
+    await chooseFrench(page);
 
-    await expect(page).toHaveURL(/\/fr\/a-propos$/);
+    await expect(page).toHaveURL(/\/fr\/about$/);
     await expect(page.locator("html")).toHaveAttribute("lang", "fr");
     await expect(
       page.evaluate(() => window.__spaMarker === true),
     ).resolves.toBe(true);
-    await expect(page.locator("main")).toContainText("Notre mission");
+    await expect(page.locator("main")).toContainText("À propos de Pohjola");
   });
 
   test("language switch syncs title and lang only", async ({ page }) => {
@@ -57,12 +59,9 @@ test.describe("Internationalization", () => {
     await page.goto("/en/about");
     await expect(page).toHaveTitle(/About/);
 
-    await page
-      .locator('header a[href="/fr/a-propos"]')
-      .filter({ hasText: /Français/i })
-      .click();
+    await chooseFrench(page);
 
-    await expect(page).toHaveURL(/\/fr\/a-propos$/);
+    await expect(page).toHaveURL(/\/fr\/about$/);
     await expect(page).toHaveTitle(/À propos/);
     await expect(page.locator("html")).toHaveAttribute("lang", "fr");
   });
@@ -81,17 +80,5 @@ test.describe("Internationalization", () => {
 
     await page.getByLabel("Close menu").click();
     await expect(drawerToggle).not.toBeChecked();
-  });
-
-  test("banner text localizes correctly", async ({ page }) => {
-    await page.goto("/en/contact?status=error");
-    await expect(page.locator('[data-form-status="error"]')).toContainText(
-      "Something went wrong",
-    );
-
-    await page.goto("/fr/contact?status=error");
-    await expect(page.locator('[data-form-status="error"]')).toContainText(
-      "Une erreur est survenue",
-    );
   });
 });

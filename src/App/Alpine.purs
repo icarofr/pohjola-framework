@@ -24,7 +24,7 @@ module App.Alpine
   , renderExpr
   , xDataFlag
   , xDataTheme
-  , xDataThemeWithFlag
+  , xDataSiteChrome
   , xShowFlag
   , xShowNotFlag
   , xShowTheme
@@ -257,17 +257,20 @@ xDataTheme =
         <> "') || 'system') }"
     )
 
-xDataThemeWithFlag :: Flag -> Flag -> Boolean -> Attr
-xDataThemeWithFlag f1 f2 b =
+-- | Shell chrome scope: theme preference plus the two disclosure flags.
+-- | Closed so ThemeMenuOpen/LangMenuOpen cannot be omitted or duplicated the
+-- | way a positional `Flag -> Flag` pair still allowed.
+xDataSiteChrome :: Boolean -> Attr
+xDataSiteChrome b =
   attr "x-data"
     ( "{ theme: (localStorage.getItem('"
         <> Theme.themeStorageKey
         <> "') || 'system'), "
-        <> flagName f1
+        <> flagName ThemeMenuOpen
         <> ": "
         <> boolLit b
         <> ", "
-        <> flagName f2
+        <> flagName LangMenuOpen
         <> ": "
         <> boolLit b
         <> " }"

@@ -117,6 +117,26 @@ visibleCopy lang =
     , d.docs.lead
     , d.docs.itemsHeading
     , d.docs.itemsIntro
+    , d.common.siteTitle
+    , d.common.darkModeToggle
+    , d.common.themeLight
+    , d.common.themeDark
+    , d.common.themeSystem
+    , d.common.themeLabel
+    , d.common.newsletterEmailLabel
+    , d.common.formSuccess
+    , d.common.formError
+    , d.common.formSubscribed
+    , d.common.error404
+    , d.common.error500
+    , d.common.navAriaLabel
+    , d.common.menuLabel
+    , d.common.langToggleLabel
+    , d.common.closeSidebarLabel
+    , d.common.closeMenuLabel
+    , d.common.closeLabel
+    , d.common.authorLabel
+    , d.common.publishedLabel
     ]
       <> svc "service-1"
       <> svc "service-2"

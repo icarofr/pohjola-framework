@@ -7,7 +7,7 @@ test.describe("No-JS degradation", () => {
     await page.goto("/en");
     // hero headline is server rendered
     await expect(page.locator("main")).toContainText(
-      "The Type-Safe Functional Web Framework",
+      "A framework built to make AI-written code safer to ship",
     );
   });
 
@@ -21,16 +21,11 @@ test.describe("No-JS degradation", () => {
     await expect(page.locator("main")).toContainText("About");
   });
 
-  test("community page renders correctly without JS", async ({ page }) => {
-    await page.goto("/en/contact");
+  test("about page renders correctly without JS", async ({ page }) => {
+    await page.goto("/en/about");
     await expect(page.locator("main")).toContainText(
-      "Community & Contributing",
+      "Songs from the North",
     );
-    await expect(
-      page.locator(
-        'main a[href="https://github.com/icarofr/pohjola-framework/issues"]',
-      ),
-    ).toBeVisible();
   });
 
   test("language toggle links are present in markup", async ({ page }) => {
@@ -42,7 +37,7 @@ test.describe("No-JS degradation", () => {
     await expect(page).toHaveURL(/\/fr$/);
     await expect(page.locator("html")).toHaveAttribute("lang", "fr");
     await expect(page.locator("main")).toContainText(
-      "Le framework web fonctionnel",
+      "Un framework conçu pour sécuriser le code écrit par l'IA",
     );
   });
 });

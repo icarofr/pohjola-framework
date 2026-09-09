@@ -1,27 +1,11 @@
 import { test, expect } from "@playwright/test";
 
-test.describe("Community & Contributing Hub", () => {
-  test("community page renders heading and action cards", async ({ page }) => {
-    await page.goto("/en/contact");
+test.describe("About", () => {
+  test("about page renders heading and naming origin", async ({ page }) => {
+    await page.goto("/en/about");
 
-    await expect(page.locator("main")).toContainText(
-      "Community & Contributing",
-    );
-    await expect(
-      page.locator(
-        'main a[href="https://github.com/icarofr/pohjola-framework/issues"]',
-      ),
-    ).toBeVisible();
-    await expect(
-      page.locator(
-        'main a[href="https://github.com/icarofr/pohjola-framework/discussions"]',
-      ),
-    ).toBeVisible();
-    await expect(
-      page.locator(
-        'main a[href="https://github.com/icarofr/pohjola-framework"]',
-      ),
-    ).toBeVisible();
+    await expect(page.locator("main")).toContainText("About Pohjola");
+    await expect(page.locator("main")).toContainText("Songs from the North");
   });
 });
 

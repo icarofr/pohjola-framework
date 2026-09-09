@@ -36,7 +36,7 @@ test.describe("Alpine AJAX navigation", () => {
     await page.goto("/en");
 
     await expect(page.locator('div#content[data-page-title]')).toContainText(
-      "The Type-Safe Functional Web Framework",
+      "A framework built to make AI-written code safer to ship",
     );
 
     await page.evaluate(() => {
@@ -78,11 +78,12 @@ test.describe("Alpine AJAX navigation", () => {
       window.__marker = 1;
     });
 
-    await page.locator('header a[href="/fr"]').filter({ hasText: /Français/i }).click();
+    await page.getByLabel("Switch language").click();
+    await page.locator("header a").filter({ hasText: /Français/i }).click();
     await expect(page).toHaveURL(/\/fr$/);
     await expect(page.locator("html")).toHaveAttribute("lang", "fr");
     await expect(page.locator("main")).toContainText(
-      "Le framework web fonctionnel",
+      "Un framework conçu pour sécuriser le code écrit par l'IA",
     );
 
     expect(await page.evaluate(() => window.__marker)).toBe(1);
@@ -121,11 +122,11 @@ test.describe("Alpine AJAX navigation", () => {
     await expect(page).toHaveURL(/\/en\/about/);
     await expect(page).toHaveTitle(/About/);
 
-    await page.click('a[href="/en/contact"]');
-    await expect(page).toHaveURL(/\/en\/contact/);
-    await expect(page).toHaveTitle(/Contact/);
+    await page.click('a[href="/en/guarantees"]');
+    await expect(page).toHaveURL(/\/en\/guarantees/);
+    await expect(page).toHaveTitle(/Guarantees/);
     await expect(page.locator('div#content[data-page-title]')).toContainText(
-      "Community & Contributing",
+      "Guarantees",
     );
     const historyLength = await page.evaluate(() => history.length);
 
@@ -142,7 +143,7 @@ test.describe("Alpine AJAX navigation", () => {
     await expect(page).toHaveURL(/\/en$/);
     await expect(page).toHaveTitle(/Pohjola/);
     await expect(page.locator('div#content[data-page-title]')).toContainText(
-      "The Type-Safe Functional Web Framework",
+      "A framework built to make AI-written code safer to ship",
     );
     expect(await page.evaluate(() => window.__marker)).toBe(1);
     expect(await page.evaluate(() => history.length)).toBe(historyLength);

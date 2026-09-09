@@ -5,10 +5,10 @@ import AxeBuilder from "@axe-core/playwright";
 const canonicalRoutes = [
   { path: "/en", marker: "landing-hero" },
   { path: "/en/about", marker: "page-header-breadcrumbs" },
-  { path: "/en/contact", marker: "page-header-breadcrumbs" },
-  { path: "/en/posts", marker: "feed-page" },
+  { path: "/en/guarantees", marker: "hub-page" },
+  { path: "/en/docs", marker: "notice-page" },
   { path: "/fr", marker: "landing-hero" },
-  { path: "/fr/contact", marker: "hub-page" },
+  { path: "/fr/about", marker: "page-header-breadcrumbs" },
 ];
 
 test.describe("Design regression", () => {

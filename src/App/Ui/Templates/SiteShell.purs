@@ -32,7 +32,7 @@ import App.Alpine
   , setFlag
   , siteDrawerId
   , toggleFlag
-  , xDataThemeWithFlag
+  , xDataSiteChrome
   , xSetTheme
   , xSetThemeAndClose
   , xShowFlag
@@ -134,7 +134,7 @@ sitePageTitled lang route title labels status content =
       , attr dataPageLangAttr (langTag lang)
       ]
         <>
-          [ xDataThemeWithFlag ThemeMenuOpen LangMenuOpen false
+          [ xDataSiteChrome false
           , onKeydownEscapeWindow closeSiteDrawer
           ]
     )
