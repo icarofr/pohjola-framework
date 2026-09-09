@@ -61,7 +61,7 @@ module App.Server
 
 import Prelude
 
-import App.Bun (sha256Hex)
+import App.Bun (wyhash)
 import App.Datastar (datastarRequestHeader)
 import App.Logger (Level(..))
 import App.Logger as AppLog
@@ -213,10 +213,12 @@ htmlCacheControl :: Tuple String String
 htmlCacheControl = Tuple "Cache-Control" "private, max-age=10"
 
 -- | Datastar SSE patches embed no CSP nonce, so they can live longer than a
--- | full document in the visitor's HTTP cache. 180s is the same idle window
--- | Solid Router documents for unsubscribed query() entries, implemented as
--- | HTTP instead of a JS Map. ETag on sseEventResponse is the revalidation
--- | half: after max-age a later GET can 304 instead of re-sending the body.
+-- | full document in the visitor's HTTP cache. `private` caps the blast
+-- | radius of a stale patch to the one visitor holding it: a deploy that
+-- | changes a patch's HTML costs that visitor up to 180s of staleness in
+-- | their own browser, never a shared/CDN-wide window. ETag on
+-- | sseEventResponse is the revalidation half: after max-age a later GET can
+-- | 304 instead of re-sending the body.
 patchCacheControl :: Tuple String String
 patchCacheControl = Tuple "Cache-Control" "private, max-age=180"
 
@@ -489,10 +491,13 @@ datastarPatchElementsEvent fragmentHtmlString =
 
 -- | Wraps an already-built SSE event body in the ReadableStream + headers a
 -- | Datastar `@get` action expects: `text/event-stream`, `patchCacheControl`
--- | (`private, max-age=180` — no nonce on this body), a strong ETag of the
--- | event bytes, and `Vary` on `datastar-request`. Hover, click, and popstate
--- | share one GET identity (`?datastar={}`); this policy is what makes that
--- | identity reusable. See `e2e/prefetch-cache.spec.js`.
+-- | (`private, max-age=180` — no nonce on this body), an ETag of the event
+-- | bytes (`wyhash` — a cache validator needs good distribution against
+-- | accidental collisions, not cryptographic collision-resistance against an
+-- | adversary; `sha256Hex` is reserved for security-sensitive hashing
+-- | elsewhere, e.g. `App.Auth`), and `Vary` on `datastar-request`. Hover,
+-- | click, and popstate share one GET identity (`?datastar={}`); this policy
+-- | is what makes that identity reusable. See `e2e/prefetch-cache.spec.js`.
 sseEventResponse :: String -> Effect Response
 sseEventResponse = sseEventResponseMatching Nothing
 
@@ -502,8 +507,9 @@ sseEventResponse = sseEventResponseMatching Nothing
 -- | Direct clients (Playwright `request.get`, curl) observe the 304.
 sseEventResponseMatching :: Maybe String -> String -> Effect Response
 sseEventResponseMatching ifNoneMatch eventBody = do
-  etagHex <- sha256Hex eventBody
-  let etag = "\"" <> etagHex <> "\""
+  let
+    etagHex = wyhash eventBody
+    etag = "\"" <> etagHex <> "\""
   if ifNoneMatch == Just etag then
     pure $ notModified
       [ Tuple "ETag" etag
@@ -538,6 +544,12 @@ sseNoStoreEventResponse eventBody = do
     , body: StreamBody stream
     }
 
+-- | Distinct name from `sseNoStoreEventResponse` for the distinct call site:
+-- | route-miss/failure patches (`routeMiss404`, `failureDatastarPatch`), where
+-- | "no-store" is incidental to "this is an error," versus a statusful but
+-- | successful banner, where "no-store" is the point. Same policy today, but
+-- | an error patch earning stronger treatment later (e.g. its own headers)
+-- | shouldn't force a statusful banner to follow along, or vice versa.
 sseErrorEventResponse :: String -> Effect Response
 sseErrorEventResponse = sseNoStoreEventResponse
 

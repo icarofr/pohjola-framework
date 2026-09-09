@@ -472,6 +472,7 @@ spec = do
           StrAssert.shouldContain html "u.searchParams.set('datastar','{}')"
           StrAssert.shouldContain html "if(!r.ok)throw new Error('datastar restore '+r.status)"
           StrAssert.shouldContain html "if(!sse)throw new Error('empty datastar patch')"
+          StrAssert.shouldContain html ".catch(function(){location.reload()})"
           StrAssert.shouldContain html "window.addEventListener('popstate',restore,true);"
           StrAssert.shouldContain html "if(!history.state)history.replaceState({__ds:true},'',location.href)"
           html `StrAssert.shouldContain` "var es=new EventSource('/dev/live-reload')"

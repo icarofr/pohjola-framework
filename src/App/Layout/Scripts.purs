@@ -52,7 +52,11 @@ renderHeadScript nonce = case _ of
 -- | `?datastar={}` identity hover and `@get({payload: {}})` use, parse the
 -- | "data: elements " payload out of the unparsed SSE body, and replace
 -- | #content wholesale (a full replace, not Datastar's own morph — simpler
--- | to hand-roll correctly than reimplementing morphing by hand).
+-- | to hand-roll correctly than reimplementing morphing by hand). A non-ok
+-- | response, an empty body, or an unparseable patch each throw; `.catch()`
+-- | falls back to `location.reload()` so a failure here still lands the
+-- | visitor on the URL `pushState` already committed to, as a real page
+-- | instead of a silently unhandled rejection.
 dsShellRouterScript :: String
 dsShellRouterScript =
   "(function(){function sync(){var m=document.getElementById('"
@@ -61,7 +65,7 @@ dsShellRouterScript =
     <> contentTarget
     <> "'),o=document.getElementById('"
     <> contentTarget
-    <> "');if(!n||!o)throw new Error('invalid navigation fragment');o.replaceWith(n);afterPatch()})}if(!history.state)history.replaceState({__ds:true},'',location.href);window.addEventListener('popstate',restore,true);sync()})();"
+    <> "');if(!n||!o)throw new Error('invalid navigation fragment');o.replaceWith(n);afterPatch()}).catch(function(){location.reload()})}if(!history.state)history.replaceState({__ds:true},'',location.href);window.addEventListener('popstate',restore,true);sync()})();"
 
 -- | Nonced JSON-LD structured data script renderer.
 renderJsonLdScript :: String -> String -> Html

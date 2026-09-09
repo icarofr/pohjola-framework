@@ -44,11 +44,12 @@ spec = do
           _ -> shouldEqual true false
 
     describe "sseEventResponse cache policy" do
-      -- Patches have no CSP nonce. max-age=180 is the Solid query-cache
-      -- window implemented as HTTP; ETag lets a later visit 304 instead of
-      -- shipping the SSE body again.
+      -- Patches have no CSP nonce, so a stale one only costs the single
+      -- visitor holding it (private) up to 180s of staleness after a
+      -- deploy, never a shared/CDN-wide window. ETag lets a later visit 304
+      -- instead of shipping the SSE body again.
       let event = "event: datastar-patch-elements\ndata: elements <div id=\"content\"></div>\n\n"
-      it "successful patches are private, max-age=180, and carry a strong ETag" do
+      it "successful patches are private, max-age=180, and carry an ETag" do
         resp <- liftEffect $ sseEventResponse event
         resp.status `shouldEqual` 200
         headerValue "Cache-Control" resp.headers `shouldEqual` Just "private, max-age=180"

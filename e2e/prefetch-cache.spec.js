@@ -6,14 +6,17 @@
 // request API does not expose.
 //
 // Current policy: successful full pages are `private, max-age=10` (CSP
-// nonce); successful Datastar patches are `private, max-age=180` plus a
-// strong ETag; errors are `no-store`; redirects derive their policy from the
+// nonce); successful Datastar patches are `private, max-age=180` plus an
+// ETag; errors are `no-store`; redirects derive their policy from the
 // closed RedirectKind set.
 //   * Full pages use `private` because they embed a per-request CSP nonce - a
 //     shared cache would replay one visitor's nonce to everyone else.
-//   * Patches contain no nonce. `max-age=180` plus ETag is the HTTP equivalent
-//     of Solid Router's idle query cache: hover/click reuse inside the window,
-//     304 after it.
+//   * Patches contain no nonce, so they can live longer than a full page.
+//     `private` still caps the blast radius of a stale patch to the one
+//     visitor holding it in their own browser cache -- a deploy that changes
+//     a patch's HTML has up to 180s of staleness for that single visitor,
+//     never a shared/CDN-wide staleness window. `max-age=180` plus ETag:
+//     hover/click reuse inside the window, 304 after it.
 //   * `max-age` because without a freshness lifetime the response is explicit
 //     but never fresh, with no validator to revalidate against, so nothing is
 //     reused and the hover prefetch becomes pure overhead.
