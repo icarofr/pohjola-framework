@@ -26,12 +26,13 @@ Feature `View.purs` and `Components/*.purs` **never** call `class_` or import `A
 | Page purpose | Template | Exemplar | Eval |
 |---|---|---|---|
 | Marketing landing | `Landing` | `Home/View.purs` | `01-add-page`, `10-ui-archetypes` |
-| Hub / link grid | `Hub` | `Contact/View.purs` | `10-ui-archetypes` |
+| Hub / link grid | `Hub` | `Guarantees/View.purs` | `10-ui-archetypes` |
 | Long-form editorial | `Editorial` | `About/View.purs` | `10-ui-archetypes` |
-| Content feed | `Feed` | `Posts/View.purs` | `02-add-data-page` |
-| Article detail | `Article` | `Posts/View.purs` | `02-add-data-page` |
-| Match schedule / fixtures | `Schedule` | `Fixtures/View.purs` | `10-ui-archetypes` |
+| Content feed | `Feed` | none in the tree — clean-sheet rebuild removed the last data-backed feature; grep the static exemplars above and adapt | `02-add-data-page` |
+| Article detail | `Article` | none in the tree — same as Feed | `02-add-data-page` |
+| Match schedule / fixtures | `Schedule` | none in the tree — same as Feed | `10-ui-archetypes` |
 | Signup / contact form | `Form` | slots in View → `Templates/Form` | see `forms.md` |
+| Scaffold default (no `--template` given) | `Editorial` | — | `make new-feature` |
 
 **Do not** use `Feed` for schedules, calendars, or crest rows — use `Schedule`.
 **Do not** import `App.Ui.Form` in features — use the `Form` `PageTemplate`.
@@ -50,7 +51,7 @@ When a page type needs new optional UI (breadcrumbs, stats row, aside):
 1. Add typed fields to the slot record in `App.Ui.Templates.Types`.
 2. Render inside the matching `App.Ui.Templates.*` module using existing `App.Ui` primitives.
 3. Add a `Contract` marker if the slot is test-visible.
-4. Update exemplar feature view (e.g. `Contact/View.purs` for Hub breadcrumbs).
+4. Update the exemplar feature view for that template (e.g. `Guarantees/View.purs` for Hub breadcrumbs).
 5. Extend `TemplateContractSpec` if marker counts change.
 6. Run `make eval EVAL=12-add-ui-component CHECK=1`.
 
@@ -90,7 +91,7 @@ These DaisyUI patterns live in `App.Ui.Templates.SiteShell` only:
 | Drawer + overlay | `drawer`, `drawer-overlay` | `renderDrawerSide` |
 | Navbar | `navbar` | `renderHeader` |
 | Theme dropdown | `dropdown` | `renderThemeDropdown` |
-| Mobile menu | `menu`, `menu-active` | `renderDrawerSide` |
+| Mobile menu | `menu` (active state: `text-primary font-semibold`, not `menu-active` — see `chrome-checklist.md`) | `renderDrawerSide` |
 
 Use `navLink` + `navLinkClasses` for route links — see chrome checklist.
 

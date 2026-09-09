@@ -92,10 +92,12 @@ a cookie-carried session token needs CSRF protection regardless of
 `SameSite`. `ADR-005` (amended 2026-09-09 to match Lucia's actual
 hierarchy — `Sec-Fetch-Site` primary, `Origin` secondary, a token demoted
 to an explicit legacy-browser fallback, not a requirement) must land
-alongside or before real session auth ships — not after. The
-`Sec-Fetch-Site` check itself is still unimplemented (`sameOriginOk` only
-covers the secondary `Origin` layer); see `ADR-005` for the full reasoning
-and outstanding work.
+alongside or before real session auth ships — not after. Neither layer
+is implemented right now — `sameOriginOk`, which covered the secondary
+`Origin` layer, was removed along with the last mutating route it
+guarded (see `ADR-005`'s note on this); the primary `Sec-Fetch-Site`
+check was never added. Both need building before wiring
+`requireAuth` into any mutating route.
 
 ## Arctic's OAuth pattern
 

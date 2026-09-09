@@ -86,8 +86,8 @@ applies headers with `Headers.set` in iteration order, so a caller-supplied
 ## Streaming & fragments
 
 - **Streaming**: Buffered SSR is the default. The `StreamBody` path is disabled
-  experimental opt-in; when enabled, `PostList` sends the HTML shell immediately
-  via `ReadableStream`.
+  experimental opt-in; when enabled, a route using it sends the HTML shell
+  immediately via `ReadableStream`.
   `controller.close()` is guaranteed via `try/finally` even on enqueue
   failure. Status is always 200 (committed at shell time).
 - **Fragments**: The server detects fragment requests via **either** signal —
@@ -97,8 +97,9 @@ applies headers with `Headers.set` in iteration order, so a caller-supplied
   way to request a fragment (curl, integration tests, non-header clients) and a
   cache key that does not depend on `Vary`. Fragment responses carry
   `Vary: x-alpine-request`. Fragments never stream (small, already fast).
-- **Static routes** (`Home`, `About`, `Contact`) and `PostDetail`
-  (can 404) use `StringBody` — no streaming.
+- **Static routes** (`Home`, `About`, `Guarantees`, `Docs`) use
+  `StringBody` — no streaming. A data-backed route (can 404) would use it
+  too; none currently exists in the tree.
 
 The data layer uses Bun's native `fetch` (`App.FetchBun`) — `Affjax.Node`'s
 `node:http` compat layer hangs in forked fibers on Bun.

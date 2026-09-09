@@ -1,10 +1,10 @@
 # Forms — App.Form contract
 
 `src/App/Form.purs` is the single source of truth for every form: field
-names, API paths (`apiContactPath`/`apiNewsletterPath`), `FormStatus`,
-`EmailAddress` (newtype via `mkEmailAddress`), and the `decodeX` functions.
-Handlers decode through `App.Form`. Keep field names and paths in
-`App.Form` — views and handlers reference them, never duplicate them.
+names, `FormStatus`, `EmailAddress` (newtype via `mkEmailAddress`), and
+the `decodeX` functions. Handlers decode through `App.Form`. Keep field
+names in `App.Form` — views and handlers reference them, never
+duplicate them.
 
 ## Rules
 
@@ -13,14 +13,12 @@ Handlers decode through `App.Form`. Keep field names and paths in
   won. The trap is silent on the wire (303 success), but warn-logged
   server-side with the request id; log the request id only, never the
   honeypot value or PII. Property-tested for all inputs.
-- **Same-origin gate** (`Main.sameOriginOk`) — `Origin` header present → must
-  equal `cfg.baseUrl`; absent → allowed. POSTs only. This is the CSRF
-  mitigation for the current unauthenticated forms (Contact, Newsletter) —
-  a real, standard defense (origin-checking), not a token. It does **not**
-  cover session-cookie-authenticated requests once real auth exists:
-  `ADR-005` (a dedicated CSRF token) is still "Accepted — implementation
-  pending" for that case — see `docs/GUARANTEES.md`. Don't read this gate
-  as "CSRF is solved" for anything built on top of `App.Auth`.
+- **Same-origin gate** — removed along with the last mutating route
+  (Contact/newsletter POST, see the note below and `App.Main`'s
+  entry-point comment). A form's handler needs a same-origin or
+  `Sec-Fetch-Site` check before it POSTs anywhere real; see
+  `docs/GUARANTEES.md`'s CSRF (ADR-005) section for the current state of
+  that hierarchy before wiring one back in.
 - **Parsing** — `Data.FormURLEncoded.decode`. Use this, not hand-rolled
   parsing.
 - **Status banners** — `?status=success|error|subscribed` rendered via
@@ -43,9 +41,14 @@ Feature views must **not** import `App.Ui.Form`. The legal path is:
 `textareaField`, `submitButton`) internally. Honeypot name is `"website"`
 (same as `contactFields` / `newsletterFields`).
 
-Contact remains a **Hub**; `/api/contact` is a kernel form-contract demo
-without a Contact form view. Newsletter POST remains available for a
-future `Form` page.
+The clean-sheet rebuild removed Contact, Home's newsletter signup, and
+both `/api/contact`/`/api/newsletter` HTTP routes — no page currently
+POSTs to either (see `App.Main`'s entry-point comment). The decode/
+honeypot kernel (`contactFields`, `newsletterFields`, `decodeContact`,
+`decodeNewsletter`) is untouched and still directly unit-tested
+(`test/FormSpec.purs`); only the page-specific HTTP glue was removed.
+Reintroducing a form is a page-content decision for whichever ticket
+wants one, not assumed here.
 
 ## Adding a form
 

@@ -65,7 +65,7 @@ Every Alpine attribute is a named constructor in `App.Alpine`:
 | Constructor | Produces |
 |---|---|
 | `xDataFlag MenuOpen false` | `x-data="{ menuOpen: false }"` |
-| `xDataSiteChrome false` | `x-data="{ theme: …, themeOpen: false, open: false }"` |
+| `xDataSiteChrome` | `x-data="{ theme: …, themeOpen: false, open: false }"` |
 | `xShowFlag MenuOpen` | `x-show="menuOpen"` |
 | `xShowNotFlag MenuOpen` | `x-show="!menuOpen"` |
 | `ariaExpandedFlag MenuOpen` | `:aria-expanded="menuOpen.toString()"` |

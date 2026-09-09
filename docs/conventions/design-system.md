@@ -10,6 +10,10 @@ Pohjola uses DaisyUI 5 + **closed page templates** so agents fill typed slots in
    - Single primary CTA, scan time, recoverable form errors — manual review until automated.
 2. **Tier 2: Design Tokens (`DESIGN.md`)**:
    - Colors, typography, radii, spacing. Daisy themes `pohjola` / `pohjola-dark` in `css/input.css` (primary `#047857`).
+   - Elevation & Depth's three levels (Canvas / Card / Dock-Terminal) are
+     the surface-color vocabulary — Dock/Terminal is chrome
+     (navbar/footer, see `chrome-checklist.md`); Canvas and Card are for
+     page content.
 3. **Tier 3: DaisyUI templates & primitives**:
    - **Pages:** `App.Ui.Templates.*` — closed `PageTemplate` ADT + `renderPage`. Agents fill slot records only.
    - **Primitives:** `App.Ui.Button`, `Card`, `Badge`, … — DaisyUI class recipes used *inside* Templates.
@@ -30,16 +34,11 @@ Pohjola uses DaisyUI 5 + **closed page templates** so agents fill typed slots in
 
 Feature views **must not** compose primitives. Call `renderPage` with one `PageTemplate` variant and a slot record.
 
-| Page purpose | Template | Exemplar |
-|---|---|---|
-| Marketing landing | `Landing` | `Home/View.purs` |
-| Hub / link grid | `Hub` | `Contact/View.purs` |
-| Long-form editorial | `Editorial` | `About/View.purs` |
-| Content feed / list | `Feed` | `Posts/View.purs` (list) |
-| Article detail | `Article` | `Posts/View.purs` (detail) |
-| Match schedule / fixtures | `Schedule` | `Fixtures/View.purs` |
-| Signup / contact form | `Form` | `Templates/Form.purs` (slots in View) |
-| Scaffold default | `Editorial` | `make new-feature` |
+Template ↔ exemplar mapping, and `make new-feature`'s default template:
+`docs/conventions/component-checklist.md` §1 — kept in one place since
+this table went stale here once already (it named `Posts/View.purs` and
+`Contact/View.purs`, both since removed) while a second copy there
+didn't get the same fix.
 
 **ADR-012:** feature `View.purs` / `Components/` must not call `class_` or import primitive modules — enforced by `make gate`.
 

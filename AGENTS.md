@@ -27,6 +27,7 @@ make eval EVAL=01-add-page CHECK=1  # assertions
 | Task | Doc |
 | add page | docs/superpowers/specs/2026-08-31-page-architectures.md then make new-feature |
 | chrome | docs/conventions/chrome-checklist.md |
+| colors / visual polish | DESIGN.md (tokens, elevation levels) + docs/conventions/design-system.md (scorecard) |
 | Alpine | docs/conventions/alpine-contracts.md |
 | FFI | docs/ffi-taming-guide.md |
 | forms | docs/conventions/forms.md |

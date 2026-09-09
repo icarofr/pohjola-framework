@@ -3,7 +3,7 @@ module Test.FormSpec where
 
 import Prelude
 
-import App.Form (ContactSubmission(..), FormStatus(..), NewsletterSubmission(..), apiContactPath, decodeContact, decodeNewsletter, formStatusQuery, parseFormStatus)
+import App.Form (ContactSubmission(..), FormStatus(..), NewsletterSubmission(..), decodeContact, decodeNewsletter, formStatusQuery, parseFormStatus)
 import Data.Email (mkEmailAddress, unEmailAddress)
 import Data.Array as Array
 import Data.FormURLEncoded as FormURLEncoded
@@ -200,10 +200,6 @@ spec = do
         parseFormStatus "error" `shouldEqual` Just FormError
         parseFormStatus "subscribed" `shouldEqual` Just FormSubscribed
         parseFormStatus "invalid" `shouldEqual` Nothing
-
-    describe "API paths" do
-      it "has correct contact path" do
-        apiContactPath `shouldEqual` "/api/contact"
 
   describe "form decoding properties" do
     describe "totality" do

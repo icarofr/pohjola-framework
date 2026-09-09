@@ -7,22 +7,27 @@ Data-backed pages fetch and may return `Left AppError`.
 
 ## The two feature templates
 
-- **STATIC** (Contact, About, Home): `Page.purs` + `View.purs`
-- **DATA-BACKED** (Posts): `Types.purs` + `Service.purs` + `Page.purs` +
-  `View.purs`
+- **STATIC** (Home, About, Guarantees, Docs — every feature currently in
+  the tree): `Page.purs` + `View.purs`
+- **DATA-BACKED**: `Types.purs` + `Service.purs` + `Page.purs` + `View.purs`
 
 ContractSpec enforces: every feature has `Page.purs` with a `render*` entry;
 a feature with `Service.purs` implies the full `Types/Service/Page/View`
 split; features stay isolated from siblings.
 
-## The data-backed pattern (see `App.Features.Posts`)
+## The data-backed pattern
 
-1. **Types** (`Posts/Types.purs`) — domain newtype + `DecodeJson` instance
-2. **Service** (`Posts/Service.purs`) — `fetchPosts :: Aff (Either AppError (Array Post))`.
+No data-backed feature currently exists in the tree — the clean-sheet
+rebuild removed the last one (`Posts`, an HTTP-fetched JSONPlaceholder
+demo). Grep git history (`git log --all --diff-filter=D -- 'src/App/Features/Posts/*'`)
+for a worked example if you want prior art; the pattern itself:
+
+1. **Types** (`Types.purs`) — domain newtype + `DecodeJson` instance
+2. **Service** (`Service.purs`) — `fetchX :: Aff (Either AppError (Array X))`.
    Errors are values (AppError), not exceptions.
-3. **Page** (`Posts/Page.purs`) — `renderList :: Lang -> Aff (Either AppError Html)`.
+3. **Page** (`Page.purs`) — `renderList :: Lang -> Aff (Either AppError Html)`.
    Fetches, pattern-matches: `Right` → render view, `Left` → propagate.
-4. **View** (`Posts/View.purs`) — pure rendering from pre-fetched data.
+4. **View** (`View.purs`) — pure rendering from pre-fetched data.
 5. **Router** (`Main.purs`) — maps `Left AppError` to HTTP status
    (NotFound → 404, _ → 500) via `renderErrorPage`.
 
@@ -34,9 +39,6 @@ fixture, returns 404 for missing resources, and 500 on upstream failure.
 All HTTP fetching goes through `App.Data.Fetch.fetchJson`. Feature modules
 import from shared modules only — importing a sibling feature fails
 ContractSpec.
-
-To add a data-backed feature, copy the Posts pattern. Swap JSONPlaceholder
-for your CMS — the pattern stays the same.
 
 ## Database — App.Data.SQL (ADR-009)
 

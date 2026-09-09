@@ -29,7 +29,7 @@ The closed algebra of page shapes a feature may render: `Landing | Editorial | H
 _Avoid_: Layout, page type
 
 **Route**:
-A constructor of the `Route` ADT (`Home | About | Contact | PostList | PostDetail Int | Fixtures`) with one bidirectional codec per language — `print` and `parse` share the same codec, so a route missing from either language's URL space is a compile error, not a routing bug.
+A constructor of the `Route` ADT (currently `Home | About | Guarantees | Docs`) with one bidirectional codec per language — `print` and `parse` share the same codec, so a route missing from either language's URL space is a compile error, not a routing bug.
 _Avoid_: Path, URL
 
 **Chrome**:

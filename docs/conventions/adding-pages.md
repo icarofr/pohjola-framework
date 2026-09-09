@@ -22,7 +22,7 @@ src/App/Features/<Name>/
   Components/   # optional
 ```
 
-**Static** features ship `Page.purs` + `View.purs` (exemplar: `About/`). **Data-backed** features add `Types.purs` + `Service.purs` (exemplar: `Posts/`).
+**Static** features ship `Page.purs` + `View.purs` (exemplar: `About/`). **Data-backed** features add `Types.purs` + `Service.purs` (no exemplar currently in the tree — see `docs/conventions/data-layer.md`).
 
 **Two seams, two rules:**
 

@@ -41,7 +41,8 @@ Inspects PostgreSQL DDL `CREATE TABLE` definitions and automatically generates t
 ## File layout
 
 - Static: Page.purs + View.purs (exemplar: About/)
-- Data-backed: Types.purs, Service.purs, Page.purs, View.purs (exemplar: Posts/)
+- Data-backed: Types.purs, Service.purs, Page.purs, View.purs (no exemplar
+  currently in the tree — see `docs/conventions/data-layer.md`)
 
 ContractSpec enforces feature isolation — see `test/ContractSpec.purs`.
 
@@ -49,7 +50,8 @@ ContractSpec enforces feature isolation — see `test/ContractSpec.purs`.
 
 - Presence of `Service.purs` ⇒ data-backed feature.
 - Data-backed ⇒ `Types.purs` must exist.
-- Example: `Posts/` (data-backed) vs `About/` (static).
+- `About/` (static, `Page.purs` + `View.purs` only) is the exemplar to diff
+  a new feature against, data-backed or not.
 
 ## Checklist after scaffolding
 

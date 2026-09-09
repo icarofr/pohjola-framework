@@ -1,14 +1,12 @@
 -- | Form data structures and decoding for contact and newsletter forms.
 -- |
 -- | Single source of truth for the form contract between views and handlers:
--- | field names, honeypot fields, validation, status query params, API paths.
+-- | field names, honeypot fields, validation, status query params.
 module App.Form
   ( ContactForm
   , ContactSubmission(..)
   , FormStatus(..)
   , NewsletterSubmission(..)
-  , apiContactPath
-  , apiNewsletterPath
   , contactFields
   , decodeContact
   , decodeNewsletter
@@ -155,16 +153,6 @@ decodeNewsletter body = case decode body of
               case mkEmailAddress email of
                 Just addr -> SubmitNewsletter addr
                 Nothing -> InvalidNewsletter
-
--- ============================================================================
--- API paths — the only place these strings live
--- ============================================================================
-
-apiContactPath :: String
-apiContactPath = "/api/contact"
-
-apiNewsletterPath :: String
-apiNewsletterPath = "/api/newsletter"
 
 -- ============================================================================
 -- Internal
