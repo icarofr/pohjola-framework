@@ -36,7 +36,7 @@ make eval EVAL=01-add-page CHECK=1  # assertions
 | claims | docs/GUARANTEES.md |
 | auth | docs/conventions/auth-lucia-arctic.md (pattern) + docs/adr/ADR-002-auth-shape.md (decision) — App.Auth implemented; CSRF (ADR-005) still pending, don't wire into mutating routes yet |
 
-Skip docs/SETUP.md unless a human asks. Exemplars: About (static), Posts (data). Grep those before README samples.
+Skip docs/SETUP.md unless a human asks. Exemplars: Home or About (static — Landing and Editorial templates respectively). No data-backed exemplar currently exists in the tree (Posts was removed in the clean-sheet rebuild, see .scratch/clean-sheet-homepage/) — don't point an agent at a file that isn't there. Grep the static exemplars before README samples.
 
 ## Verify
 make gate after the first compile. make test if you touched Alpine, cache, forms, templates, or Main. make check before commit.
