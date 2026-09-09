@@ -12,7 +12,7 @@ module App.DatastarShell (dsSitePage, renderDsDocument) where
 
 import Prelude
 
-import App.Alpine (contentTarget)
+import App.Alpine (ThemeMode(..), contentTarget, themeModeName)
 import App.Layout.Scripts (HeadScript(..), renderHeadScript)
 import App.Layout.Styles (stylesCss)
 import App.Datastar
@@ -161,20 +161,20 @@ renderThemeDropdown labels =
         [ dsShowFlag DsThemeMenuOpen
         , class_ dsDropdownPanelClass
         ]
-        [ themeMenuItem "light" labels.themeLight
-        , themeMenuItem "dark" labels.themeDark
-        , themeMenuItem "system" labels.themeSystem
+        [ themeMenuItem ThemeLight labels.themeLight
+        , themeMenuItem ThemeDark labels.themeDark
+        , themeMenuItem ThemeSystem labels.themeSystem
         ]
     ]
 
-themeMenuItem :: String -> String -> Html
-themeMenuItem value label =
+themeMenuItem :: ThemeMode -> String -> Html
+themeMenuItem mode label =
   el "li" []
     [ el "button"
         [ class_ dsDropdownItemClass
-        , dsClassWhenEq "btn-active" "theme" value
+        , dsClassWhenEq "btn-active" "theme" (themeModeName mode)
         , attr "type" "button"
-        , dsSetTheme value
+        , dsSetTheme mode
         ]
         [ text label ]
     ]

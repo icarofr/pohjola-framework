@@ -30,6 +30,7 @@ module App.Datastar
 
 import Prelude
 
+import App.Alpine (ThemeMode(..), themeModeName)
 import App.Html (Attr, attr)
 import App.Theme (themeDarkName, themeLightName, themeStorageKey)
 import Data.Route (Route, routeUrl)
@@ -140,19 +141,21 @@ dsOnKeydownEscape f = attr "data-on:keydown__window__escape" ("$" <> flagName f 
 
 -- | Sets the theme signal + localStorage (App.Theme.themeStorageKey) +
 -- | document.documentElement's data-theme, then closes the theme menu --
--- | same three effects as App.Alpine's xSetThemeAndClose, same storage
--- | key/theme names (App.Theme.themeLightName/themeDarkName), just a
--- | Datastar signal assignment instead of an Alpine expression.
-dsSetTheme :: String -> Attr
+-- | same three effects as App.Alpine's xSetThemeAndClose, same closed
+-- | ThemeMode ADT (App.Alpine.ThemeMode) rather than an unstructured String, so an
+-- | invalid mode is a compile error here just as it is on the Alpine side.
+dsSetTheme :: ThemeMode -> Attr
 dsSetTheme mode =
   attr "data-on:click"
-    ( "$theme = '" <> mode <> "'; localStorage.setItem('" <> themeStorageKey <> "', '" <> mode <> "'); "
+    ( "$theme = '" <> themeModeName mode <> "'; localStorage.setItem('" <> themeStorageKey <> "', '"
+        <> themeModeName mode
+        <> "'); "
         <>
-          if mode == "system" then "document.documentElement.removeAttribute('data-theme')"
-          else
-            "document.documentElement.setAttribute('data-theme', '"
-              <> (if mode == "dark" then themeDarkName else themeLightName)
-              <> "')"
+          ( case mode of
+              ThemeSystem -> "document.documentElement.removeAttribute('data-theme')"
+              ThemeDark -> "document.documentElement.setAttribute('data-theme', '" <> themeDarkName <> "')"
+              ThemeLight -> "document.documentElement.setAttribute('data-theme', '" <> themeLightName <> "')"
+          )
         <> "; $"
         <> flagName DsThemeMenuOpen
         <> " = false"
