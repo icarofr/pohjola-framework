@@ -1,42 +1,38 @@
--- | Guarantees page view — fills Editorial template slots only.
+-- | Guarantees page view — fills Hub template slots only.
+-- |
+-- | Hub, not Editorial: three condensed claims as cards, not a mission
+-- | statement with a six-item grid — visually distinct from About, which
+-- | genuinely is a mission-and-principles page.
 module App.Features.Guarantees.View where
 
 import App.Form (FormStatus)
 import App.Html (Html)
 import App.Ui.Templates.PageHeader as PageHeader
 import App.Ui.Templates.Render (renderPage)
-import App.Ui.Templates.Types
-  ( EditorialSlots
-  , PageTemplate(..)
-  , editorialSlots
-  , valueSextuple
-  , valuesSlots
-  )
+import App.Ui.Templates.Types (ActionTarget(..), HubSlots, PageTemplate(..), hubCardTriple, hubSlots)
+import Data.Content (bookingUrl)
 import Data.I18n (Lang, dict)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe)
 import Data.Route (Route(..))
 
 renderGuarantees :: Lang -> Maybe FormStatus -> Html
 renderGuarantees lang status =
-  renderPage lang Guarantees status (Editorial (pageSlots lang))
+  renderPage lang Guarantees status (Hub (guaranteesSlots lang))
 
-pageSlots :: Lang -> EditorialSlots
-pageSlots lang =
+guaranteesSlots :: Lang -> HubSlots
+guaranteesSlots lang =
   let
     d = (dict lang).guarantees
     nav = (dict lang).nav
-    items = d.values.items
-  in
-    editorialSlots
-      d.heading
-      (Just d.subtitle)
-      { heading: d.mission.heading
-      , lead: d.mission.lead
-      , body: d.mission.body
+    toCard c =
+      { title: c.title
+      , description: c.description
+      , buttonLabel: c.buttonLabel
+      , target: External { href: bookingUrl }
       }
-      ( valuesSlots d.values.heading d.values.intro
-          (valueSextuple items.one items.two items.three items.four items.five items.six)
-      )
+  in
+    hubSlots d.heading d.subtitle d.lead
+      (hubCardTriple (toCard d.cards.one) (toCard d.cards.two) (toCard d.cards.three))
       [ PageHeader.breadcrumbHome lang nav.home
       , PageHeader.breadcrumbHere d.heading
       ]

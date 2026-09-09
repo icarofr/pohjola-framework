@@ -152,6 +152,7 @@ uiTemplateModules =
   , "src/App/Ui/Templates/Form.purs"
   , "src/App/Ui/Templates/Hub.purs"
   , "src/App/Ui/Templates/Landing.purs"
+  , "src/App/Ui/Templates/Notice.purs"
   , "src/App/Ui/Templates/PageHeader.purs"
   , "src/App/Ui/Templates/Render.purs"
   , "src/App/Ui/Templates/Schedule.purs"

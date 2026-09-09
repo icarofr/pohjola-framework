@@ -26,6 +26,8 @@ module App.Ui.Templates.Types
   , ArticleSlots
   , FormField(..)
   , FormSlots
+  , NoticeSlots
+  , NoticeItem
   , landingSlots
   , landingFeatures
   , hubSlots
@@ -39,6 +41,7 @@ module App.Ui.Templates.Types
   , scheduleSlots
   , articleSlots
   , formSlots
+  , noticeSlots
   , featureItems
   , valueItems
   , hubCards
@@ -65,6 +68,7 @@ data PageTemplate
   | Schedule ScheduleSlots
   | Article ArticleSlots
   | Form FormSlots
+  | Notice NoticeSlots
 
 type LandingHeroSlots =
   { eyebrow :: String
@@ -162,6 +166,7 @@ type HubCardTriple =
 type HubSlots =
   { title :: String
   , subtitle :: String
+  , lead :: String
   , cards :: HubCardTriple
   , breadcrumbs :: Array BreadcrumbItem
   }
@@ -232,6 +237,28 @@ type FormSlots =
   , fields :: Array FormField
   }
 
+-- | One line item in a Notice page's roadmap list.
+type NoticeItem =
+  { title :: String
+  , description :: String
+  }
+
+-- | A single centered announcement — a page header, one lead paragraph, and
+-- | an ordered roadmap list. Deliberately lighter than Editorial's mission +
+-- | fixed six-item grid: an "it's coming" page shouldn't look as fully built
+-- | out as a features page, and a roadmap is naturally variable-length, not
+-- | a fixed arity like `ValueSextuple` — `items` is a plain `Array` on
+-- | purpose.
+type NoticeSlots =
+  { heading :: String
+  , subtitle :: String
+  , lead :: String
+  , itemsHeading :: String
+  , itemsIntro :: String
+  , items :: Array NoticeItem
+  , breadcrumbs :: Array BreadcrumbItem
+  }
+
 landingFeatures
   :: String
   -> String
@@ -291,9 +318,9 @@ hubCardTriple :: HubCard -> HubCard -> HubCard -> HubCardTriple
 hubCardTriple one two three =
   { one, two, three }
 
-hubSlots :: String -> String -> HubCardTriple -> Array BreadcrumbItem -> HubSlots
-hubSlots title subtitle cards breadcrumbs =
-  { title, subtitle, cards, breadcrumbs }
+hubSlots :: String -> String -> String -> HubCardTriple -> Array BreadcrumbItem -> HubSlots
+hubSlots title subtitle lead cards breadcrumbs =
+  { title, subtitle, lead, cards, breadcrumbs }
 
 feedSlots :: String -> String -> Array BreadcrumbItem -> Array FeedCard -> FeedSlots
 feedSlots title subtitle breadcrumbs posts =
@@ -324,6 +351,18 @@ formSlots
   -> FormSlots
 formSlots title subtitle breadcrumbs action submitLabel fields =
   { title, subtitle, breadcrumbs, action, submitLabel, fields }
+
+noticeSlots
+  :: String
+  -> String
+  -> String
+  -> String
+  -> String
+  -> Array NoticeItem
+  -> Array BreadcrumbItem
+  -> NoticeSlots
+noticeSlots heading subtitle lead itemsHeading itemsIntro items breadcrumbs =
+  { heading, subtitle, lead, itemsHeading, itemsIntro, items, breadcrumbs }
 
 featureItems :: FeatureTriple -> Array ServiceFeature
 featureItems triple =

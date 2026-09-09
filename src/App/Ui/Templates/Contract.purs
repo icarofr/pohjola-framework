@@ -1,7 +1,7 @@
 -- | Page template slot contracts — source of truth for data-template markers.
 module App.Ui.Templates.Contract
   ( aboutValueCount
-  , contactHubCardCount
+  , hubCardCount
   , homeFeatureItemCount
   , marker
   , slot
@@ -31,6 +31,11 @@ module App.Ui.Templates.Contract
   , articleBody
   , articleMeta
   , formPage
+  , hubLead
+  , noticePage
+  , noticeLead
+  , noticeItems
+  , noticeItem
   ) where
 
 import Prelude
@@ -73,6 +78,9 @@ hubCards = "hub-cards"
 
 hubCard :: String
 hubCard = "hub-card"
+
+hubLead :: String
+hubLead = "hub-lead"
 
 feedPage :: String
 feedPage = "feed-page"
@@ -119,11 +127,23 @@ articleMeta = "article-meta"
 formPage :: String
 formPage = "form-page"
 
+noticePage :: String
+noticePage = "notice-page"
+
+noticeLead :: String
+noticeLead = "notice-lead"
+
+noticeItems :: String
+noticeItems = "notice-items"
+
+noticeItem :: String
+noticeItem = "notice-item"
+
 homeFeatureItemCount :: Int
 homeFeatureItemCount = 3
 
-contactHubCardCount :: Int
-contactHubCardCount = 3
+hubCardCount :: Int
+hubCardCount = 3
 
 aboutValueCount :: Int
 aboutValueCount = 6

@@ -11,6 +11,7 @@ import App.Ui.Templates.Feed as Feed
 import App.Ui.Templates.Form as FormTemplate
 import App.Ui.Templates.Hub as Hub
 import App.Ui.Templates.Landing as Landing
+import App.Ui.Templates.Notice as Notice
 import App.Ui.Templates.Schedule as Schedule
 import App.Ui.Templates.SiteShell as Shell
 import App.Ui.Templates.Types (PageTemplate(..))
@@ -37,5 +38,7 @@ renderPage lang route status template =
         Article.renderArticle lang route slots
       Form slots ->
         FormTemplate.renderForm lang route slots
+      Notice slots ->
+        Notice.renderNotice lang route slots
   in
     Shell.sitePage lang route labels status body

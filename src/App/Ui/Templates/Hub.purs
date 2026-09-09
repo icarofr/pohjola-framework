@@ -28,6 +28,11 @@ renderHub lang route slots =
         [ PageHeader.render lang route
             ( PageHeader.pageHeaderSlots slots.title (Just slots.subtitle) slots.breadcrumbs
             )
+        , el "p"
+            [ class_ "mt-6 max-w-2xl text-lg opacity-80"
+            , attr Contract.marker Contract.hubLead
+            ]
+            [ text slots.lead ]
         , el "div"
             [ class_ "mt-12 grid gap-6 md:grid-cols-3"
             , attr Contract.marker Contract.hubCards
