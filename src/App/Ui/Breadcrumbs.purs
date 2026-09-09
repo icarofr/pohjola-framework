@@ -5,7 +5,7 @@ module App.Ui.Breadcrumbs
 
 import Prelude
 
-import App.Alpine (navLink)
+import App.Datastar (dsNavLinkRecord)
 import App.Html (Html, class_, el, href, text)
 import App.Ui.Templates.Types (ActionTarget(..), BreadcrumbItem)
 import Data.I18n (Lang)
@@ -24,7 +24,7 @@ renderItem current { label, target } =
     Nothing ->
       [ text label ]
     Just (Internal { lang: linkLang, route }) ->
-      [ navLink { lang: linkLang, current, target: route }
+      [ dsNavLinkRecord { lang: linkLang, current, target: route }
           [ class_ "link link-hover" ]
           [ text label ]
       ]

@@ -12,14 +12,14 @@ unchanged — only the reactivity attributes swap, not the CSS.
 
 **Blocked by:** 02
 
-**Status:** ready-for-agent
+**Status:** done (2026-09-09), commit history on branch `spike/datastar-shell-nav-port` (see findings.md)
 
-- [ ] Theme dropdown opens/closes, closes on outside click, closes on Escape, and correctly highlights the active theme, on the Datastar-powered pages
-- [ ] Language dropdown has the same behavior and correctly highlights the current language
-- [ ] Mobile drawer opens/closes, closes on Escape, matching current behavior
-- [ ] All three widgets render with the same DaisyUI classes as the Alpine versions — no visual difference
-- [ ] A spike-local raw-playwright-core script verifies all of the above against both the Datastar version and the current Alpine version of the same two pages, side by side
-- [ ] `make gate && make test` pass on the branch (existing Alpine-based `ContractSpec`/`ShellSpec` assertions remain green and unmodified)
+- [x] Theme dropdown opens/closes, closes on outside click, closes on Escape, and correctly highlights the active theme, on the Datastar-powered pages
+- [x] Language dropdown has the same behavior and correctly highlights the current language
+- [x] Mobile drawer opens/closes, closes on Escape, matching current behavior
+- [x] All three widgets render with the same DaisyUI classes as the Alpine versions — no visual difference
+- [x] A spike-local raw-playwright-core script verifies all of the above against both the Datastar version and the current Alpine version of the same two pages, side by side
+- [x] `make gate && make test` pass on the branch (existing Alpine-based `ContractSpec`/`ShellSpec` assertions remain green and unmodified)
 
 ## Comments
 

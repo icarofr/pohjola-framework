@@ -64,8 +64,8 @@ gateSpec =
       offenders <- Scan.findForbiddenInFiles [ "el (" ] files
       offenders `shouldEqual` []
 
-    it "no raw Alpine strings outside App.Alpine" do
-      offenders <- Scan.findRawAlpineOutsideAlpine "src"
+    it "no raw Datastar strings outside App.Datastar" do
+      offenders <- Scan.findRawDatastarOutsideDatastar "src"
       offenders `shouldEqual` []
 
     it "no cross-feature imports" do

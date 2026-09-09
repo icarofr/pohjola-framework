@@ -15,15 +15,15 @@ existing `pageSyncScript` `restore()` logic as the starting reference.
 
 **Blocked by:** 02
 
-**Status:** ready-for-agent
+**Status:** done (2026-09-09), commit history on branch `spike/datastar-shell-nav-port` (see findings.md)
 
-- [ ] Clicking any internal link on `Home` or `About` swaps `#content` via Datastar and updates the URL
-- [ ] Browser back restores the previous page's content, title, and `<html lang>` correctly
-- [ ] Browser forward re-restores correctly after a back
-- [ ] The page scrolls to top on every forward navigation and every back/forward restore
-- [ ] Document title and `<html lang>` are correct after every swap
-- [ ] A spike-local raw-playwright-core script verifies all of the above against both the Datastar version and the current Alpine version of the same two pages, side by side
-- [ ] `make gate && make test` pass on the branch (existing Alpine-based `ContractSpec`/`ShellSpec` assertions remain green and unmodified)
+- [x] Clicking any internal link on `Home` or `About` swaps `#content` via Datastar and updates the URL
+- [x] Browser back restores the previous page's content, title, and `<html lang>` correctly
+- [x] Browser forward re-restores correctly after a back
+- [x] The page scrolls to top on every forward navigation and every back/forward restore
+- [x] Document title and `<html lang>` are correct after every swap
+- [x] A spike-local raw-playwright-core script verifies all of the above against both the Datastar version and the current Alpine version of the same two pages, side by side
+- [x] `make gate && make test` pass on the branch (existing Alpine-based `ContractSpec`/`ShellSpec` assertions remain green and unmodified)
 
 ## Comments
 

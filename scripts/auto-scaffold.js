@@ -666,8 +666,8 @@ if (wire) {
   console.log("  ✓ Updated src/App/Layout/Head.purs");
 
   if (chrome) {
-    console.log(`⚡ Auto-wiring chrome for ${name} in SiteShell...`);
-    let shellContent = await readText("src/App/Ui/Templates/SiteShell.purs");
+    console.log(`⚡ Auto-wiring chrome for ${name} in DatastarShell...`);
+    let shellContent = await readText("src/App/DatastarShell.purs");
     const labelField = `${lower}Label`;
 
     // Anchor on the record's closing brace, not a specific field name —
@@ -718,7 +718,7 @@ if (wire) {
       );
     }
 
-    await writeText("src/App/Ui/Templates/SiteShell.purs", shellContent);
+    await writeText("src/App/DatastarShell.purs", shellContent);
     for (const marker of [
       `${labelField} :: String`,
       `${labelField}: d.nav.${lower}`,
@@ -726,9 +726,9 @@ if (wire) {
       mobileLine.trim(),
       footerLine.trim(),
     ]) {
-      requireMarker(shellContent, marker, "src/App/Ui/Templates/SiteShell.purs", `chrome ${marker}`);
+      requireMarker(shellContent, marker, "src/App/DatastarShell.purs", `chrome ${marker}`);
     }
-    console.log("  ✓ Updated src/App/Ui/Templates/SiteShell.purs (chrome)");
+    console.log("  ✓ Updated src/App/DatastarShell.purs (chrome)");
   }
 
   // Format code

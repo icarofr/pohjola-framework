@@ -1,59 +1,45 @@
--- | Site chrome — DaisyUI drawer, navbar, theme dropdown, and footer.
-module App.Ui.Templates.SiteShell
-  ( ShellLabels
-  , sitePage
-  , siteErrorPage
-  , shellLabels
+-- | Site chrome — DaisyUI drawer, navbar, theme dropdown, and footer,
+-- | rendered entirely through App.Datastar's typed constructors (ADR-000,
+-- | ADR-011). The production replacement for the Alpine-based SiteShell this
+-- | module superseded on 2026-09-09 — see .scratch/datastar-streaming-transport
+-- | for the spike that measured the transport swap before this became the
+-- | production chrome.
+module App.DatastarShell
+  ( dsSitePage
+  , dsSiteErrorPage
+  , renderDsDocument
+  , dsActiveNavClass
+  , dsDropdownItemClass
+  , dsDropdownItemClasses
+  , dsDropdownPanelClass
+  , siteDrawerId
   ) where
 
 import Prelude
 
-import App.Alpine
-  ( Flag(..)
-  , NavChrome(..)
-  , ThemeMode(..)
-  , ariaExpandedFlag
-  , classWhenFlag
-  , classWhenTheme
-  , closeSiteDrawer
+import App.Layout.Head (renderHead)
+import App.Layout.Scripts (HeadScript(..), renderHeadScript)
+import App.Datastar
+  ( DsFlag(..)
   , contentTarget
   , dataPageLangAttr
   , dataPageTitleAttr
-  , dropdownItemClass
-  , dropdownItemClasses
-  , dropdownPanelClass
-  , dropdownTriggerClass
-  , langLink
-  , navLink
-  , navLinkClasses
-  , onClick
-  , onClickOutside
-  , onKeydownEscapeWindow
-  , setFlag
-  , siteDrawerId
-  , toggleFlag
-  , xDataSiteChrome
-  , xSetTheme
-  , xSetThemeAndClose
-  , xShowFlag
-  , xShowTheme
+  , dsClassWhenFlag
+  , dsClassWhenTheme
+  , dsLangLink
+  , dsNavLinkRecord
+  , dsOnClickOutside
+  , dsOnKeydownEscape
+  , dsSetFlag
+  , dsSetTheme
+  , dsShowFlag
+  , dsShowTheme
+  , dsSignalsInit
+  , dsToggleFlag
   )
 import App.Form (FormStatus(..), formStatusQuery, statusText)
-import App.Html
-  ( Attr
-  , Html
-  , ariaLabel
-  , attr
-  , class_
-  , el
-  , for_
-  , href
-  , id_
-  , rel_
-  , target_
-  , text
-  , type_
-  )
+import App.Html (Attr, Html, ariaLabel, attr, class_, doctype, el, for_, href, id_, rel_, render, src, target_, text, type_)
+import App.Theme (ThemeMode(..))
 import App.Ui.Alert (AlertVariant(..), alert)
 import App.Ui.Container as Container
 import App.Ui.Templates.Contract as Contract
@@ -62,6 +48,9 @@ import Data.I18n (Lang(..), dict, langTag)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Route (Route(..), routeTitle)
 import Data.String.Common (toUpper)
+
+siteDrawerId :: String
+siteDrawerId = "site-drawer"
 
 type ShellLabels =
   { siteTitle :: String
@@ -117,6 +106,27 @@ shellLabels lang =
     , footerResourcesTitle: d.footer.resources
     }
 
+-- | Centralized so shell edits cannot forget them — same rationale
+-- | App.Alpine's dropdownTriggerClass/dropdownPanelClass/dropdownItemClass
+-- | carried, one recipe both dropdowns share.
+dsDropdownTriggerClass :: String
+dsDropdownTriggerClass = "btn btn-ghost btn-sm"
+
+dsDropdownPanelClass :: String
+dsDropdownPanelClass = "menu menu-sm dropdown-content rounded-box z-50 mt-3 w-52 bg-base-100 p-2 shadow"
+
+dsDropdownItemClass :: String
+dsDropdownItemClass = "btn btn-ghost btn-sm w-full justify-start"
+
+dsDropdownItemClasses :: Boolean -> String
+dsDropdownItemClasses isActive = dsDropdownItemClass <> if isActive then " btn-active" else ""
+
+-- | Desktop/mobile nav active-item treatment (text-primary, not a filled
+-- | pill). Footer links use a fixed class regardless of active state
+-- | instead — see footerLink.
+dsActiveNavClass :: String -> Boolean -> String
+dsActiveNavClass base isActive = base <> if isActive then " text-primary font-semibold" else ""
+
 maybeStatusBanner :: Lang -> Maybe FormStatus -> Html
 maybeStatusBanner lang = maybe (text "") \status ->
   let
@@ -128,40 +138,38 @@ maybeStatusBanner lang = maybe (text "") \status ->
     el "div" [ attr "data-form-status" (formStatusQuery status) ]
       [ alert variant (statusText lang status) ]
 
-sitePage :: Lang -> Route -> ShellLabels -> Maybe FormStatus -> Html -> Html
-sitePage lang route labels status content =
-  sitePageTitled lang route (routeTitle lang route) labels status content
+-- | Same #content/data-page-* contract App.Layout.Scripts' dsShellRouterScript
+-- | reads. Title is computed from the route; dsSitePageTitled below exists
+-- | only for the error page, which needs a title with no Route of its own.
+dsSitePage :: Lang -> Route -> Maybe FormStatus -> Html -> Html
+dsSitePage lang route status content =
+  dsSitePageTitled lang route (routeTitle lang route) status content
 
-sitePageTitled :: Lang -> Route -> String -> ShellLabels -> Maybe FormStatus -> Html -> Html
-sitePageTitled lang route title labels status content =
-  el "div"
-    ( [ class_ "drawer drawer-end min-h-dvh bg-base-100 text-base-content"
+dsSitePageTitled :: Lang -> Route -> String -> Maybe FormStatus -> Html -> Html
+dsSitePageTitled lang route title status content =
+  let
+    labels = shellLabels lang
+  in
+    el "div"
+      [ class_ "drawer drawer-end min-h-dvh bg-base-100 text-base-content"
       , id_ contentTarget
       , attr dataPageTitleAttr title
       , attr dataPageLangAttr (langTag lang)
+      , dsSignalsInit
+      , dsOnKeydownEscape DsDrawerOpen
       ]
-        <>
-          [ xDataSiteChrome
-          , onKeydownEscapeWindow closeSiteDrawer
+      [ el "input" [ type_ "checkbox", class_ "drawer-toggle", id_ siteDrawerId ] []
+      , el "div" [ class_ "drawer-content flex min-h-full flex-col" ]
+          [ renderHeader lang route labels
+          , maybeStatusBanner lang status
+          , el "main" [ class_ "flex-1" ] [ content ]
+          , renderFooter lang route labels
           ]
-    )
-    [ el "input"
-        [ type_ "checkbox"
-        , class_ "drawer-toggle"
-        , id_ siteDrawerId
-        ]
-        []
-    , el "div" [ class_ "drawer-content flex min-h-full flex-col" ]
-        [ renderHeader lang route labels
-        , maybeStatusBanner lang status
-        , el "main" [ class_ "flex-1" ] [ content ]
-        , renderFooter lang route labels
-        ]
-    , renderDrawerSide lang route labels
-    ]
+      , renderDrawerSide lang route labels
+      ]
 
-siteErrorPage :: Lang -> Int -> Html
-siteErrorPage lang statusCode =
+dsSiteErrorPage :: Lang -> Int -> Html
+dsSiteErrorPage lang statusCode =
   let
     labels = shellLabels lang
     title = show statusCode <> " - " <> labels.siteTitle
@@ -171,11 +179,10 @@ siteErrorPage lang statusCode =
         , el "p" [ class_ "mt-6 text-lg opacity-70" ] [ text (errorMessage lang statusCode) ]
         ]
   in
-    -- Reuse the drawer wrapper so Alpine replaceWith and TitleSync keep working.
     -- Home stands in for the current route: an error page has none of its
     -- own, and Home is guaranteed to exist (it's the one route every build
     -- of this framework always has).
-    sitePageTitled lang Home title labels Nothing body
+    dsSitePageTitled lang Home title Nothing body
 
 errorMessage :: Lang -> Int -> String
 errorMessage lang status =
@@ -184,14 +191,9 @@ errorMessage lang status =
   in
     if status == 404 then d.common.error404 else d.common.error500
 
--- | DESIGN.md's Elevation & Depth "Level 2 (Dock / Terminal)": always the
--- | secondary/obsidian surface, independent of the site's own light/dark
--- | toggle (the doc gives it a single color, not a light/dark pair, unlike
--- | Level 0/1). `data-theme` is scoped here, not just on `<html>`, so every
--- | descendant — including the theme/lang dropdown popups nested inside —
--- | resolves its DaisyUI CSS vars (base-content, base-100, …) against the
--- | dark theme regardless of the page's own theme. No shadow: DESIGN.md's
--- | Do's/Don'ts rules out soft drop-shadows in favor of crisp 1px borders.
+-- | DESIGN.md's Elevation & Depth "Level 2 (Dock / Terminal)" — see
+-- | App.Ui.Templates.SiteShell's original doc comment for the full
+-- | rationale (this shell's header/footer inherit it unchanged).
 renderHeader :: Lang -> Route -> ShellLabels -> Html
 renderHeader lang route labels =
   el "header"
@@ -202,7 +204,7 @@ renderHeader lang route labels =
     [ Container.container Container.ContainerW6xl "px-4 sm:px-6"
         [ el "div" [ class_ "navbar min-h-16 px-0" ]
             [ el "div" [ class_ "navbar-start" ]
-                [ navLink { lang, current: route, target: Home }
+                [ dsNavLinkRecord { lang, current: route, target: Home }
                     [ class_ "btn btn-ghost text-lg font-semibold" ]
                     [ text labels.siteTitle ]
                 ]
@@ -222,34 +224,117 @@ renderHeader lang route labels =
                 ]
             , el "div" [ class_ "navbar-end md:hidden" ]
                 [ el "label"
-                    [ for_ siteDrawerId
-                    , class_ "btn btn-square btn-ghost drawer-button"
-                    , ariaLabel labels.menuLabel
-                    ]
+                    [ for_ siteDrawerId, class_ "btn btn-square btn-ghost drawer-button", ariaLabel labels.menuLabel ]
                     [ hamburgerIcon ]
                 ]
             ]
         ]
     ]
 
+desktopNavLink :: Lang -> Route -> Route -> String -> Html
+desktopNavLink lang current target label =
+  dsNavLinkRecord { lang, current, target }
+    [ class_ (dsActiveNavClass "btn btn-ghost btn-sm" (target == current)) ]
+    [ text label ]
+
+-- | Same URL as Home's hero CTA (Data.Content.bookingUrl) — the one GitHub
+-- | link every page shares. Icon-only, same as the theme toggle beside it.
+githubLink :: ShellLabels -> Html
+githubLink labels =
+  el "a"
+    [ href bookingUrl
+    , target_ "_blank"
+    , rel_ "noopener noreferrer"
+    , class_ dsDropdownTriggerClass
+    , ariaLabel labels.githubLabel
+    ]
+    [ githubIcon ]
+
+renderThemeDropdown :: ShellLabels -> Html
+renderThemeDropdown labels =
+  el "div"
+    [ class_ "dropdown dropdown-end"
+    , dsClassWhenFlag "dropdown-open" DsThemeMenuOpen
+    , dsOnClickOutside DsThemeMenuOpen
+    , dsOnKeydownEscape DsThemeMenuOpen
+    ]
+    [ el "button"
+        [ attrTypeButton
+        , class_ dsDropdownTriggerClass
+        , ariaLabel labels.themeLabel
+        , attr "aria-haspopup" "menu"
+        , dsToggleFlag DsThemeMenuOpen
+        ]
+        [ sunIcon, moonIcon, systemIcon ]
+    , el "ul"
+        [ dsShowFlag DsThemeMenuOpen
+        , class_ dsDropdownPanelClass
+        ]
+        [ themeMenuItem ThemeLight labels.themeLight
+        , themeMenuItem ThemeDark labels.themeDark
+        , themeMenuItem ThemeSystem labels.themeSystem
+        ]
+    ]
+
+themeMenuItem :: ThemeMode -> String -> Html
+themeMenuItem mode label =
+  el "li" []
+    [ el "button"
+        [ class_ dsDropdownItemClass
+        , dsClassWhenTheme "btn-active" mode
+        , attrTypeButton
+        , dsSetTheme mode
+        ]
+        [ text label ]
+    ]
+
+renderLangDropdown :: Lang -> Route -> ShellLabels -> Html
+renderLangDropdown currentLang route labels =
+  el "div"
+    [ class_ "dropdown dropdown-end"
+    , dsClassWhenFlag "dropdown-open" DsLangMenuOpen
+    , dsOnClickOutside DsLangMenuOpen
+    , dsOnKeydownEscape DsLangMenuOpen
+    ]
+    [ el "button"
+        [ attrTypeButton
+        , class_ (dsDropdownTriggerClass <> " gap-1")
+        , ariaLabel labels.langToggleLabel
+        , attr "aria-haspopup" "menu"
+        , dsToggleFlag DsLangMenuOpen
+        ]
+        [ globeIcon, text (toUpper (langTag currentLang)) ]
+    , el "ul"
+        [ dsShowFlag DsLangMenuOpen
+        , class_ dsDropdownPanelClass
+        ]
+        [ langMenuItem En currentLang route labels.langEn
+        , langMenuItem Fr currentLang route labels.langFr
+        , langMenuItem Pt currentLang route labels.langPt
+        ]
+    ]
+
+-- | Which language is "current" is fixed at render time (a real navigation,
+-- | not a client signal) — a static class, matching dropdownItemClasses.
+langMenuItem :: Lang -> Lang -> Route -> String -> Html
+langMenuItem targetLang currentLang route label =
+  el "li" []
+    [ dsLangLink { targetLang, currentLang, route }
+        [ class_ (dsDropdownItemClasses (targetLang == currentLang))
+        , dsSetFlag DsLangMenuOpen false
+        ]
+        [ text label ]
+    ]
+
 renderDrawerSide :: Lang -> Route -> ShellLabels -> Html
 renderDrawerSide lang route labels =
   el "div" [ class_ "drawer-side z-50 md:hidden" ]
-    [ el "label"
-        [ for_ siteDrawerId
-        , class_ "drawer-overlay"
-        , ariaLabel labels.closeSidebarLabel
-        ]
-        []
+    [ el "label" [ for_ siteDrawerId, class_ "drawer-overlay", ariaLabel labels.closeSidebarLabel ] []
     , el "div"
         [ class_ "flex min-h-full w-80 flex-col bg-base-200 p-4 text-base-content" ]
         [ el "div" [ class_ "flex items-center justify-between" ]
             [ el "span" [ class_ "text-lg font-semibold" ] [ text labels.siteTitle ]
-            , el "label"
-                [ for_ siteDrawerId
-                , class_ "btn btn-ghost btn-sm"
-                , ariaLabel labels.closeMenuLabel
-                ]
+            , el "label" [ for_ siteDrawerId, class_ "btn btn-ghost btn-sm", ariaLabel labels.closeMenuLabel ]
                 [ text labels.closeLabel ]
             ]
         , el "nav" [ class_ "menu mt-6 w-full rounded-box bg-base-100 p-2" ]
@@ -259,153 +344,28 @@ renderDrawerSide lang route labels =
             , mobileNavLink lang route Docs labels.docsLabel
             , el "li" [] [ githubLink labels ]
             , el "li" [ class_ "menu-title mt-4" ] [ text labels.themeLabel ]
-            , themeMenuItem DrawerMenu ThemeLight labels.themeLight
-            , themeMenuItem DrawerMenu ThemeDark labels.themeDark
-            , themeMenuItem DrawerMenu ThemeSystem labels.themeSystem
+            , themeMenuItem ThemeLight labels.themeLight
+            , themeMenuItem ThemeDark labels.themeDark
+            , themeMenuItem ThemeSystem labels.themeSystem
             , el "li" [ class_ "menu-title mt-4" ] [ text labels.langToggleLabel ]
-            , langMenuItem DrawerMenu En lang route labels.langEn
-            , langMenuItem DrawerMenu Fr lang route labels.langFr
-            , langMenuItem DrawerMenu Pt lang route labels.langPt
+            , langMenuItem En lang route labels.langEn
+            , langMenuItem Fr lang route labels.langFr
+            , langMenuItem Pt lang route labels.langPt
             ]
         ]
-    ]
-
-desktopNavLink :: Lang -> Route -> Route -> String -> Html
-desktopNavLink lang current target label =
-  navLink { lang, current, target }
-    [ class_ (navLinkClasses NavDesktop (target == current)) ]
-    [ text label ]
-
--- | Same URL as Home's hero CTA (`Data.Content.bookingUrl`) — the one
--- | GitHub link every page shares, not a per-page decision. Icon-only, same
--- | as the theme toggle beside it — a visible "Source Code" button was
--- | most of why the desktop navbar felt crowded.
-githubLink :: ShellLabels -> Html
-githubLink labels =
-  el "a"
-    [ href bookingUrl
-    , target_ "_blank"
-    , rel_ "noopener noreferrer"
-    , class_ dropdownTriggerClass
-    , ariaLabel labels.githubLabel
-    ]
-    [ githubIcon ]
-
-renderLangDropdown :: Lang -> Route -> ShellLabels -> Html
-renderLangDropdown currentLang route labels =
-  el "div"
-    [ class_ "dropdown dropdown-end"
-    , classWhenFlag "dropdown-open" LangMenuOpen
-    , onClickOutside (setFlag LangMenuOpen false)
-    , onKeydownEscapeWindow (setFlag LangMenuOpen false)
-    ]
-    [ el "button"
-        [ attrTypeButton
-        , class_ (dropdownTriggerClass <> " gap-1")
-        , ariaLabel labels.langToggleLabel
-        , attr "aria-haspopup" "menu"
-        , ariaExpandedFlag LangMenuOpen
-        , onClick (toggleFlag LangMenuOpen)
-        ]
-        [ globeIcon, text (toUpper (langTag currentLang)) ]
-    , el "ul"
-        [ xShowFlag LangMenuOpen
-        , class_ dropdownPanelClass
-        ]
-        [ langMenuItem DropdownMenu En currentLang route labels.langEn
-        , langMenuItem DropdownMenu Fr currentLang route labels.langFr
-        , langMenuItem DropdownMenu Pt currentLang route labels.langPt
-        ]
-    ]
-
--- | Which surface a language menu item renders in — same DropdownMenu vs.
--- | DrawerMenu split as `themeMenuItem`: the desktop popover closes itself
--- | (LangMenuOpen) on selection, the drawer closes the whole drawer instead.
-langMenuItem :: MenuContext -> Lang -> Lang -> Route -> String -> Html
-langMenuItem context targetLang currentLang route label =
-  el "li" []
-    [ langLink { targetLang, currentLang, route }
-        ( [ class_ (dropdownItemClasses (targetLang == currentLang)) ]
-            <> case context of
-              DrawerMenu -> [ onClick closeSiteDrawer ]
-              DropdownMenu -> [ onClick (setFlag LangMenuOpen false) ]
-        )
-        [ text label ]
-    ]
-
-renderThemeDropdown :: ShellLabels -> Html
-renderThemeDropdown labels =
-  el "div"
-    [ class_ "dropdown dropdown-end"
-    , classWhenFlag "dropdown-open" ThemeMenuOpen
-    , onClickOutside (setFlag ThemeMenuOpen false)
-    , onKeydownEscapeWindow (setFlag ThemeMenuOpen false)
-    ]
-    [ el "button"
-        [ attrTypeButton
-        , class_ dropdownTriggerClass
-        , ariaLabel labels.themeLabel
-        , attr "aria-haspopup" "menu"
-        , ariaExpandedFlag ThemeMenuOpen
-        , onClick (toggleFlag ThemeMenuOpen)
-        ]
-        [ sunIcon, moonIcon, systemIcon ]
-    , el "ul"
-        [ xShowFlag ThemeMenuOpen
-        , class_ dropdownPanelClass
-        ]
-        [ themeMenuItem DropdownMenu ThemeLight labels.themeLight
-        , themeMenuItem DropdownMenu ThemeDark labels.themeDark
-        , themeMenuItem DropdownMenu ThemeSystem labels.themeSystem
-        ]
-    ]
-
--- | Which surface a theme menu item renders in — the desktop dropdown is a
--- | popover that needs to close itself (ThemeMenuOpen) on selection; the
--- | mobile drawer's theme buttons are flat list items with no popover flag
--- | of their own to close.
-data MenuContext = DropdownMenu | DrawerMenu
-
-themeMenuItem :: MenuContext -> ThemeMode -> String -> Html
-themeMenuItem context mode label =
-  el "li" []
-    [ el "button"
-        ( [ class_ dropdownItemClass
-          , classWhenTheme "btn-active" mode
-          , attrTypeButton
-          ]
-            <> case context of
-              DrawerMenu -> [ xSetTheme mode ]
-              DropdownMenu -> [ xSetThemeAndClose mode ThemeMenuOpen ]
-        )
-        [ text label ]
     ]
 
 mobileNavLink :: Lang -> Route -> Route -> String -> Html
 mobileNavLink lang current target label =
   el "li" []
-    [ navLink { lang, current, target }
-        ( [ class_ (navLinkClasses NavMobile (target == current))
-          , onClick closeSiteDrawer
-          ]
-        )
+    [ dsNavLinkRecord { lang, current, target }
+        [ class_ (dsActiveNavClass "btn btn-ghost justify-start" (target == current)) ]
         [ text label ]
     ]
 
--- | Two real nav sections, not one row repeating the header: `explore`
--- | (the same four pages) plus `resources` (GitHub source + issues) — both
--- | labels already existed in every language's dict, unused until now.
--- |
--- | `.footer`'s grid CSS keys off direct children (`& > *`), so it can't
--- | itself be the Container.container-wrapped element the way `navbar` is
--- | inside `renderHeader` — same outer-bg/inner-container split, one level
--- | deeper: the outer `<footer>` carries color/border/padding at full
--- | bleed, and the `footer` grid class + content go on the div Container
--- | wraps, so its columns land under the same left/right edge as the
--- | header logo and every page's content above it.
--- | Same Level 2 (Dock / Terminal) treatment as `renderHeader` — see its
--- | doc comment for why `data-theme` is scoped here rather than left to
--- | the page.
+-- | Two real nav sections: `explore` (all four pages) plus `resources`
+-- | (GitHub source + issues) — matching App.Ui.Templates.SiteShell's footer
+-- | exactly, all four routes now that every route is ported.
 renderFooter :: Lang -> Route -> ShellLabels -> Html
 renderFooter lang route labels =
   el "footer"
@@ -414,8 +374,7 @@ renderFooter lang route labels =
     , attr Contract.marker Contract.siteFooter
     ]
     [ Container.container Container.ContainerW6xl "px-4 py-10 sm:px-6"
-        [ el "div"
-            [ class_ "footer sm:footer-horizontal" ]
+        [ el "div" [ class_ "footer sm:footer-horizontal" ]
             [ el "aside" []
                 [ el "p" [ class_ "font-semibold" ] [ text labels.siteTitle ]
                 , el "p" [ class_ "text-sm opacity-70" ] [ text labels.copyright ]
@@ -438,21 +397,23 @@ renderFooter lang route labels =
         ]
     ]
 
+-- | Footer links always carry this one class regardless of active state
+-- | (matching App.Alpine's navLinkClasses NavFooter, which ignored isActive
+-- | entirely) — aria-current/prefetch-skip still come from dsNavLinkRecord.
 footerLink :: Lang -> Route -> Route -> String -> Html
 footerLink lang current target label =
-  navLink { lang, current, target }
-    [ class_ (navLinkClasses NavFooter true) ]
+  dsNavLinkRecord { lang, current, target }
+    [ class_ "link link-hover hover:text-primary" ]
     [ text label ]
 
 footerExternalLink :: String -> String -> Html
 footerExternalLink url label =
   el "a"
-    [ href url
-    , target_ "_blank"
-    , rel_ "noopener noreferrer"
-    , class_ (navLinkClasses NavFooter true)
-    ]
+    [ href url, target_ "_blank", rel_ "noopener noreferrer", class_ "link link-hover hover:text-primary" ]
     [ text label ]
+
+attrTypeButton :: Attr
+attrTypeButton = attr "type" "button"
 
 hamburgerIcon :: Html
 hamburgerIcon =
@@ -473,9 +434,9 @@ hamburgerIcon =
     ]
 
 -- | Trigger icon reflects the *selected* preference, not the resolved
--- | color scheme — all three sit in the DOM and toggle via `xShowTheme`
--- | against the same `theme` x-data value `classWhenTheme` reads for the
--- | active menu item, so the icon and the checked entry always agree.
+-- | color scheme — all three sit in the DOM and toggle via dsShowTheme
+-- | against the same `theme` signal dsClassWhenTheme reads for the active
+-- | menu item, so the icon and the checked entry always agree.
 sunIcon :: Html
 sunIcon =
   el "svg"
@@ -487,7 +448,7 @@ sunIcon =
     , attr "stroke-width" "2"
     , attr "stroke-linecap" "round"
     , attr "stroke-linejoin" "round"
-    , xShowTheme ThemeLight
+    , dsShowTheme ThemeLight
     ]
     [ el "circle" [ attr "cx" "12", attr "cy" "12", attr "r" "5" ] []
     , el "path"
@@ -508,7 +469,7 @@ moonIcon =
     , attr "stroke-width" "2"
     , attr "stroke-linecap" "round"
     , attr "stroke-linejoin" "round"
-    , xShowTheme ThemeDark
+    , dsShowTheme ThemeDark
     ]
     [ el "path"
         [ attr "d" "M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" ]
@@ -526,7 +487,7 @@ systemIcon =
     , attr "stroke-width" "2"
     , attr "stroke-linecap" "round"
     , attr "stroke-linejoin" "round"
-    , xShowTheme ThemeSystem
+    , dsShowTheme ThemeSystem
     ]
     [ el "rect" [ attr "x" "3", attr "y" "4", attr "width" "18", attr "height" "13", attr "rx" "2" ] []
     , el "path" [ attr "d" "M8 21h8M12 17v4" ] []
@@ -563,5 +524,21 @@ githubIcon =
         []
     ]
 
-attrTypeButton :: Attr
-attrTypeButton = attr "type" "button"
+-- | Full document wrapper — the production HTML shell. Head content
+-- | (meta/SEO/OG/hreflang/JSON-LD/inlined CSS) is App.Layout.Head's
+-- | existing, complete implementation, unchanged by the transport swap. No
+-- | CSP nonce placeholder replacement logic lives here; the caller
+-- | (App.Main) threads the same per-request nonce this response's CSP
+-- | header pins.
+renderDsDocument :: String -> String -> Lang -> Route -> Html -> String
+renderDsDocument baseUrl nonce lang route content =
+  render $
+    doctype
+      <> el "html" [ attr "lang" (langTag lang) ]
+        [ el "head" [] [ renderHead baseUrl nonce lang route ]
+        , el "body" []
+            [ content
+            , el "script" [ type_ "module", src "/assets/js/datastar.js", attr "nonce" nonce ] []
+            , renderHeadScript nonce DsShellRouter
+            ]
+        ]

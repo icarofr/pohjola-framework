@@ -6,7 +6,7 @@
 -- | spec), which is correct — escaping JS or CSS breaks it.
 -- |
 -- | This is intentionally NOT a framework — no component model, no virtual DOM,
--- | no event system. It produces a String. Interactivity is handled by Alpine.js
+-- | no event system. It produces a String. Interactivity is handled by Datastar
 -- | in the browser.
 module App.Html
   ( Html

@@ -194,3 +194,16 @@ export function serveImpl(port) {
     };
   };
 }
+
+// Spike-only (datastar-shell-nav-port branch): a ReadableStream that
+// enqueues one already-formatted SSE event body and closes immediately.
+export function sseEventStreamImpl(eventBody) {
+  return function () {
+    return new ReadableStream({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode(eventBody));
+        controller.close();
+      },
+    });
+  };
+}

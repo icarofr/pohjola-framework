@@ -49,6 +49,7 @@ scriptAllowlist :: Array String
 scriptAllowlist =
   [ "src/App/Layout/Scripts.purs"
   , "src/App/Layout/Page.purs"
+  , "src/App/DatastarShell.purs"
   ]
 
 envReadAllowlist :: Array String
@@ -156,7 +157,6 @@ uiTemplateModules =
   , "src/App/Ui/Templates/PageHeader.purs"
   , "src/App/Ui/Templates/Render.purs"
   , "src/App/Ui/Templates/Schedule.purs"
-  , "src/App/Ui/Templates/SiteShell.purs"
   , "src/App/Ui/Templates/Types.purs"
   ]
 

@@ -1,6 +1,6 @@
 # Shell recipe (DaisyUI site chrome)
 
-**Status:** Active (supersedes App.Ui.Shell / Layout Header delegates)  
+**Status:** Active (supersedes App.Ui.Shell / Layout Header delegates; App.Ui.Templates.SiteShell itself superseded 2026-09-09 by App.DatastarShell — ADR-011)  
 **Date:** 2026-08-31
 
 Chrome is **template library code**, not feature code. Agents never invent navbar/footer markup.
@@ -9,27 +9,27 @@ Chrome is **template library code**, not feature code. Agents never invent navba
 
 | Module | Role | Markers (`Contract`) |
 |---|---|---|
-| `App.Ui.Templates.SiteShell` | Sticky navbar, mobile menu, footer | `site-header`, `site-footer` |
+| `App.DatastarShell` | Sticky navbar, mobile menu, footer | `site-header`, `site-footer` |
 
-`renderPage` always wraps body content in `sitePage`. Feature views do not call SiteShell directly.
+`renderPage` always wraps body content in `dsSitePage`. Feature views do not call DatastarShell directly.
 
 ## Theme
 
 - Themes: Daisy `pohjola` / `pohjola-dark` in `css/input.css` (`data-theme` on `<html>`).
 - Persistence: `themeInitScript` applies stored preference before paint; `system` omits `data-theme` (Daisy `prefersdark`).
-- Navbar switcher: DaisyUI `dropdown` + real `<button>` + Alpine `ThemeMenuOpen` (toggle, outside click, Escape) + `setTheme`.
+- Navbar switcher: DaisyUI `dropdown` + real `<button>` + Datastar `DsThemeMenuOpen` (toggle, outside click, Escape) + `dsSetTheme`.
 
 ## Navigation links
 
-- Route-aware links: `App.Alpine.navLink` (SPA swap + prefetch guard + `aria-current="page"`).
-- Visual active state: `navLinkClasses NavDesktop | NavMobile | NavFooter` — **never** hand-roll `btn-active` / `menu-active` in `SiteShell`.
-- Theme + language disclosure items: `dropdownItemClass` / `dropdownItemClasses` / `dropdownPanelClass` in `App.Alpine` — **never** a second Daisy recipe in `SiteShell`.
+- Route-aware links: `App.Datastar.dsNavLinkRecord` (Datastar `@get` action + prefetch guard + `aria-current="page"`).
+- Visual active state: `dsActiveNavClass` — **never** hand-roll `btn-active` / `menu-active` in `DatastarShell`.
+- Theme + language disclosure items: `dsDropdownItemClass` / `dsDropdownItemClasses` / `dsDropdownPanelClass` in `App.DatastarShell` — **never** a second Daisy recipe in `DatastarShell`.
 - Agent checklist: `docs/conventions/chrome-checklist.md`.
 - Eval: `make eval EVAL=11-edit-chrome`.
 
 ## Changing chrome
 
-Edit `SiteShell.purs`, then update `ShellSpec` / e2e selectors if markers or structure change. Never put chrome in feature views.
+Edit `DatastarShell.purs`, then update `ShellSpec` / e2e selectors if markers or structure change. Never put chrome in feature views.
 
 ## Tests
 

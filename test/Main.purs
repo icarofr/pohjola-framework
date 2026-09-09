@@ -13,6 +13,7 @@ import Prelude
 import Effect (Effect)
 import Test.AuthSpec as AuthSpec
 import Test.ContractSpec as ContractSpec
+import Test.DatastarSpec as DatastarSpec
 import Test.FormSpec as FormSpec
 import Test.Html.HtmlSpec as HtmlSpec
 import Test.I18n.I18nSpec as I18nSpec
@@ -33,6 +34,7 @@ main :: Effect Unit
 main = runSpecAndExitProcess [ consoleReporter ] do
   AuthSpec.spec
   ContractSpec.spec
+  DatastarSpec.spec
   FormSpec.spec
   HtmlSpec.spec
   RouteSpec.spec

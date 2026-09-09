@@ -55,10 +55,16 @@ before any decision is made about a production migration.
    fragment in Datastar's `datastar-patch-elements` SSE framing, so
    Datastar's client can consume what the server already renders without
    duplicating the render logic.
-5. As the maintainer, I want Bun's `ReadableStream` (`App.Server.streamResponse`,
-   `App.ServerBun.streamResponseImpl` — built, currently zero call sites) to
-   be this encoding path's first real caller, so a capability that's existed
-   unused all along finally gets exercised for real.
+5. As the maintainer, I want the SSE response encoded via a real Bun
+   `ReadableStream`, so Datastar's client receives properly-framed
+   `datastar-patch-elements` events. **(Amended post-implementation:** the
+   existing `App.Server.streamResponse`/`App.ServerBun.streamResponseImpl`
+   turned out hardcoded for a different, incompatible choreography — the old
+   Posts-era "shell now, fetch external JSON later" flow, not a generic
+   string-to-`ReadableStream` primitive — so they remain at zero call sites.
+   A new, minimal, purpose-built `sseEventStreamImpl`/`sseEventResponse` pair
+   was added instead, inside the already-allowlisted `App.ServerBun` module
+   — no new FFI module, no ADR-003 trigger. See Implementation Decisions.)
 6. As the maintainer, I want a new `App.Datastar` PureScript module — typed
    constructors only, no raw attribute strings at call sites — mirroring
    `App.Alpine`'s shape, so the spike doesn't undermine judging Datastar's
@@ -135,10 +141,19 @@ before any decision is made about a production migration.
   separate signal from `x-alpine-request`/`?_frag=1` — the two must not be
   conflated, since pages remaining on Alpine still rely on the original
   contract exercising unmodified paths.
-- **`ReadableStream` reuse**: this encoding path is built on
-  `App.Server.streamResponse`/`App.ServerBun.streamResponseImpl`, which
-  already exist and already do the necessary Bun-native stream plumbing —
-  this spike does not need new FFI, just a new caller.
+- **`ReadableStream` reuse (amended — the assumption below did not hold):**
+  the plan was to build this encoding path on the existing
+  `App.Server.streamResponse`/`App.ServerBun.streamResponseImpl`, avoiding
+  new FFI entirely. On inspection during implementation, that pair is
+  hardcoded for the old Posts-era "shell now, fetch external JSON later"
+  choreography (`streamResponseImpl(url)(onContent)(shellOpen)(shellClose)`),
+  not a generic string-to-`ReadableStream` primitive — it doesn't fit a
+  one-shot SSE event. Built instead: a new `sseEventStreamImpl :: String ->
+  Effect ReadableStream` + `sseEventResponse`, inside the same
+  already-allowlisted `App.ServerBun` module (no new FFI module, no ADR-003
+  trigger — extending an allowlisted module's internal surface, not adding a
+  fifth one). `streamResponse`/`streamResponseImpl` remain at zero call
+  sites, unchanged by this spike.
 - **Client-side shell router**: hand-written glue on top of Datastar's
   `@get` action and patch mechanism — Datastar does not provide
   `pushState`/`popstate`-based navigation itself (its own documentation

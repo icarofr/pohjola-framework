@@ -2,7 +2,7 @@
 module Test.Policy.Scan
   ( containsBanned
   , containsForeignImport
-  , containsRawAlpine
+  , containsRawDatastar
   , containsRawWord
   , containsSubstring
   , featureOfModule
@@ -19,7 +19,7 @@ module Test.Policy.Scan
   , findForbiddenInFiles
   , findForeignImportsOutsideAllowlist
   , findHardcodedTextInFiles
-  , findRawAlpineOutsideAlpine
+  , findRawDatastarOutsideDatastar
   , findRawInSrc
   , findScriptsOutsideAllowlist
   , findTextToneViolations
@@ -80,10 +80,29 @@ containsBanned :: Array String -> String -> Boolean
 containsBanned patterns str =
   any (\b -> containsSubstring b str) patterns
 
-containsRawAlpine :: String -> Boolean
-containsRawAlpine str =
+-- | Datastar's actual reactive-attribute vocabulary only (data-signals,
+-- | data-show, data-on:, data-bind, data-class, data-text) — NOT a blanket
+-- | "data-" ban, since Pohjola already legitimately uses plain data-*
+-- | attributes for its own purposes (data-theme, data-form-status,
+-- | data-page-title, data-template, ...) that have nothing to do with
+-- | Datastar.
+containsRawDatastar :: String -> Boolean
+containsRawDatastar str =
   let
-    banned = [ "attr \"x-", "attr \"@", "attr \":", "flag \"x-" ]
+    banned =
+      [ "attr \"data-signals"
+      , "attr \"data-show"
+      , "attr \"data-on:"
+      , "attr \"data-bind"
+      , "attr \"data-class"
+      , "attr \"data-text"
+      , "attr (\"data-signals"
+      , "attr (\"data-show"
+      , "attr (\"data-on:"
+      , "attr (\"data-bind"
+      , "attr (\"data-class"
+      , "attr (\"data-text"
+      ]
   in
     any (\b -> containsSubstring b str) banned
 
@@ -135,15 +154,15 @@ findScriptsOutsideAllowlist allowlist root = do
         Left _ -> Nothing
   pure (mapMaybe identity results)
 
-findRawAlpineOutsideAlpine :: String -> Aff (Array String)
-findRawAlpineOutsideAlpine root = do
+findRawDatastarOutsideDatastar :: String -> Aff (Array String)
+findRawDatastarOutsideDatastar root = do
   files <- liftEffect $ pursFilesUnder root
   results <- for files \file -> do
-    if file == "src/App/Alpine.purs" then pure Nothing
+    if file == "src/App/Datastar.purs" then pure Nothing
     else do
       content <- readTextFile file
       pure case content of
-        Right c -> if containsRawAlpine c then Just file else Nothing
+        Right c -> if containsRawDatastar c then Just file else Nothing
         Left _ -> Nothing
   pure (mapMaybe identity results)
 

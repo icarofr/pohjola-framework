@@ -1,12 +1,13 @@
 -- | Server entry point — MPA architecture
 -- |
--- | Server renders all HTML via the Html ADT, Alpine.js provides interactivity.
--- | Routes for every language in `allLangs` (En, Fr, Pt): /en/*, /fr/*, /pt/*
+-- | Server renders all HTML via the Html ADT, Datastar provides interactivity
+-- | (ADR-000, ADR-011). Routes for every language in `allLangs` (En, Fr, Pt):
+-- | /en/*, /fr/*, /pt/*
 module App.Main (main, pageRenderer, detectLang, htmlOk) where
 
 import Prelude
 
-import App.Alpine (alpineRequestHeader)
+import App.Datastar as Datastar
 import App.Cache (PageCache, defaultTtlMs, insertDynamic, insertStatic, lookupDynamic, lookupStatic, mkPageCache)
 import App.Config (Config, loadConfig)
 import App.Env (getEnvMaybe)
@@ -17,8 +18,8 @@ import App.Features.Home.Page (render) as Home
 import App.Features.Docs.Page (render) as Docs
 import App.Features.Guarantees.Page (render) as Guarantees
 import App.Features.About.Page (render) as About
-import App.Html (Html)
-import App.Layout.Page (renderErrorFragment, renderErrorPage, renderFragment, renderDocument)
+import App.Html (Html, render)
+import App.Layout.Page (renderErrorFragment, renderErrorPage, renderDocument)
 import App.Logger as Log
 import App.Server as Server
 import App.Sitemap (renderRobots, renderSitemap)
@@ -57,33 +58,27 @@ handleGet cfg cache nonce headers query path = case path of
   [ "sitemap.xml" ] -> pure $ Server.okTextPublic "application/xml; charset=utf-8" (renderSitemap cfg.baseUrl)
   _ -> case parseRoute path of
     Just { lang, route } -> handleRoute { cfg, cache, nonce, lang, route, headers, query }
-    Nothing -> pure $ routeMiss404 nonce (isFragmentRequest headers query) (langFromPath path)
+    Nothing -> routeMiss404 nonce (isDatastarRequest headers) (langFromPath path)
 
 -- | 404 for a path that parses to no route.
 -- |
--- | Must honour the fragment contract even though there is no `Route` to build
--- | from: an Alpine AJAX request to an unknown URL would otherwise be answered
--- | with a complete `<!DOCTYPE>` document, which the client swaps into
--- | `#content` — a whole document nested inside the page body.
--- |
--- | This is the same defect W1 fixed in `handleFragment`, in a path W1 never
--- | reached: `handleFragment` only runs after a route parses successfully, so
--- | the fix was narrower than the contract it restored. `renderErrorFragment`
--- | never needed a `Route` value in the first place (see `App.Layout.Page`) —
--- | that unused parameter is gone from its signature.
-routeMiss404 :: String -> Boolean -> Lang -> Server.Response
-routeMiss404 nonce wantsFragment lang =
-  if wantsFragment then
-    Server.htmlErrorResponse (renderErrorFragment lang 404) [ varyHeader ] (Server.errorStatusCode 404)
+-- | Must honour the same-URL-two-shapes contract even though there is no
+-- | `Route` to build from: a Datastar action to an unknown URL would
+-- | otherwise be answered with a complete `<!DOCTYPE>` document, which the
+-- | client would try to parse as an SSE patch event and fail on.
+routeMiss404 :: String -> Boolean -> Lang -> Aff Server.Response
+routeMiss404 nonce wantsPatch lang =
+  if wantsPatch then
+    liftEffect $ Server.sseEventResponse (Server.datastarPatchElementsEvent (renderErrorFragment lang 404))
   else
-    Server.htmlErrorResponse (renderErrorPage nonce lang 404) [ varyHeader ] (Server.errorStatusCode 404)
+    pure $ Server.htmlErrorResponse (renderErrorPage nonce lang 404) [ varyHeader ] (Server.errorStatusCode 404)
 
 -- | Best-effort language for a route-miss 404: the path's leading segment
 -- | wins when it carries a language prefix; unknown/prefixless paths fall
 -- | back to the site default. Keeps the rendered error page in the user's
 -- | language instead of silently re-languaging them on a typo.
 langFromPath :: Array String -> Lang
-langFromPath path = fromMaybe defaultLang (head path >>= parseLang)
+langFromPath path = fromMaybe defaultLang $ head path >>= parseLang
 
 -- | Select the correct page renderer for a route.
 -- | Static pages use `staticPage` (pure Html, no error path).
@@ -116,10 +111,12 @@ type RequestCtx =
   , query :: Map String String
   }
 
--- | `Vary: x-alpine-request` — the same URL answers a full page or a fragment
--- | depending on that header, so caches must key on it.
+-- | `Vary: datastar-request` — the same URL answers a full document or a
+-- | Datastar SSE patch depending on that header, so caches must key on it.
+-- | `Server.sseEventResponse` sets this itself on the patch side; this is
+-- | the full-document side's half of the same contract.
 varyHeader :: Tuple String String
-varyHeader = Tuple "Vary" alpineRequestHeader
+varyHeader = Tuple "Vary" Datastar.datastarRequestHeader
 
 statusFor :: RequestCtx -> Maybe FormStatus
 statusFor ctx = Map.lookup "status" ctx.query >>= parseFormStatus
@@ -149,15 +146,14 @@ failurePage ctx err = do
   pure $ Server.htmlErrorResponse (renderErrorPage ctx.nonce ctx.lang (errorStatus err)) [ varyHeader ]
     (Server.errorStatusCode (errorStatus err))
 
--- | Fragment-shaped error response — a fragment request must never be answered
--- | with a full document (ADR-007).
-failureFragment :: RequestCtx -> AppError -> Aff Server.Response
-failureFragment ctx err = do
+-- | SSE-patch-shaped error response — a Datastar action must never be
+-- | answered with a full document (the client parses the response body as
+-- | one SSE event; a `<!DOCTYPE>` isn't one).
+failureDatastarPatch :: RequestCtx -> AppError -> Aff Server.Response
+failureDatastarPatch ctx err = do
   logRenderFailure ctx err
-  pure $ Server.htmlErrorResponse
-    (renderErrorFragment ctx.lang (errorStatus err))
-    [ varyHeader ]
-    (Server.errorStatusCode (errorStatus err))
+  liftEffect $ Server.sseEventResponse
+    (Server.datastarPatchElementsEvent (renderErrorFragment ctx.lang (errorStatus err)))
 
 -- | Serve a route.
 -- |
@@ -170,11 +166,11 @@ failureFragment ctx err = do
 -- |
 -- | Ordinary pages use buffered rendering. Streaming remains an experimental,
 -- | unselected path outside this route-level renderer.
--- | Fragment requests always use the buffered fragment path.
+-- | Datastar action requests always use the buffered patch path.
 handleRoute :: RequestCtx -> Aff Server.Response
 handleRoute ctx =
-  if isFragmentRequest ctx.headers ctx.query then
-    handleFragment ctx
+  if isDatastarRequest ctx.headers then
+    handleDatastarPatch ctx
   else if hasStatusQuery ctx then
     -- A form-status banner is per-request state. A cached body would drop it,
     -- and a cached body carrying it would show one visitor's banner to the
@@ -192,26 +188,28 @@ handleRoute ctx =
 hasStatusQuery :: RequestCtx -> Boolean
 hasStatusQuery ctx = Map.member "status" ctx.query
 
--- | Alpine AJAX fragment. Note the error path answers with a *fragment*, not a
--- | full document: the client swaps this response into `#content`, so a
--- | `renderErrorPage` here would nest a complete `<!DOCTYPE>` document inside
--- | the page body. See ADR-007 (streaming errors) — the same principle, applied
--- | to the path that lacked it.
--- |
--- | Cacheable fragments reuse the same static/dynamic Html cache as full
--- | documents (keyed by `(Route, Lang)`). Statusful requests stay uncached so
--- | one visitor's form banner never leaks into another response.
-handleFragment :: RequestCtx -> Aff Server.Response
-handleFragment ctx = do
-  result <- fragmentHtml ctx
-  case result of
-    Left err -> failureFragment ctx err
-    Right html ->
-      pure $ htmlOk (hasStatusQuery ctx) [ varyHeader ] $ renderFragment ctx.lang ctx.route html
+-- | Datastar @get/@post action — a real request, not a header-detection
+-- | probe. Sent automatically by Datastar's client on every action; verified
+-- | against data-star.dev/docs.md.
+isDatastarRequest :: Map String String -> Boolean
+isDatastarRequest headers = Map.lookup Datastar.datastarRequestHeader headers == Just "true"
 
--- | Html for a fragment request: statusful → fresh; otherwise the shared cache.
-fragmentHtml :: RequestCtx -> Aff (Either AppError Html)
-fragmentHtml ctx =
+-- | Datastar SSE patch. The response morphs the *whole* `#content` shell
+-- | (header/main/footer/drawer, via App.DatastarShell.dsSitePage, applied
+-- | through App.Ui.Templates.Render.renderPage) — the same cached Html a
+-- | full-document request for this route+lang would render, just wrapped in
+-- | SSE framing instead of a complete document.
+handleDatastarPatch :: RequestCtx -> Aff Server.Response
+handleDatastarPatch ctx = do
+  result <- patchHtml ctx
+  case result of
+    Left err -> failureDatastarPatch ctx err
+    Right html -> liftEffect $ Server.sseEventResponse (Server.datastarPatchElementsEvent (render html))
+
+-- | Html for a Datastar patch request: statusful → fresh; otherwise the
+-- | shared cache (the same cache full-document requests use).
+patchHtml :: RequestCtx -> Aff (Either AppError Html)
+patchHtml ctx =
   if hasStatusQuery ctx then
     pageRenderer ctx.cfg ctx.route ctx.lang (statusFor ctx)
   else if isStaticRoute ctx.route then
@@ -235,8 +233,8 @@ cachedDynamicPage ctx = do
     Left err -> failurePage ctx err
     Right html -> pure $ fullPage ctx Nothing html
 
--- | Lookup or render+insert for static pages. Shared by full and fragment paths.
--- | Never caches `Left` errors.
+-- | Lookup or render+insert for static pages. Shared by full-document and
+-- | Datastar-patch paths. Never caches `Left` errors.
 cachedInner :: RequestCtx -> Aff (Either AppError Html)
 cachedInner ctx = do
   mCached <- liftEffect $ lookupStatic ctx.cache.static ctx.route ctx.lang
@@ -250,8 +248,8 @@ cachedInner ctx = do
           liftEffect $ insertStatic ctx.cache.static ctx.route ctx.lang html
           pure (Right html)
 
--- | Lookup or render+insert for dynamic pages. Shared by full and fragment paths.
--- | Never caches `Left` errors.
+-- | Lookup or render+insert for dynamic pages. Shared by full-document and
+-- | Datastar-patch paths. Never caches `Left` errors.
 cachedInnerDynamic :: RequestCtx -> Aff (Either AppError Html)
 cachedInnerDynamic ctx = do
   let key = dynamicCacheKey ctx
@@ -289,12 +287,6 @@ renderThen ctx store = do
     Right html -> do
       store html
       pure $ fullPage ctx (statusFor ctx) html
-
--- | A fragment request is either an Alpine AJAX navigation (x-alpine-request
--- | header) or a prefetch of a ?_frag=1 URL. Both return the same fragment.
-isFragmentRequest :: Map String String -> Map String String -> Boolean
-isFragmentRequest headers query =
-  Map.lookup alpineRequestHeader headers == Just "true" || Map.lookup "_frag" query == Just "1"
 
 -- | Map AppError to HTTP status code
 errorStatus :: AppError -> Int

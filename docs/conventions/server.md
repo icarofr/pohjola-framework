@@ -31,9 +31,9 @@ All Response constructors carry security headers, asserted by ContractSpec.
 `script-src` is **nonce-based**: `'nonce-<random>' 'self' 'unsafe-eval'
 'strict-dynamic'`. There is no `unsafe-inline` in `script-src` — the two inline
 head scripts and the JSON-LD block carry a per-request nonce instead (`style-src`
-does still allow `'unsafe-inline'`). `'unsafe-eval'` remains because Alpine's
-standard build evaluates attribute expressions via `new Function()`; see ADR-000
-for why the CSP build is not used. ContractSpec pins the exact CSP string —
+does still allow `'unsafe-inline'`). `'unsafe-eval'` remains because Datastar
+evaluates attribute expressions via `new Function()`; see ADR-000
+for the threat-model argument. ContractSpec pins the exact CSP string —
 widening it fails a test that demands justification.
 
 There are **two** HTML cache policies, not one. An earlier version of this
@@ -90,13 +90,16 @@ applies headers with `Headers.set` in iteration order, so a caller-supplied
   immediately via `ReadableStream`.
   `controller.close()` is guaranteed via `try/finally` even on enqueue
   failure. Status is always 200 (committed at shell time).
-- **Fragments**: The server detects fragment requests via **either** signal —
-  the `?_frag=1` query parameter **or** the `x-alpine-request` header
-  (`isFragmentRequest` is a boolean OR). Both are supported deliberately per
-  ADR-007: Alpine AJAX sends the header, while `?_frag=1` gives a header-free
-  way to request a fragment (curl, integration tests, non-header clients) and a
-  cache key that does not depend on `Vary`. Fragment responses carry
-  `Vary: x-alpine-request`. Fragments never stream (small, already fast).
+- **Datastar patches**: the server detects a Datastar action via a single
+  signal — the `datastar-request` header (`isDatastarRequest`), sent
+  automatically by every `@get`/`@post` call. Unlike the Alpine-based
+  transport this superseded (ADR-011), there is no header-free query-param
+  fallback: Datastar's own protocol has no such convention, and replicating
+  one would be inventing behavior beyond what the library does. A header-free
+  patch request (curl, a non-Datastar client) is not currently supported —
+  send the `datastar-request: true` header, or request the full page. Patch
+  responses carry `Vary: datastar-request`. Patches never stream (small,
+  already fast).
 - **Static routes** (`Home`, `About`, `Guarantees`, `Docs`) use
   `StringBody` — no streaming. A data-backed route (can 404) would use it
   too; none currently exists in the tree.

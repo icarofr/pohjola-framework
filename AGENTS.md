@@ -1,13 +1,13 @@
 # Pohjola — Agent Guide
 
-PureScript 0.15.16 + Bun SSR MPA. Alpine AJAX swaps the SiteShell drawer `#content` (not `<main>`). No custom browser JS.
+PureScript 0.15.16 + Bun SSR MPA. Datastar SSE-patches the DatastarShell `#content` (not `<main>`). One hand-written script (the shell router, ADR-000/ADR-011) — Datastar itself has no history support.
 
 ## Safety floor
 - dist/ public static; dist-server/ private bundle
-- App.Alpine constructors only (ADR-000)
+- App.Datastar constructors only (ADR-000)
 - FFI: Policy.Contract ffiAllowlist (four modules). Extend App.Bun for new Bun primitives; do not add a fifth module without ADR-003.
 - make gate = Policy.Contract. No class_ in Features. Every View.purs imports App.Ui.Templates.Render.
-- CSP pinned in ContractSpec. Do not widen. unsafe-eval is required by Alpine (new Function).
+- CSP pinned in ContractSpec. Do not widen. unsafe-eval is required by Datastar (new Function).
 - Do not implement ADR-010. App.Auth (ADR-002, Lucia session pattern) is implemented — session lifecycle only, no users table/login UI. Do not wire requireAuth into a mutating route until ADR-005 (CSRF) lands too — see GUARANTEES.md.
 - Licence: Apache 2.0 (spirit: `LICENCE.md`). Do not paste private app names into this public tree.
 
@@ -28,7 +28,7 @@ make eval EVAL=01-add-page CHECK=1  # assertions
 | add page | docs/superpowers/specs/2026-08-31-page-architectures.md then make new-feature |
 | chrome | docs/conventions/chrome-checklist.md |
 | colors / visual polish | DESIGN.md (tokens, elevation levels) + docs/conventions/design-system.md (scorecard) |
-| Alpine | docs/conventions/alpine-contracts.md |
+| Datastar | docs/conventions/datastar-contracts.md |
 | FFI | docs/ffi-taming-guide.md |
 | forms | docs/conventions/forms.md |
 | tests | docs/conventions/testing-recipes.md |
@@ -40,8 +40,8 @@ make eval EVAL=01-add-page CHECK=1  # assertions
 Skip docs/SETUP.md unless a human asks. Exemplars: Home or About (static — Landing and Editorial templates respectively). No data-backed exemplar currently exists in the tree (Posts was removed in the clean-sheet rebuild, see .scratch/clean-sheet-homepage/) — don't point an agent at a file that isn't there. Grep the static exemplars before README samples.
 
 ## Verify
-make gate after the first compile. make test if you touched Alpine, cache, forms, templates, or Main. make check before commit.
-Touched `App.Ui.Templates/*`, `SiteShell.purs`, or a feature `View.purs`'s visual output: render the changed route(s) and screenshot with raw `playwright-core` before calling it done — `make gate`/`make test` never render a page, so a broken dropdown or a layout regression passes them silently. Use raw `playwright-core` (launch Chromium yourself, e.g. via `node -e`), not `make test/e2e` — that target hangs in this sandboxed environment.
+make gate after the first compile. make test if you touched Datastar, cache, forms, templates, or Main. make check before commit.
+Touched `App.Ui.Templates/*`, `DatastarShell.purs`, or a feature `View.purs`'s visual output: render the changed route(s) and screenshot with raw `playwright-core` before calling it done — `make gate`/`make test` never render a page, so a broken dropdown or a layout regression passes them silently. Use raw `playwright-core` (launch Chromium yourself, e.g. via `node -e`), not `make test/e2e` — that target hangs in this sandboxed environment.
 When the verify method is unclear, ask.
 
 ## Evals

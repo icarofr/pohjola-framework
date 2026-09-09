@@ -3,7 +3,7 @@ module App.Ui.Button where
 
 import Prelude
 
-import App.Alpine (spaLink)
+import App.Datastar (dsSpaLink)
 import App.Html (Html, class_, el, href, rel_, target_, text)
 import Data.I18n (Lang)
 import Data.Route (Route)
@@ -36,7 +36,7 @@ btnClass v s = "btn " <> renderVariant v <> " " <> renderSize s
 
 buttonLink :: { variant :: ButtonVariant, size :: Size, lang :: Lang, route :: Route } -> String -> Html
 buttonLink props label =
-  spaLink props.lang props.route
+  dsSpaLink props.lang props.route
     [ class_ (btnClass props.variant props.size) ]
     [ text label ]
 

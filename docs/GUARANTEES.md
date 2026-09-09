@@ -22,8 +22,8 @@ check fails loudly — on every push, in CI.
 | 9 | No hung requests — `idleTimeout: 30` closes connections with unresolved handler Promises; `makeFetch` catches synchronous throws in the callback bridge; stream `controller.close()` is guaranteed via `try/finally` | `idleTimeout` + `makeFetch` guard + `try/finally` in `App.ServerBun` | runtime-verified at introduction; exercised under Venom/Playwright |
 | 10 | Security headers on every response, including errors and redirects | ContractSpec security-header suite (12 `Response` constructors) | `make test` |
 | 11 | CSP is the pinned nonce-based policy — `script-src 'nonce-<random>' 'self' 'unsafe-eval' 'strict-dynamic'`; no `unsafe-inline`. Widening it fails a test that demands a justification | ContractSpec (`cspWithNonce` exact-string assertion + `securityHeaders` carries no CSP) | `make test` |
-| 12 | Alpine seams can't silently break — the `contentTarget` id and `data-page-title` attribute are asserted in rendered output. Alpine attribute *names* should only be built inside `App.Alpine`, **enforced by a literal-text scan** (`attr "x-`, `attr "@`, `attr ":`, `flag "x-`): a non-literal construction such as `let k = "@click" in attr k …` evades it, since `App.Html.attr` is exported unrestricted. Clause 12a is the compiler-enforced half | ContractSpec (literal scan) | `make test` |
-| 12a | Browser JS cannot be hand-written at a call site — handlers take `App.Alpine.Expr` and builders take `App.Alpine.Flag`, both closed types, so a string literal in either position is a compile error. Closes ADR-000 Vector B by construction. The generated expressions themselves are pinned by assertion | Compiler (abstract type + closed sum) + ContractSpec | `spago build`, `make test` |
+| 12 | Datastar seams can't silently break — the `contentTarget` id and `data-page-title` attribute are asserted in rendered output. Datastar attribute *names* should only be built inside `App.Datastar`, **enforced by a literal-text scan** scoped to Datastar's own reactive vocabulary (`attr "data-signals`, `attr "data-show`, `attr "data-on:`, `attr "data-bind`, `attr "data-class`, `attr "data-text`): a non-literal construction such as `let k = "data-show" in attr k …` evades it, since `App.Html.attr` is exported unrestricted. Clause 12a is the compiler-enforced half | ContractSpec (literal scan) | `make test` |
+| 12a | Browser JS cannot be hand-written at a call site for the values that matter — `dsSetTheme`/`dsShowTheme`/`dsClassWhenTheme` take `App.Theme.ThemeMode` and `dsShowFlag`/`dsToggleFlag`/`dsSetFlag`/`dsClassWhenFlag` take `App.Datastar.DsFlag`, both closed types, so a string literal in either position is a compile error. Closes ADR-000 Vector B by construction for these. The generated expressions themselves are pinned by assertion | Compiler (closed sum types) + ContractSpec | `spago build`, `make test` |
 | 13 | Honeypot semantics — a filled honeypot ALWAYS means silent success (303 `status=success`) **after passing the rate gate** (429 if rate‑limited), for every possible input | Property tests (quickcheck) | `make test` |
 | 14 | Form decoding is total — every possible input decodes to a value, never throws | Property tests (quickcheck) | `make test` |
 | 15 | Route round-trips — `parseRoute (routeUrl r) == r` for every route × language | Test suite (all pairs) | `make test` |
@@ -47,8 +47,17 @@ Honesty about what the checks actually catch:
   deferred (YAGNI). Kernel modules can still evade with
   `el ("scr" <> "ipt")`; `el ("div")` in a feature view is a false-positive
   hit for the `el (` scan.
-- **Alpine attribute-name scan** — clause 12 already admits the same class of
-  hole for non-literal `attr` keys outside `App.Alpine`.
+- **Datastar attribute-name scan** — clause 12 already admits the same class of
+  hole for non-literal `attr` keys outside `App.Datastar`.
+- **Not every Datastar constructor is closed by construction** — clause 12a's
+  ADR-000 Vector B closure covers `ThemeMode`/`DsFlag`-typed builders only.
+  `dsNavGet`, `dsPrefetchHover`, `dsOnClickOutside`, `dsOnKeydownEscape`, and
+  `dsSignalsInit` build their expression strings from typed `Route`/`Lang`
+  values and fixed literals — never from caller-supplied free-form `String` —
+  but the module doesn't have Alpine's old single abstract `Expr` wrapper
+  unifying every expression-producing function under one opaque type. Closed
+  by the absence of any call site passing untyped user data in, not by an
+  equivalent type-level guarantee. See ADR-000's Datastar addendum.
 - **`App.Bun` API growth** — adding a new Bun primitive to the existing
   `App.Bun` module does **not** need a fifth `ffiAllowlist` entry (the module
   is already listed). It still needs a decode-at-boundary story and an ADR.
