@@ -112,8 +112,18 @@ behaviour belongs on the server, not that the seam needs loosening.
 - **`dsSpaLink`** — bakes `@get` + `dsPrefetchHover` + real href, for shared UI
   primitives that render inside page content, not just chrome (`App.Ui.Button`,
   `App.Ui.Templates.ActionLink`). The prefetch sends `datastarRequestHeader` so
-  the server returns a patch the browser caches; the click hits cache with
-  zero round-trip. Degrades to a normal `<a>` without JS.
+  the server returns a cacheable patch (`private, max-age=10`, same policy as
+  every other successful HTML response). **This does not reliably make the
+  click itself a cache hit** — confirmed live via CDP `fromDiskCache` tracing:
+  Datastar's own `@get()` action appends the current signals snapshot as a
+  `?datastar={...}` query param, so the URL the click actually fetches rarely
+  matches the URL the hover's bare `fetch(el.href, …)` warmed. Alpine AJAX's
+  equivalent hit cache reliably because both hover and click fetched the
+  identical plain URL — Datastar's stateful-query-param GET convention breaks
+  that symmetry. See `e2e/prefetch-cache.spec.js` and ADR-015 for the full
+  account; fixing this properly would mean serializing the same signals
+  snapshot in the hand-written prefetch handler, not attempted here. Degrades
+  to a normal `<a>` without JS regardless.
 - **`dsLangLink`** — same `@get` action-based navigation as `dsNavLinkRecord`,
   but compares **Lang**, not Route (staying on the same page, switching which
   language it renders in) — a language switch never full-reloads. Only

@@ -475,7 +475,22 @@ datastarPatchElementsEvent fragmentHtmlString =
   "event: datastar-patch-elements\ndata: elements " <> fragmentHtmlString <> "\n\n"
 
 -- | Wraps an already-built SSE event body in the ReadableStream + headers a
--- | Datastar `@get`/`@post` action expects: `text/event-stream`, no caching.
+-- | Datastar `@get`/`@post` action expects: `text/event-stream`,
+-- | `htmlCacheControl` (same reusable `private, max-age=10` policy as every
+-- | other successful HTML response — this SSE event embeds no per-request
+-- | nonce, same situation the old Alpine fragment path was in, so `private`
+-- | here is the same conservative default, not a requirement).
+-- |
+-- | An earlier version used `Cache-Control: no-cache` with no validator —
+-- | strictly worse than `private, max-age=10` for reuse, and confirmed live
+-- | (CDP `fromDiskCache` tracing) to make hover-prefetch-then-click never
+-- | hit the browser's disk cache, unlike Alpine's fragment policy this
+-- | replaced. Note this alone does not fully restore that optimization:
+-- | Datastar's own `@get()` action appends the current signals snapshot as
+-- | a `?datastar={...}` query param, so the URL a real click fetches rarely
+-- | matches the URL a bare `fetch()` hover-prefetch warmed — see
+-- | `e2e/prefetch-cache.spec.js` and ADR-015 for the honest account.
+-- |
 -- | `Vary` on the same header `isDatastarRequest` keys off (App.Main) --
 -- | `no-cache` alone still lets a cache store the response; without Vary
 -- | it can't tell this response differs from a plain-GET response to the
@@ -489,7 +504,7 @@ sseEventResponse eventBody = do
     { status: 200
     , headers: securityHeaders <>
         [ Tuple "Content-Type" "text/event-stream"
-        , Tuple "Cache-Control" "no-cache"
+        , htmlCacheControl
         , Tuple "Vary" datastarRequestHeader
         ]
     , body: StreamBody stream

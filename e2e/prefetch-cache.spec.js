@@ -73,79 +73,62 @@ test("static assets DO carry validators (Bun routes:{dir} supplies them)", async
   expect(h["etag"] ?? h["last-modified"]).toBeTruthy();
 });
 
-test("fragment signal matrix — header, query, both, neither (W2)", async ({
+test("patch signal matrix — header present or absent (W2)", async ({
   request,
 }) => {
-  // isFragmentRequest is a boolean OR over two signals with different
-  // producers: Alpine sends the header, ?_frag=1 is header-free (curl,
-  // integration tests, non-header clients). ADR-007 supports both
-  // deliberately, so all four combinations need pinning — previously only
-  // header-only and neither were covered.
-  // Asserts the full response, not just body shape: an earlier version checked
-  // only for <!DOCTYPE>/id="content" while the comment called it the fragment
-  // protocol contract. Status, Content-Type and Vary are part of that contract.
+  // isDatastarRequest is a single signal (the datastar-request header),
+  // unlike Alpine's old isFragmentRequest boolean-OR over a header AND a
+  // ?_frag=1 query param. Datastar's own protocol has no header-free
+  // query-param convention -- ADR-015 explicitly declined to invent one, so
+  // there are only two cases here, not four.
+  // Asserts the full response, not just body shape: status, Content-Type,
+  // and Vary are part of the contract, not just the SSE-unwrapped body.
   // Covers BOTH /en/about and TARGET, the route the click test below
-  // navigates to. Previously only /en/about was checked, so a fragment-shape
-  // regression on TARGET could pass the matrix AND the cache-provenance test
-  // — the click test asserts provenance, not shape, and deliberately tolerates
-  // an unavailable cached body. This closes that gap without making body
-  // retrieval a cache-policy prerequisite: these are plain requests, no cache.
-  const fetchCase = async (path, query, withHeader) =>
-    request.get(
-      `${path}${query}`,
-      withHeader ? { headers: { "x-alpine-request": "true" } } : {},
-    );
+  // navigates to.
+  const fetchCase = async (path, withHeader) =>
+    request.get(path, withHeader ? { headers: { "datastar-request": "true" } } : {});
+
+  const extractPatch = (sseBody) => {
+    const marker = "data: elements ";
+    const i = sseBody.indexOf(marker);
+    return i === -1 ? null : sseBody.slice(i + marker.length).split("\n\n")[0];
+  };
 
   const cases = [];
   for (const path of ["/en/about", TARGET]) {
     cases.push(
-      {
-        name: `${path} header only`,
-        res: await fetchCase(path, "", true),
-        fragment: true,
-      },
-      {
-        name: `${path} query only`,
-        res: await fetchCase(path, "?_frag=1", false),
-        fragment: true,
-      },
-      {
-        name: `${path} both signals`,
-        res: await fetchCase(path, "?_frag=1", true),
-        fragment: true,
-      },
-      {
-        name: `${path} neither`,
-        res: await fetchCase(path, "", false),
-        fragment: false,
-      },
+      { name: `${path} header present`, res: await fetchCase(path, true), patch: true },
+      { name: `${path} header absent`, res: await fetchCase(path, false), patch: false },
     );
   }
 
   for (const c of cases) {
-    const body = await c.res.text();
+    const raw = await c.res.text();
     const h = c.res.headers();
     expect(c.res.status(), `${c.name}: status`).toBe(200);
-    expect(h["content-type"], `${c.name}: content-type`).toContain("text/html");
-    expect(h["vary"], `${c.name}: must vary on the fragment header`).toContain(
-      "x-alpine-request",
-    );
     expect(h["cache-control"], `${c.name}: success cache policy`).toBe(
       "private, max-age=10",
     );
-    expect(
-      body.includes('id="content"'),
-      `${c.name}: carries the swap target`,
-    ).toBe(true);
-    if (c.fragment) {
+    if (c.patch) {
+      expect(h["content-type"], `${c.name}: content-type`).toContain("text/event-stream");
+      expect(h["vary"], `${c.name}: must vary on the datastar header`).toContain(
+        "datastar-request",
+      );
+      expect(raw).toContain("event: datastar-patch-elements");
+      const body = extractPatch(raw);
+      expect(body, `${c.name}: is a datastar-patch-elements event`).toBeTruthy();
+      expect(body.includes('id="content"'), `${c.name}: carries the swap target`).toBe(true);
       expect(body).toContain('data-page-title');
       expect(body).toContain('data-template="site-header"');
       expect(body).not.toContain("<script");
+      expect(body).not.toContain("<!DOCTYPE");
+      expect(body).not.toContain("<html");
+    } else {
+      expect(h["content-type"], `${c.name}: content-type`).toContain("text/html");
+      expect(raw.includes("<!DOCTYPE"), `${c.name}: full document`).toBe(true);
+      expect(raw.includes("<html"), `${c.name}: full document`).toBe(true);
+      expect(raw.includes('id="content"'), `${c.name}: carries the swap target`).toBe(true);
     }
-    expect(body.includes("<!DOCTYPE"), `${c.name}: document?`).toBe(
-      !c.fragment,
-    );
-    expect(body.includes("<html"), `${c.name}: document?`).toBe(!c.fragment);
   }
 });
 
@@ -178,17 +161,23 @@ test("error responses are never stored", async ({ request }) => {
   expect(res.headers()["cache-control"]).toBe("no-store");
 });
 
-test("a fragment request for an unknown route gets a fragment, not a document", async ({
+test("a datastar-request for an unknown route gets a patch, not a document", async ({
   request,
 }) => {
-  // The route-miss path runs before any Route exists, so it was never covered
-  // by the handleFragment fix — an AJAX request to an unknown URL used to swap
-  // a whole <!DOCTYPE> document into #content.
+  // The route-miss path runs before any Route exists, so it needs its own
+  // coverage separate from a known route's error path — a Datastar request
+  // to an unknown URL used to (pre-Datastar, with Alpine) risk swapping a
+  // whole <!DOCTYPE> document into #content.
   const res = await request.get("/en/definitely-not-a-route", {
-    headers: { "x-alpine-request": "true" },
+    headers: { "datastar-request": "true" },
   });
-  expect(res.status()).toBe(404);
-  const body = await res.text();
+  // Always 200, not 404 — Datastar's client only applies a patch when
+  // status === 200 (see ADR-015); the "not found"-ness is in the content.
+  expect(res.status()).toBe(200);
+  const raw = await res.text();
+  expect(raw).toContain("event: datastar-patch-elements");
+  const marker = "data: elements ";
+  const body = raw.slice(raw.indexOf(marker) + marker.length).split("\n\n")[0];
   expect(body).not.toContain("<!DOCTYPE");
   expect(body).not.toContain("<html");
   expect(body).toContain('id="content"');
@@ -204,7 +193,7 @@ test("a normal request for an unknown route still gets a full document", async (
   expect(body).toContain("<html");
 });
 
-test("the click is served from cache, not the network", async ({
+test("hover prefetch fires and warms the cache, but the click's URL doesn't match it (ADR-015)", async ({
   page,
   context,
 }) => {
@@ -283,48 +272,41 @@ test("the click is served from cache, not the network", async ({
 
   const clickResponses = seen.filter((r) => clickRequestIds.has(r.requestId));
 
-  // W6 outcome, asserted on the CLICK specifically.
-  //
-  // An earlier version checked `cached.length > 0` across every observed
-  // response, which a cached *hover* would have satisfied while the click still
-  // hit the network — a weaker check than the claim written beside it.
-  //
-  // Three measurements were needed to get here, because reasoning from the
-  // response headers alone predicted the wrong answer twice:
-  //
-  //   no Cache-Control      hover reused from prefetch cache, click hit network
-  //   private (no max-age)  nothing reused — explicit but never fresh, and no
-  //                         validator to revalidate against
-  //   private, max-age=10   click served from disk cache  <- current
-  //
-  // `private` is required for full-page responses because each embeds a
-  // per-request CSP nonce, and a shared cache would replay one visitor's nonce
-  // to everyone. Fragments retain it as a conservative browser-cache policy.
-  // The max-age is what makes successful responses reusable by that visitor's
-  // own browser within the hover-to-click window.
+  // W6 outcome, asserted on the CLICK specifically — and it is a confirmed
+  // network hit, not a cache hit. This is a deliberate, disclosed regression
+  // from Alpine AJAX's version of this test (see ADR-015's "protocol
+  // constraint" section): Alpine's spaLink/navLink and prefetchHover fetched
+  // the IDENTICAL plain URL on hover and click, so the click reused the
+  // hover's `private, max-age=10` response from disk cache. Datastar's own
+  // `@get()` action appends the current signals snapshot as a
+  // `?datastar={...}` query param the hover's bare `fetch(el.href, …)` never
+  // includes, so the two are different URLs and the click cannot reuse the
+  // hover's cache entry — confirmed here, and separately via same-URL reuse
+  // in the patch signal matrix test (fetching the identical URL twice DOES
+  // hit cache, isolating the query-param mismatch as the actual cause, not
+  // the cache-control header, which was fixed to `private, max-age=10` in
+  // App.Server.sseEventResponse and is no longer the blocker).
   const clickFromCache = clickResponses.filter(
     (r) => r.fromDiskCache || r.fromPrefetchCache,
   );
   expect(
     clickFromCache.length,
-    "Every click response must come from cache — not merely some response in " +
-      "the trace. If this fails the cache policy changed and hover prefetch is " +
-      "doing nothing; see App.Server.htmlCacheControl.",
-  ).toBe(clickResponses.length);
+    "The click is expected to be a network hit, not a cache hit (ADR-015) — " +
+      "if this ever becomes >0, the query-param mismatch was fixed (nice!), " +
+      "update this test and ADR-015's accepted-costs section to match.",
+  ).toBe(0);
 
-  // The post-swap re-fire is FIXED. It used to cost a third request: after the
-  // AJAX swap re-rendered the header, the new link for the current route landed
-  // under the stationary cursor, mouseenter fired again, and it prefetched the
-  // page already on screen. `navLink` now omits hover prefetch when the target
-  // is the current route.
-  //
-  // What remains is the click itself — and per the assertion above it is now
-  // served from cache rather than the network.
+  // The post-swap re-fire (a THIRD request, prefetching the page already on
+  // screen) is still fixed: after the patch re-renders the header, the new
+  // link for the current route lands under the stationary cursor, mouseenter
+  // fires again, but dsNavLinkRecord omits hover prefetch when the target is
+  // the current route. What remains is exactly one response — the click's
+  // own navigation, over the network per the assertion above.
   expect(
     clickResponses.length,
     "A click should cost exactly one response — the navigation. More than that " +
-      "means a link is prefetching the route it already points at; see the " +
-      "navLink self-target guard in App.Alpine.",
+      "means a link is prefetching the route it already points at; see " +
+      "dsNavLinkRecord's target === current guard in App.Datastar.",
   ).toBe(1);
 
   // Body shape is covered by the fragment signal-matrix test above. Do not call

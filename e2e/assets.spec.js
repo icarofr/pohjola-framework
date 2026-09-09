@@ -10,13 +10,8 @@ test.describe("Static Assets", () => {
     expect(contentType).toContain("text/css");
   });
 
-  test("alpinejs.min.js returns 200", async ({ page }) => {
-    const response = await page.goto("/assets/js/alpinejs.min.js");
-    expect(response?.status()).toBe(200);
-  });
-
-  test("alpine-ajax.min.js returns 200", async ({ page }) => {
-    const response = await page.goto("/assets/js/alpine-ajax.min.js");
+  test("datastar.js returns 200", async ({ page }) => {
+    const response = await page.goto("/assets/js/datastar.js");
     expect(response?.status()).toBe(200);
   });
 

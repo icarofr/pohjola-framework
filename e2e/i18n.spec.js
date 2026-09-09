@@ -48,13 +48,13 @@ test.describe("Internationalization", () => {
   });
 
   test("language switch syncs title and lang only", async ({ page }) => {
-    // Fragment-swap navigation (langLink -> xTargetPush) only syncs
+    // Patch navigation (dsLangLink -> @get + SSE patch) only syncs
     // document.title and <html lang> client-side -- the only two fields
     // with a real client-side observer (browser tab; screen-reader
     // pronunciation). SEO/social metadata (description, OG, hreflang) is
     // correct in the server-rendered <head> on every direct request, and
     // crawlers/unfurlers never execute this client script, so it's
-    // intentionally not synced here -- see App.Alpine's
+    // intentionally not synced here -- see App.Datastar's
     // dataPageTitleAttr/dataPageLangAttr doc.
     await page.goto("/en/about");
     await expect(page).toHaveTitle(/About/);

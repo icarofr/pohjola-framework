@@ -1,6 +1,16 @@
 import { test, expect } from "@playwright/test";
 
-test.describe("Alpine AJAX navigation", () => {
+// Extracts the rendered HTML payload out of a `datastar-patch-elements` SSE
+// event body -- mirrors App.Layout.Scripts.dsShellRouterScript's own parsing
+// exactly, since that's the real client-side consumer this test stands in for.
+function extractDatastarPatch(sseBody) {
+  const marker = "data: elements ";
+  const i = sseBody.indexOf(marker);
+  if (i === -1) throw new Error("not a datastar-patch-elements event: " + sseBody.slice(0, 200));
+  return sseBody.slice(i + marker.length).split("\n\n")[0];
+}
+
+test.describe("Datastar navigation", () => {
   test("initial response is a complete document with template page shell", async ({
     page,
   }) => {
@@ -155,7 +165,7 @@ test.describe("Alpine AJAX navigation", () => {
     expect(await page.evaluate(() => history.length)).toBe(historyLength);
   });
 
-  test("hover prefetch requests a fragment, not a full page", async ({
+  test("hover prefetch requests a patch, not a full page", async ({
     page,
   }) => {
     await page.goto("/en");
@@ -163,9 +173,9 @@ test.describe("Alpine AJAX navigation", () => {
     let fragmentBody;
     await page.route("**/en/about", async (route) => {
       const headers = route.request().headers();
-      if (headers["x-alpine-request"] === "true") {
+      if (headers["datastar-request"] === "true") {
         const response = await route.fetch();
-        fragmentBody = await response.text();
+        fragmentBody = extractDatastarPatch(await response.text());
         await route.fulfill({ response });
       } else {
         await route.continue();
@@ -184,7 +194,7 @@ test.describe("Alpine AJAX navigation", () => {
     expect(fragmentBody).not.toContain("<script");
   });
 
-  test("success and route-miss fragments are template page shapes", async ({
+  test("success and route-miss patches are template page shapes", async ({
     page,
   }) => {
     await page.goto("/en");
@@ -193,14 +203,17 @@ test.describe("Alpine AJAX navigation", () => {
       ["/en/definitely-not-a-route", false],
     ]) {
       const result = await page.evaluate(async ([url, ok]) => {
+        const marker = "data: elements ";
         const response = await fetch(url, {
-          headers: { "x-alpine-request": "true" },
+          headers: { "datastar-request": "true" },
         });
-        const parsed = new DOMParser().parseFromString(
-          await response.text(),
-          "text/html",
-        );
+        const body = await response.text();
+        const html = body.slice(body.indexOf(marker) + marker.length).split("\n\n")[0];
+        const parsed = new DOMParser().parseFromString(html, "text/html");
         return {
+          // Always 200, even for the route-miss case -- Datastar's client
+          // only applies a patch when status === 200 (see ADR-015); the
+          // "not found"-ness is communicated by rendered content, not status.
           status: response.status,
           hasContent: Boolean(
             parsed.body.querySelector("div#content[data-page-title]"),
@@ -216,7 +229,7 @@ test.describe("Alpine AJAX navigation", () => {
       expect(result.hasContent, path).toBe(true);
       expect(result.hasHeader, path).toBe(true);
       expect(result.forbidden, path).toBe(0);
-      expect(result.status, path).toBe(expectOk ? 200 : 404);
+      expect(result.status, path).toBe(200);
     }
   });
 
@@ -250,13 +263,15 @@ test.describe("Alpine AJAX navigation", () => {
     expect(await page.evaluate(() => window.scrollY)).toBe(0);
   });
 
-  test("404 fragment keeps drawer chrome and data-page-title", async ({ page }) => {
+  test("404 patch keeps drawer chrome and data-page-title", async ({ page }) => {
     await page.goto("/en");
     await page.evaluate(async () => {
+      const marker = "data: elements ";
       const r = await fetch("/en/no-such-page", {
-        headers: { "x-alpine-request": "true" },
+        headers: { "datastar-request": "true" },
       });
-      const h = await r.text();
+      const sse = await r.text();
+      const h = sse.slice(sse.indexOf(marker) + marker.length).split("\n\n")[0];
       const d = new DOMParser().parseFromString(h, "text/html");
       const n = d.getElementById("content");
       const o = document.getElementById("content");

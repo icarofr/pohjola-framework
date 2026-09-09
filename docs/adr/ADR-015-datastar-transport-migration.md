@@ -102,6 +102,24 @@ redeploy from.
 | 4 | Server — forms, mutations (POST → redirect or full/patch page) |
 | 5 | island runtime — ADR-010 (proposed, do not implement) |
 
+### A protocol constraint this migration inherits, not chooses
+
+Every Datastar patch response — including error content (a 404/500 page
+rendered into `#content`) — is HTTP status **200**, never the real status
+code. Confirmed against the vendored `datastar.js` source: the client only
+applies an SSE patch when `status === 200`; 300-399 is treated as a redirect
+branch and 400-599 as an error branch, neither of which parses or applies the
+patch body at all. Returning the real 404/500 status would mean Datastar
+*refuses to render* the styled error content into `#content` — the opposite
+of what `routeMiss404`/`failureDatastarPatch` are for. This is a genuine,
+deliberate difference from Alpine AJAX's fragment path, which carried the
+real status code on every response, including errors. Operational
+consequence: an access-log or uptime-monitor analysis keyed on HTTP status
+will not see a 404/500 for a failed Datastar-driven navigation — only the
+rendered content shows it. `e2e/error-fragment.spec.js` pins this exact
+behavior so a future "fix" doesn't reintroduce the real status code and
+silently break error rendering instead.
+
 ### A capability this migration does not preserve
 
 ADR-007 valued `?_frag=1` as "a header-free way to request a fragment (curl,
@@ -166,6 +184,23 @@ for Alpine: Datastar evaluates attribute expressions via `new Function()`.
   responsibility instead
 - No header-free patch-request fallback (see above) — a real, disclosed
   capability loss with no current consumer
+- **Hover-prefetch no longer reliably makes the click a cache hit** — Alpine
+  AJAX's `prefetchHover` and `spaLink` fetched the identical plain URL on
+  hover and click, so a `private, max-age=10` response cached by the hover
+  was reused by the click (confirmed live via CDP `fromDiskCache` tracing,
+  the same methodology `e2e/prefetch-cache.spec.js` already used). Datastar's
+  own `@get()` action appends the current signals snapshot as a
+  `?datastar={...}` query param; `dsPrefetchHover`'s bare `fetch(el.href, …)`
+  has no such param, so the two requests are different URLs and the second
+  is confirmed live to still hit the network. `sseEventResponse`'s
+  `Cache-Control` was fixed to the same `private, max-age=10` policy anyway
+  (strictly better than the `no-cache` it shipped with in the spike, and
+  correct for any case where the URLs do match), but the marketing claim
+  "hits cache with zero round-trip" is false for the general case and has
+  been corrected in `docs/conventions/datastar-contracts.md`. Not fixed
+  here: serializing the same signals snapshot into the hand-written prefetch
+  handler would restore it, at the cost of duplicating Datastar's own
+  internal serialization logic in JS this codebase doesn't otherwise touch
 - `App.Datastar`'s security closure is narrower than Alpine's `Expr`
   abstraction was (see ADR-000 amendment above) — accepted because every
   current call site is already closed in practice, revisited if a future
