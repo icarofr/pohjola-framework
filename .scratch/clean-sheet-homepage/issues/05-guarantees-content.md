@@ -4,16 +4,16 @@
 
 **Blocked by:** 02
 
-**Status:** ready-for-agent
+**Status:** done (2026-09-09), commit `7434b39` on branch `clean-sheet-homepage`
 
-- [ ] Every guarantee presented traces back to a real clause in `GUARANTEES.md` — no invented or embellished claims.
-- [ ] The page states the claim's honest scope up front (the "not 'no runtime errors' in the absolute" framing `GUARANTEES.md` itself opens with), not just the guarantee list stripped of its caveats.
-- [ ] Presented as real page content (readable prose/sections/cards as fits the design), not a raw markdown-table dump.
-- [ ] Real, native-reading translations for `en`/`fr`/`pt`.
-- [ ] DaisyUI-styled through `App.Ui` primitives, consistent with the rest of the site.
-- [ ] Idiomatic PureScript throughout (see ticket 03's idiom checklist).
-- [ ] `make dev`: manually viewed in a browser across all three language paths.
-- [ ] `make gate && make test && make check` pass.
+- [x] Every guarantee presented traces back to a real clause in `GUARANTEES.md` — no invented or embellished claims.
+- [x] The page states the claim's honest scope up front (the "not 'no runtime errors' in the absolute" framing `GUARANTEES.md` itself opens with), not just the guarantee list stripped of its caveats.
+- [x] Presented as real page content (readable prose/sections/cards as fits the design), not a raw markdown-table dump.
+- [x] Real, native-reading translations for `en`/`fr`/`pt`.
+- [x] DaisyUI-styled through `App.Ui` primitives, consistent with the rest of the site.
+- [x] Idiomatic PureScript throughout (see ticket 03's idiom checklist).
+- [x] `make dev`: manually viewed in a browser across all three language paths.
+- [x] `make gate && make test` pass (19/19, 205/205). `make check`'s `generator-policy` step still fails in this sandbox only, for the pre-existing `/tmp noexec` reason recorded on ticket 02.
 
 ## Comments
 
