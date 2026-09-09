@@ -386,29 +386,42 @@ mobileNavLink lang current target label =
 -- | Two real nav sections, not one row repeating the header: `explore`
 -- | (the same four pages) plus `resources` (GitHub source + issues) — both
 -- | labels already existed in every language's dict, unused until now.
+-- |
+-- | `.footer`'s grid CSS keys off direct children (`& > *`), so it can't
+-- | itself be the Container.container-wrapped element the way `navbar` is
+-- | inside `renderHeader` — same outer-bg/inner-container split, one level
+-- | deeper: the outer `<footer>` carries color/border/padding at full
+-- | bleed, and the `footer` grid class + content go on the div Container
+-- | wraps, so its columns land under the same left/right edge as the
+-- | header logo and every page's content above it.
 renderFooter :: Lang -> Route -> ShellLabels -> Html
 renderFooter lang route labels =
   el "footer"
-    [ class_ "footer border-t border-base-300 bg-base-200 p-10 text-base-content sm:footer-horizontal"
+    [ class_ "border-t border-base-300 bg-base-200 text-base-content"
     , attr Contract.marker Contract.siteFooter
     ]
-    [ el "aside" []
-        [ el "p" [ class_ "font-semibold" ] [ text labels.siteTitle ]
-        , el "p" [ class_ "text-sm opacity-70" ] [ text labels.copyright ]
-        ]
-    , el "nav" []
-        ( [ el "h6" [ class_ "footer-title" ] [ text labels.footerExploreTitle ] ]
-            <>
-              [ footerLink lang route Home labels.homeLabel
-              , footerLink lang route About labels.aboutLabel
-              , footerLink lang route Guarantees labels.guaranteesLabel
-              , footerLink lang route Docs labels.docsLabel
-              ]
-        )
-    , el "nav" []
-        [ el "h6" [ class_ "footer-title" ] [ text labels.footerResourcesTitle ]
-        , footerExternalLink bookingUrl labels.githubLabel
-        , footerExternalLink issuesUrl labels.issuesLabel
+    [ Container.container Container.ContainerW6xl "px-4 py-10 sm:px-6"
+        [ el "div"
+            [ class_ "footer sm:footer-horizontal" ]
+            [ el "aside" []
+                [ el "p" [ class_ "font-semibold" ] [ text labels.siteTitle ]
+                , el "p" [ class_ "text-sm opacity-70" ] [ text labels.copyright ]
+                ]
+            , el "nav" []
+                ( [ el "h6" [ class_ "footer-title" ] [ text labels.footerExploreTitle ] ]
+                    <>
+                      [ footerLink lang route Home labels.homeLabel
+                      , footerLink lang route About labels.aboutLabel
+                      , footerLink lang route Guarantees labels.guaranteesLabel
+                      , footerLink lang route Docs labels.docsLabel
+                      ]
+                )
+            , el "nav" []
+                [ el "h6" [ class_ "footer-title" ] [ text labels.footerResourcesTitle ]
+                , footerExternalLink bookingUrl labels.githubLabel
+                , footerExternalLink issuesUrl labels.issuesLabel
+                ]
+            ]
         ]
     ]
 
