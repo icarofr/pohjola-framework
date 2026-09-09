@@ -443,6 +443,16 @@ if (wire) {
     );
   }
 
+  // Data pages need Config. While every route is static, pageRenderer binds
+  // `_cfg` so the unused-name warning stays quiet; the first TYPE=data wire
+  // promotes it back to `cfg` so `renderList cfg` is in scope.
+  if (type === "data") {
+    mainContent = mainContent.replace(
+      /pageRenderer _cfg route lang status =/,
+      "pageRenderer cfg route lang status =",
+    );
+  }
+
   const renderCase =
     type === "data"
       ? `  ${name} -> ${name}.renderList cfg lang status`

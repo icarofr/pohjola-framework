@@ -78,7 +78,15 @@ async function runFixture(cwd, name, type, slug) {
   }
 
   assertIncludes(i18n, `  , ${lower}:`, `I18n dictionary (${name})`);
-  assertIncludes(head, `${name} -> d.${lower}.body`, `Head insertion (${name})`);
+  if (
+    !head.includes(`${name} -> d.seo.${lower}Description`) &&
+    !head.includes(`${name} -> d.${lower}.body`)
+  ) {
+    console.error(
+      `Missing Head insertion (${name}): ${name} -> d.seo.${lower}Description`,
+    );
+    process.exit(1);
+  }
 
   const view = await readText(join(cwd, `src/App/Features/${name}/View.purs`));
   assertIncludes(view, "App.Ui.Templates.Render", `View Templates.Render (${name})`);
