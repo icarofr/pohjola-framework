@@ -19,6 +19,7 @@ import App.Features.Guarantees.View as Guarantees
 import App.Features.Home.View as Home
 import App.Html (render)
 import App.Ui.Templates.Contract as Contract
+import Data.Content (ciConfigUrl, htmlSourceUrl, policyGateUrl)
 import App.Ui.Templates.Form as Form
 import App.Ui.Templates.Types (FormField(..))
 import Data.Array (length)
@@ -71,6 +72,12 @@ spec = do
         StrAssert.shouldContain html (Contract.slot Contract.hubLead)
         StrAssert.shouldContain html "backed by a real, run-it-yourself check, not a promise."
         countMarker html Contract.hubCard `shouldEqual` Contract.hubCardCount
+        -- Each card names a different file backing its claim — regression
+        -- test for a real bug where all three pointed at the same repo-root
+        -- URL regardless of which guarantee they claimed to back.
+        StrAssert.shouldContain html policyGateUrl
+        StrAssert.shouldContain html htmlSourceUrl
+        StrAssert.shouldContain html ciConfigUrl
 
       it "docs renders a lead paragraph and a six-item numbered roadmap" do
         let html = render (Docs.renderDocs En Nothing)
