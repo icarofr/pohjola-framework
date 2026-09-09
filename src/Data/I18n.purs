@@ -132,7 +132,24 @@ type Dictionary =
       }
   , guarantees ::
       { heading :: String
-      , body :: String
+      , subtitle :: String
+      , mission ::
+          { heading :: String
+          , lead :: String
+          , body :: String
+          }
+      , values ::
+          { heading :: String
+          , intro :: String
+          , items ::
+              { one :: { title :: String, description :: String }
+              , two :: { title :: String, description :: String }
+              , three :: { title :: String, description :: String }
+              , four :: { title :: String, description :: String }
+              , five :: { title :: String, description :: String }
+              , six :: { title :: String, description :: String }
+              }
+          }
       }
   , docs ::
       { heading :: String
@@ -246,7 +263,24 @@ en =
       }
   , guarantees:
       { heading: "Guarantees"
-      , body: "Explore our Guarantees."
+      , subtitle: "Every claim on this page is backed by a check you can run yourself."
+      , mission:
+          { heading: "The guarantee"
+          , lead: "If it compiles and CI is green, production doesn't crash."
+          , body: "This isn't a claim of zero runtime errors in the absolute — this stack still touches effects, FFI boundaries, and a JavaScript runtime. The claim is scoped on purpose, and every clause below is backed by a real, run-it-yourself check, not a promise."
+          }
+      , values:
+          { heading: "What's actually checked"
+          , intro: "Six families of guarantees, each enforced mechanically — not by review."
+          , items:
+              { one: { title: "No unsafe escape hatches", description: "Force-unwrapping a Maybe, casting past the type system, and any unapproved FFI module all fail the build in src/ — Policy.Contract enforces the same allowlist make gate scans for." }
+              , two: { title: "Every failure is a typed value", description: "Handlers return Aff (Either AppError a); routes, i18n keys, and error variants are matched exhaustively, so a missed case is a compile error; runtime exceptions are caught at one boundary and answered with a 500, never a crash (make test)." }
+              , three: { title: "HTML and CSP are pinned", description: "The Html type has no general-purpose unescaped-HTML constructor, so unescaped markup can't compile; security headers and a nonce-based CSP with no unsafe-inline are asserted on every response, errors and redirects included; rendered pages never reference an external script." }
+              , four: { title: "Alpine seams are typed end to end", description: "Browser interactivity comes from closed PureScript types (Expr, Flag) — a hand-written onclick string is a compile error, and a literal-text scan covers the one gap types alone can't close." }
+              , five: { title: "Forms are total and honeypot-safe", description: "decodeContact/decodeNewsletter never throw for any input (property-tested); a filled honeypot always means a silent success, after the rate gate; every route round-trips through parseRoute/routeUrl in every language." }
+              , six: { title: "Every push proves it", description: "make gate, make test, Venom, and Playwright all run in GitHub Actions on every push — not a claim checked once, one CI re-checks every time." }
+              }
+          }
       }
   , docs:
       { heading: "Docs"
@@ -355,8 +389,25 @@ fr =
           }
       }
   , guarantees:
-      { heading: "Guarantees"
-      , body: "Description de Guarantees."
+      { heading: "Garanties"
+      , subtitle: "Chaque affirmation de cette page repose sur un contrôle que vous pouvez lancer vous-même."
+      , mission:
+          { heading: "La garantie"
+          , lead: "Si ça compile et que la CI est verte, la production ne plante pas."
+          , body: "Ce n'est pas une promesse de zéro erreur d'exécution dans l'absolu — cette stack touche encore des effets, des frontières FFI et un runtime JavaScript. La promesse est volontairement délimitée, et chaque clause ci-dessous s'appuie sur un contrôle réel, que vous pouvez lancer vous-même, pas sur une simple promesse."
+          }
+      , values:
+          { heading: "Ce qui est vérifié"
+          , intro: "Six familles de garanties, chacune imposée mécaniquement — pas par une relecture."
+          , items:
+              { one: { title: "Aucune échappatoire non sûre", description: "Forcer le déballage d'un Maybe, un cast qui contourne le système de types, ou tout module FFI non approuvé font échouer la compilation dans src/ — Policy.Contract impose la même liste blanche que celle scannée par make gate." }
+              , two: { title: "Chaque échec est une valeur typée", description: "Les handlers renvoient Aff (Either AppError a) ; routes, clés i18n et variantes d'erreur sont filtrées de façon exhaustive, donc un cas oublié est une erreur de compilation ; les exceptions d'exécution sont interceptées à une seule frontière et répondent par un 500, jamais par un plantage (make test)." }
+              , three: { title: "HTML et CSP figés", description: "Le type Html n'a aucun constructeur HTML non échappé à usage général, donc du balisage non échappé ne peut pas compiler ; les en-têtes de sécurité et une CSP à nonce sans unsafe-inline sont vérifiés sur chaque réponse, erreurs et redirections comprises ; les pages rendues ne référencent jamais de script externe." }
+              , four: { title: "Coutures Alpine typées de bout en bout", description: "L'interactivité du navigateur vient de types PureScript fermés (Expr, Flag) — un onclick écrit à la main est une erreur de compilation, et un scan de texte littéral couvre le dernier interstice que les types seuls ne referment pas." }
+              , five: { title: "Formulaires totaux et honeypot fiable", description: "decodeContact/decodeNewsletter ne lèvent jamais d'exception, quelle que soit l'entrée (testé par propriétés) ; un honeypot rempli signifie toujours un succès silencieux, après le contrôle de débit ; chaque route fait l'aller-retour via parseRoute/routeUrl dans chaque langue." }
+              , six: { title: "Chaque push le prouve", description: "make gate, make test, Venom et Playwright tournent tous dans GitHub Actions à chaque push — ce n'est pas une promesse vérifiée une fois, la CI la revérifie à chaque fois." }
+              }
+          }
       }
   , docs:
       { heading: "Docs"
@@ -465,8 +516,25 @@ pt =
           }
       }
   , guarantees:
-      { heading: "Guarantees"
-      , body: "Explore o Guarantees."
+      { heading: "Garantias"
+      , subtitle: "Cada afirmação nesta página assenta numa verificação que pode correr você mesmo."
+      , mission:
+          { heading: "A garantia"
+          , lead: "Se compila e o CI está verde, a produção não cai."
+          , body: "Isto não é uma promessa de zero erros de execução no absoluto — esta stack ainda toca em efeitos, fronteiras FFI e um runtime JavaScript. A promessa é deliberadamente limitada, e cada cláusula abaixo assenta numa verificação real, que pode correr você mesmo, não numa simples promessa."
+          }
+      , values:
+          { heading: "O que é verificado"
+          , intro: "Seis famílias de garantias, cada uma imposta mecanicamente — não por uma revisão."
+          , items:
+              { one: { title: "Nenhuma saída insegura", description: "Forçar o desembrulho de um Maybe, um cast que contorna o sistema de tipos, ou qualquer módulo FFI não aprovado fazem falhar a compilação em src/ — o Policy.Contract impõe a mesma lista branca que o make gate verifica." }
+              , two: { title: "Cada falha é um valor tipado", description: "Os handlers devolvem Aff (Either AppError a); rotas, chaves i18n e variantes de erro são verificadas de forma exaustiva, por isso um caso esquecido é um erro de compilação; exceções de execução são apanhadas numa única fronteira e respondidas com um 500, nunca com uma falha total (make test)." }
+              , three: { title: "HTML e CSP fixos", description: "O tipo Html não tem nenhum construtor HTML não escapado de uso geral, por isso marcação não escapada não compila; cabeçalhos de segurança e uma CSP com nonce sem unsafe-inline são verificados em cada resposta, incluindo erros e redirecionamentos; as páginas geradas nunca referenciam um script externo." }
+              , four: { title: "Costuras Alpine tipadas de ponta a ponta", description: "A interatividade do navegador vem de tipos PureScript fechados (Expr, Flag) — um onclick escrito à mão é um erro de compilação, e uma verificação de texto literal cobre o último espaço que os tipos por si só não fecham." }
+              , five: { title: "Formulários totais e honeypot seguro", description: "decodeContact/decodeNewsletter nunca geram exceções, seja qual for a entrada (testado por propriedades); um honeypot preenchido significa sempre sucesso silencioso, depois do limite de taxa; cada rota faz o percurso de ida e volta via parseRoute/routeUrl em cada idioma." }
+              , six: { title: "Cada push prova-o", description: "make gate, make test, Venom e Playwright correm todos no GitHub Actions a cada push — não é uma promessa verificada uma vez, o CI verifica-a sempre de novo." }
+              }
+          }
       }
   , docs:
       { heading: "Docs"
