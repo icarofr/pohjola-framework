@@ -10,12 +10,12 @@ Maps `App.Ui` primitives to DaisyUI vendor docs. Feature views must not import t
 |---|---|---|
 | `App.Ui.Alert` | [alert](vendor/daisyui/skills/daisyui/components/alert.md) | `src/App/Ui/Alert.purs` |
 | `App.Ui.Avatar` | [avatar](vendor/daisyui/skills/daisyui/components/avatar.md) | `src/App/Ui/Avatar.purs` |
-| `App.Ui.Badge` | — | `src/App/Ui/Badge.purs` |
+| `App.Ui.Badge` | [badge](vendor/daisyui/skills/daisyui/components/badge.md) | `src/App/Ui/Badge.purs` |
 | `App.Ui.Breadcrumbs` | [breadcrumbs](vendor/daisyui/skills/daisyui/components/breadcrumbs.md) | `src/App/Ui/Breadcrumbs.purs` |
 | `App.Ui.Button` | [button](vendor/daisyui/skills/daisyui/components/button.md) | `src/App/Ui/Button.purs` |
 | `App.Ui.Card` | [card](vendor/daisyui/skills/daisyui/components/card.md) | `src/App/Ui/Card.purs` |
 | `App.Ui.Container` | — | `src/App/Ui/Container.purs` |
-| `App.Ui.Divider` | — | `src/App/Ui/Divider.purs` |
+| `App.Ui.Divider` | [divider](vendor/daisyui/skills/daisyui/components/divider.md) | `src/App/Ui/Divider.purs` |
 | `App.Ui.EmptyState` | — | `src/App/Ui/EmptyState.purs` |
 | `App.Ui.Form` | [fieldset](vendor/daisyui/skills/daisyui/components/fieldset.md) | `src/App/Ui/Form.purs` |
 | `App.Ui.Prose` | — | `src/App/Ui/Prose.purs` |
@@ -49,7 +49,6 @@ Maps `App.Ui` primitives to DaisyUI vendor docs. Feature views must not import t
 
 - [accordion](vendor/daisyui/skills/daisyui/components/accordion.md)
 - [aura](vendor/daisyui/skills/daisyui/components/aura.md)
-- [badge](vendor/daisyui/skills/daisyui/components/badge.md)
 - [calendar](vendor/daisyui/skills/daisyui/components/calendar.md)
 - [carousel](vendor/daisyui/skills/daisyui/components/carousel.md)
 - [chat](vendor/daisyui/skills/daisyui/components/chat.md)
@@ -57,7 +56,6 @@ Maps `App.Ui` primitives to DaisyUI vendor docs. Feature views must not import t
 - [collapse](vendor/daisyui/skills/daisyui/components/collapse.md)
 - [countdown](vendor/daisyui/skills/daisyui/components/countdown.md)
 - [diff](vendor/daisyui/skills/daisyui/components/diff.md)
-- [divider](vendor/daisyui/skills/daisyui/components/divider.md)
 - [dock](vendor/daisyui/skills/daisyui/components/dock.md)
 - [drawer](vendor/daisyui/skills/daisyui/components/drawer.md)
 - [dropdown](vendor/daisyui/skills/daisyui/components/dropdown.md)

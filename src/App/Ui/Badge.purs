@@ -1,4 +1,4 @@
--- | Badge primitive — DaisyUI semantic component classes
+-- | DaisyUI badge — vendor/daisyui/skills/daisyui/components/badge.md
 module App.Ui.Badge where
 
 import Prelude
