@@ -1,14 +1,5 @@
 import { test, expect } from "@playwright/test";
-
-// Extracts the rendered HTML payload out of a `datastar-patch-elements` SSE
-// event body -- mirrors App.Layout.Scripts.dsShellRouterScript's own parsing
-// exactly, since that's the real client-side consumer this test stands in for.
-function extractDatastarPatch(sseBody) {
-  const marker = "data: elements ";
-  const i = sseBody.indexOf(marker);
-  if (i === -1) throw new Error("not a datastar-patch-elements event: " + sseBody.slice(0, 200));
-  return sseBody.slice(i + marker.length).split("\n\n")[0];
-}
+import { extractDatastarPatch } from "./support/sse.js";
 
 test.describe("Datastar navigation", () => {
   test("initial response is a complete document with template page shell", async ({
@@ -202,6 +193,10 @@ test.describe("Datastar navigation", () => {
       ["/en/about", true],
       ["/en/definitely-not-a-route", false],
     ]) {
+      // Inlined, not imported: this callback is serialized to run inside the
+      // BROWSER's JS realm (page.evaluate), which can't close over a Node-side
+      // ES import -- see extractDatastarPatch above for the Node-side version
+      // of the identical two-line logic.
       const result = await page.evaluate(async ([url, ok]) => {
         const marker = "data: elements ";
         const response = await fetch(url, {
@@ -265,6 +260,7 @@ test.describe("Datastar navigation", () => {
 
   test("404 patch keeps drawer chrome and data-page-title", async ({ page }) => {
     await page.goto("/en");
+    // Inlined for the same reason as above: runs inside the browser realm.
     await page.evaluate(async () => {
       const marker = "data: elements ";
       const r = await fetch("/en/no-such-page", {

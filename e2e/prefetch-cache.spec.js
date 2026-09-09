@@ -19,6 +19,7 @@
 // If you change the cache policy, these tests fail. That is deliberate: the
 // change should be a visible decision, not a silent behaviour shift.
 import { test, expect } from "@playwright/test";
+import { extractDatastarPatch } from "./support/sse.js";
 
 // TARGET was /en/posts, the data-backed route, until the clean-sheet rebuild
 // removed it (see .scratch/clean-sheet-homepage/) -- no data-backed exemplar
@@ -88,12 +89,6 @@ test("patch signal matrix — header present or absent (W2)", async ({
   const fetchCase = async (path, withHeader) =>
     request.get(path, withHeader ? { headers: { "datastar-request": "true" } } : {});
 
-  const extractPatch = (sseBody) => {
-    const marker = "data: elements ";
-    const i = sseBody.indexOf(marker);
-    return i === -1 ? null : sseBody.slice(i + marker.length).split("\n\n")[0];
-  };
-
   const cases = [];
   for (const path of ["/en/about", TARGET]) {
     cases.push(
@@ -115,7 +110,7 @@ test("patch signal matrix — header present or absent (W2)", async ({
         "datastar-request",
       );
       expect(raw).toContain("event: datastar-patch-elements");
-      const body = extractPatch(raw);
+      const body = extractDatastarPatch(raw);
       expect(body, `${c.name}: is a datastar-patch-elements event`).toBeTruthy();
       expect(body.includes('id="content"'), `${c.name}: carries the swap target`).toBe(true);
       expect(body).toContain('data-page-title');
@@ -176,8 +171,7 @@ test("a datastar-request for an unknown route gets a patch, not a document", asy
   expect(res.status()).toBe(200);
   const raw = await res.text();
   expect(raw).toContain("event: datastar-patch-elements");
-  const marker = "data: elements ";
-  const body = raw.slice(raw.indexOf(marker) + marker.length).split("\n\n")[0];
+  const body = extractDatastarPatch(raw);
   expect(body).not.toContain("<!DOCTYPE");
   expect(body).not.toContain("<html");
   expect(body).toContain('id="content"');

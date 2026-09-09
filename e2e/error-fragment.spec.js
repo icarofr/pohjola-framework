@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { extractDatastarPatch } from "./support/sse.js";
 
 // TARGET was /en/posts/1 (the data-backed route, to force a real render
 // failure) until the clean-sheet rebuild removed Posts (see
@@ -23,8 +24,7 @@ test("a Datastar patch request for an unknown route gets the exact fragment shel
 
   const body = await response.text();
   expect(body).toContain("event: datastar-patch-elements");
-  const marker = "data: elements ";
-  const html = body.slice(body.indexOf(marker) + marker.length).split("\n\n")[0];
+  const html = extractDatastarPatch(body);
 
   const parsed = await page.evaluate(
     (h) => {
