@@ -39,6 +39,10 @@ bookingUrl = "https://github.com/icarofr/pohjola-framework"
 repoFileUrl :: String -> String
 repoFileUrl path = bookingUrl <> "/blob/master/" <> path
 
+-- | GitHub Issues — backs the footer's "Bug Tracker" link.
+issuesUrl :: String
+issuesUrl = bookingUrl <> "/issues"
+
 -- | Backs "No unsafe code paths" — the module `make gate`'s policy scan
 -- | reads (see docs/GUARANTEES.md rows 1-3).
 policyGateUrl :: String

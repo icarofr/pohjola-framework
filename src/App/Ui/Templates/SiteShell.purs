@@ -57,7 +57,7 @@ import App.Html
 import App.Ui.Alert (AlertVariant(..), alert)
 import App.Ui.Container as Container
 import App.Ui.Templates.Contract as Contract
-import Data.Content (bookingUrl)
+import Data.Content (bookingUrl, issuesUrl)
 import Data.I18n (Lang(..), dict, langTag)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Route (Route(..), routeTitle)
@@ -83,6 +83,9 @@ type ShellLabels =
   , guaranteesLabel :: String
   , docsLabel :: String
   , githubLabel :: String
+  , issuesLabel :: String
+  , footerExploreTitle :: String
+  , footerResourcesTitle :: String
   }
 
 shellLabels :: Lang -> ShellLabels
@@ -109,6 +112,9 @@ shellLabels lang =
     , guaranteesLabel: d.nav.guarantees
     , docsLabel: d.nav.docs
     , githubLabel: d.footer.github
+    , issuesLabel: d.footer.issues
+    , footerExploreTitle: d.footer.explore
+    , footerResourcesTitle: d.footer.resources
     }
 
 maybeStatusBanner :: Lang -> Maybe FormStatus -> Html
@@ -377,28 +383,49 @@ mobileNavLink lang current target label =
         [ text label ]
     ]
 
+-- | Two real nav sections, not one row repeating the header: `explore`
+-- | (the same four pages) plus `resources` (GitHub source + issues) — both
+-- | labels already existed in every language's dict, unused until now.
 renderFooter :: Lang -> Route -> ShellLabels -> Html
 renderFooter lang route labels =
   el "footer"
-    [ class_ "footer footer-center border-t border-base-300 bg-base-200 p-10 text-base-content sm:footer-horizontal"
+    [ class_ "footer border-t border-base-300 bg-base-200 p-10 text-base-content sm:footer-horizontal"
     , attr Contract.marker Contract.siteFooter
     ]
     [ el "aside" []
         [ el "p" [ class_ "font-semibold" ] [ text labels.siteTitle ]
         , el "p" [ class_ "text-sm opacity-70" ] [ text labels.copyright ]
         ]
-    , el "nav" [ class_ "grid grid-flow-col gap-4 text-sm opacity-70" ]
-        [ footerLink lang route Home labels.homeLabel
-        , footerLink lang route About labels.aboutLabel
-        , footerLink lang route Guarantees labels.guaranteesLabel
-        , footerLink lang route Docs labels.docsLabel
+    , el "nav" []
+        ( [ el "h6" [ class_ "footer-title" ] [ text labels.footerExploreTitle ] ]
+            <>
+              [ footerLink lang route Home labels.homeLabel
+              , footerLink lang route About labels.aboutLabel
+              , footerLink lang route Guarantees labels.guaranteesLabel
+              , footerLink lang route Docs labels.docsLabel
+              ]
+        )
+    , el "nav" []
+        [ el "h6" [ class_ "footer-title" ] [ text labels.footerResourcesTitle ]
+        , footerExternalLink bookingUrl labels.githubLabel
+        , footerExternalLink issuesUrl labels.issuesLabel
         ]
     ]
 
 footerLink :: Lang -> Route -> Route -> String -> Html
 footerLink lang current target label =
   navLink { lang, current, target }
-    [ class_ (navLinkClasses NavFooter (target == current)) ]
+    [ class_ (navLinkClasses NavFooter true) ]
+    [ text label ]
+
+footerExternalLink :: String -> String -> Html
+footerExternalLink url label =
+  el "a"
+    [ href url
+    , target_ "_blank"
+    , rel_ "noopener noreferrer"
+    , class_ (navLinkClasses NavFooter true)
+    ]
     [ text label ]
 
 hamburgerIcon :: Html
