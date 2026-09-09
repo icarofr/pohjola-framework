@@ -181,7 +181,7 @@ errorMessage lang status =
 renderHeader :: Lang -> Route -> ShellLabels -> Html
 renderHeader lang route labels =
   el "header"
-    [ class_ "sticky top-0 z-50 border-b border-base-200 bg-base-100"
+    [ class_ "sticky top-0 z-50 border-b border-base-300 bg-base-200 shadow-sm"
     , attr Contract.marker Contract.siteHeader
     ]
     [ Container.container Container.ContainerW6xl "px-4 sm:px-6"
