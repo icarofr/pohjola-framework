@@ -13,12 +13,16 @@ import App.Alpine
   , NavChrome(..)
   , ThemeMode(..)
   , ariaExpandedFlag
-  , closeSiteDrawer
   , classWhenFlag
   , classWhenTheme
+  , closeSiteDrawer
   , contentTarget
   , dataPageLangAttr
   , dataPageTitleAttr
+  , dropdownItemClass
+  , dropdownItemClasses
+  , dropdownPanelClass
+  , dropdownTriggerClass
   , langLink
   , navLink
   , navLinkClasses
@@ -130,7 +134,7 @@ sitePageTitled lang route title labels status content =
       , attr dataPageLangAttr (langTag lang)
       ]
         <>
-          [ xDataThemeWithFlag ThemeMenuOpen false
+          [ xDataThemeWithFlag ThemeMenuOpen LangMenuOpen false
           , onKeydownEscapeWindow closeSiteDrawer
           ]
     )
@@ -153,7 +157,7 @@ siteErrorPage :: Lang -> Int -> Html
 siteErrorPage lang statusCode =
   let
     labels = shellLabels lang
-    title = show statusCode <> " — " <> labels.siteTitle
+    title = show statusCode <> " - " <> labels.siteTitle
     body =
       el "div" [ class_ "mx-auto max-w-3xl px-6 py-24 text-center" ]
         [ el "h1" [ class_ "text-5xl font-semibold tracking-tight" ] [ text (show statusCode) ]
@@ -281,7 +285,7 @@ renderLangDropdown currentLang route labels =
     ]
     [ el "button"
         [ attrTypeButton
-        , class_ "btn btn-ghost btn-sm gap-1"
+        , class_ (dropdownTriggerClass <> " gap-1")
         , ariaLabel labels.langToggleLabel
         , attr "aria-haspopup" "menu"
         , ariaExpandedFlag LangMenuOpen
@@ -290,8 +294,7 @@ renderLangDropdown currentLang route labels =
         [ globeIcon, text (toUpper (langTag currentLang)) ]
     , el "ul"
         [ xShowFlag LangMenuOpen
-        , class_
-            "menu menu-sm dropdown-content rounded-box z-50 mt-3 w-44 bg-base-100 p-2 shadow"
+        , class_ dropdownPanelClass
         ]
         [ langMenuItem DropdownMenu En currentLang route labels.langEn
         , langMenuItem DropdownMenu Fr currentLang route labels.langFr
@@ -306,7 +309,7 @@ langMenuItem :: MenuContext -> Lang -> Lang -> Route -> String -> Html
 langMenuItem context targetLang currentLang route label =
   el "li" []
     [ langLink { targetLang, currentLang, route }
-        ( [ class_ (if targetLang == currentLang then "menu-active" else "") ]
+        ( [ class_ (dropdownItemClasses (targetLang == currentLang)) ]
             <> case context of
               DrawerMenu -> [ onClick closeSiteDrawer ]
               DropdownMenu -> [ onClick (setFlag LangMenuOpen false) ]
@@ -324,7 +327,7 @@ renderThemeDropdown labels =
     ]
     [ el "button"
         [ attrTypeButton
-        , class_ "btn btn-ghost btn-sm"
+        , class_ dropdownTriggerClass
         , ariaLabel labels.themeLabel
         , attr "aria-haspopup" "menu"
         , ariaExpandedFlag ThemeMenuOpen
@@ -333,8 +336,7 @@ renderThemeDropdown labels =
         [ themeIcon ]
     , el "ul"
         [ xShowFlag ThemeMenuOpen
-        , class_
-            "menu menu-sm dropdown-content rounded-box z-50 mt-3 w-52 bg-base-100 p-2 shadow"
+        , class_ dropdownPanelClass
         ]
         [ themeMenuItem DropdownMenu ThemeLight labels.themeLight
         , themeMenuItem DropdownMenu ThemeDark labels.themeDark
@@ -352,7 +354,7 @@ themeMenuItem :: MenuContext -> ThemeMode -> String -> Html
 themeMenuItem context mode label =
   el "li" []
     [ el "button"
-        ( [ class_ "btn btn-ghost btn-sm w-full justify-start"
+        ( [ class_ dropdownItemClass
           , classWhenTheme "btn-active" mode
           , attrTypeButton
           ]

@@ -23,6 +23,7 @@ Chrome is **template library code**, not feature code. Agents never invent navba
 
 - Route-aware links: `App.Alpine.navLink` (SPA swap + prefetch guard + `aria-current="page"`).
 - Visual active state: `navLinkClasses NavDesktop | NavMobile | NavFooter` — **never** hand-roll `btn-active` / `menu-active` in `SiteShell`.
+- Theme + language disclosure items: `dropdownItemClass` / `dropdownItemClasses` / `dropdownPanelClass` in `App.Alpine` — **never** a second Daisy recipe in `SiteShell`.
 - Agent checklist: `docs/conventions/chrome-checklist.md`.
 - Eval: `make eval EVAL=11-edit-chrome`.
 

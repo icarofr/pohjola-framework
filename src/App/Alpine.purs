@@ -10,6 +10,10 @@ module App.Alpine
   , navLink
   , NavChrome(..)
   , navLinkClasses
+  , dropdownTriggerClass
+  , dropdownPanelClass
+  , dropdownItemClass
+  , dropdownItemClasses
   , Flag(..)
   , flagName
   , ThemeMode(..)
@@ -253,13 +257,17 @@ xDataTheme =
         <> "') || 'system') }"
     )
 
-xDataThemeWithFlag :: Flag -> Boolean -> Attr
-xDataThemeWithFlag f b =
+xDataThemeWithFlag :: Flag -> Flag -> Boolean -> Attr
+xDataThemeWithFlag f1 f2 b =
   attr "x-data"
     ( "{ theme: (localStorage.getItem('"
         <> Theme.themeStorageKey
         <> "') || 'system'), "
-        <> flagName f
+        <> flagName f1
+        <> ": "
+        <> boolLit b
+        <> ", "
+        <> flagName f2
         <> ": "
         <> boolLit b
         <> " }"
@@ -378,6 +386,28 @@ navLinkClasses NavMobile isActive =
         ""
 
 navLinkClasses NavFooter _ = "link link-hover"
+
+-- | Desktop theme + language disclosure (and the matching drawer rows).
+-- | One recipe so the two menus cannot drift independently.
+dropdownTriggerClass :: String
+dropdownTriggerClass = "btn btn-ghost btn-sm"
+
+dropdownPanelClass :: String
+dropdownPanelClass =
+  "menu menu-sm dropdown-content rounded-box z-50 mt-3 w-52 bg-base-100 p-2 shadow"
+
+dropdownItemClass :: String
+dropdownItemClass = "btn btn-ghost btn-sm w-full justify-start"
+
+dropdownItemClasses :: Boolean -> String
+dropdownItemClasses isActive =
+  dropdownItemClass
+    <>
+      if isActive then
+        " btn-active"
+
+      else
+        ""
 
 navLink :: { lang :: Lang, current :: Route, target :: Route } -> Array Attr -> Array Html -> Html
 navLink { lang, current, target } extraAttrs children =

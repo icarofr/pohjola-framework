@@ -47,13 +47,15 @@ Never duplicate `btn-active` / `menu-active` logic in `SiteShell` — extend `na
 - Themes: `pohjola` / `pohjola-dark` in `css/input.css`; `system` omits `data-theme`.
 - Desktop: Alpine disclosure (`ThemeMenuOpen`) + Daisy `dropdown`, real `<button>`.
 - Mobile drawer: flat theme buttons via `themeMenuItem`.
-- Active theme: `classWhenTheme "btn-active"` — already wired; do not reinvent.
+- Active theme: `classWhenTheme "btn-active"` on `dropdownItemClass` — already wired; do not reinvent.
 
 ## Language switcher
 
-- Desktop: `join join-horizontal` with `btn-active` on current lang.
-- Mobile: `join join-vertical` in drawer.
-- Uses plain `href` (full reload) — not `navLink` SPA swap.
+- Desktop: Alpine disclosure (`LangMenuOpen`) + the **same** Daisy `dropdown` recipe as theme (`dropdownTriggerClass`, `dropdownPanelClass`, `dropdownItemClasses`).
+- Mobile drawer: flat language links via `langMenuItem` — same `dropdownItemClasses` as the theme rows beside them.
+- Uses `langLink` (fragment swap), not a full reload. Active language: `dropdownItemClasses (target == current)`.
+
+Never hand-roll a second dropdown width or item class in `SiteShell` — change `dropdownPanelClass` / `dropdownItemClass` in `App.Alpine` so both menus move together.
 
 ## Pre-ship checks
 
