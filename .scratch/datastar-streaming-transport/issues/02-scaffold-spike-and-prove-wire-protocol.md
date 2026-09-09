@@ -20,15 +20,15 @@ scroll-to-top) is NOT in this ticket — that's ticket 03.
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** done (2026-09-09), commit history on branch `spike/datastar-shell-nav-port` (see findings.md)
 
-- [ ] Datastar (free/core, no Pro attributes) vendored under `static/assets/js/`, self-hosted and checksummed like the existing Alpine assets
-- [ ] `App.Datastar` module exists with at least the constructors this spike's first working patch needs
-- [ ] Gate rule added: no raw Datastar attribute strings appear outside `App.Datastar`
-- [ ] A new, separate "is this a Datastar request" detection signal exists on the server, independent of `isFragmentRequest`
-- [ ] The existing `isFragmentRequest`/`x-alpine-request`/`?_frag=1` contract is unchanged and still passes `make gate && make test`
-- [ ] One real link on `Home` triggers a full round trip: click -> Datastar request detected -> fragment wrapped in `datastar-patch-elements` SSE framing -> Datastar client patches `#content` -> verified via a spike-local raw-playwright-core script
-- [ ] `make gate && make test` pass on the branch
+- [x] Datastar (free/core, no Pro attributes) vendored under `static/assets/js/`, self-hosted and checksummed like the existing Alpine assets
+- [x] `App.Datastar` module exists with at least the constructors this spike's first working patch needs
+- [x] Gate rule added: no raw Datastar attribute strings appear outside `App.Datastar`
+- [x] A new, separate "is this a Datastar request" detection signal exists on the server, independent of `isFragmentRequest`
+- [x] The existing `isFragmentRequest`/`x-alpine-request`/`?_frag=1` contract is unchanged and still passes `make gate && make test`
+- [x] One real link on `Home` triggers a full round trip: click -> Datastar request detected -> fragment wrapped in `datastar-patch-elements` SSE framing -> Datastar client patches `#content` -> verified via a spike-local raw-playwright-core script
+- [x] `make gate && make test` pass on the branch
 
 ## Comments
 

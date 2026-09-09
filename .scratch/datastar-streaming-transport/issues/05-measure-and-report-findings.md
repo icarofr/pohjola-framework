@@ -16,13 +16,13 @@ ticket.
 
 **Blocked by:** 03, 04
 
-**Status:** ready-for-agent
+**Status:** done (2026-09-09), commit history on branch `spike/datastar-shell-nav-port` (see findings.md)
 
-- [ ] Real gzip bundle size measured from an actual `make build`, recorded against the estimated range
-- [ ] Full parity checklist (shell-nav + local UI, from tickets 03/04) re-run and passing, Datastar version vs. Alpine version, both pages
-- [ ] CSP check performed against the Datastar-powered pages; any blocked behavior (especially expression evaluation) recorded
-- [ ] Findings written up in one document (bundle delta, parity results, CSP results, go/no-go recommendation) — placed in this feature directory, e.g. `findings.md`
-- [ ] No changes made to `master`; the branch and its findings are left for a separate, later decision
+- [x] Real gzip bundle size measured from an actual `make build`, recorded against the estimated range
+- [x] Full parity checklist (shell-nav + local UI, from tickets 03/04) re-run and passing, Datastar version vs. Alpine version, both pages
+- [x] CSP check performed against the Datastar-powered pages; any blocked behavior (especially expression evaluation) recorded
+- [x] Findings written up in one document (bundle delta, parity results, CSP results, go/no-go recommendation) — placed in this feature directory, e.g. `findings.md`
+- [x] No changes made to `master`; the branch and its findings are left for a separate, later decision
 
 ## Comments
 
