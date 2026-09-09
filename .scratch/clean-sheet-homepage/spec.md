@@ -1,6 +1,6 @@
 # Clean-sheet homepage: purge all content, rebuild one showcase page
 
-**Status:** ready-for-agent
+**Status:** done (2026-09-09) — all 7 tickets closed, code-reviewed, branch `clean-sheet-homepage` pushed to `origin`. See `issues/07-push-and-review.md` for the review findings and their disposition.
 
 ## Problem Statement
 

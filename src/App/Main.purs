@@ -89,10 +89,10 @@ langFromPath path = fromMaybe defaultLang (head path >>= parseLang)
 -- | Static pages use `staticPage` (pure Html, no error path).
 -- | Data-backed pages fetch via Aff and may return `Left AppError`.
 -- |
--- | `cfg` is unused while every route is static (`Home` only, so far) —
--- | named `_cfg`, not `cfg`, purely so `make new-feature TYPE=data --wire`'s
--- | regex (which matches either name) still finds this line once a
--- | data-backed route needs it again.
+-- | `cfg` is unused while every route is static (Home, About, Guarantees,
+-- | Docs) — named `_cfg`, not `cfg`, purely so `make new-feature TYPE=data
+-- | --wire`'s regex (which matches either name) still finds this line once
+-- | a data-backed route needs it again.
 pageRenderer :: Config -> Route -> Lang -> Maybe FormStatus -> Aff (Either AppError Html)
 pageRenderer _cfg route lang status = case route of
   Home -> Home.render lang status

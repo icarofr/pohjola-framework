@@ -244,11 +244,11 @@ en =
       }
   , seo:
       { homeDescription: "Pohjola — a type-safe PureScript framework on Bun, built to make AI-assisted code safer to ship."
-      , aboutDescription: "SEO for About."
+      , aboutDescription: "Why Pohjola exists and the six engineering principles behind it."
 
-      , guaranteesDescription: "SEO for Guarantees."
+      , guaranteesDescription: "What Pohjola mechanically guarantees, and how to verify each claim yourself."
 
-      , docsDescription: "SEO for Docs."
+      , docsDescription: "Documentation is coming - see what's planned and what already exists in the repository."
       }
   , footer:
       { explore: "Navigation"
@@ -348,9 +348,9 @@ fr :: Dictionary
 fr =
   { nav:
       { home: "Accueil"
-      , about: "About"
-      , guarantees: "Guarantees"
-      , docs: "Docs (soon)"
+      , about: "À propos"
+      , guarantees: "Garanties"
+      , docs: "Docs (bientôt)"
       }
   , hero:
       { eyebrow: "PureScript sur Bun"
@@ -388,11 +388,11 @@ fr =
       }
   , seo:
       { homeDescription: "Pohjola — un framework PureScript typé sur Bun, conçu pour sécuriser le code assisté par IA."
-      , aboutDescription: "SEO for About."
+      , aboutDescription: "Pourquoi Pohjola existe et les six principes d'ingénierie qui le guident."
 
-      , guaranteesDescription: "SEO for Guarantees."
+      , guaranteesDescription: "Ce que Pohjola garantit mécaniquement, et comment vérifier chaque affirmation vous-même."
 
-      , docsDescription: "SEO for Docs."
+      , docsDescription: "La documentation arrive - découvrez ce qui est prévu et ce qui existe déjà dans le dépôt."
       }
   , footer:
       { explore: "Navigation"
@@ -492,9 +492,9 @@ pt :: Dictionary
 pt =
   { nav:
       { home: "Início"
-      , about: "About"
-      , guarantees: "Guarantees"
-      , docs: "Docs (soon)"
+      , about: "Sobre"
+      , guarantees: "Garantias"
+      , docs: "Docs (em breve)"
       }
   , hero:
       { eyebrow: "PureScript no Bun"
@@ -532,11 +532,11 @@ pt =
       }
   , seo:
       { homeDescription: "Pohjola — um framework PureScript tipado sobre o Bun, feito para tornar o código assistido por IA mais seguro."
-      , aboutDescription: "SEO for About."
+      , aboutDescription: "Porque é que o Pohjola existe e os seis princípios de engenharia por trás dele."
 
-      , guaranteesDescription: "SEO for Guarantees."
+      , guaranteesDescription: "O que o Pohjola garante mecanicamente, e como verificar cada afirmação você mesmo."
 
-      , docsDescription: "SEO for Docs."
+      , docsDescription: "A documentação está a chegar - veja o que está planeado e o que já existe no repositório."
       }
   , footer:
       { explore: "Navegação"

@@ -30,7 +30,18 @@ spec = do
 
     describe "localization" do
       it "nav and hero strings differ between languages" do
+        -- Every nav entry, not just `home` — a per-page label that's only
+        -- ever compared to itself can silently stay untranslated (this
+        -- caught About/Guarantees/Docs shipping literal English nav labels
+        -- in fr/pt during the clean-sheet rebuild).
         (dict En).nav.home `shouldNotEqual` (dict Fr).nav.home
+        (dict En).nav.about `shouldNotEqual` (dict Fr).nav.about
+        (dict En).nav.guarantees `shouldNotEqual` (dict Fr).nav.guarantees
+        (dict En).nav.docs `shouldNotEqual` (dict Fr).nav.docs
+        (dict En).nav.home `shouldNotEqual` (dict Pt).nav.home
+        (dict En).nav.about `shouldNotEqual` (dict Pt).nav.about
+        (dict En).nav.guarantees `shouldNotEqual` (dict Pt).nav.guarantees
+        (dict En).nav.docs `shouldNotEqual` (dict Pt).nav.docs
         (dict En).hero.headline `shouldNotEqual` (dict Fr).hero.headline
       it "service copy localizes" do
         let svc1 = ServiceId "service-1"
