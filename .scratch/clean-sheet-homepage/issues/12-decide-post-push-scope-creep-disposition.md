@@ -8,11 +8,13 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-human
+**Status:** done (2026-09-09) — decided by the user, logged retroactively, no process nudge
 
-- [ ] For each of the 3 items above: either (a) accept as legitimate out-of-band engineering and retroactively log it as its own closed ticket for the record, or (b) flag as a process gap to avoid repeating (agents/sessions pushing straight to `master` instead of routing through `.scratch/<feature-slug>/issues/`)
-- [ ] If (b), decide whether any repo-level nudge is warranted (e.g. a CLAUDE.md note) or this is a one-off worth just noting and moving on
+- [x] Decided: accept as legitimate out-of-band engineering — retroactively logged, not flagged as a process gap
+- [x] No repo-level nudge added; treated as a one-off
 
 ## Comments
 
 Found by the Spec-axis code review of `dadcfe3..HEAD` (5 post-push commits on `master`, reviewed 2026-09-09). Filed to make sure the finding isn't lost, not because any of the 3 commits need to be reverted or are individually wrong.
+
+User's decision (2026-09-09): log retroactively, no nudge. Each of the 3 items is now its own closed ticket: [[19-em-dash-punctuation-purge]] (`c69b639`), [[20-lang-dropdown-scroll-restore-polish]] (`aa08b6a` + `ee98547`), [[21-scaffolder-data-type-wiring]] (`97517fc`).

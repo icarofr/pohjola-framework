@@ -4,11 +4,10 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-human
+**Status:** wontfix (2026-09-09) — decided by the user
 
-- [ ] Decide: is this worth doing at all, or is it fundamentally a "hold it via review, no mechanism" problem with no real fix?
-- [ ] If yes, write the rule into the `to-spec`/`to-tickets` skill files (also outside this repo, like ticket 17)
+- [x] Decided: this is fundamentally a "hold it via review, no mechanism" problem — no rule added to `to-spec`/`to-tickets`.
 
 ## Comments
 
-From a `/grill-me` retrospective (2026-09-09). This is the one point in the retrospective with no confident recommended answer — flagged during grilling as "genuinely unsure," leaning toward writing the rule anyway since it at least converts a silent default into a reviewable sentence, without believing it fully solves the underlying judgment problem. Left open for the user's call.
+From a `/grill-me` retrospective (2026-09-09). This was the one point in the retrospective with no confident recommended answer during grilling. User's decision (2026-09-09): skip — hold via review only.
