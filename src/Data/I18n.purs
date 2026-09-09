@@ -187,14 +187,14 @@ en =
   , hero:
       { eyebrow: "PureScript on Bun"
       , headline: "A framework built to make AI-written code safer to ship"
-      , body: "Pohjola pairs an agent-friendly page generator with a compiler that refuses common mistakes. Pages feel instant — Alpine prefetches on hover and swaps fragments in place — while PureScript proves every route is handled, every string is escaped, and a crash never reaches your users."
+      , body: "Pohjola pairs an agent-friendly page generator with a compiler that refuses common mistakes. Pages feel instant (Alpine prefetches on hover and swaps fragments in place) while PureScript proves every route is handled, every string is escaped, and a crash never reaches your users."
       , ctaLabel: "See the guarantees"
       , secondaryLabel: "View the repository"
       }
   , services:
       { sectionEyebrow: "Why Pohjola"
       , sectionHeadline: "Built to catch mistakes before they ship"
-      , sectionIntro: "Three deliberate choices, each backed by a mechanical check — not a style guide."
+      , sectionIntro: "Three deliberate choices, each backed by a mechanical check, not a style guide."
       , serviceCopy: \sid -> case sid of
           ServiceId "service-1" ->
             { title: "PureScript Type Safety"
@@ -203,7 +203,7 @@ en =
             }
           ServiceId "service-2" ->
             { title: "Bun-Native Speed"
-            , description: "No Node cold start, no module-resolution tax — Bun serves and rebuilds natively. The dev server restarts before you've moved your cursor back to the browser."
+            , description: "No Node cold start, no module-resolution tax: Bun serves and rebuilds natively. The dev server restarts before you've moved your cursor back to the browser."
             , actionLabel: "Learn more"
             }
           ServiceId "service-3" ->
@@ -215,11 +215,11 @@ en =
       }
   , cta:
       { heading: "Start with `make dev`"
-      , body: "Clone the repository, run `make dev`, and you have a working page in under a minute — the same pipeline that built this site."
+      , body: "Clone the repository, run `make dev`, and you have a working page in under a minute, the same pipeline that built this site."
       , ctaLabel: "View the repository"
       }
   , seo:
-      { homeDescription: "Pohjola — a type-safe PureScript framework on Bun, built to make AI-assisted code safer to ship."
+      { homeDescription: "Pohjola: a type-safe PureScript framework on Bun, built to make AI-assisted code safer to ship."
       , aboutDescription: "Why Pohjola exists and the six engineering principles behind it."
 
       , guaranteesDescription: "What Pohjola mechanically guarantees, and how to verify each claim yourself."
@@ -238,42 +238,42 @@ en =
       , subtitle: "A type-safe framework built specifically for a world where code also gets written by agents."
       , mission:
           { heading: "Why Pohjola exists"
-          , lead: "Most frameworks assume a careful human is writing every line. Pohjola assumes an agent might be — and builds the guardrails accordingly."
-          , body: "Pohjola started as the foundation for the author's own apps, then went public because the same problem shows up everywhere: AI-assisted code ships fast and reviews thin. Instead of counting on careful prompts, Pohjola pushes the safety net into the compiler and the policy gate — a mistake either doesn't compile, or fails a mechanical check before it ships."
+          , lead: "Pohjola takes its name from Swallow the Sun's Songs from the North: Finnish lore where pohja is both bedrock and the direction North. Most frameworks assume a careful human is writing every line. Pohjola assumes an agent might be, and builds the guardrails accordingly."
+          , body: "Pohjola started as the foundation for the author's own apps, then went public because the same problem shows up everywhere: AI-assisted code ships fast and reviews thin. Instead of counting on careful prompts, Pohjola pushes the safety net into the compiler and the policy gate: a mistake either doesn't compile, or fails a mechanical check before it ships. We built it on that ethos: deliberate craft built to survive production."
           }
       , values:
           { heading: "Our principles"
           , intro: "Six choices that shape every decision in this codebase."
           , items:
-              { one: { title: "The compiler over the reviewer", description: "A missing case, an unescaped string, a forbidden import — caught by `spago build` and `make gate`, not by whoever happens to review the PR." }
+              { one: { title: "The compiler over the reviewer", description: "A missing case, an unescaped string, a forbidden import, caught by `spago build` and `make gate`, not by whoever happens to review the PR." }
               , two: { title: "Built for agents", description: "The page generator, the typed Alpine constructors, and the policy gate exist so an agent gets a narrow, checkable path instead of a blank file and good intentions." }
               , three: { title: "Honest about scope", description: "GUARANTEES.md states exactly what's proven and what isn't. A claim with no check next to it doesn't ship." }
-              , four: { title: "Bun-native, not Node-adjacent", description: "No compatibility shims — Bun's own primitives (Bun.serve, Bun.sql, Bun.password) are the FFI boundary itself, tamed and explicitly allowlisted." }
+              , four: { title: "Bun-native, not Node-adjacent", description: "No compatibility shims. Bun's own primitives (Bun.serve, Bun.sql, Bun.password) are the FFI boundary itself, tamed and explicitly allowlisted." }
               , five: { title: "Small surface, edges filed off", description: "Four pages, one Html type, one Alpine module. Depth comes from what each piece proves, not from how many pieces exist." }
-              , six: { title: "Built in the open", description: "ADRs, conventions, and eval prompts are part of the repository, not tribal knowledge — anyone, human or agent, can reconstruct why a decision was made." }
+              , six: { title: "Built in the open", description: "ADRs, conventions, and eval prompts are part of the repository, not tribal knowledge. Anyone, human or agent, can reconstruct why a decision was made." }
               }
           }
       }
   , guarantees:
       { heading: "Guarantees"
       , subtitle: "Every claim on this page is backed by a check you can run yourself."
-      , lead: "If it compiles and CI is green, production doesn't crash. That's not a claim of zero runtime errors in the absolute — this stack still touches effects, FFI boundaries, and a JavaScript runtime — but every clause below is backed by a real, run-it-yourself check, not a promise."
+      , lead: "If it compiles and CI is green, production doesn't crash. That's not a claim of zero runtime errors in the absolute (this stack still touches effects, FFI boundaries, and a JavaScript runtime), but every clause below is backed by a real, run-it-yourself check, not a promise."
       , cards:
-          { one: { title: "No unsafe code paths", description: "Force-unwrapping a Maybe, casting past the type system, and any unapproved FFI module all fail the build in src/. Every handler failure is a typed value too — a missed case is a compile error, not a runtime surprise.", buttonLabel: "View the policy gate" }
-          , two: { title: "Locked-down browser surface", description: "The Html type has no general-purpose unescaped-HTML constructor, security headers and a nonce-based CSP with no unsafe-inline are asserted on every response, and browser interactivity comes from closed PureScript types — no hand-written onclick strings.", buttonLabel: "View the source" }
-          , three: { title: "Proven on every push", description: "Form decoding never throws for any input, a filled honeypot always means a silent success, and make gate, make test, Venom, and Playwright all run in GitHub Actions on every push — not a claim checked once.", buttonLabel: "View the CI config" }
+          { one: { title: "No unsafe code paths", description: "Force-unwrapping a Maybe, casting past the type system, and any unapproved FFI module all fail the build in src/. Every handler failure is a typed value too: a missed case is a compile error, not a runtime surprise.", buttonLabel: "View the policy gate" }
+          , two: { title: "Locked-down browser surface", description: "The Html type has no general-purpose unescaped-HTML constructor, security headers and a nonce-based CSP with no unsafe-inline are asserted on every response, and browser interactivity comes from closed PureScript types, with no hand-written onclick strings.", buttonLabel: "View the source" }
+          , three: { title: "Proven on every push", description: "Form decoding never throws for any input, a filled honeypot always means a silent success, and make gate, make test, Venom, and Playwright all run in GitHub Actions on every push, not a claim checked once.", buttonLabel: "View the CI config" }
           }
       }
   , docs:
       { heading: "Docs"
       , subtitle: "An honest placeholder while the real documentation gets written."
-      , lead: "There's no documentation site yet — this page exists so that's a visible, honest gap instead of a silent one. Until then, the source is the documentation: the ADRs and convention docs live in the repository itself, and the eval prompts double as worked examples."
+      , lead: "There's no documentation site yet. This page exists so that's a visible, honest gap instead of a silent one. Until then, the source is the documentation: the ADRs and convention docs live in the repository itself, and the eval prompts double as worked examples."
       , itemsHeading: "What's coming first"
       , itemsIntro: "Six sections already scoped, in the order they'll be written."
       , items:
-          [ { title: "Getting started", description: "Clone the repository, run `make dev`, and have a working page in minutes — written up as a real walkthrough, not just this paragraph." }
+          [ { title: "Getting started", description: "Clone the repository, run `make dev`, and have a working page in minutes, written up as a real walkthrough, not just this paragraph." }
           , { title: "Page architectures", description: "When a page should be static versus data-backed, and what the template layer actually gives you." }
-          , { title: "Conventions", description: "Alpine contracts, forms, and the chrome checklist — the rules `make gate` already enforces, explained instead of just checked." }
+          , { title: "Conventions", description: "Alpine contracts, forms, and the chrome checklist: the rules `make gate` already enforces, explained instead of just checked." }
           , { title: "Architecture decisions", description: "The ADR index: why Bun instead of Node, why the Html type has no escape hatch, why the CSP is pinned instead of configurable." }
           , { title: "Guarantees, explained", description: "The reasoning behind each guarantee on the previous page, and how to verify it yourself." }
           , { title: "Contributing", description: "How to open an issue, propose an ADR, and where the test suite expects new coverage." }
@@ -314,14 +314,14 @@ fr =
   , hero:
       { eyebrow: "PureScript sur Bun"
       , headline: "Un framework conçu pour sécuriser le code écrit par l'IA"
-      , body: "Pohjola associe un générateur de pages pensé pour les agents à un compilateur qui refuse les erreurs courantes. Les pages semblent instantanées — Alpine précharge au survol et remplace les fragments sur place — tandis que PureScript garantit que chaque route est gérée, chaque chaîne est échappée, et qu'aucun plantage n'atteint vos utilisateurs."
+      , body: "Pohjola associe un générateur de pages pensé pour les agents à un compilateur qui refuse les erreurs courantes. Les pages semblent instantanées (Alpine précharge au survol et remplace les fragments sur place) tandis que PureScript garantit que chaque route est gérée, chaque chaîne est échappée, et qu'aucun plantage n'atteint vos utilisateurs."
       , ctaLabel: "Voir les garanties"
       , secondaryLabel: "Voir le dépôt"
       }
   , services:
       { sectionEyebrow: "Pourquoi Pohjola"
       , sectionHeadline: "Conçu pour intercepter les erreurs avant leur mise en production"
-      , sectionIntro: "Trois choix délibérés, chacun vérifié mécaniquement — pas un simple guide de style."
+      , sectionIntro: "Trois choix délibérés, chacun vérifié mécaniquement, pas un simple guide de style."
       , serviceCopy: \sid -> case sid of
           ServiceId "service-1" ->
             { title: "Sécurité de typage PureScript"
@@ -330,7 +330,7 @@ fr =
             }
           ServiceId "service-2" ->
             { title: "Vitesse native Bun"
-            , description: "Pas de démarrage à froid façon Node, pas de coût de résolution de modules — Bun sert et recompile nativement. Le serveur de développement redémarre avant que vous n'ayez reposé le curseur sur le navigateur."
+            , description: "Pas de démarrage à froid façon Node, pas de coût de résolution de modules: Bun sert et recompile nativement. Le serveur de développement redémarre avant que vous n'ayez reposé le curseur sur le navigateur."
             , actionLabel: "En savoir plus"
             }
           ServiceId "service-3" ->
@@ -342,11 +342,11 @@ fr =
       }
   , cta:
       { heading: "Commencez avec `make dev`"
-      , body: "Clonez le dépôt, lancez `make dev`, et vous avez une page fonctionnelle en moins d'une minute — le même pipeline qui a construit ce site."
+      , body: "Clonez le dépôt, lancez `make dev`, et vous avez une page fonctionnelle en moins d'une minute, le même pipeline qui a construit ce site."
       , ctaLabel: "Voir le dépôt"
       }
   , seo:
-      { homeDescription: "Pohjola — un framework PureScript typé sur Bun, conçu pour sécuriser le code assisté par IA."
+      { homeDescription: "Pohjola: un framework PureScript typé sur Bun, conçu pour sécuriser le code assisté par IA."
       , aboutDescription: "Pourquoi Pohjola existe et les six principes d'ingénierie qui le guident."
 
       , guaranteesDescription: "Ce que Pohjola garantit mécaniquement, et comment vérifier chaque affirmation vous-même."
@@ -365,42 +365,42 @@ fr =
       , subtitle: "Un framework typé conçu spécifiquement pour un monde où le code est aussi écrit par des agents."
       , mission:
           { heading: "Pourquoi Pohjola existe"
-          , lead: "La plupart des frameworks supposent qu'un humain attentif écrit chaque ligne. Pohjola suppose qu'il pourrait s'agir d'un agent — et construit les garde-fous en conséquence."
-          , body: "Pohjola a d'abord servi de socle aux applications de son auteur, puis est devenu public parce que le même problème se retrouve partout : le code assisté par IA avance vite et les relectures s'amincissent. Plutôt que de compter sur des prompts soignés, Pohjola déplace le filet de sécurité vers le compilateur et le contrôle de politique — une erreur ne compile pas, ou échoue à un contrôle mécanique avant d'être livrée."
+          , lead: "Pohjola tire son nom de Songs from the North de Swallow the Sun: la mythologie finnoise où pohja est à la fois le socle et la direction du Nord. La plupart des frameworks supposent qu'un humain attentif écrit chaque ligne. Pohjola suppose qu'il pourrait s'agir d'un agent, et construit les garde-fous en conséquence."
+          , body: "Pohjola a d'abord servi de socle aux applications de son auteur, puis est devenu public parce que le même problème se retrouve partout : le code assisté par IA avance vite et les relectures s'amincissent. Plutôt que de compter sur des prompts soignés, Pohjola déplace le filet de sécurité vers le compilateur et le contrôle de politique: une erreur ne compile pas, ou échoue à un contrôle mécanique avant d'être livrée. Nous l'avons bâti sur cette exigence: un artisanat délibéré conçu pour tenir en production."
           }
       , values:
           { heading: "Nos principes"
           , intro: "Six choix qui façonnent chaque décision de ce dépôt."
           , items:
-              { one: { title: "Le compilateur plutôt que le relecteur", description: "Un cas manquant, une chaîne non échappée, un import interdit — intercepté par `spago build` et `make gate`, pas par qui relit la PR ce jour-là." }
+              { one: { title: "Le compilateur plutôt que le relecteur", description: "Un cas manquant, une chaîne non échappée, un import interdit, intercepté par `spago build` et `make gate`, pas par qui relit la PR ce jour-là." }
               , two: { title: "Pensé pour les agents", description: "Le générateur de pages, les constructeurs Alpine typés et le contrôle de politique existent pour offrir à un agent un chemin étroit et vérifiable plutôt qu'un fichier vide et de bonnes intentions." }
               , three: { title: "Honnête sur son périmètre", description: "GUARANTEES.md indique précisément ce qui est prouvé et ce qui ne l'est pas. Une promesse sans contrôle en face n'est pas livrée." }
-              , four: { title: "Natif Bun, pas adjacent à Node", description: "Aucune couche de compatibilité — les primitives de Bun (Bun.serve, Bun.sql, Bun.password) sont la frontière FFI elle-même, maîtrisée et listée explicitement." }
+              , four: { title: "Natif Bun, pas adjacent à Node", description: "Aucune couche de compatibilité. Les primitives de Bun (Bun.serve, Bun.sql, Bun.password) sont la frontière FFI elle-même, maîtrisée et listée explicitement." }
               , five: { title: "Surface réduite, arêtes limées", description: "Quatre pages, un seul type Html, un seul module Alpine. La profondeur vient de ce que chaque pièce prouve, pas de leur nombre." }
-              , six: { title: "Construit à ciel ouvert", description: "ADRs, conventions et prompts d'évaluation font partie du dépôt, pas d'un savoir informel — chacun, humain ou agent, peut reconstituer pourquoi une décision a été prise." }
+              , six: { title: "Construit à ciel ouvert", description: "ADRs, conventions et prompts d'évaluation font partie du dépôt, pas d'un savoir informel. Chacun, humain ou agent, peut reconstituer pourquoi une décision a été prise." }
               }
           }
       }
   , guarantees:
       { heading: "Garanties"
       , subtitle: "Chaque affirmation de cette page repose sur un contrôle que vous pouvez lancer vous-même."
-      , lead: "Si ça compile et que la CI est verte, la production ne plante pas. Ce n'est pas une promesse de zéro erreur d'exécution dans l'absolu — cette stack touche encore des effets, des frontières FFI et un runtime JavaScript — mais chaque clause ci-dessous s'appuie sur un contrôle réel, que vous pouvez lancer vous-même, pas sur une simple promesse."
+      , lead: "Si ça compile et que la CI est verte, la production ne plante pas. Ce n'est pas une promesse de zéro erreur d'exécution dans l'absolu (cette stack touche encore des effets, des frontières FFI et un runtime JavaScript), mais chaque clause ci-dessous s'appuie sur un contrôle réel, que vous pouvez lancer vous-même, pas sur une simple promesse."
       , cards:
-          { one: { title: "Aucun chemin de code non sûr", description: "Forcer le déballage d'un Maybe, un cast qui contourne le système de types, ou tout module FFI non approuvé font échouer la compilation dans src/. Chaque échec de handler est aussi une valeur typée — un cas oublié est une erreur de compilation, pas une surprise à l'exécution.", buttonLabel: "Voir le contrôle de politique" }
-          , two: { title: "Surface navigateur verrouillée", description: "Le type Html n'a aucun constructeur HTML non échappé à usage général, les en-têtes de sécurité et une CSP à nonce sans unsafe-inline sont vérifiés sur chaque réponse, et l'interactivité du navigateur vient de types PureScript fermés — aucun onclick écrit à la main.", buttonLabel: "Voir le code source" }
-          , three: { title: "Prouvé à chaque push", description: "Le décodage des formulaires ne lève jamais d'exception, un honeypot rempli signifie toujours un succès silencieux, et make gate, make test, Venom et Playwright tournent tous dans GitHub Actions à chaque push — pas une promesse vérifiée une fois.", buttonLabel: "Voir la config CI" }
+          { one: { title: "Aucun chemin de code non sûr", description: "Forcer le déballage d'un Maybe, un cast qui contourne le système de types, ou tout module FFI non approuvé font échouer la compilation dans src/. Chaque échec de handler est aussi une valeur typée: un cas oublié est une erreur de compilation, pas une surprise à l'exécution.", buttonLabel: "Voir le contrôle de politique" }
+          , two: { title: "Surface navigateur verrouillée", description: "Le type Html n'a aucun constructeur HTML non échappé à usage général, les en-têtes de sécurité et une CSP à nonce sans unsafe-inline sont vérifiés sur chaque réponse, et l'interactivité du navigateur vient de types PureScript fermés, sans aucun onclick écrit à la main.", buttonLabel: "Voir le code source" }
+          , three: { title: "Prouvé à chaque push", description: "Le décodage des formulaires ne lève jamais d'exception, un honeypot rempli signifie toujours un succès silencieux, et make gate, make test, Venom et Playwright tournent tous dans GitHub Actions à chaque push, pas une promesse vérifiée une fois.", buttonLabel: "Voir la config CI" }
           }
       }
   , docs:
       { heading: "Documentation"
       , subtitle: "Un espace réservé honnête, le temps d'écrire la vraie documentation."
-      , lead: "Il n'existe pas encore de site de documentation — cette page rend cette lacune visible et honnête plutôt que silencieuse. En attendant, la source fait office de documentation : les ADRs et les docs de convention vivent dans le dépôt lui-même, et les prompts d'évaluation servent d'exemples concrets."
+      , lead: "Il n'existe pas encore de site de documentation. Cette page rend cette lacune visible et honnête plutôt que silencieuse. En attendant, la source fait office de documentation : les ADRs et les docs de convention vivent dans le dépôt lui-même, et les prompts d'évaluation servent d'exemples concrets."
       , itemsHeading: "Ce qui arrive en premier"
       , itemsIntro: "Six sections déjà identifiées, dans l'ordre où elles seront écrites."
       , items:
-          [ { title: "Premiers pas", description: "Clonez le dépôt, lancez `make dev`, et obtenez une page fonctionnelle en quelques minutes — présenté comme un vrai guide, pas juste ce paragraphe." }
+          [ { title: "Premiers pas", description: "Clonez le dépôt, lancez `make dev`, et obtenez une page fonctionnelle en quelques minutes, présenté comme un vrai guide, pas juste ce paragraphe." }
           , { title: "Architectures de page", description: "Quand choisir une page statique plutôt qu'une page adossée à des données, et ce que la couche de gabarits offre réellement." }
-          , { title: "Conventions", description: "Contrats Alpine, formulaires, checklist de l'habillage — les règles que `make gate` impose déjà, expliquées plutôt que simplement vérifiées." }
+          , { title: "Conventions", description: "Contrats Alpine, formulaires, checklist de l'habillage: les règles que `make gate` impose déjà, expliquées plutôt que simplement vérifiées." }
           , { title: "Décisions d'architecture", description: "L'index des ADRs : pourquoi Bun plutôt que Node, pourquoi le type Html n'a pas d'échappatoire, pourquoi la CSP est figée plutôt que configurable." }
           , { title: "Les garanties expliquées", description: "Le raisonnement derrière chaque garantie de la page précédente, et comment le vérifier vous-même." }
           , { title: "Contribuer", description: "Comment ouvrir une issue, proposer un ADR, et où la suite de tests attend une nouvelle couverture." }
@@ -441,14 +441,14 @@ pt =
   , hero:
       { eyebrow: "PureScript no Bun"
       , headline: "Um framework feito para tornar o código escrito por IA mais seguro"
-      , body: "O Pohjola combina um gerador de páginas pensado para agentes com um compilador que recusa erros comuns. As páginas parecem instantâneas — o Alpine pré-carrega ao passar o rato e substitui fragmentos no lugar — enquanto o PureScript garante que cada rota é tratada, cada string é escapada, e nenhuma falha chega aos seus utilizadores."
+      , body: "O Pohjola combina um gerador de páginas pensado para agentes com um compilador que recusa erros comuns. As páginas parecem instantâneas (o Alpine pré-carrega ao passar o rato e substitui fragmentos no lugar) enquanto o PureScript garante que cada rota é tratada, cada string é escapada, e nenhuma falha chega aos seus utilizadores."
       , ctaLabel: "Ver as garantias"
       , secondaryLabel: "Ver o repositório"
       }
   , services:
       { sectionEyebrow: "Porquê o Pohjola"
       , sectionHeadline: "Feito para apanhar erros antes de irem para produção"
-      , sectionIntro: "Três escolhas deliberadas, cada uma verificada mecanicamente — não um simples guia de estilo."
+      , sectionIntro: "Três escolhas deliberadas, cada uma verificada mecanicamente, não um simples guia de estilo."
       , serviceCopy: \sid -> case sid of
           ServiceId "service-1" ->
             { title: "Segurança de tipos PureScript"
@@ -457,7 +457,7 @@ pt =
             }
           ServiceId "service-2" ->
             { title: "Velocidade nativa do Bun"
-            , description: "Sem arranque a frio à maneira do Node, sem custo de resolução de módulos — o Bun serve e recompila nativamente. O servidor de desenvolvimento reinicia antes de voltar a colocar o cursor no navegador."
+            , description: "Sem arranque a frio à maneira do Node, sem custo de resolução de módulos: o Bun serve e recompila nativamente. O servidor de desenvolvimento reinicia antes de voltar a colocar o cursor no navegador."
             , actionLabel: "Saiba mais"
             }
           ServiceId "service-3" ->
@@ -469,11 +469,11 @@ pt =
       }
   , cta:
       { heading: "Comece com `make dev`"
-      , body: "Clone o repositório, execute `make dev`, e tem uma página a funcionar em menos de um minuto — o mesmo pipeline que construiu este site."
+      , body: "Clone o repositório, execute `make dev`, e tem uma página a funcionar em menos de um minuto, o mesmo pipeline que construiu este site."
       , ctaLabel: "Ver o repositório"
       }
   , seo:
-      { homeDescription: "Pohjola — um framework PureScript tipado sobre o Bun, feito para tornar o código assistido por IA mais seguro."
+      { homeDescription: "Pohjola: um framework PureScript tipado sobre o Bun, feito para tornar o código assistido por IA mais seguro."
       , aboutDescription: "Porque é que o Pohjola existe e os seis princípios de engenharia por trás dele."
 
       , guaranteesDescription: "O que o Pohjola garante mecanicamente, e como verificar cada afirmação você mesmo."
@@ -492,42 +492,42 @@ pt =
       , subtitle: "Um framework tipado feito especificamente para um mundo onde o código também é escrito por agentes."
       , mission:
           { heading: "Porque é que o Pohjola existe"
-          , lead: "A maioria dos frameworks assume que um humano atento escreve cada linha. O Pohjola assume que pode ser um agente — e constrói as proteções em conformidade."
-          , body: "O Pohjola começou como a base das próprias aplicações do autor, e tornou-se público porque o mesmo problema aparece em todo o lado: código assistido por IA é escrito depressa e as revisões ficam mais superficiais. Em vez de confiar em prompts cuidadosos, o Pohjola move a rede de segurança para o compilador e para o portão de política — um erro não compila, ou falha numa verificação mecânica antes de ser publicado."
+          , lead: "O Pohjola toma o nome de Songs from the North de Swallow the Sun: o folclore finlandês onde pohja é ao mesmo tempo a base e a direção Norte. A maioria dos frameworks assume que um humano atento escreve cada linha. O Pohjola assume que pode ser um agente, e constrói as proteções em conformidade."
+          , body: "O Pohjola começou como a base das próprias aplicações do autor, e tornou-se público porque o mesmo problema aparece em todo o lado: código assistido por IA é escrito depressa e as revisões ficam mais superficiais. Em vez de confiar em prompts cuidadosos, o Pohjola move a rede de segurança para o compilador e para o portão de política: um erro não compila, ou falha numa verificação mecânica antes de ser publicado. Construímo-lo sobre esse ethos: artesanato deliberado construído para aguentar produção."
           }
       , values:
           { heading: "Os nossos princípios"
           , intro: "Seis escolhas que moldam cada decisão neste repositório."
           , items:
-              { one: { title: "O compilador em vez do revisor", description: "Um caso em falta, uma string não escapada, um import proibido — apanhados pelo `spago build` e `make gate`, não por quem revê o PR nesse dia." }
+              { one: { title: "O compilador em vez do revisor", description: "Um caso em falta, uma string não escapada, um import proibido, apanhados pelo `spago build` e `make gate`, não por quem revê o PR nesse dia." }
               , two: { title: "Pensado para agentes", description: "O gerador de páginas, os construtores Alpine tipados e o portão de política existem para dar a um agente um caminho estreito e verificável, em vez de um ficheiro vazio e boas intenções." }
               , three: { title: "Honesto quanto ao alcance", description: "O GUARANTEES.md diz exatamente o que está provado e o que não está. Uma promessa sem uma verificação ao lado não é publicada." }
-              , four: { title: "Nativo do Bun, não um substituto do Node", description: "Sem camadas de compatibilidade — as primitivas do Bun (Bun.serve, Bun.sql, Bun.password) são a própria fronteira FFI, controlada e listada explicitamente." }
+              , four: { title: "Nativo do Bun, não um substituto do Node", description: "Sem camadas de compatibilidade. As primitivas do Bun (Bun.serve, Bun.sql, Bun.password) são a própria fronteira FFI, controlada e listada explicitamente." }
               , five: { title: "Superfície pequena, arestas limadas", description: "Quatro páginas, um único tipo Html, um único módulo Alpine. A profundidade vem do que cada peça prova, não de quantas existem." }
-              , six: { title: "Construído a céu aberto", description: "ADRs, convenções e prompts de avaliação fazem parte do repositório, não são conhecimento informal — qualquer pessoa, humana ou agente, pode reconstruir porque é que uma decisão foi tomada." }
+              , six: { title: "Construído a céu aberto", description: "ADRs, convenções e prompts de avaliação fazem parte do repositório, não são conhecimento informal. Qualquer pessoa, humana ou agente, pode reconstruir porque é que uma decisão foi tomada." }
               }
           }
       }
   , guarantees:
       { heading: "Garantias"
       , subtitle: "Cada afirmação nesta página assenta numa verificação que pode correr você mesmo."
-      , lead: "Se compila e o CI está verde, a produção não cai. Não é uma promessa de zero erros de execução no absoluto — esta stack ainda toca em efeitos, fronteiras FFI e um runtime JavaScript — mas cada cláusula abaixo assenta numa verificação real, que pode correr você mesmo, não numa simples promessa."
+      , lead: "Se compila e o CI está verde, a produção não cai. Não é uma promessa de zero erros de execução no absoluto (esta stack ainda toca em efeitos, fronteiras FFI e um runtime JavaScript), mas cada cláusula abaixo assenta numa verificação real, que pode correr você mesmo, não numa simples promessa."
       , cards:
-          { one: { title: "Nenhum caminho de código inseguro", description: "Forçar o desembrulho de um Maybe, um cast que contorna o sistema de tipos, ou qualquer módulo FFI não aprovado fazem falhar a compilação em src/. Cada falha de handler também é um valor tipado — um caso esquecido é um erro de compilação, não uma surpresa em produção.", buttonLabel: "Ver o portão de política" }
-          , two: { title: "Superfície do navegador fechada", description: "O tipo Html não tem nenhum construtor HTML não escapado de uso geral, cabeçalhos de segurança e uma CSP com nonce sem unsafe-inline são verificados em cada resposta, e a interatividade do navegador vem de tipos PureScript fechados — nenhum onclick escrito à mão.", buttonLabel: "Ver o código-fonte" }
-          , three: { title: "Provado a cada push", description: "A descodificação de formulários nunca gera exceções, um honeypot preenchido significa sempre sucesso silencioso, e make gate, make test, Venom e Playwright correm todos no GitHub Actions a cada push — não é uma promessa verificada uma vez.", buttonLabel: "Ver a config de CI" }
+          { one: { title: "Nenhum caminho de código inseguro", description: "Forçar o desembrulho de um Maybe, um cast que contorna o sistema de tipos, ou qualquer módulo FFI não aprovado fazem falhar a compilação em src/. Cada falha de handler também é um valor tipado: um caso esquecido é um erro de compilação, não uma surpresa em produção.", buttonLabel: "Ver o portão de política" }
+          , two: { title: "Superfície do navegador fechada", description: "O tipo Html não tem nenhum construtor HTML não escapado de uso geral, cabeçalhos de segurança e uma CSP com nonce sem unsafe-inline são verificados em cada resposta, e a interatividade do navegador vem de tipos PureScript fechados, sem nenhum onclick escrito à mão.", buttonLabel: "Ver o código-fonte" }
+          , three: { title: "Provado a cada push", description: "A descodificação de formulários nunca gera exceções, um honeypot preenchido significa sempre sucesso silencioso, e make gate, make test, Venom e Playwright correm todos no GitHub Actions a cada push, não é uma promessa verificada uma vez.", buttonLabel: "Ver a config de CI" }
           }
       }
   , docs:
       { heading: "Documentação"
       , subtitle: "Um espaço reservado honesto, enquanto a documentação real é escrita."
-      , lead: "Ainda não existe um site de documentação — esta página torna essa lacuna visível e honesta, em vez de silenciosa. Até lá, o código-fonte serve de documentação: os ADRs e os documentos de convenção vivem no próprio repositório, e os prompts de avaliação funcionam como exemplos práticos."
+      , lead: "Ainda não existe um site de documentação. Esta página torna essa lacuna visível e honesta, em vez de silenciosa. Até lá, o código-fonte serve de documentação: os ADRs e os documentos de convenção vivem no próprio repositório, e os prompts de avaliação funcionam como exemplos práticos."
       , itemsHeading: "O que vem primeiro"
       , itemsIntro: "Seis secções já identificadas, pela ordem em que serão escritas."
       , items:
-          [ { title: "Primeiros passos", description: "Clone o repositório, execute `make dev`, e tenha uma página a funcionar em minutos — escrito como um guia real, não apenas este parágrafo." }
+          [ { title: "Primeiros passos", description: "Clone o repositório, execute `make dev`, e tenha uma página a funcionar em minutos, escrito como um guia real, não apenas este parágrafo." }
           , { title: "Arquiteturas de página", description: "Quando usar uma página estática em vez de uma apoiada em dados, e o que a camada de modelos realmente oferece." }
-          , { title: "Convenções", description: "Contratos Alpine, formulários, a checklist do chrome — as regras que o `make gate` já impõe, explicadas em vez de apenas verificadas." }
+          , { title: "Convenções", description: "Contratos Alpine, formulários, a checklist do chrome: as regras que o `make gate` já impõe, explicadas em vez de apenas verificadas." }
           , { title: "Decisões de arquitetura", description: "O índice de ADRs: porque Bun em vez de Node, porque o tipo Html não tem escape, porque a CSP é fixa em vez de configurável." }
           , { title: "As garantias, explicadas", description: "O raciocínio por trás de cada garantia da página anterior, e como a verificar você mesmo." }
           , { title: "Contribuir", description: "Como abrir uma issue, propor um ADR, e onde a suite de testes espera nova cobertura." }

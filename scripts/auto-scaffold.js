@@ -404,7 +404,7 @@ if (wire) {
     /routeTitle lang route =[\s\S]*?case route of\s*\n([\s\S]*?)$/,
     (match, p1) => {
       if (p1.includes(`${name} ->`)) return match;
-      return `${match.trimEnd()}\n      ${name} -> d.nav.${lower} <> " — " <> siteTitle\n`;
+      return `${match.trimEnd()}\n      ${name} -> d.nav.${lower} <> " - " <> siteTitle\n`;
     }
   );
 

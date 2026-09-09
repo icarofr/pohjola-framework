@@ -192,6 +192,6 @@ routeTitle lang route =
   in
     case route of
       Home -> siteTitle
-      About -> d.nav.about <> " — " <> siteTitle
-      Guarantees -> d.nav.guarantees <> " — " <> siteTitle
-      Docs -> d.nav.docs <> " — " <> siteTitle
+      About -> d.nav.about <> " - " <> siteTitle
+      Guarantees -> d.nav.guarantees <> " - " <> siteTitle
+      Docs -> d.nav.docs <> " - " <> siteTitle
