@@ -33,7 +33,7 @@ homeSlots lang =
       , body: d.hero.body
       , ctaLabel: d.hero.ctaLabel
       , secondaryLabel: d.hero.secondaryLabel
-      , primaryTarget: External { href: bookingUrl }
+      , primaryTarget: Internal { lang, route: Guarantees }
       , secondaryTarget: External { href: bookingUrl }
       }
       ( landingFeatures

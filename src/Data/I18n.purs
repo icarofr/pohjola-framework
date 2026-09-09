@@ -158,41 +158,41 @@ en =
       , docs: "Docs (soon)"
       }
   , hero:
-      { eyebrow: "Draft copy"
-      , headline: "Pohjola homepage — draft placeholder"
-      , body: "Placeholder hero copy scaffolded by ticket 02; ticket 03 writes the real pitch."
-      , ctaLabel: "Placeholder CTA"
-      , secondaryLabel: "Placeholder link"
+      { eyebrow: "PureScript on Bun"
+      , headline: "A framework built to make AI-written code safer to ship"
+      , body: "Pohjola pairs an agent-friendly page generator with a compiler that refuses common mistakes. Pages feel instant — Alpine prefetches on hover and swaps fragments in place — while PureScript proves every route is handled, every string is escaped, and a crash never reaches your users."
+      , ctaLabel: "See the guarantees"
+      , secondaryLabel: "View the repository"
       }
   , services:
-      { sectionEyebrow: "Draft"
-      , sectionHeadline: "Placeholder pillars"
-      , sectionIntro: "Placeholder — ticket 03 writes the real pillar copy."
+      { sectionEyebrow: "Why Pohjola"
+      , sectionHeadline: "Built to catch mistakes before they ship"
+      , sectionIntro: "Three deliberate choices, each backed by a mechanical check — not a style guide."
       , serviceCopy: \sid -> case sid of
           ServiceId "service-1" ->
-            { title: "Placeholder pillar one"
-            , description: "Placeholder description — ticket 03 replaces this."
-            , actionLabel: "Learn more"
+            { title: "PureScript Type Safety"
+            , description: "Total pattern matching, no null, an XSS-safe Html type. A route your code doesn't handle is a compile error, not a 3am page."
+            , actionLabel: "See the guarantees"
             }
           ServiceId "service-2" ->
-            { title: "Placeholder pillar two"
-            , description: "Placeholder description — ticket 03 replaces this."
+            { title: "Bun-Native Speed"
+            , description: "No Node cold start, no module-resolution tax — Bun serves and rebuilds natively. The dev server restarts before you've moved your cursor back to the browser."
             , actionLabel: "Learn more"
             }
           ServiceId "service-3" ->
-            { title: "Placeholder pillar three"
-            , description: "Placeholder description — ticket 03 replaces this."
+            { title: "Typed Alpine Seams"
+            , description: "Client interactivity comes from closed PureScript types, not hand-rolled scripts. There's no way to slip an unchecked onclick string past the policy gate."
             , actionLabel: "Learn more"
             }
           _ -> { title: "", description: "", actionLabel: "" }
       }
   , cta:
-      { heading: "Placeholder CTA heading"
-      , body: "Placeholder CTA body — ticket 03 replaces this."
-      , ctaLabel: "Placeholder CTA"
+      { heading: "Start with `make dev`"
+      , body: "Clone the repository, run `make dev`, and you have a working page in under a minute — the same pipeline that built this site."
+      , ctaLabel: "View the repository"
       }
   , seo:
-      { homeDescription: "The Type-Safe Functional Web Framework for Bun, PureScript, and Alpine.js"
+      { homeDescription: "Pohjola — a type-safe PureScript framework on Bun, built to make AI-assisted code safer to ship."
       , aboutDescription: "SEO for About."
 
       , guaranteesDescription: "SEO for Guarantees."
@@ -251,41 +251,41 @@ fr =
       , docs: "Docs (soon)"
       }
   , hero:
-      { eyebrow: "Texte provisoire"
-      , headline: "Page d'accueil Pohjola — brouillon"
-      , body: "Texte de remplacement généré par le ticket 02 ; le ticket 03 écrira le vrai texte."
-      , ctaLabel: "CTA provisoire"
-      , secondaryLabel: "Lien provisoire"
+      { eyebrow: "PureScript sur Bun"
+      , headline: "Un framework conçu pour sécuriser le code écrit par l'IA"
+      , body: "Pohjola associe un générateur de pages pensé pour les agents à un compilateur qui refuse les erreurs courantes. Les pages semblent instantanées — Alpine précharge au survol et remplace les fragments sur place — tandis que PureScript garantit que chaque route est gérée, chaque chaîne est échappée, et qu'aucun plantage n'atteint vos utilisateurs."
+      , ctaLabel: "Voir les garanties"
+      , secondaryLabel: "Voir le dépôt"
       }
   , services:
-      { sectionEyebrow: "Brouillon"
-      , sectionHeadline: "Piliers provisoires"
-      , sectionIntro: "Texte provisoire — le ticket 03 écrira le vrai texte."
+      { sectionEyebrow: "Pourquoi Pohjola"
+      , sectionHeadline: "Conçu pour intercepter les erreurs avant leur mise en production"
+      , sectionIntro: "Trois choix délibérés, chacun vérifié mécaniquement — pas un simple guide de style."
       , serviceCopy: \sid -> case sid of
           ServiceId "service-1" ->
-            { title: "Pilier provisoire un"
-            , description: "Description provisoire — remplacée par le ticket 03."
-            , actionLabel: "En savoir plus"
+            { title: "Sécurité de typage PureScript"
+            , description: "Filtrage total par motif, aucun null, un type Html protégé contre le XSS. Une route non gérée par votre code est une erreur de compilation, pas un incident à 3h du matin."
+            , actionLabel: "Voir les garanties"
             }
           ServiceId "service-2" ->
-            { title: "Pilier provisoire deux"
-            , description: "Description provisoire — remplacée par le ticket 03."
+            { title: "Vitesse native Bun"
+            , description: "Pas de démarrage à froid façon Node, pas de coût de résolution de modules — Bun sert et recompile nativement. Le serveur de développement redémarre avant que vous n'ayez reposé le curseur sur le navigateur."
             , actionLabel: "En savoir plus"
             }
           ServiceId "service-3" ->
-            { title: "Pilier provisoire trois"
-            , description: "Description provisoire — remplacée par le ticket 03."
+            { title: "Coutures Alpine typées"
+            , description: "L'interactivité côté client provient de types PureScript fermés, jamais de scripts écrits à la main. Impossible de glisser un onclick brut au-delà du contrôle de politique."
             , actionLabel: "En savoir plus"
             }
           _ -> { title: "", description: "", actionLabel: "" }
       }
   , cta:
-      { heading: "Titre CTA provisoire"
-      , body: "Texte CTA provisoire — remplacé par le ticket 03."
-      , ctaLabel: "CTA provisoire"
+      { heading: "Commencez avec `make dev`"
+      , body: "Clonez le dépôt, lancez `make dev`, et vous avez une page fonctionnelle en moins d'une minute — le même pipeline qui a construit ce site."
+      , ctaLabel: "Voir le dépôt"
       }
   , seo:
-      { homeDescription: "Le framework web fonctionnel et typé pour Bun, PureScript et Alpine.js"
+      { homeDescription: "Pohjola — un framework PureScript typé sur Bun, conçu pour sécuriser le code assisté par IA."
       , aboutDescription: "SEO for About."
 
       , guaranteesDescription: "SEO for Guarantees."
@@ -344,41 +344,41 @@ pt =
       , docs: "Docs (soon)"
       }
   , hero:
-      { eyebrow: "Texto provisório"
-      , headline: "Página inicial do Pohjola — rascunho"
-      , body: "Texto provisório gerado pelo ticket 02; o ticket 03 escreverá o texto real."
-      , ctaLabel: "CTA provisório"
-      , secondaryLabel: "Link provisório"
+      { eyebrow: "PureScript no Bun"
+      , headline: "Um framework feito para tornar o código escrito por IA mais seguro"
+      , body: "O Pohjola combina um gerador de páginas pensado para agentes com um compilador que recusa erros comuns. As páginas parecem instantâneas — o Alpine pré-carrega ao passar o rato e substitui fragmentos no lugar — enquanto o PureScript garante que cada rota é tratada, cada string é escapada, e nenhuma falha chega aos seus utilizadores."
+      , ctaLabel: "Ver as garantias"
+      , secondaryLabel: "Ver o repositório"
       }
   , services:
-      { sectionEyebrow: "Rascunho"
-      , sectionHeadline: "Pilares provisórios"
-      , sectionIntro: "Texto provisório — o ticket 03 escreverá o texto real."
+      { sectionEyebrow: "Porquê o Pohjola"
+      , sectionHeadline: "Feito para apanhar erros antes de irem para produção"
+      , sectionIntro: "Três escolhas deliberadas, cada uma verificada mecanicamente — não um simples guia de estilo."
       , serviceCopy: \sid -> case sid of
           ServiceId "service-1" ->
-            { title: "Pilar provisório um"
-            , description: "Descrição provisória — substituída pelo ticket 03."
-            , actionLabel: "Saiba mais"
+            { title: "Segurança de tipos PureScript"
+            , description: "Correspondência de padrões total, sem nulls, um tipo Html protegido contra XSS. Uma rota que o seu código não trata é um erro de compilação, não um incidente às 3 da manhã."
+            , actionLabel: "Ver as garantias"
             }
           ServiceId "service-2" ->
-            { title: "Pilar provisório dois"
-            , description: "Descrição provisória — substituída pelo ticket 03."
+            { title: "Velocidade nativa do Bun"
+            , description: "Sem arranque a frio à maneira do Node, sem custo de resolução de módulos — o Bun serve e recompila nativamente. O servidor de desenvolvimento reinicia antes de voltar a colocar o cursor no navegador."
             , actionLabel: "Saiba mais"
             }
           ServiceId "service-3" ->
-            { title: "Pilar provisório três"
-            , description: "Descrição provisória — substituída pelo ticket 03."
+            { title: "Costuras Alpine tipadas"
+            , description: "A interatividade do lado do cliente vem de tipos PureScript fechados, nunca de scripts escritos à mão. Não há forma de passar um onclick em bruto pelo portão de política."
             , actionLabel: "Saiba mais"
             }
           _ -> { title: "", description: "", actionLabel: "" }
       }
   , cta:
-      { heading: "Título CTA provisório"
-      , body: "Texto CTA provisório — substituído pelo ticket 03."
-      , ctaLabel: "CTA provisório"
+      { heading: "Comece com `make dev`"
+      , body: "Clone o repositório, execute `make dev`, e tem uma página a funcionar em menos de um minuto — o mesmo pipeline que construiu este site."
+      , ctaLabel: "Ver o repositório"
       }
   , seo:
-      { homeDescription: "O framework web funcional e tipado para Bun, PureScript e Alpine.js"
+      { homeDescription: "Pohjola — um framework PureScript tipado sobre o Bun, feito para tornar o código assistido por IA mais seguro."
       , aboutDescription: "SEO for About."
 
       , guaranteesDescription: "SEO for Guarantees."
