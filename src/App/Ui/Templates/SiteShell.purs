@@ -42,13 +42,17 @@ import App.Html
   , class_
   , el
   , for_
+  , href
   , id_
+  , rel_
+  , target_
   , text
   , type_
   )
 import App.Ui.Alert (AlertVariant(..), alert)
 import App.Ui.Container as Container
 import App.Ui.Templates.Contract as Contract
+import Data.Content (bookingUrl)
 import Data.I18n (Lang(..), dict, langTag)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Route (Route(..), routeTitle)
@@ -72,6 +76,7 @@ type ShellLabels =
   , aboutLabel :: String
   , guaranteesLabel :: String
   , docsLabel :: String
+  , githubLabel :: String
   }
 
 shellLabels :: Lang -> ShellLabels
@@ -97,6 +102,7 @@ shellLabels lang =
     , aboutLabel: d.nav.about
     , guaranteesLabel: d.nav.guarantees
     , docsLabel: d.nav.docs
+    , githubLabel: d.footer.github
     }
 
 maybeStatusBanner :: Lang -> Maybe FormStatus -> Html
@@ -189,7 +195,8 @@ renderHeader lang route labels =
                 , desktopNavLink lang route Docs labels.docsLabel
                 ]
             , el "div" [ class_ "navbar-end hidden gap-2 md:flex" ]
-                [ renderThemeDropdown labels
+                [ githubLink labels
+                , renderThemeDropdown labels
                 , el "div" [ class_ "join join-horizontal" ]
                     [ renderLangJoin En lang route labels.langEn
                     , renderLangJoin Fr lang route labels.langFr
@@ -233,6 +240,7 @@ renderDrawerSide lang route labels =
             , mobileNavLink lang route About labels.aboutLabel
             , mobileNavLink lang route Guarantees labels.guaranteesLabel
             , mobileNavLink lang route Docs labels.docsLabel
+            , el "li" [] [ githubLink labels ]
             , el "li" [ class_ "menu-title mt-4" ] [ text labels.themeLabel ]
             , themeMenuItem DrawerMenu ThemeLight labels.themeLight
             , themeMenuItem DrawerMenu ThemeDark labels.themeDark
@@ -270,6 +278,19 @@ renderLangJoin targetLang currentLang route label =
     , onClick closeSiteDrawer
     ]
     [ text label ]
+
+-- | Same URL as Home's hero CTA (`Data.Content.bookingUrl`) — the one
+-- | GitHub link every page shares, not a per-page decision.
+githubLink :: ShellLabels -> Html
+githubLink labels =
+  el "a"
+    [ href bookingUrl
+    , target_ "_blank"
+    , rel_ "noopener noreferrer"
+    , class_ "btn btn-ghost btn-sm"
+    , ariaLabel labels.githubLabel
+    ]
+    [ text labels.githubLabel ]
 
 renderThemeDropdown :: ShellLabels -> Html
 renderThemeDropdown labels =

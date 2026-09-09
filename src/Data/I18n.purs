@@ -155,7 +155,7 @@ en =
       { home: "Home"
       , about: "About"
       , guarantees: "Guarantees"
-      , docs: "Docs"
+      , docs: "Docs (soon)"
       }
   , hero:
       { eyebrow: "Draft copy"
@@ -248,7 +248,7 @@ fr =
       { home: "Accueil"
       , about: "About"
       , guarantees: "Guarantees"
-      , docs: "Docs"
+      , docs: "Docs (soon)"
       }
   , hero:
       { eyebrow: "Texte provisoire"
@@ -341,7 +341,7 @@ pt =
       { home: "Início"
       , about: "About"
       , guarantees: "Guarantees"
-      , docs: "Docs"
+      , docs: "Docs (soon)"
       }
   , hero:
       { eyebrow: "Texto provisório"
