@@ -128,7 +128,7 @@ sitePage lang route labels status content =
 sitePageTitled :: Lang -> Route -> String -> ShellLabels -> Maybe FormStatus -> Html -> Html
 sitePageTitled lang route title labels status content =
   el "div"
-    ( [ class_ "drawer drawer-end min-h-full bg-base-100 text-base-content"
+    ( [ class_ "drawer drawer-end min-h-dvh bg-base-100 text-base-content"
       , id_ contentTarget
       , attr dataPageTitleAttr title
       , attr dataPageLangAttr (langTag lang)
@@ -379,7 +379,7 @@ mobileNavLink lang current target label =
 renderFooter :: Lang -> Route -> ShellLabels -> Html
 renderFooter lang route labels =
   el "footer"
-    [ class_ "footer footer-center border-t border-base-200 bg-base-100 p-10 text-base-content sm:footer-horizontal"
+    [ class_ "footer footer-center border-t border-base-300 bg-base-200 p-10 text-base-content sm:footer-horizontal"
     , attr Contract.marker Contract.siteFooter
     ]
     [ el "aside" []
