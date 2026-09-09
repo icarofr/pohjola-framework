@@ -7,33 +7,32 @@
 -- | these contracts, this suite fails loudly instead of misbehaving in
 -- | production.
 -- |
--- | Trimmed for the clean-sheet rebuild (see .scratch/clean-sheet-homepage/):
--- | `Route` is temporarily zero-constructor, so every assertion that needed
--- | a literal route value (Home/About/Contact/PostList/PostDetail) or a
--- | deleted feature module is gone from this file. What's generic over
--- | `staticRoutes`/`allLangs` (most of this suite) is untouched and simply
--- | runs vacuously until routes exist again. The route-literal coverage this
--- | removed — nav-link active/inactive prefetch, JSON-LD route dispatch,
--- | renderShellOpen/Close, spaLink, dynamic-cache-key collision — needs
--- | restoring once real routes land (tickets 02+).
+-- | Route-literal coverage that needs more than one route to be meaningful
+-- | (nav-link active-vs-inactive contrast, JSON-LD route-kind dispatch,
+-- | dynamic-cache-key collision) is still pending — see
+-- | .scratch/clean-sheet-homepage/, ticket 02+ — and returns as About/
+-- | Guarantees/Docs are wired in.
 module Test.ContractSpec where
 
 import Prelude
 
-import App.Alpine (Flag(..), NavChrome(..), ThemeMode(..), contentTarget, cycleTheme, flagName, navLinkClasses, renderExpr, setFlag, setTheme, themeToggle, toggleFlag)
+import App.Alpine (Flag(..), NavChrome(..), ThemeMode(..), contentTarget, cycleTheme, flagName, navLinkClasses, renderExpr, setFlag, setTheme, spaLink, themeToggle, toggleFlag)
 import App.Theme (themeInitScript, themeDarkName, themeLightName)
 import App.Config (Config)
-import App.Form (contactFields, newsletterFields)
-import App.Layout.Head (escapeJson)
-import App.Layout.Page (renderErrorFragment, renderErrorPage, renderDocument)
+import App.Features.Home.View as Home
+import App.Form (FormStatus(..), contactFields, newsletterFields)
+import App.Layout.Head (escapeJson, renderJsonLd)
+import App.Layout.Page (renderErrorFragment, renderErrorPage, renderFragment, renderDocument, renderShellOpen, renderShellClose, renderPrefetch)
 import App.Main (pageRenderer)
 import App.Server (RedirectKind(..), Response, cspWithNonce, errorStatusCode, fileResponse, htmlErrorResponse, internalError, methodNotAllowed, notFound, notModified, ok, okText, okTextPublic, okWith, redirect, redirectVary, securityHeaders, tooManyRequests)
+import App.Html (render, text)
 import Data.Array (find, last, mapMaybe)
+import Data.Content (services)
 import Data.Either (Either(..))
 import Data.Foldable (any, for_)
 import Data.I18n (Lang(..), dict)
-import Data.Maybe (Maybe(..))
-import Data.Route (Route, allLangs, routeUrl, staticRoutes)
+import Data.Maybe (Maybe(..), isJust)
+import Data.Route (Route(..), allLangs, routeUrl, staticRoutes)
 import Data.Email (EmailAddress, defaultEmailAddress)
 import Data.Tuple (Tuple(..), snd)
 import Effect.Aff (Aff)
@@ -183,12 +182,29 @@ spec = do
           html <- renderStaticPage route lang
           html `StrAssert.shouldContain` ("id=\"" <> contentTarget <> "\"")
 
+    it "full documents carry the template page shell" do
+      html <- renderStaticPage Home En
+      html `StrAssert.shouldContain` "data-template=\"site-header\""
+      html `StrAssert.shouldContain` "sticky top-0 z-50"
+      html `StrAssert.shouldContain` "id=\"content\""
+      html `StrAssert.shouldContain` "data-page-title"
+      html `StrAssert.shouldContain` "<!DOCTYPE html"
+      html `StrAssert.shouldContain` "<script"
+
   describe "Alpine seam — data-page-title" do
     it "every static page renders data-page-title in both languages" do
       for_ staticRoutes \route ->
         for_ allLangs \lang -> do
           html <- renderStaticPage route lang
           html `StrAssert.shouldContain` "data-page-title"
+
+  describe "Alpine seam — attribute literals" do
+    it "head carries the x-cloak style reset" do
+      html <- renderStaticPage Home En
+      html `StrAssert.shouldContain` "[x-cloak]{display:none!important}"
+    it "nav links carry x-target.push pointing at contentTarget" do
+      html <- renderStaticPage Home En
+      html `StrAssert.shouldContain` "x-target.push=\"content\""
 
   describe "FFI allowlist has one meaning" do
     -- Policy.Contract is the single source of truth; Test.Gate scans src/
@@ -239,8 +255,30 @@ spec = do
         for_ allLangs \lang -> do
           html <- renderStaticPage route lang
           html `StrAssert.shouldContain` "nonce=\"test-nonce-123\""
+    it "a fragment carries NO nonce" do
+      -- renderFragment emits no <script> tags, so there is nothing to nonce.
+      -- If a nonce ever appears here, the fragment cache policy needs
+      -- rethinking and this test forces that conversation.
+      for_ allLangs \lang -> do
+        let frag = renderFragment lang Home (text "content")
+        frag `StrAssert.shouldNotContain` "nonce="
+
+  describe "form status in fragment" do
+    it "Home with FormSuccess renders data-form-status inside #content" do
+      let html = render (Home.renderHome En (Just FormSuccess))
+      html `StrAssert.shouldContain` "data-form-status"
+      html `StrAssert.shouldContain` ("id=\"" <> contentTarget <> "\"")
 
   describe "fragment responses are fragment-shaped" do
+    it "fragments are full template page div#content" do
+      let frag = renderFragment En Home (Home.renderHome En Nothing)
+      frag `StrAssert.shouldContain` "id=\"content\""
+      frag `StrAssert.shouldContain` "data-template=\"site-header\""
+      frag `StrAssert.shouldContain` "sticky top-0 z-50"
+      frag `StrAssert.shouldNotContain` "<!DOCTYPE"
+      frag `StrAssert.shouldNotContain` "<html"
+      frag `StrAssert.shouldNotContain` "<script"
+
     -- A fragment response is swapped into #content by Alpine AJAX. If an error
     -- path answers with a full document, the client nests a complete
     -- <!DOCTYPE> document inside the page body. ADR-007 states this principle
@@ -433,6 +471,43 @@ spec = do
       renderExpr cycleTheme `StrAssert.shouldContain` ("setAttribute('data-theme','" <> themeDarkName <> "')")
       renderExpr cycleTheme `StrAssert.shouldContain` ("setAttribute('data-theme','" <> themeLightName <> "')")
       renderExpr cycleTheme `StrAssert.shouldContain` "removeAttribute('data-theme')"
+    it "mobile nav uses DaisyUI drawer" do
+      html <- renderStaticPage Home En
+      html `StrAssert.shouldContain` "drawer drawer-end"
+      html `StrAssert.shouldContain` "drawer-toggle"
+      html `StrAssert.shouldContain` "drawer-side"
+      html `StrAssert.shouldContain` "id=\"site-drawer\""
+    it "theme switcher uses Alpine disclosure in navbar" do
+      html <- renderStaticPage Home En
+      html `StrAssert.shouldContain` "themeOpen: false"
+      html `StrAssert.shouldContain` "aria-haspopup=\"menu\""
+      html `StrAssert.shouldContain` ":aria-expanded=\"themeOpen.toString()\""
+      html `StrAssert.shouldContain` "x-show=\"themeOpen\""
+      html `StrAssert.shouldContain` ("setAttribute(&#x27;data-theme&#x27;,&#x27;" <> themeLightName <> "&#x27;)")
+      html `StrAssert.shouldContain` "dropdown dropdown-end"
+    it "language switcher uses route links in marketing header" do
+      html <- renderStaticPage Home En
+      html `StrAssert.shouldContain` "/en"
+      html `StrAssert.shouldContain` "/fr"
+      html `StrAssert.shouldContain` "/pt"
+      html `StrAssert.shouldContain` "English"
+      html `StrAssert.shouldContain` "Français"
+      html `StrAssert.shouldContain` "Português"
+      html `StrAssert.shouldContain` ("href=\"/fr\" x-target.push=\"" <> contentTarget <> "\"")
+      html `StrAssert.shouldContain` "data-page-lang"
+    it "template pages use bg-base-100 content wrapper" do
+      html <- renderStaticPage Home En
+      html `StrAssert.shouldContain` "bg-base-100"
+      html `StrAssert.shouldContain` "id=\"content\""
+
+  describe "serviceCopy non-fallback coverage" do
+    it "every service has non-empty title, description, and action label in both languages" do
+      for_ [ services.one, services.two, services.three ] \service ->
+        for_ allLangs \lang -> do
+          let copy = (dict lang).services.serviceCopy service.id
+          copy.title `shouldNotEqual` ""
+          copy.description `shouldNotEqual` ""
+          copy.actionLabel `shouldNotEqual` ""
 
   describe "Alpine seam — typed constructors" do
     it "no raw Alpine attribute strings outside App.Alpine" do
@@ -472,12 +547,37 @@ spec = do
           html `StrAssert.shouldContain` "<footer"
 
   describe "Bun.serve migration invariants" do
+    it "spaLink includes @mouseenter fragment prefetch with $el (not this)" do
+      let html = render (spaLink En Home [] [])
+      -- Single quotes are escaped to &#x27; in the attribute value;
+      -- the browser un-escapes them before Alpine executes the expression.
+      html `StrAssert.shouldContain` "@mouseenter=\"fetch($el.href, {headers: {&#x27;x-alpine-request&#x27;: &#x27;true&#x27;}})\""
+      html `StrAssert.shouldNotContain` "fetch(this.href)"
+
+    it "renderPrefetch emits <link rel=\"prefetch\">" do
+      let html = render (renderPrefetch En [ Home ])
+      html `StrAssert.shouldContain` "rel=\"prefetch\""
+      html `StrAssert.shouldContain` "/en"
+
+    it "renderJsonLd returns Just for Home" do
+      isJust (renderJsonLd "https://example.com" "test-nonce" En Home) `shouldEqual` true
+
     it "JSON-LD is XSS-safe" do
       -- The security invariant: < must be escaped as \u003c in JSON-LD
       -- content to prevent </script> injection. Test the actual rendered
       -- output, not just the escapeJson helper.
       escapeJson "<" `shouldEqual` "\\u003c"
       escapeJson "</script>" `shouldEqual` "\\u003c/script>"
+
+    it "renderShellOpen produces valid HTML structure" do
+      let html = renderShellOpen "https://example.com" "test-nonce-123" En Home
+      html `StrAssert.shouldContain` "<!DOCTYPE html"
+      html `StrAssert.shouldContain` "bg-base-100"
+      html `StrAssert.shouldNotContain` "</body></html>"
+
+    it "renderShellClose closes the document" do
+      let html = renderShellClose "test-nonce-123" En Home
+      html `StrAssert.shouldContain` "</body></html>"
 
     it "escapeJson escapes in correct order" do
       -- Backslash must be escaped before quotes to avoid malformed JSON

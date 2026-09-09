@@ -9,57 +9,77 @@
 -- | hand-rolled parseRoute/routePath pairs where the parser's catch-all
 -- | silently swallows forgotten routes.
 -- |
--- | Currently zero-constructor: the whole content layer was purged for a
--- | clean-sheet rebuild (see .scratch/clean-sheet-homepage/). Every function
--- | below stays total and correct at zero routes by construction.
--- |
--- | The `routeCodec`/routing-duplex machinery described above is gone for
--- | now, not just emptied: `Routing.Duplex.Generic`'s `GRouteDuplex` class
--- | has no instance for a zero-constructor Generic rep (`NoConstructors`),
--- | so `G.sum {}` does not compile — a real library limitation, not a
--- | mistake to fix here. `routeUrl`/`parseRoute` below are total without it
--- | (Route is uninhabited, so their bodies are honestly unreachable).
--- | `routeCodec` and the codec-per-language pattern return in full the
--- | moment a real constructor exists again (ticket 02+).
+-- | Rebuilt from zero for the clean-sheet rebuild (see
+-- | .scratch/clean-sheet-homepage/, ticket 02): `Home` is the first route
+-- | back after ticket 01's purge. `routing-duplex`'s `GRouteDuplex` class has
+-- | no instance for a zero-constructor Generic rep, so this file — and
+-- | `App.Main`/`Data.I18n`/`App.Layout.Head`/`App.Ui.Templates.SiteShell`,
+-- | which all anchor their auto-wiring regexes on an existing route entry —
+-- | had to be hand-wired for `Home` specifically; `make new-feature --wire`
+-- | could not bootstrap the very first route from a genuinely empty file
+-- | (confirmed by running it directly, not assumed). It wires the next
+-- | routes (About, Guarantees, Docs) normally, now that a real entry exists
+-- | to append after — also confirmed directly, after fixing two real bugs
+-- | the empty-to-one transition surfaced in scripts/auto-scaffold.js: the
+-- | `data Route` regex assumed a fixed multi-line shape (purs-tidy collapses
+-- | a single constructor to `data Route = Home`), and the SiteShell chrome
+-- | wiring anchored on `copyright` as if it were always the last
+-- | `ShellLabels` field, which it never was.
 module Data.Route where
 
 import Prelude hiding ((/))
 
-import Data.Array (concatMap, filter)
-import Data.I18n (Lang, dict)
+import Data.Array (concatMap, filter, head)
+import Data.Either (Either(..))
+import Data.Generic.Rep (class Generic)
+import Data.I18n (Lang(..), dict, parseLang)
 import Data.I18n as I18n
 import Data.Map (Map)
 import Data.Map as Map
-import Data.Maybe (Maybe)
+import Data.Maybe (Maybe(..))
 import Data.String.Common (joinWith)
 import Data.Tuple (Tuple(..))
+import Routing.Duplex (RouteDuplex', parse, prefix, print, root)
+import Routing.Duplex.Generic as G
 
 -- ============================================================================
 -- Route sum type
 -- ============================================================================
---
--- No `Generic` instance for now: nothing needs it while `routeCodec` (which
--- required it) is gone — see the module doc. Re-derive it alongside
--- `routeCodec` once a real constructor exists again.
 
-data Route
+data Route = Home
 
+derive instance genericRoute :: Generic Route _
 derive instance eqRoute :: Eq Route
 derive instance ordRoute :: Ord Route
 
 instance showRoute :: Show Route where
   show = case _ of
-    _ -> ""
+    Home -> "Home"
 
 -- ============================================================================
--- URL generation
+-- Bidirectional codec — one per language
 -- ============================================================================
 
--- | Full URL path: /en/about, /fr/a-propos. Unreachable body — `Route` is
--- | currently uninhabited — kept total via the wildcard.
+-- | Route codec for a given language. Print and parse derive from this.
+-- | Adding a route constructor but forgetting it here = compile error.
+routeCodec :: Lang -> RouteDuplex' Route
+routeCodec En = root $ prefix "en" $ G.sum
+  { "Home": G.noArgs
+  }
+routeCodec Fr = root $ prefix "fr" $ G.sum
+  { "Home": G.noArgs
+  }
+routeCodec Pt = root $ prefix "pt" $ G.sum
+  { "Home": G.noArgs
+  }
+
+-- ============================================================================
+-- URL generation (derived from codec)
+-- ============================================================================
+
+-- | Full URL path: /en/about, /fr/a-propos
 routeUrl :: Lang -> Route -> String
-routeUrl _ = case _ of
-  _ -> ""
+routeUrl lang = print (routeCodec lang)
 
 -- | Per-route facts that used to be independent exhaustive dispatches
 -- | scattered across this module and App.Main — static-vs-dynamic caching
@@ -79,7 +99,7 @@ type RouteMeta =
 -- | and a prefetch decision here, in one place, instead of three.
 routeMeta :: Route -> RouteMeta
 routeMeta = case _ of
-  _ -> { isStatic: true, inSitemap: true, prefetch: [] }
+  Home -> { isStatic: true, inSitemap: true, prefetch: [] }
 
 -- | `renderPrefetch` emits `<link rel="prefetch">` for these routes, using the
 -- | FULL page URL — not a fragment URL. A fragment entry could never be hit,
@@ -106,18 +126,19 @@ isInSitemap = _.inSitemap <<< routeMeta
 
 -- | Parse path segments into (Lang, Route).
 -- | Returns Nothing if the path doesn't match any route.
--- |
--- | The per-language codec fallback (for routes too dynamic to enumerate
--- | into `routeTable`, e.g. a detail page with an Int id) is gone along with
--- | `routeCodec` — see the module doc. `allRoutes` is empty, so the table
--- | lookup alone is already total and correct; the fallback returns with a
--- | dynamic route.
 parseRoute :: Array String -> Maybe { lang :: Lang, route :: Route }
 parseRoute segments =
   let
     fullPath = "/" <> joinWith "/" segments
   in
-    Map.lookup fullPath routeTable
+    case Map.lookup fullPath routeTable of
+      Just res -> Just res
+      Nothing -> do
+        tag <- head segments
+        lang <- parseLang tag
+        case parse (routeCodec lang) fullPath of
+          Right route -> Just { lang, route }
+          Left _ -> Nothing
 
 routeTable :: Map String { lang :: Lang, route :: Route }
 routeTable = Map.fromFoldable
@@ -129,7 +150,7 @@ routeTable = Map.fromFoldable
 
 -- | All routes (for sitemap generation). Static routes are enumerated here; dynamic routes are intentionally NOT included because they cannot be enumerated statically.
 allRoutes :: Array Route
-allRoutes = []
+allRoutes = [ Home ]
 
 -- | Derived from `routeMeta`, not hand-listed — see `RouteMeta` above.
 staticRoutes :: Array Route
@@ -144,6 +165,7 @@ routeTitle :: Lang -> Route -> String
 routeTitle lang route =
   let
     d = dict lang
+    siteTitle = d.common.siteTitle
   in
     case route of
-      _ -> d.common.siteTitle
+      Home -> siteTitle

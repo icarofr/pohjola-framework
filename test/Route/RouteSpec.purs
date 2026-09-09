@@ -1,17 +1,12 @@
 -- | Route tests — parsing, URL generation, round-trip.
--- |
--- | Trimmed for the clean-sheet rebuild (see .scratch/clean-sheet-homepage/):
--- | `Route` is temporarily zero-constructor, so the per-route `parseRoute`/
--- | `routeUrl` literal assertions are gone (nothing to name). What's generic
--- | over `allRoutes`/`allLangs` (round-trip, the `allRoutes` invariant) stays
--- | and is asserted against the current, empty enumeration.
 module Test.Route.RouteSpec where
 
 import Prelude
 
 import Data.Array (all, filter, length)
+import Data.I18n (Lang(..))
 import Data.Maybe (Maybe(..), isJust)
-import Data.Route (allLangs, allRoutes, isInSitemap, parseRoute, routeUrl, staticRoutes)
+import Data.Route (Route(..), allLangs, allRoutes, isInSitemap, parseRoute, routeUrl, staticRoutes)
 import Data.String.Common (split) as S
 import Data.String.Pattern (Pattern(..))
 import Test.Spec (Spec, describe, it)
@@ -21,12 +16,26 @@ spec :: Spec Unit
 spec = do
   describe "Route" do
     describe "parseRoute" do
+      it "parses /en as Home" do
+        parseRoute [ "en" ] `shouldEqual` Just { lang: En, route: Home }
+      it "parses /fr as Home" do
+        parseRoute [ "fr" ] `shouldEqual` Just { lang: Fr, route: Home }
+      it "parses /pt as Home" do
+        parseRoute [ "pt" ] `shouldEqual` Just { lang: Pt, route: Home }
       it "returns Nothing for unknown route" do
         parseRoute [ "en", "unknown" ] `shouldEqual` Nothing
       it "returns Nothing for unknown lang" do
         parseRoute [ "de" ] `shouldEqual` Nothing
       it "returns Nothing for empty path" do
         parseRoute [] `shouldEqual` Nothing
+
+    describe "routeUrl" do
+      it "generates /en for Home" do
+        routeUrl En Home `shouldEqual` "/en"
+      it "generates /fr for Home" do
+        routeUrl Fr Home `shouldEqual` "/fr"
+      it "generates /pt for Home" do
+        routeUrl Pt Home `shouldEqual` "/pt"
 
     describe "round-trip" do
       it "parseRoute (splitPath (routeUrl lang route)) = Just for all lang × route" do
@@ -40,7 +49,7 @@ spec = do
 
       it "covers all lang × route combinations" do
         let total = length allLangs * length allRoutes
-        total `shouldEqual` 0 -- 3 langs * 0 routes — zero-constructor Route, clean-sheet rebuild
+        total `shouldEqual` 3 -- 3 langs * 1 route (Home)
 
     describe "allRoutes" do
       -- allRoutes is necessarily a hand-written literal (Route isn't
@@ -53,8 +62,8 @@ spec = do
       -- it. It cannot catch a constructor whose routeMeta entry was written
       -- correctly but never added to the allRoutes literal at all.
       it "enumerates sitemap routes" do
-        allRoutes `shouldEqual` []
-        staticRoutes `shouldEqual` []
+        allRoutes `shouldEqual` [ Home ]
+        staticRoutes `shouldEqual` [ Home ]
         all isInSitemap allRoutes `shouldEqual` true
 
 splitPath :: String -> Array String

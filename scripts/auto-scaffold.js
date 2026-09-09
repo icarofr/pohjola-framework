@@ -321,12 +321,21 @@ if (wire) {
   // A. Update src/Data/Route.purs
   let routeContent = await readText("src/Data/Route.purs");
 
-  // Sum type
+  // Sum type. Rebuilds the whole `data Route = ...` block from the
+  // constructor names it finds, rather than textually appending to
+  // whatever came before — purs-tidy collapses a single-constructor sum to
+  // one line (`data Route = Home`), which a purely-textual "insert before
+  // the anchor" replace can't reliably extend back to multi-line. Anchoring
+  // on the constructor list itself instead of its formatting is robust to
+  // that reformatting either way.
   routeContent = routeContent.replace(
-    /data Route\s*\n([\s\S]*?)(derive instance genericRoute)/,
-    (match, p1, p2) => {
-      if (p1.includes(`| ${name}`)) return match;
-      return `data Route\n${p1}  | ${name}\n\n${p2}`;
+    /data Route\b[\s\S]*?(?=\n\nderive instance genericRoute)/,
+    (match) => {
+      const ctors = [...match.matchAll(/(?:=|\|)\s*([A-Z]\w*)/g)].map((m) => m[1]);
+      if (ctors.includes(name)) return match;
+      const allCtors = [...ctors, name];
+      const lines = allCtors.map((c, i) => (i === 0 ? `  = ${c}` : `  | ${c}`));
+      return `data Route\n${lines.join("\n")}`;
     }
   );
 
@@ -640,29 +649,42 @@ if (wire) {
     let shellContent = await readText("src/App/Ui/Templates/SiteShell.purs");
     const labelField = `${lower}Label`;
 
+    // Anchor on the record's closing brace, not a specific field name —
+    // `copyright` was never actually the last field in either the type or
+    // the value (closeSidebarLabel/closeMenuLabel/closeLabel follow it), so
+    // the previous anchor never matched this file's real shape. Appending
+    // before the close is correct regardless of which fields exist or what
+    // order they're in.
     if (!shellContent.includes(`${labelField} :: String`)) {
       shellContent = shellContent.replace(
-        /(type ShellLabels\s*=\s*\{[\s\S]*?)(  , copyright :: String\n  \})/,
+        /(type ShellLabels\s*=\s*\{[\s\S]*?\n)(  \})/,
         `$1  , ${labelField} :: String\n$2`,
       );
       shellContent = shellContent.replace(
-        /(shellLabels lang =[\s\S]*?)(    , copyright: d\.footer\.copyright\n  \})/,
+        /(shellLabels lang =[\s\S]*?\n)(    \})/,
         `$1    , ${labelField}: d.nav.${lower}\n$2`,
       );
     }
 
+    // Anchor on the LAST existing entry in each list, not a specific prior
+    // route's name — a hardcoded anchor (the previous version matched only
+    // "Contact") breaks the moment that route is renamed or removed, which
+    // is exactly what happened in the clean-sheet rebuild (see
+    // .scratch/clean-sheet-homepage/, ticket 02). `(?:...)*` consumes every
+    // already-wired entry so a fresh scaffold run always appends after
+    // whichever route was wired most recently, in any site shape.
     const desktopLine = `                , desktopNavLink lang route ${name} labels.${labelField}`;
     if (!shellContent.includes(desktopLine)) {
       shellContent = shellContent.replace(
-        /(desktopNavLink lang route Contact labels\.contactLabel\n)/,
-        `$1${desktopLine}\n`,
+        /(\[ desktopNavLink lang route \w+ labels\.\w+Label\n(?:\s*, desktopNavLink lang route \w+ labels\.\w+Label\n)*)(\s*\])/,
+        `$1${desktopLine}\n$2`,
       );
     }
 
     const mobileLine = `            , mobileNavLink lang route ${name} labels.${labelField}`;
     if (!shellContent.includes(mobileLine)) {
       shellContent = shellContent.replace(
-        /(mobileNavLink lang route Contact labels\.contactLabel\n)/,
+        /((?:\[ |, )mobileNavLink lang route \w+ labels\.\w+Label\n(?:\s*, mobileNavLink lang route \w+ labels\.\w+Label\n)*)/,
         `$1${mobileLine}\n`,
       );
     }
@@ -670,8 +692,8 @@ if (wire) {
     const footerLine = `        , footerLink lang route ${name} labels.${labelField}`;
     if (!shellContent.includes(footerLine)) {
       shellContent = shellContent.replace(
-        /(footerLink lang route Contact labels\.contactLabel\n)/,
-        `$1${footerLine}\n`,
+        /(\[ footerLink lang route \w+ labels\.\w+Label\n(?:\s*, footerLink lang route \w+ labels\.\w+Label\n)*)(\s*\])/,
+        `$1${footerLine}\n$2`,
       );
     }
 

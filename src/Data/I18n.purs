@@ -6,6 +6,7 @@
 module Data.I18n
   ( Dictionary
   , Lang(..)
+  , ServiceCopy
   , allLangs
   , defaultLang
   , dict
@@ -16,6 +17,7 @@ module Data.I18n
 
 import Prelude
 
+import Data.Content (ServiceId(..))
 import Data.Maybe (Maybe(..))
 
 -- ============================================================================
@@ -53,19 +55,50 @@ defaultLang = En
 -- Dictionary type — `en` defines the shape, `fr` and `pt` must match
 -- ============================================================================
 --
--- Trimmed for the clean-sheet rebuild (see .scratch/clean-sheet-homepage/):
--- every field owned by a deleted page (nav, hero, services, cta, about,
--- contact, posts, fixtures, seo) is gone. `footer` and `common` are kept —
--- they're site chrome, not page content. Fields return alongside their page
--- as tickets 02+ rebuild it.
+-- Rebuilding for the clean-sheet rebuild (see .scratch/clean-sheet-homepage/):
+-- `nav`/`hero`/`services`/`cta`/`seo.homeDescription` are back for `Home`
+-- (ticket 02, placeholder copy — ticket 03 writes the real hero/pillar/CTA
+-- text). `about`/`contact`/`posts`/`fixtures` stay gone; the old `about`/
+-- `guarantees`/`docs` sections return with tickets 04/05/06.
+
+type ServiceCopy =
+  { title :: String
+  , description :: String
+  , actionLabel :: String
+  }
 
 type Dictionary =
-  { footer ::
+  { nav ::
+      { home :: String
+      }
+  , hero ::
+      { eyebrow :: String
+      , headline :: String
+      , body :: String
+      , ctaLabel :: String
+      , secondaryLabel :: String
+      }
+  , services ::
+      { sectionEyebrow :: String
+      , sectionHeadline :: String
+      , sectionIntro :: String
+      -- | Localized card copy by service id — pairs with Data.Content.services
+      , serviceCopy :: ServiceId -> ServiceCopy
+      }
+  , cta ::
+      { heading :: String
+      , body :: String
+      , ctaLabel :: String
+      }
+  , footer ::
       { explore :: String
       , resources :: String
       , github :: String
       , issues :: String
       , copyright :: String
+      }
+  , seo ::
+      { homeDescription :: String
       }
   , common ::
       { siteTitle :: String
@@ -97,7 +130,46 @@ type Dictionary =
 
 en :: Dictionary
 en =
-  { footer:
+  { nav:
+      { home: "Home"
+      }
+  , hero:
+      { eyebrow: "Draft copy"
+      , headline: "Pohjola homepage — draft placeholder"
+      , body: "Placeholder hero copy scaffolded by ticket 02; ticket 03 writes the real pitch."
+      , ctaLabel: "Placeholder CTA"
+      , secondaryLabel: "Placeholder link"
+      }
+  , services:
+      { sectionEyebrow: "Draft"
+      , sectionHeadline: "Placeholder pillars"
+      , sectionIntro: "Placeholder — ticket 03 writes the real pillar copy."
+      , serviceCopy: \sid -> case sid of
+          ServiceId "service-1" ->
+            { title: "Placeholder pillar one"
+            , description: "Placeholder description — ticket 03 replaces this."
+            , actionLabel: "Learn more"
+            }
+          ServiceId "service-2" ->
+            { title: "Placeholder pillar two"
+            , description: "Placeholder description — ticket 03 replaces this."
+            , actionLabel: "Learn more"
+            }
+          ServiceId "service-3" ->
+            { title: "Placeholder pillar three"
+            , description: "Placeholder description — ticket 03 replaces this."
+            , actionLabel: "Learn more"
+            }
+          _ -> { title: "", description: "", actionLabel: "" }
+      }
+  , cta:
+      { heading: "Placeholder CTA heading"
+      , body: "Placeholder CTA body — ticket 03 replaces this."
+      , ctaLabel: "Placeholder CTA"
+      }
+  , seo:
+      { homeDescription: "The Type-Safe Functional Web Framework for Bun, PureScript, and Alpine.js" }
+  , footer:
       { explore: "Navigation"
       , resources: "Resources"
       , github: "Source Code"
@@ -130,7 +202,46 @@ en =
 
 fr :: Dictionary
 fr =
-  { footer:
+  { nav:
+      { home: "Accueil"
+      }
+  , hero:
+      { eyebrow: "Texte provisoire"
+      , headline: "Page d'accueil Pohjola — brouillon"
+      , body: "Texte de remplacement généré par le ticket 02 ; le ticket 03 écrira le vrai texte."
+      , ctaLabel: "CTA provisoire"
+      , secondaryLabel: "Lien provisoire"
+      }
+  , services:
+      { sectionEyebrow: "Brouillon"
+      , sectionHeadline: "Piliers provisoires"
+      , sectionIntro: "Texte provisoire — le ticket 03 écrira le vrai texte."
+      , serviceCopy: \sid -> case sid of
+          ServiceId "service-1" ->
+            { title: "Pilier provisoire un"
+            , description: "Description provisoire — remplacée par le ticket 03."
+            , actionLabel: "En savoir plus"
+            }
+          ServiceId "service-2" ->
+            { title: "Pilier provisoire deux"
+            , description: "Description provisoire — remplacée par le ticket 03."
+            , actionLabel: "En savoir plus"
+            }
+          ServiceId "service-3" ->
+            { title: "Pilier provisoire trois"
+            , description: "Description provisoire — remplacée par le ticket 03."
+            , actionLabel: "En savoir plus"
+            }
+          _ -> { title: "", description: "", actionLabel: "" }
+      }
+  , cta:
+      { heading: "Titre CTA provisoire"
+      , body: "Texte CTA provisoire — remplacé par le ticket 03."
+      , ctaLabel: "CTA provisoire"
+      }
+  , seo:
+      { homeDescription: "Le framework web fonctionnel et typé pour Bun, PureScript et Alpine.js" }
+  , footer:
       { explore: "Navigation"
       , resources: "Ressources"
       , github: "Code source"
@@ -163,7 +274,46 @@ fr =
 
 pt :: Dictionary
 pt =
-  { footer:
+  { nav:
+      { home: "Início"
+      }
+  , hero:
+      { eyebrow: "Texto provisório"
+      , headline: "Página inicial do Pohjola — rascunho"
+      , body: "Texto provisório gerado pelo ticket 02; o ticket 03 escreverá o texto real."
+      , ctaLabel: "CTA provisório"
+      , secondaryLabel: "Link provisório"
+      }
+  , services:
+      { sectionEyebrow: "Rascunho"
+      , sectionHeadline: "Pilares provisórios"
+      , sectionIntro: "Texto provisório — o ticket 03 escreverá o texto real."
+      , serviceCopy: \sid -> case sid of
+          ServiceId "service-1" ->
+            { title: "Pilar provisório um"
+            , description: "Descrição provisória — substituída pelo ticket 03."
+            , actionLabel: "Saiba mais"
+            }
+          ServiceId "service-2" ->
+            { title: "Pilar provisório dois"
+            , description: "Descrição provisória — substituída pelo ticket 03."
+            , actionLabel: "Saiba mais"
+            }
+          ServiceId "service-3" ->
+            { title: "Pilar provisório três"
+            , description: "Descrição provisória — substituída pelo ticket 03."
+            , actionLabel: "Saiba mais"
+            }
+          _ -> { title: "", description: "", actionLabel: "" }
+      }
+  , cta:
+      { heading: "Título CTA provisório"
+      , body: "Texto CTA provisório — substituído pelo ticket 03."
+      , ctaLabel: "CTA provisório"
+      }
+  , seo:
+      { homeDescription: "O framework web funcional e tipado para Bun, PureScript e Alpine.js" }
+  , footer:
       { explore: "Navegação"
       , resources: "Recursos"
       , github: "Código-fonte"

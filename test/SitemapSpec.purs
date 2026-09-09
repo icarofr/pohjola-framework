@@ -18,17 +18,16 @@ spec = do
     it "contains xml declaration" do
       sitemap `StrAssert.shouldContain` "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
 
-    -- `Route` is temporarily zero-constructor (clean-sheet rebuild, see
-    -- .scratch/clean-sheet-homepage/), so `allRoutes` is empty and the
-    -- sitemap correctly emits no <url> entries at all — asserted directly
-    -- rather than deleted, since "no routes in, no entries out" is itself
-    -- real, checkable behavior. Restore the populated-sitemap assertions
-    -- once real routes exist again (ticket 02+).
-    it "contains no loc URLs while there are no routes" do
-      sitemap `StrAssert.shouldNotContain` "<loc>"
+    it "contains loc URLs for routes" do
+      sitemap `StrAssert.shouldContain` "<loc>https://example.com/en</loc>"
 
-    it "contains no hreflang alternates while there are no routes" do
-      sitemap `StrAssert.shouldNotContain` "hreflang="
+    it "contains hreflang alternates" do
+      sitemap `StrAssert.shouldContain` "hreflang=\"en\""
+      sitemap `StrAssert.shouldContain` "hreflang=\"fr\""
+      sitemap `StrAssert.shouldContain` "hreflang=\"x-default\""
+
+    it "uses absolute URLs with base URL" do
+      sitemap `StrAssert.shouldContain` "https://example.com/"
 
   describe "Robots.txt rendering" do
     let robots = renderRobots "https://example.com"

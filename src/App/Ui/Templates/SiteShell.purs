@@ -10,6 +10,7 @@ import Prelude
 
 import App.Alpine
   ( Flag(..)
+  , NavChrome(..)
   , ThemeMode(..)
   , ariaExpandedFlag
   , closeSiteDrawer
@@ -18,6 +19,9 @@ import App.Alpine
   , contentTarget
   , dataPageLangAttr
   , dataPageTitleAttr
+  , langLink
+  , navLink
+  , navLinkClasses
   , onClick
   , onClickOutside
   , onKeydownEscapeWindow
@@ -45,17 +49,17 @@ import App.Html
 import App.Ui.Alert (AlertVariant(..), alert)
 import App.Ui.Container as Container
 import App.Ui.Templates.Contract as Contract
-import Data.I18n (Lang, dict, langTag)
+import Data.I18n (Lang(..), dict, langTag)
 import Data.Maybe (Maybe(..), maybe)
-import Data.Route (Route, routeTitle)
+import Data.Route (Route(..), routeTitle)
 
--- | `aboutLabel`/`contactLabel`/`postsLabel`/`homeLabel`/`langEn`/`langFr`/
--- | `langPt` are gone for now along with the nav links and language switcher
--- | that used them — see the doc comments on `renderHeader`/`renderDrawerSide`
--- | (clean-sheet rebuild, .scratch/clean-sheet-homepage/). Return together.
 type ShellLabels =
   { siteTitle :: String
   , menuLabel :: String
+  , homeLabel :: String
+  , langEn :: String
+  , langFr :: String
+  , langPt :: String
   , langToggleLabel :: String
   , themeLight :: String
   , themeDark :: String
@@ -74,6 +78,10 @@ shellLabels lang =
   in
     { siteTitle: d.common.siteTitle
     , menuLabel: d.common.menuLabel
+    , homeLabel: d.nav.home
+    , langEn: "English"
+    , langFr: "Français"
+    , langPt: "Português"
     , langToggleLabel: d.common.langToggleLabel
     , themeLight: d.common.themeLight
     , themeDark: d.common.themeDark
@@ -96,27 +104,12 @@ maybeStatusBanner lang = maybe (text "") \status ->
     el "div" [ attr "data-form-status" (formStatusQuery status) ]
       [ alert variant (statusText lang status) ]
 
--- | `Route` is threaded through only for `routeTitle` here — nothing
--- | downstream of `sitePageTitled` currently needs a route value (see that
--- | function's doc). Kept in this signature for forward API compatibility;
--- | `sitePage` itself has no caller right now (clean-sheet rebuild, see
--- | .scratch/clean-sheet-homepage/ — every feature that called it is
--- | deleted), so this is unreachable, not exercised.
 sitePage :: Lang -> Route -> ShellLabels -> Maybe FormStatus -> Html -> Html
 sitePage lang route labels status content =
-  sitePageTitled lang (routeTitle lang route) labels status content
+  sitePageTitled lang route (routeTitle lang route) labels status content
 
--- | No `Route` parameter for now: every nav link this shell would highlight
--- | or build (site-title-as-home-link, the main nav, the language
--- | switcher, the footer links) needs a real destination route, and none
--- | exist mid-purge (clean-sheet rebuild, see
--- | .scratch/clean-sheet-homepage/) — unlike "which route is current",
--- | "what route to link to" has no absurd/wildcard escape. The chrome below
--- | renders only what doesn't need a destination (title text, theme
--- | switcher, drawer toggle). Nav links, the language switcher, and this
--- | parameter all return together once real routes exist (ticket 02).
-sitePageTitled :: Lang -> String -> ShellLabels -> Maybe FormStatus -> Html -> Html
-sitePageTitled lang title labels status content =
+sitePageTitled :: Lang -> Route -> String -> ShellLabels -> Maybe FormStatus -> Html -> Html
+sitePageTitled lang route title labels status content =
   el "div"
     ( [ class_ "drawer drawer-end min-h-full bg-base-100 text-base-content"
       , id_ contentTarget
@@ -135,12 +128,12 @@ sitePageTitled lang title labels status content =
         ]
         []
     , el "div" [ class_ "drawer-content flex min-h-full flex-col" ]
-        [ renderHeader lang labels
+        [ renderHeader lang route labels
         , maybeStatusBanner lang status
         , el "main" [ class_ "flex-1" ] [ content ]
-        , renderFooter lang labels
+        , renderFooter lang route labels
         ]
-    , renderDrawerSide labels
+    , renderDrawerSide lang route labels
     ]
 
 siteErrorPage :: Lang -> Int -> Html
@@ -155,7 +148,10 @@ siteErrorPage lang statusCode =
         ]
   in
     -- Reuse the drawer wrapper so Alpine replaceWith and TitleSync keep working.
-    sitePageTitled lang title labels Nothing body
+    -- Home stands in for the current route: an error page has none of its
+    -- own, and Home is guaranteed to exist (it's the one route every build
+    -- of this framework always has).
+    sitePageTitled lang Home title labels Nothing body
 
 errorMessage :: Lang -> Int -> String
 errorMessage lang status =
@@ -164,13 +160,8 @@ errorMessage lang status =
   in
     if status == 404 then d.common.error404 else d.common.error500
 
--- | Nav links, the language switcher, and the site-title home link are all
--- | gone for now — every one of them needs a real destination route, and
--- | none exist (clean-sheet rebuild, see .scratch/clean-sheet-homepage/).
--- | What remains renders without a destination: plain title text, the theme
--- | switcher, and the mobile drawer toggle. Return together in ticket 02.
-renderHeader :: Lang -> ShellLabels -> Html
-renderHeader _ labels =
+renderHeader :: Lang -> Route -> ShellLabels -> Html
+renderHeader lang route labels =
   el "header"
     [ class_ "sticky top-0 z-50 border-b border-base-200 bg-base-100"
     , attr Contract.marker Contract.siteHeader
@@ -178,26 +169,38 @@ renderHeader _ labels =
     [ Container.container Container.ContainerW6xl "px-4 sm:px-6"
         [ el "div" [ class_ "navbar min-h-16 px-0" ]
             [ el "div" [ class_ "navbar-start" ]
-                [ el "span" [ class_ "btn btn-ghost text-lg font-semibold no-animation" ]
+                [ navLink { lang, current: route, target: Home }
+                    [ class_ "btn btn-ghost text-lg font-semibold" ]
                     [ text labels.siteTitle ]
                 ]
-            , el "div" [ class_ "navbar-end gap-2" ]
+            , el "nav"
+                [ class_ "navbar-center hidden gap-1 md:flex"
+                , ariaLabel (dict lang).common.navAriaLabel
+                ]
+                [ desktopNavLink lang route Home labels.homeLabel
+                ]
+            , el "div" [ class_ "navbar-end hidden gap-2 md:flex" ]
                 [ renderThemeDropdown labels
-                , el "div" [ class_ "md:hidden" ]
-                    [ el "label"
-                        [ for_ siteDrawerId
-                        , class_ "btn btn-square btn-ghost drawer-button"
-                        , ariaLabel labels.menuLabel
-                        ]
-                        [ hamburgerIcon ]
+                , el "div" [ class_ "join join-horizontal" ]
+                    [ renderLangJoin En lang route labels.langEn
+                    , renderLangJoin Fr lang route labels.langFr
+                    , renderLangJoin Pt lang route labels.langPt
                     ]
+                ]
+            , el "div" [ class_ "navbar-end md:hidden" ]
+                [ el "label"
+                    [ for_ siteDrawerId
+                    , class_ "btn btn-square btn-ghost drawer-button"
+                    , ariaLabel labels.menuLabel
+                    ]
+                    [ hamburgerIcon ]
                 ]
             ]
         ]
     ]
 
-renderDrawerSide :: ShellLabels -> Html
-renderDrawerSide labels =
+renderDrawerSide :: Lang -> Route -> ShellLabels -> Html
+renderDrawerSide lang route labels =
   el "div" [ class_ "drawer-side z-50 md:hidden" ]
     [ el "label"
         [ for_ siteDrawerId
@@ -217,13 +220,44 @@ renderDrawerSide labels =
                 [ text labels.closeLabel ]
             ]
         , el "nav" [ class_ "menu mt-6 w-full rounded-box bg-base-100 p-2" ]
-            [ el "li" [ class_ "menu-title" ] [ text labels.themeLabel ]
+            [ mobileNavLink lang route Home labels.homeLabel
+            , el "li" [ class_ "menu-title mt-4" ] [ text labels.themeLabel ]
             , themeMenuItem DrawerMenu ThemeLight labels.themeLight
             , themeMenuItem DrawerMenu ThemeDark labels.themeDark
             , themeMenuItem DrawerMenu ThemeSystem labels.themeSystem
+            , el "li" [ class_ "menu-title mt-4" ] [ text labels.langToggleLabel ]
+            , el "li" []
+                [ el "div" [ class_ "join join-vertical w-full" ]
+                    [ renderLangJoin En lang route labels.langEn
+                    , renderLangJoin Fr lang route labels.langFr
+                    , renderLangJoin Pt lang route labels.langPt
+                    ]
+                ]
             ]
         ]
     ]
+
+desktopNavLink :: Lang -> Route -> Route -> String -> Html
+desktopNavLink lang current target label =
+  navLink { lang, current, target }
+    [ class_ (navLinkClasses NavDesktop (target == current)) ]
+    [ text label ]
+
+renderLangJoin :: Lang -> Lang -> Route -> String -> Html
+renderLangJoin targetLang currentLang route label =
+  langLink { targetLang, currentLang, route }
+    [ class_
+        ( "join-item btn btn-sm"
+            <>
+              if targetLang == currentLang then
+                " btn-active"
+
+              else
+                ""
+        )
+    , onClick closeSiteDrawer
+    ]
+    [ text label ]
 
 renderThemeDropdown :: ShellLabels -> Html
 renderThemeDropdown labels =
@@ -274,11 +308,19 @@ themeMenuItem context mode label =
         [ text label ]
     ]
 
--- | Footer nav links need real destination routes, and none exist yet —
--- | same reasoning as `renderHeader`'s doc comment. Just the identity/
--- | copyright aside remains; the link row returns in ticket 02.
-renderFooter :: Lang -> ShellLabels -> Html
-renderFooter _ labels =
+mobileNavLink :: Lang -> Route -> Route -> String -> Html
+mobileNavLink lang current target label =
+  el "li" []
+    [ navLink { lang, current, target }
+        ( [ class_ (navLinkClasses NavMobile (target == current))
+          , onClick closeSiteDrawer
+          ]
+        )
+        [ text label ]
+    ]
+
+renderFooter :: Lang -> Route -> ShellLabels -> Html
+renderFooter lang route labels =
   el "footer"
     [ class_ "footer footer-center border-t border-base-200 bg-base-100 p-10 text-base-content sm:footer-horizontal"
     , attr Contract.marker Contract.siteFooter
@@ -287,7 +329,16 @@ renderFooter _ labels =
         [ el "p" [ class_ "font-semibold" ] [ text labels.siteTitle ]
         , el "p" [ class_ "text-sm opacity-70" ] [ text labels.copyright ]
         ]
+    , el "nav" [ class_ "grid grid-flow-col gap-4 text-sm opacity-70" ]
+        [ footerLink lang route Home labels.homeLabel
+        ]
     ]
+
+footerLink :: Lang -> Route -> Route -> String -> Html
+footerLink lang current target label =
+  navLink { lang, current, target }
+    [ class_ (navLinkClasses NavFooter (target == current)) ]
+    [ text label ]
 
 hamburgerIcon :: Html
 hamburgerIcon =

@@ -1,16 +1,10 @@
 -- | i18n tests — dictionaries load and localize (copy is not pinned).
--- |
--- | Trimmed for the clean-sheet rebuild (see .scratch/clean-sheet-homepage/):
--- | the "localization" describe block asserted per-page copy differs across
--- | languages (nav, hero, services) — all deleted along with the pages that
--- | owned them. `footer`/`common` are still exercised via `dictionary
--- | access`/`Lang parsing`. Restore per-page localization coverage as each
--- | page's content lands (tickets 02+).
 module Test.I18n.I18nSpec where
 
 import Prelude
 
 import Data.Array (elem)
+import Data.Content (ServiceId(..))
 import Data.I18n (Lang(..), allLangs, dict, parseLang)
 import Data.Maybe (Maybe(..))
 import Test.Spec (Spec, describe, it)
@@ -33,3 +27,13 @@ spec = do
 
       it "dict Pt has same siteTitle access pattern" do
         (dict Pt).common.siteTitle `shouldSatisfy` (_ /= "")
+
+    describe "localization" do
+      it "nav and hero strings differ between languages" do
+        (dict En).nav.home `shouldNotEqual` (dict Fr).nav.home
+        (dict En).hero.headline `shouldNotEqual` (dict Fr).hero.headline
+      it "service copy localizes" do
+        let svc1 = ServiceId "service-1"
+        ((dict En).services.serviceCopy svc1).description
+          `shouldNotEqual` ((dict Fr).services.serviceCopy svc1).description
+        ((dict En).services.serviceCopy svc1).title `shouldNotEqual` ""

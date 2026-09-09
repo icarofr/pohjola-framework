@@ -13,6 +13,7 @@ import App.Env (getEnvMaybe)
 import App.Error (AppError(..))
 import App.Form (FormStatus, parseFormStatus)
 import App.Migration (migrate, renderMigrationError)
+import App.Features.Home.Page (render) as Home
 import App.Html (Html)
 import App.Layout.Page (renderErrorFragment, renderErrorPage, renderFragment, renderDocument)
 import App.Logger as Log
@@ -24,7 +25,7 @@ import Data.I18n (Lang, defaultLang, parseLang)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe, isJust)
-import Data.Route (Route, isStaticRoute, parseRoute, routeUrl)
+import Data.Route (Route(..), isStaticRoute, parseRoute, routeUrl)
 import Data.String.Common (split, toLower)
 import Data.String.Pattern (Pattern(..))
 import Data.Tuple (Tuple(..))
@@ -66,8 +67,7 @@ handleGet cfg cache nonce headers query path = case path of
 -- | reached: `handleFragment` only runs after a route parses successfully, so
 -- | the fix was narrower than the contract it restored. `renderErrorFragment`
 -- | never needed a `Route` value in the first place (see `App.Layout.Page`) —
--- | now that `Route` is temporarily zero-constructor (clean-sheet rebuild,
--- | see .scratch/clean-sheet-homepage/), that unused parameter is gone too.
+-- | that unused parameter is gone from its signature.
 routeMiss404 :: String -> Boolean -> Lang -> Server.Response
 routeMiss404 nonce wantsFragment lang =
   if wantsFragment then
@@ -86,13 +86,13 @@ langFromPath path = fromMaybe defaultLang (head path >>= parseLang)
 -- | Static pages use `staticPage` (pure Html, no error path).
 -- | Data-backed pages fetch via Aff and may return `Left AppError`.
 -- |
--- | `Route` is temporarily zero-constructor (clean-sheet rebuild, see
--- | .scratch/clean-sheet-homepage/) — this wildcard is unreachable rather
--- | than a real dispatch, and goes back to a named, exhaustive case as soon
--- | as a route exists to name.
+-- | `cfg` is unused while every route is static (`Home` only, so far) —
+-- | named `_cfg`, not `cfg`, purely so `make new-feature TYPE=data --wire`'s
+-- | regex (which matches either name) still finds this line once a
+-- | data-backed route needs it again.
 pageRenderer :: Config -> Route -> Lang -> Maybe FormStatus -> Aff (Either AppError Html)
-pageRenderer _ route _ _ = case route of
-  _ -> pure (Left NotFound)
+pageRenderer _cfg route lang status = case route of
+  Home -> Home.render lang status
 
 -- | Everything a page render needs about the current request, bundled.
 -- |
@@ -305,14 +305,13 @@ errorStatus = case _ of
 -- Root redirect — / → /fr or /en based on Accept-Language
 -- ============================================================================
 
--- | `Route` is temporarily zero-constructor (clean-sheet rebuild, see
--- | .scratch/clean-sheet-homepage/) — there is no route to redirect `/` to
--- | yet, so this honestly answers 404 instead of fabricating a hand-rolled
--- | path string that would bypass `Data.Route`'s single source of truth.
--- | Goes back to a real 302 redirect (`routeUrl lang Home`) once a home
--- | route exists again.
 redirectRoot :: Map String String -> Aff Server.Response
-redirectRoot _ = pure Server.notFound
+redirectRoot headers =
+  -- 302 (not 301): the language preference redirect must be re-evaluated,
+  -- and caches must vary on Accept-Language.
+  pure $ Server.redirectVary Server.Found (routeUrl lang Home) [ Tuple "Vary" "Accept-Language" ]
+  where
+  lang = detectLang $ fromMaybe "" $ Map.lookup "accept-language" headers
 
 -- | Detect language from Accept-Language header.
 -- | Parses the first token (before q-value and region suffix), delegates to
