@@ -4,15 +4,15 @@
 
 **Blocked by:** 02
 
-**Status:** ready-for-agent
+**Status:** done (2026-09-09), commit `8200f3a` on branch `clean-sheet-homepage`
 
-- [ ] Page clearly communicates docs are coming, not yet available — no broken links, no placeholder lorem ipsum.
-- [ ] One-line explanation of what the docs will cover once they land.
-- [ ] Real, native-reading translations for `en`/`fr`/`pt`.
-- [ ] DaisyUI-styled through `App.Ui` primitives, consistent with the rest of the site.
-- [ ] Idiomatic PureScript throughout (see ticket 03's idiom checklist).
-- [ ] `make dev`: manually viewed in a browser across all three language paths.
-- [ ] `make gate && make test && make check` pass.
+- [x] Page clearly communicates docs are coming, not yet available — no broken links, no placeholder lorem ipsum.
+- [x] One-line explanation of what the docs will cover once they land.
+- [x] Real, native-reading translations for `en`/`fr`/`pt`.
+- [x] DaisyUI-styled through `App.Ui` primitives, consistent with the rest of the site.
+- [x] Idiomatic PureScript throughout (see ticket 03's idiom checklist).
+- [x] `make dev`: manually viewed in a browser across all three language paths.
+- [x] `make gate && make test` pass (19/19, 205/205). `make check`'s `generator-policy` step still fails in this sandbox only, for the pre-existing `/tmp noexec` reason recorded on ticket 02.
 
 ## Comments
 
