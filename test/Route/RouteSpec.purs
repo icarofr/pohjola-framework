@@ -22,6 +22,12 @@ spec = do
         parseRoute [ "fr" ] `shouldEqual` Just { lang: Fr, route: Home }
       it "parses /pt as Home" do
         parseRoute [ "pt" ] `shouldEqual` Just { lang: Pt, route: Home }
+      it "parses /en/about as About" do
+        parseRoute [ "en", "about" ] `shouldEqual` Just { lang: En, route: About }
+      it "parses /en/guarantees as Guarantees" do
+        parseRoute [ "en", "guarantees" ] `shouldEqual` Just { lang: En, route: Guarantees }
+      it "parses /en/docs as Docs" do
+        parseRoute [ "en", "docs" ] `shouldEqual` Just { lang: En, route: Docs }
       it "returns Nothing for unknown route" do
         parseRoute [ "en", "unknown" ] `shouldEqual` Nothing
       it "returns Nothing for unknown lang" do
@@ -36,6 +42,12 @@ spec = do
         routeUrl Fr Home `shouldEqual` "/fr"
       it "generates /pt for Home" do
         routeUrl Pt Home `shouldEqual` "/pt"
+      it "generates /en/about for About" do
+        routeUrl En About `shouldEqual` "/en/about"
+      it "generates /en/guarantees for Guarantees" do
+        routeUrl En Guarantees `shouldEqual` "/en/guarantees"
+      it "generates /en/docs for Docs" do
+        routeUrl En Docs `shouldEqual` "/en/docs"
 
     describe "round-trip" do
       it "parseRoute (splitPath (routeUrl lang route)) = Just for all lang × route" do
@@ -49,7 +61,7 @@ spec = do
 
       it "covers all lang × route combinations" do
         let total = length allLangs * length allRoutes
-        total `shouldEqual` 3 -- 3 langs * 1 route (Home)
+        total `shouldEqual` 12 -- 3 langs * 4 routes (Home, About, Guarantees, Docs)
 
     describe "allRoutes" do
       -- allRoutes is necessarily a hand-written literal (Route isn't
@@ -62,8 +74,8 @@ spec = do
       -- it. It cannot catch a constructor whose routeMeta entry was written
       -- correctly but never added to the allRoutes literal at all.
       it "enumerates sitemap routes" do
-        allRoutes `shouldEqual` [ Home ]
-        staticRoutes `shouldEqual` [ Home ]
+        allRoutes `shouldEqual` [ Home, About, Guarantees, Docs ]
+        staticRoutes `shouldEqual` [ Home, About, Guarantees, Docs ]
         all isInSitemap allRoutes `shouldEqual` true
 
 splitPath :: String -> Array String

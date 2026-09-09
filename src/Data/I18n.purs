@@ -70,6 +70,9 @@ type ServiceCopy =
 type Dictionary =
   { nav ::
       { home :: String
+      , about :: String
+      , guarantees :: String
+      , docs :: String
       }
   , hero ::
       { eyebrow :: String
@@ -99,6 +102,24 @@ type Dictionary =
       }
   , seo ::
       { homeDescription :: String
+
+      , aboutDescription :: String
+
+      , guaranteesDescription :: String
+
+      , docsDescription :: String
+      }
+  , about ::
+      { heading :: String
+      , body :: String
+      }
+  , guarantees ::
+      { heading :: String
+      , body :: String
+      }
+  , docs ::
+      { heading :: String
+      , body :: String
       }
   , common ::
       { siteTitle :: String
@@ -132,6 +153,9 @@ en :: Dictionary
 en =
   { nav:
       { home: "Home"
+      , about: "About"
+      , guarantees: "Guarantees"
+      , docs: "Docs"
       }
   , hero:
       { eyebrow: "Draft copy"
@@ -168,13 +192,31 @@ en =
       , ctaLabel: "Placeholder CTA"
       }
   , seo:
-      { homeDescription: "The Type-Safe Functional Web Framework for Bun, PureScript, and Alpine.js" }
+      { homeDescription: "The Type-Safe Functional Web Framework for Bun, PureScript, and Alpine.js"
+      , aboutDescription: "SEO for About."
+
+      , guaranteesDescription: "SEO for Guarantees."
+
+      , docsDescription: "SEO for Docs."
+      }
   , footer:
       { explore: "Navigation"
       , resources: "Resources"
       , github: "Source Code"
       , issues: "Bug Tracker"
       , copyright: "© 2026 Pohjola Framework. Open source software."
+      }
+  , about:
+      { heading: "About"
+      , body: "Explore our About."
+      }
+  , guarantees:
+      { heading: "Guarantees"
+      , body: "Explore our Guarantees."
+      }
+  , docs:
+      { heading: "Docs"
+      , body: "Explore our Docs."
       }
   , common:
       { siteTitle: "Pohjola"
@@ -204,6 +246,9 @@ fr :: Dictionary
 fr =
   { nav:
       { home: "Accueil"
+      , about: "About"
+      , guarantees: "Guarantees"
+      , docs: "Docs"
       }
   , hero:
       { eyebrow: "Texte provisoire"
@@ -240,13 +285,31 @@ fr =
       , ctaLabel: "CTA provisoire"
       }
   , seo:
-      { homeDescription: "Le framework web fonctionnel et typé pour Bun, PureScript et Alpine.js" }
+      { homeDescription: "Le framework web fonctionnel et typé pour Bun, PureScript et Alpine.js"
+      , aboutDescription: "SEO for About."
+
+      , guaranteesDescription: "SEO for Guarantees."
+
+      , docsDescription: "SEO for Docs."
+      }
   , footer:
       { explore: "Navigation"
       , resources: "Ressources"
       , github: "Code source"
       , issues: "Suivi des bugs"
       , copyright: "© 2026 Pohjola Framework. Logiciel open source."
+      }
+  , about:
+      { heading: "About"
+      , body: "Description de About."
+      }
+  , guarantees:
+      { heading: "Guarantees"
+      , body: "Description de Guarantees."
+      }
+  , docs:
+      { heading: "Docs"
+      , body: "Description de Docs."
       }
   , common:
       { siteTitle: "Pohjola"
@@ -276,6 +339,9 @@ pt :: Dictionary
 pt =
   { nav:
       { home: "Início"
+      , about: "About"
+      , guarantees: "Guarantees"
+      , docs: "Docs"
       }
   , hero:
       { eyebrow: "Texto provisório"
@@ -312,13 +378,31 @@ pt =
       , ctaLabel: "CTA provisório"
       }
   , seo:
-      { homeDescription: "O framework web funcional e tipado para Bun, PureScript e Alpine.js" }
+      { homeDescription: "O framework web funcional e tipado para Bun, PureScript e Alpine.js"
+      , aboutDescription: "SEO for About."
+
+      , guaranteesDescription: "SEO for Guarantees."
+
+      , docsDescription: "SEO for Docs."
+      }
   , footer:
       { explore: "Navegação"
       , resources: "Recursos"
       , github: "Código-fonte"
       , issues: "Rastreador de bugs"
       , copyright: "© 2026 Pohjola Framework. Software open source."
+      }
+  , about:
+      { heading: "About"
+      , body: "Explore o About."
+      }
+  , guarantees:
+      { heading: "Guarantees"
+      , body: "Explore o Guarantees."
+      }
+  , docs:
+      { heading: "Docs"
+      , body: "Explore o Docs."
       }
   , common:
       { siteTitle: "Pohjola"

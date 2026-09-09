@@ -14,6 +14,9 @@ import App.Error (AppError(..))
 import App.Form (FormStatus, parseFormStatus)
 import App.Migration (migrate, renderMigrationError)
 import App.Features.Home.Page (render) as Home
+import App.Features.Docs.Page (render) as Docs
+import App.Features.Guarantees.Page (render) as Guarantees
+import App.Features.About.Page (render) as About
 import App.Html (Html)
 import App.Layout.Page (renderErrorFragment, renderErrorPage, renderFragment, renderDocument)
 import App.Logger as Log
@@ -93,6 +96,9 @@ langFromPath path = fromMaybe defaultLang (head path >>= parseLang)
 pageRenderer :: Config -> Route -> Lang -> Maybe FormStatus -> Aff (Either AppError Html)
 pageRenderer _cfg route lang status = case route of
   Home -> Home.render lang status
+  About -> About.render lang status
+  Guarantees -> Guarantees.render lang status
+  Docs -> Docs.render lang status
 
 -- | Everything a page render needs about the current request, bundled.
 -- |

@@ -41,12 +41,17 @@ import Data.String.Common (joinWith)
 import Data.Tuple (Tuple(..))
 import Routing.Duplex (RouteDuplex', parse, prefix, print, root)
 import Routing.Duplex.Generic as G
+import Routing.Duplex.Generic.Syntax ((/))
 
 -- ============================================================================
 -- Route sum type
 -- ============================================================================
 
-data Route = Home
+data Route
+  = Home
+  | About
+  | Guarantees
+  | Docs
 
 derive instance genericRoute :: Generic Route _
 derive instance eqRoute :: Eq Route
@@ -55,6 +60,12 @@ derive instance ordRoute :: Ord Route
 instance showRoute :: Show Route where
   show = case _ of
     Home -> "Home"
+
+    About -> "About"
+
+    Guarantees -> "Guarantees"
+
+    Docs -> "Docs"
 
 -- ============================================================================
 -- Bidirectional codec — one per language
@@ -65,12 +76,21 @@ instance showRoute :: Show Route where
 routeCodec :: Lang -> RouteDuplex' Route
 routeCodec En = root $ prefix "en" $ G.sum
   { "Home": G.noArgs
+  , "About": "about" / G.noArgs
+  , "Guarantees": "guarantees" / G.noArgs
+  , "Docs": "docs" / G.noArgs
   }
 routeCodec Fr = root $ prefix "fr" $ G.sum
   { "Home": G.noArgs
+  , "About": "about" / G.noArgs
+  , "Guarantees": "guarantees" / G.noArgs
+  , "Docs": "docs" / G.noArgs
   }
 routeCodec Pt = root $ prefix "pt" $ G.sum
   { "Home": G.noArgs
+  , "About": "about" / G.noArgs
+  , "Guarantees": "guarantees" / G.noArgs
+  , "Docs": "docs" / G.noArgs
   }
 
 -- ============================================================================
@@ -100,6 +120,9 @@ type RouteMeta =
 routeMeta :: Route -> RouteMeta
 routeMeta = case _ of
   Home -> { isStatic: true, inSitemap: true, prefetch: [] }
+  About -> { isStatic: true, inSitemap: true, prefetch: [ Home ] }
+  Guarantees -> { isStatic: true, inSitemap: true, prefetch: [ Home ] }
+  Docs -> { isStatic: true, inSitemap: true, prefetch: [ Home ] }
 
 -- | `renderPrefetch` emits `<link rel="prefetch">` for these routes, using the
 -- | FULL page URL — not a fragment URL. A fragment entry could never be hit,
@@ -150,7 +173,7 @@ routeTable = Map.fromFoldable
 
 -- | All routes (for sitemap generation). Static routes are enumerated here; dynamic routes are intentionally NOT included because they cannot be enumerated statically.
 allRoutes :: Array Route
-allRoutes = [ Home ]
+allRoutes = [ Home, About, Guarantees, Docs ]
 
 -- | Derived from `routeMeta`, not hand-listed — see `RouteMeta` above.
 staticRoutes :: Array Route
@@ -169,3 +192,6 @@ routeTitle lang route =
   in
     case route of
       Home -> siteTitle
+      About -> d.nav.about <> " — " <> siteTitle
+      Guarantees -> d.nav.guarantees <> " — " <> siteTitle
+      Docs -> d.nav.docs <> " — " <> siteTitle

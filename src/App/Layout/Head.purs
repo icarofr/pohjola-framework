@@ -79,6 +79,9 @@ seoDescription lang route =
   in
     case route of
       Home -> d.seo.homeDescription
+      About -> d.seo.aboutDescription
+      Guarantees -> d.seo.guaranteesDescription
+      Docs -> d.seo.docsDescription
 
 -- ============================================================================
 -- JSON-LD structured data — type-safe, exhaustive on Route, XSS-escaped
@@ -96,6 +99,9 @@ renderJsonLd baseUrl nonce lang route = case route of
     , Tuple "url" baseUrl
     , Tuple "inLanguage" (langTag lang)
     ]
+  About -> Nothing
+  Guarantees -> Nothing
+  Docs -> Nothing
 
 -- | Render a JSON-LD <script> tag with XSS-safe escaping.
 -- | Replaces < with \u003c to prevent </script> injection.

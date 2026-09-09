@@ -69,6 +69,9 @@ type ShellLabels =
   , closeSidebarLabel :: String
   , closeMenuLabel :: String
   , closeLabel :: String
+  , aboutLabel :: String
+  , guaranteesLabel :: String
+  , docsLabel :: String
   }
 
 shellLabels :: Lang -> ShellLabels
@@ -91,6 +94,9 @@ shellLabels lang =
     , closeSidebarLabel: d.common.closeSidebarLabel
     , closeMenuLabel: d.common.closeMenuLabel
     , closeLabel: d.common.closeLabel
+    , aboutLabel: d.nav.about
+    , guaranteesLabel: d.nav.guarantees
+    , docsLabel: d.nav.docs
     }
 
 maybeStatusBanner :: Lang -> Maybe FormStatus -> Html
@@ -178,6 +184,9 @@ renderHeader lang route labels =
                 , ariaLabel (dict lang).common.navAriaLabel
                 ]
                 [ desktopNavLink lang route Home labels.homeLabel
+                , desktopNavLink lang route About labels.aboutLabel
+                , desktopNavLink lang route Guarantees labels.guaranteesLabel
+                , desktopNavLink lang route Docs labels.docsLabel
                 ]
             , el "div" [ class_ "navbar-end hidden gap-2 md:flex" ]
                 [ renderThemeDropdown labels
@@ -221,6 +230,9 @@ renderDrawerSide lang route labels =
             ]
         , el "nav" [ class_ "menu mt-6 w-full rounded-box bg-base-100 p-2" ]
             [ mobileNavLink lang route Home labels.homeLabel
+            , mobileNavLink lang route About labels.aboutLabel
+            , mobileNavLink lang route Guarantees labels.guaranteesLabel
+            , mobileNavLink lang route Docs labels.docsLabel
             , el "li" [ class_ "menu-title mt-4" ] [ text labels.themeLabel ]
             , themeMenuItem DrawerMenu ThemeLight labels.themeLight
             , themeMenuItem DrawerMenu ThemeDark labels.themeDark
@@ -331,6 +343,9 @@ renderFooter lang route labels =
         ]
     , el "nav" [ class_ "grid grid-flow-col gap-4 text-sm opacity-70" ]
         [ footerLink lang route Home labels.homeLabel
+        , footerLink lang route About labels.aboutLabel
+        , footerLink lang route Guarantees labels.guaranteesLabel
+        , footerLink lang route Docs labels.docsLabel
         ]
     ]
 
