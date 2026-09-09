@@ -13,6 +13,23 @@ This is filed because the user asked for it directly, not because a concrete
 need has been identified yet — see Comments for the full reasoning trail. Read
 this ticket as "here is the shape of the work," not "this is ready to build."
 
+**Scope note — this solves `ADR-011`'s gap, not `ADR-010`'s.** Datastar is not
+a hydration framework: the server renders real HTML with `data-*` attributes
+already in it, and the client runtime reads them off the real DOM in place —
+no client-side re-execution of render logic, no VDOM diff, no
+server/client-disagree-about-the-tree bug class. Same category as Alpine
+(declarative attributes over real SSR output), just SSE-native; consistent
+with `ADR-001`'s rejection of a client VDOM/hydration framework, not a
+reopening of it. But it does **not** solve `ADR-010`'s actual islands problem
+— imperative third-party library lifecycle (a Leaflet map's teardown, a
+`requestAnimationFrame` loop, a `ResizeObserver`, audio elements). That's an
+orthogonal axis to declarative signals/reactivity; Datastar gives no more of
+a lifecycle-managed slot for that than Alpine's `x-init`/`x-effect` already
+does. If a future feature needs that kind of imperative ownership, `ADR-010`'s
+feature-owned adapter (or something like it) is still the answer, independent
+of whether this ticket ships. Both can coexist as separate, feature-owned
+things without conflicting — Datastar isn't a substitute for that ADR.
+
 **Blocked by:** None (can start immediately) — but see the prerequisites below;
 none of them are implementation work an agent can just do.
 
@@ -42,9 +59,12 @@ none of them are implementation work an agent can just do.
       `streamResponseImpl`'s `ReadableStream` can actually emit from Bun — this
       is the one piece that's pure implementation, but only worth doing against
       a real feature's actual data shape, not speculatively.
-- [ ] **Confirm the island contract** matches `ADR-010`'s proposed constraints
-      (stable `data-island` root, meaningful no-JS SSR fallback, explicit
-      mount/dispose lifecycle, Alpine must not mutate inside the island's root).
+- [ ] **Don't conflate this with `ADR-010`.** If the candidate feature (first
+      checkbox) also needs imperative third-party library ownership (a map,
+      canvas, audio), that's `ADR-010`'s separate, still-unaccepted proposal —
+      Datastar doesn't cover it. Scope this ticket to the live/streaming
+      region only; file a distinct ticket against `ADR-010` if the feature
+      needs both.
 
 ## Comments
 
