@@ -3,7 +3,10 @@
 -- | Deliberately not a card grid: a "this doesn't exist yet" page shouldn't
 -- | look as fully built as a features or values page. Distinct in shape
 -- | from both Editorial (two-column mission + values grid) and Hub (bordered
--- | card grid) — see App.Ui.Templates.Types.NoticeSlots.
+-- | card grid) — see App.Ui.Templates.Types.NoticeSlots. Still shares every
+-- | other full-page template's ContainerW6xl outer width (Article, Editorial,
+-- | Hub, Landing, Feed, and the shell itself all use it) — a lighter page
+-- | means less content, not a narrower page than its siblings.
 module App.Ui.Templates.Notice
   ( renderNotice
   ) where
@@ -26,23 +29,25 @@ renderNotice lang route slots =
     [ class_ "py-16 sm:py-20"
     , attr Contract.marker Contract.noticePage
     ]
-    [ Container.container Container.ContainerW3xl "px-4 sm:px-6"
+    [ Container.container Container.ContainerW6xl "px-4 sm:px-6"
         [ PageHeader.render lang route
             ( PageHeader.pageHeaderSlots slots.heading (Just slots.subtitle) slots.breadcrumbs
             )
-        , el "p"
-            [ class_ "mt-6 text-xl opacity-80"
-            , attr Contract.marker Contract.noticeLead
-            ]
-            [ text slots.lead ]
-        , el "div" [ class_ "mt-16" ]
-            [ el "h2" [ class_ "text-2xl font-bold" ] [ text slots.itemsHeading ]
-            , el "p" [ class_ "mt-3 opacity-70" ] [ text slots.itemsIntro ]
-            , el "ol"
-                [ class_ "mt-10 space-y-8"
-                , attr Contract.marker Contract.noticeItems
+        , el "div" [ class_ "max-w-3xl" ]
+            [ el "p"
+                [ class_ "mt-6 text-xl opacity-80"
+                , attr Contract.marker Contract.noticeLead
                 ]
-                (mapWithIndex renderItem slots.items)
+                [ text slots.lead ]
+            , el "div" [ class_ "mt-16" ]
+                [ el "h2" [ class_ "text-2xl font-bold" ] [ text slots.itemsHeading ]
+                , el "p" [ class_ "mt-3 opacity-70" ] [ text slots.itemsIntro ]
+                , el "ol"
+                    [ class_ "mt-10 space-y-8"
+                    , attr Contract.marker Contract.noticeItems
+                    ]
+                    (mapWithIndex renderItem slots.items)
+                ]
             ]
         ]
     ]
