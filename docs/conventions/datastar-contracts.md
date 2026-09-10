@@ -85,7 +85,7 @@ Every Datastar attribute is a named constructor in `App.Datastar`:
 | `dsSetFlag f b` | `$_themeOpen = true` / `$_themeOpen = false` |
 | `dsToggleFlag f` | `$_themeOpen = !$_themeOpen` |
 | `dsSetTheme mode` | sets `$_theme`, localStorage, `document.documentElement`'s `data-theme`, and closes the theme menu — exhaustive `case` over `ThemeMode` |
-| `dsNavGet lang route` | `evt.preventDefault(); @get('/en/about', {payload: {}})` |
+| `dsNavGet lang route` | `evt.preventDefault(); $_drawerOpen = false; @get('/en/about', {payload: {}})` |
 | `dsOnClickOutside f` / `dsOnKeydownEscape f` | `$flag = false` on the matching Datastar event modifier |
 
 So a menu button is `dsToggleFlag DsThemeMenuOpen`, its panel is

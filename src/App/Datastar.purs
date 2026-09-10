@@ -171,9 +171,18 @@ dsShowTheme mode = attr "data-show" ("$" <> themeSignalName <> " === '" <> theme
 
 -- | evt.preventDefault() keeps the real href as a working no-JS fallback;
 -- | @get(url) is Datastar's real, verified action syntax (data-star.dev/docs.md).
+-- | Clears the mobile drawer first: DaisyUI's drawer is a checkbox inside
+-- | #content, and Datastar's morph preserves input checked state, so a tab
+-- | switch would otherwise leave the hamburger panel open.
 dsNavGet :: Lang -> Route -> Attr
 dsNavGet lang route =
-  attr "data-on:click" ("evt.preventDefault(); @get('" <> routeUrl lang route <> "', {payload: {}})")
+  attr "data-on:click"
+    ( "evt.preventDefault(); $"
+        <> flagName DsDrawerOpen
+        <> " = false; @get('"
+        <> routeUrl lang route
+        <> "', {payload: {}})"
+    )
 
 -- | Warm the browser's HTTP cache on hover. Bare `fetch` with the transport
 -- | header, response discarded — Datastar `@get` would apply the patch, which

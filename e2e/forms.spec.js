@@ -46,4 +46,21 @@ test.describe("Mobile menu", () => {
     await expect(drawerToggle).not.toBeChecked();
     await expect(closeButton).toBeHidden();
   });
+
+  test("mobile menu closes when a nav link is clicked", async ({ page }) => {
+    await page.goto("/en");
+    await page.setViewportSize({ width: 375, height: 667 });
+
+    const drawerToggle = page.locator("#site-drawer");
+    await page.getByLabel("Open menu").click();
+    await expect(drawerToggle).toBeChecked();
+
+    await page.locator('.drawer-side .menu a[href="/en/about"]').click();
+    await expect(page).toHaveURL(/\/en\/about/);
+    await expect(page.locator("div#content[data-page-title]")).toContainText(
+      "About Pohjola",
+    );
+    await expect(drawerToggle).not.toBeChecked();
+    await expect(page.getByLabel("Close menu")).toBeHidden();
+  });
 });

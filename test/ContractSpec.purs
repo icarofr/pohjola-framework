@@ -209,7 +209,7 @@ spec = do
   describe "Datastar seam — attribute literals" do
     it "nav links carry data-on:click @get pointing at a route URL" do
       html <- renderStaticPage Home En
-      html `StrAssert.shouldContain` "data-on:click=\"evt.preventDefault(); @get("
+      html `StrAssert.shouldContain` "data-on:click=\"evt.preventDefault(); $_drawerOpen = false; @get("
 
   describe "FFI allowlist has one meaning" do
     -- Policy.Contract is the single source of truth; Test.Gate scans src/
@@ -445,7 +445,7 @@ spec = do
       -- every other (non-current) nav link.
       html <- renderStaticPage Home En
       html `StrAssert.shouldContain`
-        "href=\"/en\" data-on:click=\"evt.preventDefault(); @get(&#x27;/en&#x27;, {payload: {}})\" aria-current=\"page\" class=\"btn btn-ghost btn-sm text-primary font-semibold\""
+        "href=\"/en\" data-on:click=\"evt.preventDefault(); $_drawerOpen = false; @get(&#x27;/en&#x27;, {payload: {}})\" aria-current=\"page\" class=\"btn btn-ghost btn-sm text-primary font-semibold\""
 
   describe "no external script src" do
     -- PostList/PostDetail are data-backed (network fetch at render time)
@@ -572,7 +572,7 @@ spec = do
       html `StrAssert.shouldContain` "English"
       html `StrAssert.shouldContain` "Français"
       html `StrAssert.shouldContain` "Português"
-      html `StrAssert.shouldContain` "href=\"/fr\" data-on:click=\"evt.preventDefault(); @get(&#x27;/fr&#x27;, {payload: {}})\""
+      html `StrAssert.shouldContain` "href=\"/fr\" data-on:click=\"evt.preventDefault(); $_drawerOpen = false; @get(&#x27;/fr&#x27;, {payload: {}})\""
       html `StrAssert.shouldContain` "data-page-lang"
     it "template pages use bg-base-100 content wrapper" do
       html <- renderStaticPage Home En

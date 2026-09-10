@@ -101,8 +101,10 @@ spec = do
         `StrAssert.shouldContain` "$_theme = &#x27;light&#x27;"
 
     it "dsNavGet renders preventDefault + @get to the route's real URL" do
+      -- Close the drawer before @get so a mobile tab switch does not leave
+      -- the hamburger panel open. $_drawerOpen = false is a no-op on desktop.
       render (el "a" [ dsNavGet En About ] [ text "About" ])
-        `StrAssert.shouldContain` "data-on:click=\"evt.preventDefault(); @get(&#x27;/en/about&#x27;, {payload: {}})\""
+        `StrAssert.shouldContain` "data-on:click=\"evt.preventDefault(); $_drawerOpen = false; @get(&#x27;/en/about&#x27;, {payload: {}})\""
 
     it "dsPrefetchHover appends empty datastar payload, matching @get({payload: {}})" do
       -- JSON.stringify($) would include _-prefixed locals and diverge from
