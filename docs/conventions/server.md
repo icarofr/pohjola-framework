@@ -45,7 +45,7 @@ HTML, so the claim was false in exactly the case it was broadest about.
 |---|---|---|
 | Successful full pages, incl. streamed | `private, max-age=10` | `okWith`, `ok`, `streamResponse` (`htmlCacheControl`) |
 | Datastar SSE patches (success) | `private, max-age=180` + strong ETag (`wyhash` of event bytes); `If-None-Match` → 304 | `sseEventResponse` / `sseEventResponseMatching` (`patchCacheControl`) |
-| Datastar SSE patches (error) | `no-store` (still HTTP 200 — ADR-015) | `sseErrorEventResponse` |
+| Datastar SSE patches (error) | `no-store` (still HTTP 200 — ADR-015) | `sseNoStoreEventResponse` |
 | Errors (4xx/5xx full documents) | `no-store` | `htmlErrorResponse`, `notFound`, `methodNotAllowed`, `internalError`, `tooManyRequests` (`errorCacheControl`) |
 | Redirects | `RedirectKind` derives `public, max-age=3600` for 301/308 and `no-store` for 302/303/307 | `redirect`, `redirectVary` |
 | robots.txt, sitemap.xml | `public, max-age=86400` | `okTextPublic` in `Main.purs` |

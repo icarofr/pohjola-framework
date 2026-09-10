@@ -40,9 +40,7 @@ homeSlots lang =
           d.services.sectionEyebrow
           d.services.sectionHeadline
           d.services.sectionIntro
-          features.one
-          features.two
-          features.three
+          features
       )
       { heading: d.cta.heading
       , body: d.cta.body

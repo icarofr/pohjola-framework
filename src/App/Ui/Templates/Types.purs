@@ -39,9 +39,6 @@ module App.Ui.Templates.Types
   , imageTriple
   , feedSlots
   , scheduleSlots
-  , articleSlots
-  , formSlots
-  , noticeSlots
   , featureItems
   , valueItems
   , hubCards
@@ -259,20 +256,11 @@ type NoticeSlots =
   , breadcrumbs :: Array BreadcrumbItem
   }
 
-landingFeatures
-  :: String
-  -> String
-  -> String
-  -> ServiceFeature
-  -> ServiceFeature
-  -> ServiceFeature
-  -> LandingFeatureSlots
-landingFeatures eyebrow headline body one two three =
-  { eyebrow
-  , headline
-  , body
-  , items: { one, two, three }
-  }
+-- | Takes the whole FeatureTriple as one value, not three positional
+-- | ServiceFeature args of the same type in a row — those could transpose
+-- | silently at a call site with no compiler error.
+landingFeatures :: String -> String -> String -> FeatureTriple -> LandingFeatureSlots
+landingFeatures eyebrow headline body items = { eyebrow, headline, body, items }
 
 landingSlots
   :: LandingHeroSlots
@@ -329,40 +317,6 @@ feedSlots title subtitle breadcrumbs posts =
 scheduleSlots :: String -> String -> Array BreadcrumbItem -> Array ScheduleMatch -> ScheduleSlots
 scheduleSlots title subtitle breadcrumbs matches =
   { title, subtitle, breadcrumbs, matches }
-
-articleSlots
-  :: String
-  -> String
-  -> String
-  -> String
-  -> String
-  -> Array BreadcrumbItem
-  -> ArticleSlots
-articleSlots metaTag title authorName date body breadcrumbs =
-  { metaTag, title, authorName, date, body, breadcrumbs }
-
-formSlots
-  :: String
-  -> Maybe String
-  -> Array BreadcrumbItem
-  -> String
-  -> String
-  -> Array FormField
-  -> FormSlots
-formSlots title subtitle breadcrumbs action submitLabel fields =
-  { title, subtitle, breadcrumbs, action, submitLabel, fields }
-
-noticeSlots
-  :: String
-  -> String
-  -> String
-  -> String
-  -> String
-  -> Array NoticeItem
-  -> Array BreadcrumbItem
-  -> NoticeSlots
-noticeSlots heading subtitle lead itemsHeading itemsIntro items breadcrumbs =
-  { heading, subtitle, lead, itemsHeading, itemsIntro, items, breadcrumbs }
 
 featureItems :: FeatureTriple -> Array ServiceFeature
 featureItems triple =

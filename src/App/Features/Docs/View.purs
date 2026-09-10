@@ -9,7 +9,7 @@ import App.Form (FormStatus)
 import App.Html (Html)
 import App.Ui.Templates.PageHeader as PageHeader
 import App.Ui.Templates.Render (renderPage)
-import App.Ui.Templates.Types (NoticeSlots, PageTemplate(..), noticeSlots)
+import App.Ui.Templates.Types (NoticeSlots, PageTemplate(..))
 import Data.I18n (Lang, dict)
 import Data.Maybe (Maybe)
 import Data.Route (Route(..))
@@ -24,7 +24,14 @@ docsSlots lang =
     d = (dict lang).docs
     nav = (dict lang).nav
   in
-    noticeSlots d.heading d.subtitle d.lead d.itemsHeading d.itemsIntro d.items
-      [ PageHeader.breadcrumbHome lang nav.home
-      , PageHeader.breadcrumbHere d.heading
-      ]
+    { heading: d.heading
+    , subtitle: d.subtitle
+    , lead: d.lead
+    , itemsHeading: d.itemsHeading
+    , itemsIntro: d.itemsIntro
+    , items: d.items
+    , breadcrumbs:
+        [ PageHeader.breadcrumbHome lang nav.home
+        , PageHeader.breadcrumbHere d.heading
+        ]
+    }

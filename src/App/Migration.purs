@@ -136,15 +136,10 @@ createSchemaMigrationsSql =
 -- | Query applied migrations from the database, ordered by filename.
 -- | Ensures the tracking table exists first (idempotent).
 getAppliedMigrations :: SQL -> Aff (Either MigrationError (Array AppliedMigration))
-getAppliedMigrations sql = do
-  createResult <- execMulti sql createSchemaMigrationsSql
-  case createResult of
-    Left err -> pure (Left (MigrationQueryError (show err)))
-    Right _ -> do
-      queryResult <- query sql "SELECT filename, checksum FROM schema_migrations ORDER BY filename" []
-      case queryResult of
-        Left err -> pure (Left (MigrationQueryError (show err)))
-        Right rows -> pure (Right (mapMaybe rowToApplied rows))
+getAppliedMigrations sql = runExceptT do
+  _ <- liftSqlQuery (execMulti sql createSchemaMigrationsSql)
+  rows <- liftSqlQuery (query sql "SELECT filename, checksum FROM schema_migrations ORDER BY filename" [])
+  pure (mapMaybe rowToApplied rows)
   where
   rowToApplied row = do
     filename <- readStringField row "filename"
@@ -210,6 +205,12 @@ withReservedMigrationLock pool body = do
 -- | Helper to lift SQL operations into the Migration runner's ExceptT.
 liftSql :: forall a. Aff (Either SQLError a) -> ExceptT MigrationError Aff a
 liftSql m = lift m >>= either (throwError <<< MigrationExecutionError <<< show) pure
+
+-- | Like liftSql, but tags failures as MigrationQueryError (reading the
+-- | tracking table) rather than MigrationExecutionError (running a
+-- | migration) -- getAppliedMigrations queries; it doesn't execute one.
+liftSqlQuery :: forall a. Aff (Either SQLError a) -> ExceptT MigrationError Aff a
+liftSqlQuery m = lift m >>= either (throwError <<< MigrationQueryError <<< show) pure
 
 -- | Helper to lift migration-specific Eithers into the runner's ExceptT.
 liftEither :: forall a. Aff (Either MigrationError a) -> ExceptT MigrationError Aff a

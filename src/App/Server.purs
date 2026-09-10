@@ -48,7 +48,6 @@ module App.Server
   , sseEventResponse
   , sseEventResponseMatching
   , sseNoStoreEventResponse
-  , sseErrorEventResponse
   , datastarPatchElementsEvent
   , serve
   , nextRequestId
@@ -546,15 +545,6 @@ sseNoStoreEventResponse eventBody = do
         ]
     , body: StreamBody stream
     }
-
--- | Distinct name from `sseNoStoreEventResponse` for the distinct call site:
--- | route-miss/failure patches (`routeMiss404`, `failureDatastarPatch`), where
--- | "no-store" is incidental to "this is an error," versus a statusful but
--- | successful banner, where "no-store" is the point. Same policy today, but
--- | an error patch earning stronger treatment later (e.g. its own headers)
--- | shouldn't force a statusful banner to follow along, or vice versa.
-sseErrorEventResponse :: String -> Effect Response
-sseErrorEventResponse = sseNoStoreEventResponse
 
 -- ============================================================================
 -- Server

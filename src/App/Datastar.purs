@@ -169,34 +169,65 @@ dsShowTheme mode = attr "data-show" ("$" <> themeSignalName <> " === '" <> theme
 -- dispatches after every @get/@post.
 -- ============================================================================
 
+-- | The empty-object Datastar payload shared by every shell-nav call site
+-- | that must resolve to the same GET identity (`?datastar={}`): dsNavGet,
+-- | dsLangNavGet, and dsPrefetchHover's query param. Hover, click, and
+-- | popstate all fetch this exact identity, which is what makes the click
+-- | reusable from the hover's `private, max-age=180` cache entry -- named
+-- | once so the three (four, counting Layout.Scripts' popstate JS) call
+-- | sites can't quietly drift onto different literal spellings of "empty".
+datastarEmptyPayload :: String
+datastarEmptyPayload = "{}"
+
 -- | evt.preventDefault() keeps the real href as a working no-JS fallback;
 -- | @get(url) is Datastar's real, verified action syntax (data-star.dev/docs.md).
--- | Clears the mobile drawer first: DaisyUI's drawer is a checkbox inside
--- | #content, and Datastar's morph preserves input checked state, so a tab
--- | switch would otherwise leave the hamburger panel open.
-dsNavGet :: Lang -> Route -> Attr
-dsNavGet lang route =
+-- | Clears the given flag first: DaisyUI's drawer/dropdowns are checkboxes
+-- | inside #content, and Datastar's morph preserves input checked state, so
+-- | leaving a flag untouched across a real navigation would leave whatever
+-- | it opened stuck open.
+dsNavGetClearing :: DsFlag -> Lang -> Route -> Attr
+dsNavGetClearing flag lang route =
   attr "data-on:click"
     ( "evt.preventDefault(); $"
-        <> flagName DsDrawerOpen
+        <> flagName flag
         <> " = false; @get('"
         <> routeUrl lang route
-        <> "', {payload: {}})"
+        <> "', {payload: "
+        <> datastarEmptyPayload
+        <> "})"
     )
+
+-- | Regular shell nav: clears the mobile drawer, since leaving the current
+-- | view should close whatever chrome was open over it.
+dsNavGet :: Lang -> Route -> Attr
+dsNavGet = dsNavGetClearing DsDrawerOpen
+
+-- | Language switch: clears the lang dropdown (`_langOpen`), not the mobile
+-- | drawer (`_drawerOpen`). Regular nav closes the drawer because it's
+-- | leaving the current view; a language switch re-renders the same view in
+-- | another language, so a visitor picking a language from inside the open
+-- | drawer stays in it. Theme switching (`dsSetTheme`) needs no equivalent
+-- | carve-out at all: it never calls `@get` in the first place, so
+-- | `_drawerOpen` is never touched.
+dsLangNavGet :: Lang -> Route -> Attr
+dsLangNavGet = dsNavGetClearing DsLangMenuOpen
 
 -- | Warm the browser's HTTP cache on hover. Bare `fetch` with the transport
 -- | header, response discarded — Datastar `@get` would apply the patch, which
 -- | is wrong on mouseenter. `el` (no `$`): `$el` compiles to a signal lookup.
 -- |
--- | The query param is the empty object, not `JSON.stringify($)`. `@get` with
--- | `{payload: {}}` (and `_`-prefixed chrome) serializes to `?datastar={}`;
--- | stringify of the live store would include locals Datastar's `filtered()`
--- | drops. Hover, click, and popstate must share that identity or the click
--- | cannot reuse the hover's `private, max-age=180` response.
+-- | The query param is `datastarEmptyPayload`, not `JSON.stringify($)`. `@get`
+-- | with `{payload: {}}` (and `_`-prefixed chrome) serializes to
+-- | `?datastar={}`; stringify of the live store would include locals
+-- | Datastar's `filtered()` drops. Hover, click, and popstate must share that
+-- | identity or the click cannot reuse the hover's `private, max-age=180`
+-- | response.
 dsPrefetchHover :: Attr
 dsPrefetchHover =
   attr "data-on:mouseenter"
-    ( "var u = new URL(el.href); u.searchParams.set('datastar', '{}'); fetch(u.href, {headers: {'"
+    ( "var u = new URL(el.href); u.searchParams.set('datastar', '"
+        <> datastarEmptyPayload
+        <> "'); fetch(u.href, {headers: {'"
         <> datastarRequestHeader
         <> "': 'true'}})"
     )
@@ -215,6 +246,14 @@ dsSpaLink lang route extraAttrs children =
     )
     children
 
+-- | The aria-current + prefetch-skip pair for "is this the page already
+-- | showing": one case on the single fact, not two ifs on the same
+-- | condition that could quietly disagree if a future edit touched one arm.
+currentPageAttrs :: Boolean -> Array Attr
+currentPageAttrs isCurrent =
+  if isCurrent then [ attr "aria-current" "page" ]
+  else [ dsPrefetchHover ]
+
 -- | Record-shaped nav link carrying the current route for aria-current and
 -- | skipping prefetch on the page already showing — the shell-nav
 -- | equivalent of App.Alpine's navLink, used by App.Ui.Breadcrumbs.
@@ -224,28 +263,10 @@ dsNavLinkRecord { lang, current, target } extraAttrs children =
     ( [ href (routeUrl lang target)
       , dsNavGet lang target
       ]
-        <> (if target == current then [ attr "aria-current" "page" ] else [])
-        <> (if target == current then [] else [ dsPrefetchHover ])
+        <> currentPageAttrs (target == current)
         <> extraAttrs
     )
     children
-
--- | Like dsNavGet, but for the language switch specifically: closes the lang
--- | dropdown (`_langOpen`), not the mobile drawer (`_drawerOpen`). Regular
--- | nav closes the drawer because it's leaving the current view; a language
--- | switch re-renders the same view in another language, so a visitor
--- | picking a language from inside the open drawer stays in it. Theme
--- | switching (`dsSetTheme`) needs no equivalent carve-out at all: it never
--- | calls `@get` in the first place, so `_drawerOpen` is never touched.
-dsLangNavGet :: Lang -> Route -> Attr
-dsLangNavGet lang route =
-  attr "data-on:click"
-    ( "evt.preventDefault(); $"
-        <> flagName DsLangMenuOpen
-        <> " = false; @get('"
-        <> routeUrl lang route
-        <> "', {payload: {}})"
-    )
 
 -- | Language-switch link — compares Lang, not Route, unlike dsNavLinkRecord
 -- | (staying on the same page, switching which language it's rendered in).
@@ -256,8 +277,7 @@ dsLangLink { targetLang, currentLang, route } extraAttrs children =
     ( [ href (routeUrl targetLang route)
       , dsLangNavGet targetLang route
       ]
-        <> (if targetLang == currentLang then [ attr "aria-current" "page" ] else [])
-        <> (if targetLang == currentLang then [] else [ dsPrefetchHover ])
+        <> currentPageAttrs (targetLang == currentLang)
         <> extraAttrs
     )
     children

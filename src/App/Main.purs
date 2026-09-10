@@ -69,7 +69,7 @@ handleGet cfg cache nonce headers query path = case path of
 routeMiss404 :: String -> Boolean -> Lang -> Aff Server.Response
 routeMiss404 nonce wantsPatch lang =
   if wantsPatch then
-    liftEffect $ Server.sseErrorEventResponse (Server.datastarPatchElementsEvent (renderErrorFragment lang 404))
+    liftEffect $ Server.sseNoStoreEventResponse (Server.datastarPatchElementsEvent (renderErrorFragment lang 404))
   else
     pure $ Server.htmlErrorResponse (renderErrorPage nonce lang 404) [ varyHeader ] (Server.errorStatusCode 404)
 
@@ -152,7 +152,7 @@ failurePage ctx err = do
 failureDatastarPatch :: RequestCtx -> AppError -> Aff Server.Response
 failureDatastarPatch ctx err = do
   logRenderFailure ctx err
-  liftEffect $ Server.sseErrorEventResponse
+  liftEffect $ Server.sseNoStoreEventResponse
     (Server.datastarPatchElementsEvent (renderErrorFragment ctx.lang (errorStatus err)))
 
 -- | Serve a route.
@@ -201,7 +201,8 @@ isDatastarRequest headers = Map.lookup Datastar.datastarRequestHeader headers ==
 -- | SSE framing instead of a complete document.
 handleDatastarPatch :: RequestCtx -> Aff Server.Response
 handleDatastarPatch ctx = do
-  result <- patchHtml ctx
+  let statusful = hasStatusQuery ctx
+  result <- patchHtml statusful ctx
   case result of
     Left err -> failureDatastarPatch ctx err
     Right html ->
@@ -210,17 +211,23 @@ handleDatastarPatch ctx = do
       in
         -- Statusful banners are per-request. The full-document path is
         -- no-store (`htmlOk`); the patch path must match or popstate on
-        -- `?status=` would keep a success banner for max-age=180.
-        if hasStatusQuery ctx then
+        -- `?status=` would keep a success banner for max-age=180. `statusful`
+        -- is computed once above -- both this decision and patchHtml's must
+        -- agree on the same fact, so there is exactly one call to
+        -- hasStatusQuery per request, not two independently-trusted ones.
+        if statusful then
           liftEffect $ Server.sseNoStoreEventResponse event
         else
           liftEffect $ Server.sseEventResponseMatching (Map.lookup "if-none-match" ctx.headers) event
 
 -- | Html for a Datastar patch request: statusful → fresh; otherwise the
--- | shared cache (the same cache full-document requests use).
-patchHtml :: RequestCtx -> Aff (Either AppError Html)
-patchHtml ctx =
-  if hasStatusQuery ctx then
+-- | shared cache (the same cache full-document requests use). Takes the
+-- | statusful decision from the caller rather than recomputing it, so
+-- | handleDatastarPatch's header choice and this render choice can't drift
+-- | apart onto two different query snapshots.
+patchHtml :: Boolean -> RequestCtx -> Aff (Either AppError Html)
+patchHtml statusful ctx =
+  if statusful then
     pageRenderer ctx.cfg ctx.route ctx.lang (statusFor ctx)
   else if isStaticRoute ctx.route then
     cachedInner ctx
