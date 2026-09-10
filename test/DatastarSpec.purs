@@ -14,6 +14,7 @@ import App.Datastar
   , dsBindFlag
   , dsClassWhenFlag
   , dsClassWhenTheme
+  , dsLangLink
   , dsNavGet
   , dsNavLinkRecord
   , dsOnClickOutside
@@ -34,6 +35,8 @@ import App.Theme (ThemeMode(..))
 import Data.Array (length, nubEq)
 import Data.I18n (Lang(..))
 import Data.Route (Route(..))
+import Data.String.Common (split) as String
+import Data.String.Pattern (Pattern(..))
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldEqual)
 import Test.Spec.Assertions.String as StrAssert
@@ -105,6 +108,18 @@ spec = do
       -- the hamburger panel open. $_drawerOpen = false is a no-op on desktop.
       render (el "a" [ dsNavGet En About ] [ text "About" ])
         `StrAssert.shouldContain` "data-on:click=\"evt.preventDefault(); $_drawerOpen = false; @get(&#x27;/en/about&#x27;, {payload: {}})\""
+
+    it "dsLangLink closes the lang dropdown but leaves the mobile drawer alone" do
+      -- Unlike dsNavGet, a language switch re-renders the same view rather
+      -- than leaving it -- a mobile visitor picking a language from inside
+      -- the open drawer should stay in it, so this must not touch
+      -- $_drawerOpen at all.
+      let html = render (dsLangLink { targetLang: Fr, currentLang: En, route: About } [] [ text "Français" ])
+      html `StrAssert.shouldContain` "data-on:click=\"evt.preventDefault(); $_langOpen = false; @get(&#x27;/fr/about&#x27;, {payload: {}})\""
+      html `StrAssert.shouldNotContain` "_drawerOpen"
+      -- Exactly one data-on:click: no duplicate attribute for the browser to
+      -- silently drop the second copy of.
+      (length (String.split (Pattern "data-on:click=") html) - 1) `shouldEqual` 1
 
     it "dsPrefetchHover appends empty datastar payload, matching @get({payload: {}})" do
       -- JSON.stringify($) would include _-prefixed locals and diverge from

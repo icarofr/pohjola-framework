@@ -230,6 +230,23 @@ dsNavLinkRecord { lang, current, target } extraAttrs children =
     )
     children
 
+-- | Like dsNavGet, but for the language switch specifically: closes the lang
+-- | dropdown (`_langOpen`), not the mobile drawer (`_drawerOpen`). Regular
+-- | nav closes the drawer because it's leaving the current view; a language
+-- | switch re-renders the same view in another language, so a visitor
+-- | picking a language from inside the open drawer stays in it. Theme
+-- | switching (`dsSetTheme`) needs no equivalent carve-out at all: it never
+-- | calls `@get` in the first place, so `_drawerOpen` is never touched.
+dsLangNavGet :: Lang -> Route -> Attr
+dsLangNavGet lang route =
+  attr "data-on:click"
+    ( "evt.preventDefault(); $"
+        <> flagName DsLangMenuOpen
+        <> " = false; @get('"
+        <> routeUrl lang route
+        <> "', {payload: {}})"
+    )
+
 -- | Language-switch link — compares Lang, not Route, unlike dsNavLinkRecord
 -- | (staying on the same page, switching which language it's rendered in).
 -- | The shell-nav equivalent of App.Alpine's langLink.
@@ -237,7 +254,7 @@ dsLangLink :: { targetLang :: Lang, currentLang :: Lang, route :: Route } -> Arr
 dsLangLink { targetLang, currentLang, route } extraAttrs children =
   el "a"
     ( [ href (routeUrl targetLang route)
-      , dsNavGet targetLang route
+      , dsLangNavGet targetLang route
       ]
         <> (if targetLang == currentLang then [ attr "aria-current" "page" ] else [])
         <> (if targetLang == currentLang then [] else [ dsPrefetchHover ])

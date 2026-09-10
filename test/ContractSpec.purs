@@ -572,7 +572,9 @@ spec = do
       html `StrAssert.shouldContain` "English"
       html `StrAssert.shouldContain` "Français"
       html `StrAssert.shouldContain` "Português"
-      html `StrAssert.shouldContain` "href=\"/fr\" data-on:click=\"evt.preventDefault(); $_drawerOpen = false; @get(&#x27;/fr&#x27;, {payload: {}})\""
+      -- Language switch closes the lang dropdown ($_langOpen), not the
+      -- mobile drawer ($_drawerOpen) -- see App.Datastar's dsLangNavGet.
+      html `StrAssert.shouldContain` "href=\"/fr\" data-on:click=\"evt.preventDefault(); $_langOpen = false; @get(&#x27;/fr&#x27;, {payload: {}})\""
       html `StrAssert.shouldContain` "data-page-lang"
     it "template pages use bg-base-100 content wrapper" do
       html <- renderStaticPage Home En

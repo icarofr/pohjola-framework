@@ -31,7 +31,6 @@ import App.Datastar
   , dsNavLinkRecord
   , dsOnClickOutside
   , dsOnKeydownEscape
-  , dsSetFlag
   , dsSetTheme
   , dsShowFlag
   , dsShowTheme
@@ -317,13 +316,14 @@ renderLangDropdown currentLang route labels =
 
 -- | Which language is "current" is fixed at render time (a real navigation,
 -- | not a client signal) — a static class, matching dropdownItemClasses.
+-- | Closing `_langOpen` is baked into dsLangLink's own click handler
+-- | (dsLangNavGet), not a second `data-on:click` here — a second one would
+-- | be a duplicate HTML attribute and the browser silently drops it.
 langMenuItem :: Lang -> Lang -> Route -> String -> Html
 langMenuItem targetLang currentLang route label =
   el "li" []
     [ dsLangLink { targetLang, currentLang, route }
-        [ class_ (dsDropdownItemClasses (targetLang == currentLang))
-        , dsSetFlag DsLangMenuOpen false
-        ]
+        [ class_ (dsDropdownItemClasses (targetLang == currentLang)) ]
         [ text label ]
     ]
 
