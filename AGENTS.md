@@ -8,7 +8,7 @@ PureScript 0.15.16 + Bun SSR MPA. Datastar SSE-patches the DatastarShell `#conte
 - FFI: Policy.Contract ffiAllowlist (four modules). Extend App.Bun for new Bun primitives; do not add a fifth module without ADR-003.
 - make gate = Policy.Contract. No class_ in Features. Every View.purs imports App.Ui.Templates.Render.
 - CSP pinned in ContractSpec. Do not widen. unsafe-eval is required by Datastar (new Function).
-- Do not implement ADR-010. App.Auth (ADR-002, Lucia session pattern) is implemented — session lifecycle only, no users table/login UI. Do not wire requireAuth into a mutating route until ADR-005 (CSRF) lands too — see GUARANTEES.md.
+- Do not implement ADR-010. App.Auth (ADR-002, Lucia session pattern) and App.Users (users + oauth_accounts tables) are implemented — no login UI or OAuth provider wired yet (see ticket 09 in `.scratch/founding-premise/`). Do not wire requireAuth into a mutating route until ADR-005 (CSRF) lands too — see GUARANTEES.md.
 - Licence: Apache 2.0 (spirit: `LICENCE.md`). Do not paste private app names into this public tree.
 
 ## Commands
