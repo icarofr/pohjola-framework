@@ -235,7 +235,6 @@ import App.Ui.Templates.Types
   ( ActionTarget(..)
   , FeedCard
   , PageTemplate(..)
-  , articleSlots
   , feedSlots
   )
 import Data.I18n (Lang, dict)
@@ -270,17 +269,17 @@ render${name}Detail lang status item =
   in
     renderPage lang ${name} status
       ( Article
-          ( articleSlots
-              (d.heading <> " #" <> show idNum)
-              title
-              ""
-              (d.heading <> " #" <> show idNum)
-              (${lower}Body item)
+          { metaTag: d.heading <> " #" <> show idNum
+          , title
+          , authorName: ""
+          , date: d.heading <> " #" <> show idNum
+          , body: ${lower}Body item
+          , breadcrumbs:
               [ PageHeader.breadcrumbHome lang nav.home
               , PageHeader.breadcrumbLink lang ${name} d.heading
               , PageHeader.breadcrumbHere title
               ]
-          )
+          }
       )
 
 render${name}Error :: Lang -> Maybe FormStatus -> Html

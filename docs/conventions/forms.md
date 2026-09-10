@@ -57,9 +57,9 @@ wants one, not assumed here.
    path constant).
 2. Add a handler in `Main.purs` following the existing ones.
 3. In the feature `View.purs`, call `renderPage` with
-   `Form { title, subtitle, breadcrumbs, action, submitLabel, fields }`
-   (or `formSlots`). Map fields with `FormText` / `FormEmail` /
-   `FormTextarea` from `App.Ui.Templates.Types`.
+   `Form { title, subtitle, breadcrumbs, action, submitLabel, fields }`.
+   Map fields with `FormText` / `FormEmail` / `FormTextarea` from
+   `App.Ui.Templates.Types`.
 4. Parse form bodies through `App.Form` — inline parsing in handlers
    fails ContractSpec / property tests.
 

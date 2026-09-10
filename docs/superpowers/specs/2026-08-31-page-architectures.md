@@ -25,9 +25,9 @@ Site chrome (navbar, drawer, footer) stays in `SiteShell` — not in page templa
 | Link grid, contact options, hub | `Hub` | `hubSlots`, `hubCardTriple` | `Contact/View.purs` |
 | Long-form static content, mission/values | `Editorial` | `editorialSlots`, `valuesSlots`, `valueSextuple` | `About/View.purs` |
 | Blog / post teasers, author cards | `Feed` | `feedSlots` + `FeedCard` | `Posts/View.purs` |
-| Single article / detail page | `Article` | `articleSlots` | `Posts/View.purs` |
+| Single article / detail page | `Article` | `ArticleSlots` record literal | `Posts/View.purs` |
 | Match list, fixtures, calendars, crests | `Schedule` | `scheduleSlots` + `ScheduleMatch` | `Fixtures/View.purs` |
-| Signup / contact / newsletter form | `Form` | `formSlots` + `FormField` | (template-only; no feature exemplar yet) |
+| Signup / contact / newsletter form | `Form` | `FormSlots` record literal + `FormField` | (template-only; no feature exemplar yet) |
 
 Entry: `App.Ui.Templates.Render.renderPage lang route status (Constructor slots)`.
 
