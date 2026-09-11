@@ -37,7 +37,7 @@ test.describe("No-JS degradation", () => {
     await expect(page).toHaveURL(/\/fr$/);
     await expect(page.locator("html")).toHaveAttribute("lang", "fr");
     await expect(page.locator("main")).toContainText(
-      "Un framework conçu pour sécuriser le code écrit par l'IA",
+      "Un framework construit sur des garanties, pas des conventions",
     );
   });
 });
