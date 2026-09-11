@@ -36,7 +36,7 @@ renderHero hero =
     ]
     [ el "div" [ class_ "hero-content text-center" ]
         [ el "div" [ class_ "max-w-3xl" ]
-            [ Badge.badge Badge.BadgeNeutral hero.eyebrow
+            [ Badge.badge Badge.BadgeSecondary hero.eyebrow
             , el "h1" [ class_ "mt-6 text-4xl font-bold tracking-tight sm:text-5xl" ]
                 [ text hero.headline ]
             , el "p" [ class_ "mt-6 text-lg opacity-80" ] [ text hero.body ]
