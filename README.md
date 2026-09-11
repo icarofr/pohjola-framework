@@ -9,9 +9,9 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4.0-06B6D4?style=flat&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
 [![Licence](https://img.shields.io/badge/Licence-Apache-334155?style=flat)](LICENCE.md)
 
-**Pohjola is the safest way to vibe code a web app** — an opinionated full-stack framework where routes, data decoding, errors, translations, and HTML share a single, unbroken compile-time model.
+**Pohjola is an opinionated full-stack framework where routes, data decoding, errors, translations, and HTML share a single, unbroken compile-time model.** Built on **PureScript** and **Bun**, it is designed around server-authoritative hypermedia: the server renders complete HTML and owns application state. Datastar is an optional progressive-enhancement seam, not a second application runtime.
 
-A lot of what gets shipped as an AI-assisted "framework" today is unsafe slop held together by convention alone. Pohjola is a deliberate bet on the opposite: that a compiler-enforced contract, not developer discipline or code review, is what actually stops an AI agent from drifting into inconsistent routes, missing translations, or unescaped HTML. The compiler is your contract. Pohjola turns brittle architectural conventions into mechanically enforced invariants. Built on **PureScript** and **Bun**, it is designed around server-authoritative hypermedia: the server renders complete HTML and owns application state. Datastar is an optional progressive-enhancement seam, not a second application runtime.
+The compiler is the contract, not developer discipline or code review: an inconsistent route, a missing translation, or unescaped HTML isn't a review comment — it's a compile error. Pohjola turns brittle architectural conventions into mechanically enforced invariants, which is what makes it a rigorous foundation for hypermedia apps in general — and, as a direct result, **the safest way to vibe code one**: a lot of what ships as an AI-assisted "framework" today is unsafe slop held together by convention alone, and a mechanical contract stops that kind of drift no matter whose hands are on the keyboard.
 
 ---
 
@@ -133,7 +133,7 @@ Pohjola makes a deliberate architectural choice: the **PureScript application ow
 | **IHP (Integrated Haskell Platform)** | Full-stack Haskell with built-in ORM, schema designer, and heavy Nix environment. | Pohjola provides pure typed functional SSR on the ultra-fast Bun runtime with standard npm access, avoiding heavy Nix tooling and GHC build overhead. |
 | **Django / Rails / Laravel** | Batteries-included conventions (ORM, admin panel, built-in mailers). | Pohjola trades built-in framework magic for compile-time control over domain types, explicit effects, and centralized HTML escaping at typed boundaries. |
 | **Next.js / SvelteKit / Nuxt** | Large npm ecosystem, client hydration, and hybrid meta-framework tooling. | Pohjola avoids hydration waterfall debt and runtime serialisation surprises; types, error values, and HTML escaping survive all boundaries. |
-| **Elm Architecture** | Strict client-side event loops and centralised browser state. | Pohjola keeps the request lifecycle on the server with `Aff` async orchestration, avoiding heavy single-page client runtimes. |
+| **Elm Architecture** | No runtime exceptions, total functions, a compiler that rejects invalid states outright. | Pohjola brings that same discipline to the server: exhaustive routes, translations, and `Either`-typed failures are compile-time facts, not test coverage — while the request lifecycle itself stays server-side via `Aff`, no heavy client runtime to maintain. |
 | **Gleam / BEAM (Phoenix)** | Actor concurrency, fault-tolerant supervision, and distributed clustering. | Pohjola brings functional type safety directly to the Bun runtime, providing seamless access to modern web tooling and npm dependencies. |
 
 ---

@@ -7,7 +7,7 @@ test.describe("No-JS degradation", () => {
     await page.goto("/en");
     // hero headline is server rendered
     await expect(page.locator("main")).toContainText(
-      "A framework built to make AI-written code safer to ship",
+      "A framework built on guarantees, not conventions",
     );
   });
 

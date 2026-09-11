@@ -186,8 +186,8 @@ en =
       }
   , hero:
       { eyebrow: "PureScript on Bun"
-      , headline: "A framework built to make AI-written code safer to ship"
-      , body: "Pohjola pairs an agent-friendly page generator with a compiler that refuses common mistakes. Pages feel instant (Datastar prefetches on hover and swaps HTML patches in place) while PureScript proves every route is handled, every string is escaped, and a crash never reaches your users."
+      , headline: "A framework built on guarantees, not conventions"
+      , body: "Every route, translation, and HTML string shares one compile-time model. PureScript proves every route is handled and every string is escaped before a crash reaches your users, while Datastar keeps pages feeling instant, prefetching on hover and swapping HTML patches in place. It's also, as a direct result, the safest way to vibe code an app: the same guarantees that catch a human's mistake catch an AI agent's drift too."
       , ctaLabel: "See the guarantees"
       , secondaryLabel: "View the repository"
       }
@@ -219,7 +219,7 @@ en =
       , ctaLabel: "View the repository"
       }
   , seo:
-      { homeDescription: "Pohjola: a type-safe PureScript framework on Bun, built to make AI-assisted code safer to ship."
+      { homeDescription: "Pohjola: a type-safe PureScript framework on Bun, where compiler-enforced guarantees keep every route and string correct, including when the code is AI-assisted."
       , aboutDescription: "Why Pohjola exists and the six engineering principles behind it."
 
       , guaranteesDescription: "What Pohjola mechanically guarantees, and how to verify each claim yourself."
@@ -313,8 +313,8 @@ fr =
       }
   , hero:
       { eyebrow: "PureScript sur Bun"
-      , headline: "Un framework conçu pour sécuriser le code écrit par l'IA"
-      , body: "Pohjola associe un générateur de pages pensé pour les agents à un compilateur qui refuse les erreurs courantes. Les pages semblent instantanées (Datastar précharge au survol et remplace les fragments HTML sur place) tandis que PureScript garantit que chaque route est gérée, chaque chaîne est échappée, et qu'aucun plantage n'atteint vos utilisateurs."
+      , headline: "Un framework construit sur des garanties, pas des conventions"
+      , body: "Chaque route, chaque traduction et chaque chaîne HTML partage un seul modèle vérifié à la compilation. PureScript garantit que chaque route est gérée et chaque chaîne est échappée avant qu'un plantage n'atteigne vos utilisateurs, tandis que Datastar garde les pages instantanées, avec préchargement au survol et remplacement des fragments HTML sur place. C'est aussi, par conséquence directe, la façon la plus sûre de vibe coder une application: les mêmes garanties qui interceptent l'erreur d'un humain interceptent tout autant la dérive d'un agent IA."
       , ctaLabel: "Voir les garanties"
       , secondaryLabel: "Voir le dépôt"
       }
@@ -346,7 +346,7 @@ fr =
       , ctaLabel: "Voir le dépôt"
       }
   , seo:
-      { homeDescription: "Pohjola: un framework PureScript typé sur Bun, conçu pour sécuriser le code assisté par IA."
+      { homeDescription: "Pohjola: un framework PureScript typé sur Bun, où des garanties vérifiées par le compilateur maintiennent chaque route et chaîne correctes, y compris quand le code est assisté par IA."
       , aboutDescription: "Pourquoi Pohjola existe et les six principes d'ingénierie qui le guident."
 
       , guaranteesDescription: "Ce que Pohjola garantit mécaniquement, et comment vérifier chaque affirmation vous-même."
@@ -440,8 +440,8 @@ pt =
       }
   , hero:
       { eyebrow: "PureScript no Bun"
-      , headline: "Um framework feito para tornar o código escrito por IA mais seguro"
-      , body: "O Pohjola combina um gerador de páginas pensado para agentes com um compilador que recusa erros comuns. As páginas parecem instantâneas (o Datastar pré-carrega ao passar o rato e substitui fragmentos no lugar) enquanto o PureScript garante que cada rota é tratada, cada string é escapada, e nenhuma falha chega aos seus utilizadores."
+      , headline: "Um framework construído sobre garantias, não convenções"
+      , body: "Cada rota, tradução e string HTML partilha um único modelo verificado em tempo de compilação. O PureScript garante que cada rota é tratada e cada string é escapada antes de uma falha chegar aos seus utilizadores, enquanto o Datastar mantém as páginas instantâneas, pré-carregando ao passar o rato e substituindo fragmentos HTML no lugar. É também, como resultado direto, a forma mais segura de fazer vibe coding de uma aplicação: as mesmas garantias que apanham o erro de um humano apanham igualmente o desvio de um agente de IA."
       , ctaLabel: "Ver as garantias"
       , secondaryLabel: "Ver o repositório"
       }
@@ -473,7 +473,7 @@ pt =
       , ctaLabel: "Ver o repositório"
       }
   , seo:
-      { homeDescription: "Pohjola: um framework PureScript tipado sobre o Bun, feito para tornar o código assistido por IA mais seguro."
+      { homeDescription: "Pohjola: um framework PureScript tipado sobre o Bun, onde garantias verificadas pelo compilador mantêm cada rota e string corretas, incluindo quando o código é assistido por IA."
       , aboutDescription: "Porque é que o Pohjola existe e os seis princípios de engenharia por trás dele."
 
       , guaranteesDescription: "O que o Pohjola garante mecanicamente, e como verificar cada afirmação você mesmo."

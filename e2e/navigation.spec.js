@@ -37,7 +37,7 @@ test.describe("Datastar navigation", () => {
     await page.goto("/en");
 
     await expect(page.locator('div#content[data-page-title]')).toContainText(
-      "A framework built to make AI-written code safer to ship",
+      "A framework built on guarantees, not conventions",
     );
 
     await page.evaluate(() => {
@@ -144,7 +144,7 @@ test.describe("Datastar navigation", () => {
     await expect(page).toHaveURL(/\/en$/);
     await expect(page).toHaveTitle(/Pohjola/);
     await expect(page.locator('div#content[data-page-title]')).toContainText(
-      "A framework built to make AI-written code safer to ship",
+      "A framework built on guarantees, not conventions",
     );
     expect(await page.evaluate(() => window.__marker)).toBe(1);
     expect(await page.evaluate(() => history.length)).toBe(historyLength);
@@ -190,7 +190,7 @@ test.describe("Datastar navigation", () => {
     await expect(page).toHaveURL(/\/en\/?$/);
     expect(await page.evaluate(() => window.__marker)).toBeUndefined();
     await expect(page.locator("div#content[data-page-title]")).toContainText(
-      "A framework built to make AI-written code safer to ship",
+      "A framework built on guarantees, not conventions",
     );
   });
 
