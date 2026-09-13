@@ -285,6 +285,20 @@ test.describe("Datastar navigation", () => {
     expect(await page.evaluate(() => window.scrollY)).toBe(0);
   });
 
+  test("does not scroll to top on language switch", async ({ page }) => {
+    await page.goto("/en");
+    await page.evaluate(() => window.scrollTo(0, 400));
+    await expect
+      .poll(() => page.evaluate(() => window.scrollY))
+      .toBeGreaterThan(300);
+
+    await page.locator('header button[aria-label="Switch language"]').click();
+    await page.locator('header a[href="/fr"]').click();
+
+    await expect(page).toHaveURL(/\/fr$/);
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(300);
+  });
+
   test("scrolls to top on browser back (popstate restore)", async ({ page }) => {
     await page.goto("/en");
     await page.click('a[href="/en/about"]');

@@ -131,7 +131,9 @@ behaviour belongs on the server, not that the seam needs loosening.
   `pushState`/`popstate` support (its own docs point to plain `<a>` navigation
   instead). Forward nav listens for Datastar's own `datastar-fetch`
   `{type:"finished"}` event (dispatched *after* the SSE patch is already
-  applied) and only needs to `pushState` + sync title/lang + scroll to top.
+  applied) and only needs to `pushState` + sync title/lang, plus scroll to
+  top on a real route change. Language switches carry `data-keep-scroll` and
+  leave the window where it was.
   Back/forward re-fetches as a Datastar request with the same `?datastar={}`
   identity, parses the `data: elements `
   payload out of the SSE body, and replaces `#content` wholesale.

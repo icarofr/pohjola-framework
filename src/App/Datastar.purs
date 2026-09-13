@@ -36,11 +36,12 @@ module App.Datastar
   , dsOnClickOutside
   , dsOnKeydownEscape
   , dsSetTheme
+  , keepScrollAttr
   ) where
 
 import Prelude
 
-import App.Html (Attr, Html, attr, el, href)
+import App.Html (Attr, Html, attr, el, flag, href)
 import App.Theme (ThemeMode(..), themeDarkName, themeLightName, themeModeName, themeStorageKey)
 import Data.Route (Route, routeUrl)
 import Data.I18n (Lang)
@@ -67,6 +68,11 @@ dataPageLangAttr = "data-page-lang"
 -- | `data-page-title`/`data-page-lang` off of after a patch.
 contentTarget :: String
 contentTarget = "content"
+
+-- | Marker dsLangLink puts on language <a>s so dsShellRouterScript keeps
+-- | window scroll — a locale swap is the same view, not a new one.
+keepScrollAttr :: String
+keepScrollAttr = "data-keep-scroll"
 
 -- ============================================================================
 -- DsFlag — the closed set of boolean signal names the shell chrome needs
@@ -270,12 +276,13 @@ dsNavLinkRecord { lang, current, target } extraAttrs children =
 
 -- | Language-switch link — compares Lang, not Route, unlike dsNavLinkRecord
 -- | (staying on the same page, switching which language it's rendered in).
--- | The shell-nav equivalent of App.Alpine's langLink.
+-- | Does not close the mobile drawer and does not scroll to top: same view.
 dsLangLink :: { targetLang :: Lang, currentLang :: Lang, route :: Route } -> Array Attr -> Array Html -> Html
 dsLangLink { targetLang, currentLang, route } extraAttrs children =
   el "a"
     ( [ href (routeUrl targetLang route)
       , dsLangNavGet targetLang route
+      , flag keepScrollAttr
       ]
         <> currentPageAttrs (targetLang == currentLang)
         <> extraAttrs

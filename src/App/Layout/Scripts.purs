@@ -8,7 +8,7 @@ module App.Layout.Scripts
 
 import Prelude
 
-import App.Datastar (contentTarget)
+import App.Datastar (contentTarget, keepScrollAttr)
 import App.Html (Html, attr, el, text)
 import App.Theme (themeInitScript)
 
@@ -43,7 +43,9 @@ renderHeadScript nonce = case _ of
 -- | patch has already been applied to #content (verified against the
 -- | vendored datastar.js source: the "finished" dispatch sits in a finally
 -- | block after the patch-apply await) — so by the time this fires, the
--- | DOM is already correct; this only needs to pushState + sync + scroll.
+-- | DOM is already correct; this only needs to pushState + sync, and to
+-- | scroll to top on a real route change. Language switches re-render the
+-- | same view (dsLangLink sets data-keep-scroll) and must not jump.
 -- | The triggering <a>'s real href (event.detail.el) is the only source of
 -- | the target URL, since @get(url) itself never touches location.href.
 -- |
@@ -62,7 +64,9 @@ dsShellRouterScript :: String
 dsShellRouterScript =
   "(function(){function sync(){var m=document.getElementById('"
     <> contentTarget
-    <> "');if(!m)return;var d=m.dataset;if(d.pageTitle)document.title=d.pageTitle;if(d.pageLang)document.documentElement.lang=d.pageLang;}function afterPatch(){sync();window.scrollTo({top:0,left:0,behavior:'instant'})}document.addEventListener('datastar-fetch',function(e){if(e.detail.type!=='finished')return;var el=e.detail.el;var href=el&&el.getAttribute&&el.getAttribute('href');if(!href)return;history.pushState({__ds:true},'',href);afterPatch()});function restore(){var u=new URL(location.href);u.searchParams.set('datastar','{}');fetch(u.href,{headers:{'datastar-request':'true'}}).then(function(r){if(!r.ok)throw new Error('datastar restore '+r.status);return r.text()}).then(function(sse){if(!sse)throw new Error('empty datastar patch');var marker='data: elements ';var i=sse.indexOf(marker);if(i===-1)throw new Error('invalid datastar patch event');var html=sse.slice(i+marker.length).split('\\n\\n')[0];var d=new DOMParser().parseFromString(html,'text/html'),n=d.getElementById('"
+    <> "');if(!m)return;var d=m.dataset;if(d.pageTitle)document.title=d.pageTitle;if(d.pageLang)document.documentElement.lang=d.pageLang;}function afterPatch(keepScroll){sync();if(!keepScroll)window.scrollTo({top:0,left:0,behavior:'instant'})}document.addEventListener('datastar-fetch',function(e){if(e.detail.type!=='finished')return;var el=e.detail.el;var href=el&&el.getAttribute&&el.getAttribute('href');if(!href)return;history.pushState({__ds:true},'',href);afterPatch(el.hasAttribute('"
+    <> keepScrollAttr
+    <> "'))});function restore(){var u=new URL(location.href);u.searchParams.set('datastar','{}');fetch(u.href,{headers:{'datastar-request':'true'}}).then(function(r){if(!r.ok)throw new Error('datastar restore '+r.status);return r.text()}).then(function(sse){if(!sse)throw new Error('empty datastar patch');var marker='data: elements ';var i=sse.indexOf(marker);if(i===-1)throw new Error('invalid datastar patch event');var html=sse.slice(i+marker.length).split('\\n\\n')[0];var d=new DOMParser().parseFromString(html,'text/html'),n=d.getElementById('"
     <> contentTarget
     <> "'),o=document.getElementById('"
     <> contentTarget

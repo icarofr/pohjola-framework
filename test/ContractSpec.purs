@@ -467,7 +467,8 @@ spec = do
           -- The shell-router glue: forward nav pushes state after Datastar's
           -- own "finished" event, and popstate re-fetches + replaces #content.
           StrAssert.shouldContain html "document.addEventListener('datastar-fetch',function(e){if(e.detail.type!=='finished')return;"
-          StrAssert.shouldContain html "history.pushState({__ds:true},'',href);afterPatch()"
+          StrAssert.shouldContain html "history.pushState({__ds:true},'',href);afterPatch(el.hasAttribute('data-keep-scroll'))"
+          StrAssert.shouldContain html "if(!keepScroll)window.scrollTo({top:0,left:0,behavior:'instant'})"
           StrAssert.shouldContain html "document.documentElement.lang=d.pageLang"
           StrAssert.shouldContain html "u.searchParams.set('datastar','{}')"
           StrAssert.shouldContain html "if(!r.ok)throw new Error('datastar restore '+r.status)"

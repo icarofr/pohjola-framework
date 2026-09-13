@@ -121,6 +121,12 @@ spec = do
       -- silently drop the second copy of.
       (length (String.split (Pattern "data-on:click=") html) - 1) `shouldEqual` 1
 
+    it "dsLangLink tells the shell router to keep scroll position" do
+      -- Language switch re-renders the same view; jumping to top is a
+      -- navigation behaviour, not a locale one.
+      render (dsLangLink { targetLang: Fr, currentLang: En, route: About } [] [ text "Français" ])
+        `StrAssert.shouldContain` "data-keep-scroll"
+
     it "dsPrefetchHover appends empty datastar payload, matching @get({payload: {}})" do
       -- JSON.stringify($) would include _-prefixed locals and diverge from
       -- Datastar's filtered() GET. Shell nav identity is the route; payload {}.
