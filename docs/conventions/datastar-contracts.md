@@ -151,3 +151,24 @@ constructor that always emits `_theme`, `_themeOpen`, `_langOpen`, and
 `_drawerOpen` together. Do not reopen it as a positional per-flag signal
 declaration — that is how `LangMenuOpen` shipped uninitialized in this
 project's earlier Alpine-based chrome.
+
+**No per-instance scoping, unlike Alpine's `x-data`.** Alpine gave every
+`x-data` element its own reactive scope: two independent accordions on a page
+each got isolated state for free, and a removed DOM node took its state with
+it. Datastar has no equivalent — confirmed against the vendored
+`datastar.js`: there is one flat signal store per page (`root`, a literal
+singleton), not a scope per element. `data-bind` auto-indexes when several
+elements share a key, but that is specific to form-element binding, not a
+general per-instance mechanism. This is also why signals outlive navigation
+by default (`dsNavGetClearing` exists to clear `_drawerOpen`/`_langOpen`
+manually) — Alpine's scoped state would have just been destroyed with the
+DOM node instead.
+
+This has not bitten Pohjola: every `DsFlag` today is a page-level singleton
+(one theme menu, one lang menu, one drawer), never a repeated per-item
+toggle. If a future feature needs independent state per list item (a FAQ
+list where each item opens on its own, a card grid with per-card expand),
+the fix is a parameterized `DsFlag` constructor (`DsFaqOpen Int`, rendering
+`_faq_<n>_open`) — PureScript ADTs take a constructor argument natively, so
+this is a small, mechanical extension when the need actually arises, not a
+redesign or an argument for a different client library.
