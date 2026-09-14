@@ -367,6 +367,10 @@ mobileNavLink lang current target label =
 -- | Two real nav sections: `explore` (all four pages) plus `resources`
 -- | (GitHub source + issues) — matching App.Ui.Templates.SiteShell's footer
 -- | exactly, all four routes now that every route is ported.
+-- |
+-- | Column labels use `p.footer-title`, not DaisyUI's sample `h6`. The class
+-- | is the visual part; an h6 skips heading levels (axe heading-order)
+-- | whenever the page outline has not reached h6.
 renderFooter :: Lang -> Route -> ShellLabels -> Html
 renderFooter lang route labels =
   el "footer"
@@ -381,7 +385,7 @@ renderFooter lang route labels =
                 , el "p" [ class_ "text-sm opacity-70" ] [ text labels.copyright ]
                 ]
             , el "nav" []
-                ( [ el "h6" [ class_ "footer-title" ] [ text labels.footerExploreTitle ] ]
+                ( [ el "p" [ class_ "footer-title" ] [ text labels.footerExploreTitle ] ]
                     <>
                       [ footerLink lang route Home labels.homeLabel
                       , footerLink lang route About labels.aboutLabel
@@ -390,7 +394,7 @@ renderFooter lang route labels =
                       ]
                 )
             , el "nav" []
-                [ el "h6" [ class_ "footer-title" ] [ text labels.footerResourcesTitle ]
+                [ el "p" [ class_ "footer-title" ] [ text labels.footerResourcesTitle ]
                 , footerExternalLink bookingUrl labels.githubLabel
                 , footerExternalLink issuesUrl labels.issuesLabel
                 ]

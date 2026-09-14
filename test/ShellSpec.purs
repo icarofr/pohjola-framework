@@ -9,7 +9,7 @@ import App.Html (render)
 import Data.I18n (Lang(..))
 import Data.Maybe (Maybe(..))
 import Test.Spec (Spec, describe, it)
-import Test.Spec.Assertions.String (shouldContain)
+import Test.Spec.Assertions.String (shouldContain, shouldNotContain)
 
 spec :: Spec Unit
 spec = do
@@ -22,6 +22,11 @@ spec = do
       html `shouldContain` "data-template=\"site-footer\""
       html `shouldContain` ("id=\"" <> contentTarget <> "\"")
       html `shouldContain` "main class=\"flex-1\""
+    it "footer column titles are not headings" do
+      -- DaisyUI samples use h6.footer-title, which skips heading levels.
+      let html = render (Home.renderHome En Nothing)
+      html `shouldContain` "<p class=\"footer-title\">"
+      html `shouldNotContain` "<h6"
     it "marks the current route in desktop nav with the brand color" do
       let html = render (Home.renderHome En Nothing)
       html

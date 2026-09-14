@@ -29,6 +29,12 @@ test.describe("Design regression", () => {
     });
   }
 
+  test("footer column titles are not headings", async ({ page }) => {
+    await page.goto("/en");
+    await expect(page.locator("footer :is(h1, h2, h3, h4, h5, h6)")).toHaveCount(0);
+    await expect(page.locator("footer .footer-title")).toHaveCount(2);
+  });
+
   test("mobile drawer opens with distinct close control", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto("/en");
