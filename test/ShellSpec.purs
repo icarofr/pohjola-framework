@@ -27,6 +27,11 @@ spec = do
       let html = render (Home.renderHome En Nothing)
       html `shouldContain` "<p class=\"footer-title\">"
       html `shouldNotContain` "<h6"
+    it "drawer toggle checkbox has an accessible name" do
+      let html = render (Home.renderHome En Nothing)
+      html
+        `shouldContain`
+          "class=\"drawer-toggle\" id=\"site-drawer\" data-bind=\"_drawerOpen\" aria-label=\"Open menu\""
     it "marks the current route in desktop nav with the brand color" do
       let html = render (Home.renderHome En Nothing)
       html

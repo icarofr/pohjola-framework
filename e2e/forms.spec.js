@@ -15,7 +15,7 @@ test.describe("Mobile menu", () => {
     await page.setViewportSize({ width: 375, height: 667 });
 
     const drawerToggle = page.locator("#site-drawer");
-    const menuButton = page.getByLabel("Open menu");
+    const menuButton = page.locator("label.drawer-button");
     const closeButton = page.getByLabel("Close menu");
     await expect(drawerToggle).not.toBeChecked();
 
@@ -38,7 +38,7 @@ test.describe("Mobile menu", () => {
     const drawerToggle = page.locator("#site-drawer");
     const closeButton = page.getByLabel("Close menu");
 
-    await page.getByLabel("Open menu").click();
+    await page.locator("label.drawer-button").click();
     await expect(drawerToggle).toBeChecked();
     await expect(closeButton).toBeVisible();
 
@@ -52,7 +52,7 @@ test.describe("Mobile menu", () => {
     await page.setViewportSize({ width: 375, height: 667 });
 
     const drawerToggle = page.locator("#site-drawer");
-    await page.getByLabel("Open menu").click();
+    await page.locator("label.drawer-button").click();
     await expect(drawerToggle).toBeChecked();
 
     await page.locator('.drawer-side .menu a[href="/en/about"]').click();

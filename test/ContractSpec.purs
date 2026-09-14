@@ -546,6 +546,7 @@ spec = do
       html `StrAssert.shouldContain` "drawer-toggle"
       html `StrAssert.shouldContain` "drawer-side"
       html `StrAssert.shouldContain` "id=\"site-drawer\""
+      html `StrAssert.shouldContain` "class=\"drawer-toggle\" id=\"site-drawer\" data-bind=\"_drawerOpen\" aria-label=\"Open menu\""
     it "theme switcher uses Datastar disclosure in navbar" do
       html <- renderStaticPage Home En
       html `StrAssert.shouldContain` "_themeOpen: false"

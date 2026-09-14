@@ -158,7 +158,11 @@ dsSitePageTitled lang route title status content =
       , dsSignalsInit
       , dsOnKeydownEscape DsDrawerOpen
       ]
-      [ el "input" [ type_ "checkbox", class_ "drawer-toggle", id_ siteDrawerId, dsBindFlag DsDrawerOpen ] []
+      -- DaisyUI's drawer-toggle is a real checkbox (CSS :checked), so axe's
+      -- label rule audits it. The hamburger is icon-only and the close
+      -- controls sit in `.drawer-side` (`invisible` while closed), which
+      -- axe does not treat as an accessible name — name the input itself.
+      [ el "input" [ type_ "checkbox", class_ "drawer-toggle", id_ siteDrawerId, dsBindFlag DsDrawerOpen, ariaLabel labels.menuLabel ] []
       , el "div" [ class_ "drawer-content flex min-h-full flex-col" ]
           [ renderHeader lang route labels
           , maybeStatusBanner lang status

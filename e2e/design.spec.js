@@ -40,7 +40,7 @@ test.describe("Design regression", () => {
     await page.goto("/en");
 
     const drawerToggle = page.locator("#site-drawer");
-    await page.getByLabel("Open menu").click();
+    await page.locator("label.drawer-button").click();
     await expect(drawerToggle).toBeChecked();
     await expect(page.locator(".drawer-side .menu")).toBeVisible();
     await expect(page.getByLabel("Close menu")).toBeVisible();

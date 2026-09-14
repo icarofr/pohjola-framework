@@ -71,7 +71,7 @@ test.describe("Internationalization", () => {
     await page.setViewportSize({ width: 375, height: 667 });
 
     const drawerToggle = page.locator("#site-drawer");
-    const menuButton = page.getByLabel("Open menu");
+    const menuButton = page.locator("label.drawer-button");
     await expect(drawerToggle).not.toBeChecked();
 
     await menuButton.click();
