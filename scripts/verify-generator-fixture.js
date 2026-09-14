@@ -68,7 +68,7 @@ async function runFixture(cwd, name, type, slug) {
   // right instead of three.
   assertIncludes(
     route,
-    `${name} -> { isStatic: ${type === "data" ? "false" : "true"}, inSitemap: true,`,
+    `${name} -> { isStatic: ${type === "data" ? "false" : "true"}, inSitemap: true }`,
     `Route isStatic/inSitemap (${name})`,
   );
 
