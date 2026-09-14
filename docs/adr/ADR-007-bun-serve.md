@@ -23,10 +23,18 @@ Migrate the server boundary from `node:http` to `Bun.serve` via a single, tamed 
 - **Tamed FFI**: All `Bun.serve` interactions are isolated in `App.ServerBun`. The FFI is thin (~100 lines), allowlisted in the Makefile, and documented.
 - **SSR**: Responses are buffered by default. The experimental streaming path is opt-in and disabled by default. The data layer uses Bun's native `fetch` (`App.FetchBun`) instead of `Affjax.Node` — `Affjax.Node`'s `node:http` compat layer hangs in forked fibers on Bun.
 - **Fragment Detection**: A request is a fragment request when **either** `?_frag=1` is present **or** the `x-alpine-request` header is — `App.Main.isFragmentRequest` is a boolean OR. (Amended: this originally read "avoiding the `Vary` header bug". W6 added `Vary: x-alpine-request` to every HTML response including the streamed one, so fragment detection no longer avoids `Vary` — it complements it. `?_frag=1` still earns its place as a header-free way to request a fragment.)
-- **Type-Safe Prefetching**: 
-    - `prefetchFor :: Route -> Array Route` provides a compile-time exhaustive list of routes to prefetch for any given page.
-    - `renderPrefetch` emits `<link rel="prefetch">` tags for these routes.
-    - `spaLink` includes an `@mouseenter="fetch($el.href, …)"` attribute for aggressive hover-prefetching, sending the `x-alpine-request` header so the response is a fragment. (Amended: this originally documented `fetch(this.href)`. `$el` is Alpine's element reference and is correct inside attribute expressions; `this` is not reliable there. `test/ContractSpec.purs` asserts `$el.href` and explicitly asserts the absence of `this.href`, so the ADR as originally written described something the test suite forbids.)
+- **Type-Safe Prefetching** (Amended 2026-09-14: `prefetchFor`/`renderPrefetch`
+  removed. They fired a `<link rel="prefetch">` unconditionally at page load,
+  fetching the full-page URL — a different, cache-incompatible shape from the
+  hover-prefetch fetch below, which sends a transport header no `<link>` hint
+  can carry. A visitor who hovered a link the current page had already
+  link-prefetched paid for it twice. `App.Datastar.dsPrefetch` (mouseenter +
+  touchstart, `src/App/Datastar.purs`) replaced both: it covers touch devices
+  (touchstart fires before a tap's own navigation, the same lead-time role
+  hover plays for a mouse) without a second, redundant mechanism.):
+    - ~~`prefetchFor :: Route -> Array Route` provides a compile-time exhaustive list of routes to prefetch for any given page.~~
+    - ~~`renderPrefetch` emits `<link rel="prefetch">` tags for these routes.~~
+    - `spaLink` includes an `@mouseenter="fetch($el.href, …)"` attribute for aggressive hover-prefetching, sending the `x-alpine-request` header so the response is a fragment. (Amended: this originally documented `fetch(this.href)`. `$el` is Alpine's element reference and is correct inside attribute expressions; `this` is not reliable there. `test/ContractSpec.purs` asserts `$el.href` and explicitly asserts the absence of `this.href`, so the ADR as originally written described something the test suite forbids. Further amended 2026-09-09: Alpine itself was replaced by Datastar, see ADR-015 — `spaLink`/`$el`/`x-alpine-request` are all historical at this point, kept here as the original record.)
 - **Structured Data**: `renderJsonLd` provides XSS-safe JSON-LD for data-backed routes to improve SEO and social sharing.
 - **Zero-Copy Statics**: Use `Bun.file()` and the `routes: { dir }` configuration for kernel-level static file serving.
 - **View Transitions**: Enabled via a single CSS rule: `@view-transition { navigation: auto; }`.
@@ -64,6 +72,13 @@ key that does not depend on `Vary`.
 a freshness directive or a validator, yet `<link rel="prefetch">` still
 populates Chromium's prefetch cache, and the *hover* fetch is served from it.
 The hover is therefore nearly free.
+
+*(Amended 2026-09-14: `<link rel="prefetch">` itself is gone — see the
+Type-Safe Prefetching amendment above. This whole section is Alpine-era
+history at this point, kept as the original record rather than rewritten;
+ADR-015 covers the Datastar-era cache identity that replaced `x-target`/
+`?_frag=1`, and `App.Datastar.dsPrefetch`'s own doc comment covers what
+replaced the `<link>` tag specifically.)*
 
 What is not free is the click. Measured against a programmatic click that never
 moves the pointer: a bare navigation is 1 request, hovering first makes it 2,

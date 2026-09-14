@@ -19,7 +19,7 @@ import App.Datastar
   , dsNavLinkRecord
   , dsOnClickOutside
   , dsOnKeydownEscape
-  , dsPrefetchHover
+  , dsPrefetch
   , dsSetFlag
   , dsSetTheme
   , dsShowFlag
@@ -127,12 +127,17 @@ spec = do
       render (dsLangLink { targetLang: Fr, currentLang: En, route: About } [] [ text "Français" ])
         `StrAssert.shouldContain` "data-keep-scroll"
 
-    it "dsPrefetchHover appends empty datastar payload, matching @get({payload: {}})" do
+    it "dsPrefetch appends empty datastar payload on both mouseenter and touchstart, matching @get({payload: {}})" do
       -- JSON.stringify($) would include _-prefixed locals and diverge from
       -- Datastar's filtered() GET. Shell nav identity is the route; payload {}.
-      let html = render (el "a" [ dsPrefetchHover ] [])
+      -- touchstart carries the identical body: a touch-only visitor has no
+      -- mouseenter to fire, so it is the only prefetch signal touch ever
+      -- sends -- not a separate, lesser mechanism.
+      let html = render (el "a" dsPrefetch [])
       html `StrAssert.shouldContain`
         "data-on:mouseenter=\"var u = new URL(el.href); u.searchParams.set(&#x27;datastar&#x27;, &#x27;{}&#x27;); fetch(u.href, {headers: {&#x27;datastar-request&#x27;: &#x27;true&#x27;}})\""
+      html `StrAssert.shouldContain`
+        "data-on:touchstart=\"var u = new URL(el.href); u.searchParams.set(&#x27;datastar&#x27;, &#x27;{}&#x27;); fetch(u.href, {headers: {&#x27;datastar-request&#x27;: &#x27;true&#x27;}})\""
       html `StrAssert.shouldNotContain` "JSON.stringify($)"
       html `StrAssert.shouldNotContain` "fetch($el.href"
       html `StrAssert.shouldNotContain` "fetch(el.href,"

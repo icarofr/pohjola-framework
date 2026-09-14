@@ -32,7 +32,7 @@ module App.Datastar
   , dsSpaLink
   , dsNavLinkRecord
   , dsLangLink
-  , dsPrefetchHover
+  , dsPrefetch
   , dsOnClickOutside
   , dsOnKeydownEscape
   , dsSetTheme
@@ -177,9 +177,9 @@ dsShowTheme mode = attr "data-show" ("$" <> themeSignalName <> " === '" <> theme
 
 -- | The empty-object Datastar payload shared by every shell-nav call site
 -- | that must resolve to the same GET identity (`?datastar={}`): dsNavGet,
--- | dsLangNavGet, and dsPrefetchHover's query param. Hover, click, and
+-- | dsLangNavGet, and dsPrefetch's query param. Hover/touch, click, and
 -- | popstate all fetch this exact identity, which is what makes the click
--- | reusable from the hover's `private, max-age=180` cache entry -- named
+-- | reusable from the prefetch's `private, max-age=180` cache entry -- named
 -- | once so the three (four, counting Layout.Scripts' popstate JS) call
 -- | sites can't quietly drift onto different literal spellings of "empty".
 datastarEmptyPayload :: String
@@ -218,25 +218,45 @@ dsNavGet = dsNavGetClearing DsDrawerOpen
 dsLangNavGet :: Lang -> Route -> Attr
 dsLangNavGet = dsNavGetClearing DsLangMenuOpen
 
--- | Warm the browser's HTTP cache on hover. Bare `fetch` with the transport
--- | header, response discarded — Datastar `@get` would apply the patch, which
--- | is wrong on mouseenter. `el` (no `$`): `$el` compiles to a signal lookup.
+-- | Trigger body shared by hover and touchstart (App.Bun's fetch, not
+-- | Datastar's `@get` -- `@get` would apply the patch, which is wrong here).
+-- | `el` (no `$`): `$el` compiles to a signal lookup, not the element
+-- | reference.
 -- |
 -- | The query param is `datastarEmptyPayload`, not `JSON.stringify($)`. `@get`
 -- | with `{payload: {}}` (and `_`-prefixed chrome) serializes to
 -- | `?datastar={}`; stringify of the live store would include locals
--- | Datastar's `filtered()` drops. Hover, click, and popstate must share that
--- | identity or the click cannot reuse the hover's `private, max-age=180`
--- | response.
-dsPrefetchHover :: Attr
-dsPrefetchHover =
-  attr "data-on:mouseenter"
-    ( "var u = new URL(el.href); u.searchParams.set('datastar', '"
-        <> datastarEmptyPayload
-        <> "'); fetch(u.href, {headers: {'"
-        <> datastarRequestHeader
-        <> "': 'true'}})"
-    )
+-- | Datastar's `filtered()` drops. Hover/touch, click, and popstate must
+-- | share that identity or the click cannot reuse this response's
+-- | `private, max-age=180` cache entry.
+dsPrefetchTrigger :: String
+dsPrefetchTrigger =
+  "var u = new URL(el.href); u.searchParams.set('datastar', '"
+    <> datastarEmptyPayload
+    <> "'); fetch(u.href, {headers: {'"
+    <> datastarRequestHeader
+    <> "': 'true'}})"
+
+-- | Warm the browser's HTTP cache on hover *or* touchstart -- one prefetch
+-- | mechanism covering both a mouse and a touchscreen, not two: touchstart
+-- | fires ~100-300ms before a tap's own click/navigation, the same lead-time
+-- | role hover plays for a mouse, and the only way a touch-only visitor gets
+-- | any prefetch at all (mouseenter never fires without a pointing device).
+-- |
+-- | This used to be hover-only, with `Data.Route`'s now-removed `prefetchFor`
+-- | covering touch instead via `<link rel="prefetch">` at page load. Two
+-- | mechanisms meant two problems: the link fired unconditionally whether or
+-- | not the visitor ever used it, and it fetched the full-page URL (a
+-- | `rel="prefetch"` hint can't carry the `datastar-request` header this
+-- | fetch sends), sharing no cache with this one's `?datastar={}` shape --
+-- | so a hover-capable visitor landing on a page that had already
+-- | link-prefetched a route paid for that route twice, in two different
+-- | response shapes, the moment they hovered it.
+dsPrefetch :: Array Attr
+dsPrefetch =
+  [ attr "data-on:mouseenter" dsPrefetchTrigger
+  , attr "data-on:touchstart" dsPrefetchTrigger
+  ]
 
 -- | Internal navigation link — the shell-nav equivalent of App.Alpine's
 -- | spaLink, used by shared UI primitives (App.Ui.Button, ActionLink) that
@@ -246,8 +266,8 @@ dsSpaLink lang route extraAttrs children =
   el "a"
     ( [ href (routeUrl lang route)
       , dsNavGet lang route
-      , dsPrefetchHover
       ]
+        <> dsPrefetch
         <> extraAttrs
     )
     children
@@ -258,7 +278,7 @@ dsSpaLink lang route extraAttrs children =
 currentPageAttrs :: Boolean -> Array Attr
 currentPageAttrs isCurrent =
   if isCurrent then [ attr "aria-current" "page" ]
-  else [ dsPrefetchHover ]
+  else dsPrefetch
 
 -- | Record-shaped nav link carrying the current route for aria-current and
 -- | skipping prefetch on the page already showing — the shell-nav

@@ -76,7 +76,7 @@ Every Datastar attribute is a named constructor in `App.Datastar`:
 | `dsShowTheme ThemeLight` | `data-show="$_theme === 'light'"` |
 | `dsClassWhenFlag "dropdown-open" DsLangMenuOpen` | `data-class:dropdown-open="$_langOpen"` |
 | `dsClassWhenTheme "btn-active" ThemeDark` | `data-class:btn-active="$_theme === 'dark'"` |
-| `dsPrefetchHover` | `data-on:mouseenter` fetch of `el.href` + `?datastar={}` |
+| `dsPrefetch` | `data-on:mouseenter` **and** `data-on:touchstart` fetch of `el.href` + `?datastar={}` |
 
 ### The only sources of `data-on:*` expressions
 
@@ -109,15 +109,18 @@ behaviour belongs on the server, not that the seam needs loosening.
   `link link-hover hover:text-primary` regardless of active state). Theme and
   language dropdown **items** use **`dsDropdownItemClasses`** (same
   ghost-button recipe for both menus). See `docs/conventions/chrome-checklist.md`.
-- **`dsSpaLink`** — bakes `@get` + `dsPrefetchHover` + real href, for shared UI
+- **`dsSpaLink`** — bakes `@get` + `dsPrefetch` + real href, for shared UI
   primitives that render inside page content, not just chrome (`App.Ui.Button`,
   `App.Ui.Templates.ActionLink`). The prefetch sends `datastarRequestHeader` so
   the server returns a cacheable patch (`private, max-age=180` plus ETag),
-  **and the click hits that cache**: `dsPrefetchHover` and `@get(url, {payload: {}})`
+  **and the click hits that cache**: `dsPrefetch` and `@get(url, {payload: {}})`
   both send `?datastar={}`, and chrome signals are `_`-prefixed so Datastar's
-  default filter would have dropped them anyway. Hover, click, and popstate
-  share that identity — see `e2e/prefetch-cache.spec.js` and ADR-015. Degrades to a normal
-  `<a>` without JS regardless.
+  default filter would have dropped them anyway. Hover/touch, click, and
+  popstate share that identity — see `e2e/prefetch-cache.spec.js` and ADR-015.
+  Degrades to a normal `<a>` without JS regardless. (No separate
+  `<link rel="prefetch">` mechanism any more — `dsPrefetch`'s `touchstart`
+  trigger covers touch devices directly instead; see its doc comment in
+  `App.Datastar` and ADR-007's amendment.)
 - **`dsLangLink`** — same `@get` action-based navigation as `dsNavLinkRecord`,
   but compares **Lang**, not Route (staying on the same page, switching which
   language it renders in) — a language switch never full-reloads. Only

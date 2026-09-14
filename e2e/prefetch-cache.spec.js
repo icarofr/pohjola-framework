@@ -290,7 +290,7 @@ test("the click is served from cache, not the network", async ({
   // W6 outcome, asserted on the CLICK specifically.
   //
   // Hover, click, and popstate all fetch `?datastar={}`: `@get(url, {payload: {}})`
-  // and `dsPrefetchHover` both set that empty payload, so chrome `_` signals
+  // and `dsPrefetch` both set that empty payload, so chrome `_` signals
   // cannot bust the cache key. See ADR-015.
   const clickFromCache = clickResponses.filter(
     (r) => r.fromDiskCache || r.fromPrefetchCache,
@@ -298,8 +298,8 @@ test("the click is served from cache, not the network", async ({
   expect(
     clickFromCache.length,
     "Every click response must come from cache — not merely some response in " +
-      "the trace. If this fails, dsPrefetchHover's signals-matching broke; see " +
-      "App.Datastar.dsPrefetchHover and ADR-015.",
+      "the trace. If this fails, dsPrefetch's signals-matching broke; see " +
+      "App.Datastar.dsPrefetch and ADR-015.",
   ).toBe(clickResponses.length);
 
   // The post-swap re-fire (a THIRD request, prefetching the page already on

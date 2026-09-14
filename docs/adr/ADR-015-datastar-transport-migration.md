@@ -147,7 +147,7 @@ it does have:
   closure for this case exactly.
 - `dsShowFlag`, `dsShowNotFlag`, `dsToggleFlag`, `dsSetFlag`, `dsClassWhenFlag`
   take `App.Datastar.DsFlag` (closed sum type) — same property, for flags.
-- `dsNavGet`, `dsSpaLink`, `dsNavLinkRecord`, `dsLangLink`, `dsPrefetchHover`,
+- `dsNavGet`, `dsSpaLink`, `dsNavLinkRecord`, `dsLangLink`, `dsPrefetch`,
   `dsOnClickOutside`, `dsOnKeydownEscape` build their expression strings from
   typed `Route`/`Lang` values and fixed literals. No call site anywhere in
   `src/` passes a caller-supplied free-form `String` into one of these — but
@@ -189,9 +189,16 @@ for Alpine: Datastar evaluates attribute expressions via `new Function()`.
   click. The first Datastar port lost this because `@get()` appends
   `?datastar=`. Mirroring `JSON.stringify($)` onto the hover URL restored the
   click hit but made the cache key the live chrome store (open menus, theme).
-  **Current contract (2026-09-09):** chrome signals are `_`-prefixed (Datastar
+  **Current contract (2026-09-14):** chrome signals are `_`-prefixed (Datastar
   omits them from GET by default); `@get(url, {payload: {}})` and
-  `dsPrefetchHover` both send `?datastar={}`; popstate does the same.
+  `dsPrefetch` both send `?datastar={}`; popstate does the same. `dsPrefetch`
+  fires on both `mouseenter` and `touchstart` — the latter is the only
+  prefetch signal a touch-only visitor sends, and it replaced the separate
+  `<link rel="prefetch">` mechanism (`Data.Route`'s removed `prefetchFor`),
+  which fetched a different, cache-incompatible full-page URL for the same
+  destination whenever a hover-capable visitor landed on a page that had
+  already link-prefetched it. See ADR-007's amendment and
+  `App.Datastar.dsPrefetch`'s doc comment.
   Successful patches are `private, max-age=180` with a strong ETag
   (`wyhash` of the SSE bytes — RFC 9110 strong means byte-identity, not
   cryptographic; `sha256Hex` stays reserved for security-sensitive hashing).

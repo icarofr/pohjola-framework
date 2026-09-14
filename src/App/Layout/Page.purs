@@ -6,14 +6,13 @@ import Prelude
 
 import App.DatastarShell as DatastarShell
 import App.Error (AppError)
-import App.Html (Html, attr, class_, doctype, el, href, name_, render, src, text, type_)
+import App.Html (Html, attr, class_, doctype, el, name_, render, src, text, type_)
 import App.Layout.Head (renderHead)
 import App.Layout.Scripts (HeadScript(..), renderHeadScript)
 import App.Layout.Styles (stylesCss)
 import Data.Either (Either(..))
-import Data.Foldable (foldMap)
 import Data.I18n (Lang, dict, langTag)
-import Data.Route (Route, prefetchFor, routeUrl)
+import Data.Route (Route)
 import Effect.Aff (Aff)
 
 bodyClass :: String
@@ -29,7 +28,6 @@ renderDocument baseUrl nonce lang route content =
       <> el "html" [ attr "lang" (langTag lang) ]
         [ el "head" []
             [ renderHead baseUrl nonce lang route
-            , renderPrefetch lang (prefetchFor route)
             ]
         , el "body" [ class_ bodyClass ]
             [ content
@@ -72,10 +70,6 @@ renderErrorPage nonce lang status =
               , renderScripts nonce
               ]
           ]
-
-renderPrefetch :: Lang -> Array Route -> Html
-renderPrefetch lang routes =
-  foldMap (\route -> el "link" [ attr "rel" "prefetch", href (routeUrl lang route) ] []) routes
 
 -- | Dormant streaming choreography (App.Server.streamResponse /
 -- | App.ServerBun.streamResponseImpl, both zero call sites) — "shell now,

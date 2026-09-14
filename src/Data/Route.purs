@@ -104,35 +104,34 @@ routeUrl :: Lang -> Route -> String
 routeUrl lang = print (routeCodec lang)
 
 -- | Per-route facts that used to be independent exhaustive dispatches
--- | scattered across this module and App.Main — static-vs-dynamic caching
--- | and prefetch targets. Both `App.Main.handleRoute` and `fragmentHtml`
--- | previously re-decided the static/dynamic split with their own 6-armed
--- | `case route of`; a route landing in the wrong branch of one but not the
--- | other compiled cleanly and silently misrouted caching. Deriving
--- | `isStaticRoute`/`staticRoutes` and both call sites from this one table
--- | closes that: there is now exactly one place to get it wrong.
+-- | scattered across this module and App.Main — static-vs-dynamic caching.
+-- | Both `App.Main.handleRoute` and `fragmentHtml` previously re-decided the
+-- | static/dynamic split with their own 6-armed `case route of`; a route
+-- | landing in the wrong branch of one but not the other compiled cleanly
+-- | and silently misrouted caching. Deriving `isStaticRoute`/`staticRoutes`
+-- | and both call sites from this one table closes that: there is now
+-- | exactly one place to get it wrong.
+-- |
+-- | Used to also carry a `prefetch :: Array Route` field, rendered as
+-- | `<link rel="prefetch">` at page load regardless of whether the visitor
+-- | ever used the link. Removed: `App.Datastar.dsPrefetch` (hover +
+-- | touchstart) now covers touch devices too, so the two mechanisms were
+-- | fetching the same destination in two different, cache-incompatible
+-- | shapes whenever a hover-capable visitor landed on a page that had
+-- | already link-prefetched the same route.
 type RouteMeta =
   { isStatic :: Boolean
   , inSitemap :: Boolean
-  , prefetch :: Array Route
   }
 
--- | Exhaustive on Route — adding a constructor forces a caching, a sitemap,
--- | and a prefetch decision here, in one place, instead of three.
+-- | Exhaustive on Route — adding a constructor forces a caching and a
+-- | sitemap decision here, in one place, instead of two.
 routeMeta :: Route -> RouteMeta
 routeMeta = case _ of
-  Home -> { isStatic: true, inSitemap: true, prefetch: [] }
-  About -> { isStatic: true, inSitemap: true, prefetch: [ Home ] }
-  Guarantees -> { isStatic: true, inSitemap: true, prefetch: [ Home ] }
-  Docs -> { isStatic: true, inSitemap: true, prefetch: [ Home ] }
-
--- | `renderPrefetch` emits `<link rel="prefetch">` for these routes, using the
--- | FULL page URL — not a patch URL. A patch entry could never be hit: a
--- | browser-native `rel="prefetch"` hint can't set the `datastar-request`
--- | header a Datastar patch request needs, so it always fetches the full
--- | document. See `App.Layout.Page.renderPrefetch`.
-prefetchFor :: Route -> Array Route
-prefetchFor = _.prefetch <<< routeMeta
+  Home -> { isStatic: true, inSitemap: true }
+  About -> { isStatic: true, inSitemap: true }
+  Guarantees -> { isStatic: true, inSitemap: true }
+  Docs -> { isStatic: true, inSitemap: true }
 
 -- | True for routes served by the static cache/render path
 -- | (`App.Main.cachedStaticPage`/`cachedInner`); false for data-backed

@@ -51,7 +51,7 @@ Honesty about what the checks actually catch:
   hole for non-literal `attr` keys outside `App.Datastar`.
 - **Not every Datastar constructor is closed by construction** — clause 12a's
   ADR-000 Vector B closure covers `ThemeMode`/`DsFlag`-typed builders only.
-  `dsNavGet`, `dsPrefetchHover`, `dsOnClickOutside`, `dsOnKeydownEscape`, and
+  `dsNavGet`, `dsPrefetch`, `dsOnClickOutside`, `dsOnKeydownEscape`, and
   `dsSignalsInit` build their expression strings from typed `Route`/`Lang`
   values and fixed literals — never from caller-supplied free-form `String` —
   but the module doesn't have Alpine's old single abstract `Expr` wrapper

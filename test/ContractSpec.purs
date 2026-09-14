@@ -23,7 +23,7 @@ import App.Config (Config)
 import App.Features.Home.View as Home
 import App.Form (FormStatus(..), contactFields, newsletterFields)
 import App.Layout.Head (escapeJson, renderJsonLd)
-import App.Layout.Page (renderErrorFragment, renderErrorPage, renderDocument, renderShellOpen, renderShellClose, renderPrefetch)
+import App.Layout.Page (renderErrorFragment, renderErrorPage, renderDocument, renderShellOpen, renderShellClose)
 import App.Main (pageRenderer)
 import App.Server (RedirectKind(..), Response, cspWithNonce, errorStatusCode, fileResponse, htmlErrorResponse, internalError, methodNotAllowed, notFound, notModified, ok, okText, okTextPublic, okWith, redirect, redirectVary, securityHeaders, tooManyRequests)
 import App.Html (render)
@@ -441,8 +441,8 @@ spec = do
 
     it "the rendered page does not prefetch its own route" do
       -- The Home nav link on the Home page: aria-current, then straight to
-      -- class — no data-on:mouseenter prefetch attribute in between, unlike
-      -- every other (non-current) nav link.
+      -- class — no data-on:mouseenter/touchstart prefetch attrs in between,
+      -- unlike every other (non-current) nav link.
       html <- renderStaticPage Home En
       html `StrAssert.shouldContain`
         "href=\"/en\" data-on:click=\"evt.preventDefault(); $_drawerOpen = false; @get(&#x27;/en&#x27;, {payload: {}})\" aria-current=\"page\" class=\"btn btn-ghost btn-sm text-primary font-semibold\""
@@ -487,23 +487,24 @@ spec = do
           html `StrAssert.shouldContain` "<footer"
 
   describe "Bun.serve migration invariants" do
-    it "dsSpaLink includes @mouseenter prefetch with el (not $el, not this), empty datastar payload matching @get" do
+    it "dsSpaLink includes @mouseenter AND @touchstart prefetch with el (not $el, not this), empty datastar payload matching @get" do
       let html = render (dsSpaLink En Home [] [])
       -- Single quotes are escaped to &#x27; in the attribute value;
       -- the browser un-escapes them before Datastar evaluates the expression.
       -- `el` (no `$`): `$el` compiles to a signal lookup in Datastar, not
       -- the element reference. `?datastar={}` matches `@get(url, {payload: {}})`
-      -- so hover, click, and popstate share one HTTP cache key.
+      -- so hover/touch, click, and popstate share one HTTP cache key.
+      -- Both events carry the identical body -- touchstart is the only
+      -- prefetch signal a touch-only visitor ever sends (mouseenter never
+      -- fires without a pointing device), so there is no separate
+      -- `<link rel="prefetch">` mechanism to cover it any more.
       html `StrAssert.shouldContain`
         "data-on:mouseenter=\"var u = new URL(el.href); u.searchParams.set(&#x27;datastar&#x27;, &#x27;{}&#x27;); fetch(u.href, {headers: {&#x27;datastar-request&#x27;: &#x27;true&#x27;}})\""
+      html `StrAssert.shouldContain`
+        "data-on:touchstart=\"var u = new URL(el.href); u.searchParams.set(&#x27;datastar&#x27;, &#x27;{}&#x27;); fetch(u.href, {headers: {&#x27;datastar-request&#x27;: &#x27;true&#x27;}})\""
       html `StrAssert.shouldNotContain` "JSON.stringify($)"
       html `StrAssert.shouldNotContain` "fetch(this.href)"
       html `StrAssert.shouldNotContain` "fetch($el.href"
-
-    it "renderPrefetch emits <link rel=\"prefetch\">" do
-      let html = render (renderPrefetch En [ Home ])
-      html `StrAssert.shouldContain` "rel=\"prefetch\""
-      html `StrAssert.shouldContain` "/en"
 
     it "renderJsonLd returns Just for Home" do
       isJust (renderJsonLd "https://example.com" "test-nonce" En Home) `shouldEqual` true

@@ -200,7 +200,7 @@ test.describe("Datastar navigation", () => {
     await page.goto("/en");
 
     let fragmentBody;
-    // "**/en/about**" (not "**/en/about"): dsPrefetchHover now appends a
+    // "**/en/about**" (not "**/en/about"): dsPrefetch now appends a
     // ?datastar={...} query param matching the real @get() URL (see
     // ADR-015's "hover-prefetch cache-hit" entry), so the intercepted URL
     // no longer ends exactly in "/en/about".
