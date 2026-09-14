@@ -28,6 +28,7 @@ dist/
 playwright-report/
 test-results/
 dist-server/
+dist-static/
 
 # spec-node test output
 .spec-results

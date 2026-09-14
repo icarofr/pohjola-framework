@@ -8,6 +8,7 @@
 #   dist-server/ — bundled server.js (private, never under the static root)
 DIST_DIR ?= dist
 SERVER_BUNDLE_DIR ?= dist-server
+STATIC_EXPORT_DIR ?= dist-static
 IMAGE_NAME ?= localhost/pohjola-framework:latest
 
 # Local-dev origin. The Origin gate (App.Main.sameOriginOk) requires POSTs
@@ -21,7 +22,7 @@ export PATH := $(CURDIR)/node_modules/.bin:$(PATH)
 BUN := $(shell command -v bun 2>/dev/null || echo $(HOME)/.bun/bin/bun)
 SPAGO := $(BUN) x spago
 
-.PHONY: all help deps assets assets-check dev watch css css-watch bundle build sync-static run test test/integration test/integration/down test/e2e check deploy image up down clean gate generator-policy design-policy fast local full ci-equivalent format format-check gen-sql new-feature evals eval
+.PHONY: all help deps assets assets-check dev watch css css-watch bundle build sync-static run test test/integration test/integration/down test/e2e check deploy image up down clean gate generator-policy design-policy fast local full ci-equivalent format format-check gen-sql export-static new-feature evals eval
 
 # ==================================================================================== #
 # HELPERS
@@ -255,6 +256,24 @@ new-ui-primitive:
 gen-sql:
 	@$(SPAGO) build --quiet && $(BUN) --eval "import('./output/App.Cli.GenSql/index.js').then(m => m.main())" -- $${FILE:+"--file=$(FILE)"} $${TABLE:+"--table=$(TABLE)"} $${OUT:+"--out=$(OUT)"}
 
+## export-static: prerender static routes to plain HTML for a serverless host
+## like GitHub Pages (usage: make export-static [PAGES_URL=https://user.github.io/repo] [DOMAIN=example.com] [OUT=dist-static])
+## Every internal link is root-relative -- a project site with no custom
+## domain (https://user.github.io/repo-name/) will 404 on every link. Set
+## DOMAIN to write the CNAME file GitHub Pages expects, or use a
+## <user>.github.io root repo instead; either serves from the domain root.
+## (PAGES_URL, not BASE_URL: that name is already this Makefile's dev/prod
+## server origin, exported with its own default -- reusing it here would
+## silently shadow this target's own default with the dev server's.)
+.PHONY: export-static
+export-static: css
+	rm -rf $(if $(OUT),$(OUT),$(STATIC_EXPORT_DIR))
+	$(SPAGO) build --quiet
+	$(BUN) --eval "import('./output/App.Cli.ExportStatic/index.js').then(m => m.main())" -- $${PAGES_URL:+"--base-url=$(PAGES_URL)"} $${DOMAIN:+"--domain=$(DOMAIN)"} $${OUT:+"--out=$(OUT)"}
+	@mkdir -p $(if $(OUT),$(OUT),$(STATIC_EXPORT_DIR))
+	@cp -r static/assets static/images $(if $(OUT),$(OUT),$(STATIC_EXPORT_DIR))/ 2>/dev/null || true
+	@cp static/favicon.svg $(if $(OUT),$(OUT),$(STATIC_EXPORT_DIR))/ 2>/dev/null || true
+
 # ==================================================================================== #
 # AGENT EVALS
 # ==================================================================================== #
@@ -340,4 +359,4 @@ deploy: check
 ## clean: remove build artifacts
 .PHONY: clean
 clean:
-	rm -rf $(DIST_DIR) $(SERVER_BUNDLE_DIR) output output-es .spago
+	rm -rf $(DIST_DIR) $(SERVER_BUNDLE_DIR) $(STATIC_EXPORT_DIR) output output-es .spago

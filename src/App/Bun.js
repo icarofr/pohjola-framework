@@ -86,9 +86,15 @@ export function writeTextFileImpl(path) {
 }
 
 // getArgs :: Effect (Array String)
-// CLI arguments slice(2) via Bun.argv
+// CLI arguments via Bun.argv, invocation-mode-aware: `bun script.js args`
+// has a script-path slot at argv[1] (slice(2) strips it correctly), but
+// `bun --eval "..." -- args` (how every App.Cli.* module in this repo is
+// actually invoked, via the Makefile) has no such slot -- slice(2) would
+// silently eat the first real argument. Bun.main reads "<cwd>/[eval]" only
+// in eval mode, never a real path, so this is correct for both styles
+// instead of assuming the Makefile's invocation is the only one.
 export function getArgs() {
-  return Bun.argv.slice(2);
+  return Bun.main.endsWith("[eval]") ? Bun.argv.slice(1) : Bun.argv.slice(2);
 }
 
 // wyhash :: String -> String
