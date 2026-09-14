@@ -22,12 +22,28 @@ staticPage :: Html -> Aff (Either AppError Html)
 staticPage = pure <<< Right
 
 renderDocument :: String -> String -> Lang -> Route -> Html -> String
-renderDocument baseUrl nonce lang route content =
+renderDocument = renderDocumentExtraHead mempty
+
+-- | Same shell as `renderDocument`, plus arbitrary extra `<head>` content
+-- | composed through the `Html` DSL rather than post-processing the
+-- | rendered string. Exists for `App.Cli.ExportStatic`'s CSP `<meta>` tag
+-- | (the live server sends CSP as a header instead, via `withCsp`, so
+-- | `renderDocument` itself needs no such hook) — a static export has no
+-- | server to send a header from, so the policy has to live in the markup.
+-- |
+-- | `extraHead` comes FIRST, before `renderHead`'s own content: a CSP
+-- | `<meta>` tag only governs elements parsed after it, not retroactively —
+-- | placed second, it would leave `renderHead`'s two inline scripts
+-- | (DarkModeInit, DevLiveReload) executing before any policy applied to
+-- | them at all, silently ungated rather than merely blocked.
+renderDocumentExtraHead :: Html -> String -> String -> Lang -> Route -> Html -> String
+renderDocumentExtraHead extraHead baseUrl nonce lang route content =
   render $
     doctype
       <> el "html" [ attr "lang" (langTag lang) ]
         [ el "head" []
-            [ renderHead baseUrl nonce lang route
+            [ extraHead
+            , renderHead baseUrl nonce lang route
             ]
         , el "body" [ class_ bodyClass ]
             [ content

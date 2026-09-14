@@ -41,7 +41,8 @@ import Prelude
 
 import App.Bun (randomBase64, writeTextFile, getArgs)
 import App.Config (Config)
-import App.Layout.Page (renderDocument)
+import App.Html (Html, attr, doctype, el, href, render, text)
+import App.Layout.Page (renderDocumentExtraHead)
 import App.Main (pageRenderer)
 import App.Server (cspWithNonce)
 import App.Sitemap (renderRobots, renderSitemap)
@@ -52,7 +53,7 @@ import Data.Foldable (for_)
 import Data.I18n (Lang, defaultLang)
 import Data.Maybe (Maybe(..))
 import Data.Route (Route(..), allLangs, routeUrl, staticRoutes)
-import Data.String (Pattern(..), Replacement(..), contains, drop, replace)
+import Data.String (Pattern(..), contains, drop)
 import Effect (Effect)
 import Effect.Aff (Aff, launchAff_)
 import Effect.Class (liftEffect)
@@ -101,13 +102,17 @@ stubConfig =
   , secureCookies: true
   }
 
--- | Insert a CSP <meta> tag right after <head> -- a static file has no
+-- | The CSP `<meta>` tag itself, composed as `Html` -- a static file has no
 -- | server to send the header from, so it goes in the markup instead.
 -- | Reuses `cspWithNonce` so the policy string has one source of truth
--- | with the live server.
-injectCsp :: String -> String -> String
-injectCsp nonce html =
-  replace (Pattern "<head>") (Replacement ("<head><meta http-equiv=\"Content-Security-Policy\" content=\"" <> cspWithNonce nonce <> "\">")) html
+-- | with the live server. Passed to `renderDocumentExtraHead`, not spliced
+-- | into already-rendered output: string surgery on rendered HTML is
+-- | fragile (a literal `<head>` match breaks the moment `renderHead` ever
+-- | gains an attribute), where composing through the same `Html` tree
+-- | `renderDocument` itself builds cannot silently stop matching.
+cspMetaTag :: String -> Html
+cspMetaTag nonce =
+  el "meta" [ attr "http-equiv" "Content-Security-Policy", attr "content" (cspWithNonce nonce) ] []
 
 -- | Directory-style output path so both `/en/about` and `/en/about/`
 -- | resolve (the common static-host convention: a request for a directory
@@ -121,14 +126,9 @@ exportPage baseUrl outDir nonce lang route = do
   case result of
     Left err ->
       liftEffect $ Console.error ("✘ " <> routeUrl lang route <> ": " <> show err)
-    Right html -> do
-      let
-        document = injectCsp nonce (renderDocument baseUrl nonce lang route html)
-        path = routeFilePath outDir lang route
-      writeRes <- writeTextFile path document
-      case writeRes of
-        Left err -> liftEffect $ Console.error ("✘ " <> path <> ": " <> err)
-        Right _ -> liftEffect $ Console.log ("✓ " <> path)
+    Right html ->
+      writeOrLog (routeFilePath outDir lang route)
+        (renderDocumentExtraHead (cspMetaTag nonce) baseUrl nonce lang route html)
 
 -- | Client-side redirect to the default language's home page -- `Route`
 -- | has no notion of a bare "/", so there is no rendered page to serve
@@ -137,16 +137,22 @@ exportPage baseUrl outDir nonce lang route = do
 -- | negotiation a static file can't do.
 rootRedirectHtml :: String -> String
 rootRedirectHtml baseUrl =
-  "<!DOCTYPE html><html><head><meta charset=\"UTF-8\" /><meta http-equiv=\"refresh\" content=\"0; url="
-    <> target
-    <> "\" /><link rel=\"canonical\" href=\""
-    <> baseUrl
-    <> target
-    <> "\" /></head><body><p>Redirecting to <a href=\""
-    <> target
-    <> "\">"
-    <> target
-    <> "</a>&hellip;</p></body></html>"
+  render $
+    doctype
+      <> el "html" []
+        [ el "head" []
+            [ el "meta" [ attr "charset" "UTF-8" ] []
+            , el "meta" [ attr "http-equiv" "refresh", attr "content" ("0; url=" <> target) ] []
+            , el "link" [ attr "rel" "canonical", href (baseUrl <> target) ] []
+            ]
+        , el "body" []
+            [ el "p" []
+                [ text "Redirecting to "
+                , el "a" [ href target ] [ text target ]
+                , text "…"
+                ]
+            ]
+        ]
   where
   target = routeUrl defaultLang Home
 
