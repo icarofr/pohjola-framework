@@ -377,15 +377,15 @@ if (wire) {
     }
   );
 
-  // routeMeta — one arm covers both the static/dynamic caching decision
-  // (staticRoutes derives from isStatic) and the prefetch targets.
+  // routeMeta — one arm covers the static/dynamic caching decision
+  // (staticRoutes derives from isStatic) and sitemap inclusion.
   routeContent = routeContent.replace(
     /routeMeta = case _ of\s*\n([\s\S]*?)(\n\n)/,
     (match, p1, p2) => {
       if (p1.includes(`${name} ->`)) return match;
       const isStatic = type === "static" ? "true" : "false";
       const trimmed = p1.endsWith("\n") ? p1 : `${p1}\n`;
-      return `routeMeta = case _ of\n${trimmed}  ${name} -> { isStatic: ${isStatic}, inSitemap: true, prefetch: [ Home ] }\n${p2}`;
+      return `routeMeta = case _ of\n${trimmed}  ${name} -> { isStatic: ${isStatic}, inSitemap: true }\n${p2}`;
     }
   );
 
