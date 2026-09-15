@@ -4,7 +4,8 @@ module Test.Policy.GateSpec (gateSpec) where
 import Prelude
 
 import App.Theme (themeInitScript, themeDarkName, themeLightName)
-import Data.Array (concat)
+import Data.Array (concat, filter)
+import Data.Route (allRoutes, isStaticRoute)
 import Data.String as String
 import Data.String.Pattern (Pattern(..))
 import Data.Traversable (for)
@@ -75,6 +76,19 @@ gateSpec =
     it "every feature Page has a sibling View.purs" do
       missing <- Scan.findFeaturesMissingView "src/App/Features"
       missing `shouldEqual` []
+
+    -- App.Cli.ExportStatic renders every isStatic:true route with a
+    -- placeholder Config (real values aren't available at export time),
+    -- on the invariant that no static route's render path actually reads
+    -- it. Derived from the real Data.Route.isStaticRoute, not a
+    -- hand-maintained list of feature names -- if that invariant is ever
+    -- violated, every static export would otherwise silently bake in
+    -- placeholder Config values with no error at all.
+    it "static-route features do not import App.Config" do
+      let staticFeatureGlobs = map (\route -> "src/App/Features/" <> show route <> "/*.purs") (filter isStaticRoute allRoutes)
+      files <- liftGlob staticFeatureGlobs
+      offenders <- Scan.findForbiddenImportsInFiles [ "App.Config" ] files
+      offenders `shouldEqual` []
 
     it "every feature View imports App.Ui.Templates.Render" do
       missing <- Scan.findFeatureViewsMissingTemplateRender "src/App/Features"
