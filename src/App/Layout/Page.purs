@@ -87,22 +87,3 @@ renderErrorPage nonce lang status =
               ]
           ]
 
--- | Dormant streaming choreography (App.Server.streamResponse /
--- | App.ServerBun.streamResponseImpl, both zero call sites) — "shell now,
--- | fetch content later". Unrelated to the Alpine/Datastar transport swap;
--- | kept working (renderHead/renderScripts are both transport-agnostic)
--- | rather than removed as part of this migration's actual scope.
-renderShellOpen :: String -> String -> Lang -> Route -> String
-renderShellOpen baseUrl nonce lang route =
-  "<!DOCTYPE html>"
-    <> "<html lang=\""
-    <> langTag lang
-    <> "\">"
-    <> render (el "head" [] [ renderHead baseUrl nonce lang route ])
-    <> "<body class=\""
-    <> bodyClass
-    <> "\">"
-
-renderShellClose :: String -> Lang -> Route -> String
-renderShellClose nonce _ _ =
-  render (renderScripts nonce) <> "</body></html>"

@@ -23,7 +23,7 @@ import App.Config (Config)
 import App.Features.Home.View as Home
 import App.Form (FormStatus(..), contactFields, newsletterFields)
 import App.Layout.Head (escapeJson, renderJsonLd)
-import App.Layout.Page (renderErrorFragment, renderErrorPage, renderDocument, renderShellOpen, renderShellClose)
+import App.Layout.Page (renderErrorFragment, renderErrorPage, renderDocument)
 import App.Main (pageRenderer)
 import App.Server (RedirectKind(..), Response, cspWithNonce, errorStatusCode, fileResponse, htmlErrorResponse, internalError, methodNotAllowed, notFound, notModified, ok, okText, okTextPublic, okWith, redirect, redirectVary, securityHeaders, tooManyRequests)
 import App.Html (render)
@@ -515,16 +515,6 @@ spec = do
       -- output, not just the escapeJson helper.
       escapeJson "<" `shouldEqual` "\\u003c"
       escapeJson "</script>" `shouldEqual` "\\u003c/script>"
-
-    it "renderShellOpen produces valid HTML structure" do
-      let html = renderShellOpen "https://example.com" "test-nonce-123" En Home
-      html `StrAssert.shouldContain` "<!DOCTYPE html"
-      html `StrAssert.shouldContain` "bg-base-100"
-      html `StrAssert.shouldNotContain` "</body></html>"
-
-    it "renderShellClose closes the document" do
-      let html = renderShellClose "test-nonce-123" En Home
-      html `StrAssert.shouldContain` "</body></html>"
 
     it "escapeJson escapes in correct order" do
       -- Backslash must be escaped before quotes to avoid malformed JSON
