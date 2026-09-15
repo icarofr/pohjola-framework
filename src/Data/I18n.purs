@@ -187,7 +187,7 @@ en =
   , hero:
       { eyebrow: "PureScript on Bun"
       , headline: "A framework built on guarantees, not conventions"
-      , body: "Every route, translation, and HTML string shares one compile-time model. PureScript proves every route is handled and every string is escaped before a crash reaches your users, while Datastar keeps pages feeling instant, prefetching on hover and swapping HTML patches in place. It's also, as a direct result, the safest way to vibe code an app: the same guarantees that catch a human's mistake catch an AI agent's drift too."
+      , body: "Every route, translation, and HTML string is proven correct at compile time, so a mistake never reaches your users, whether a human wrote it or an AI agent did."
       , ctaLabel: "See the guarantees"
       , secondaryLabel: "View the repository"
       }
@@ -314,7 +314,7 @@ fr =
   , hero:
       { eyebrow: "PureScript sur Bun"
       , headline: "Un framework construit sur des garanties, pas des conventions"
-      , body: "Chaque route, chaque traduction et chaque chaîne HTML partage un seul modèle vérifié à la compilation. PureScript garantit que chaque route est gérée et chaque chaîne est échappée avant qu'un plantage n'atteigne vos utilisateurs, tandis que Datastar garde les pages instantanées, avec préchargement au survol et remplacement des fragments HTML sur place. C'est aussi, par conséquence directe, la façon la plus sûre de vibe coder une application: les mêmes garanties qui interceptent l'erreur d'un humain interceptent tout autant la dérive d'un agent IA."
+      , body: "Chaque route, chaque traduction et chaque chaîne HTML est prouvée correcte à la compilation, si bien qu'une erreur n'atteint jamais vos utilisateurs, qu'elle vienne d'un humain ou d'un agent IA."
       , ctaLabel: "Voir les garanties"
       , secondaryLabel: "Voir le dépôt"
       }
@@ -441,7 +441,7 @@ pt =
   , hero:
       { eyebrow: "PureScript no Bun"
       , headline: "Um framework construído sobre garantias, não convenções"
-      , body: "Cada rota, tradução e string HTML partilha um único modelo verificado em tempo de compilação. O PureScript garante que cada rota é tratada e cada string é escapada antes de uma falha chegar aos seus utilizadores, enquanto o Datastar mantém as páginas instantâneas, pré-carregando ao passar o rato e substituindo fragmentos HTML no lugar. É também, como resultado direto, a forma mais segura de fazer vibe coding de uma aplicação: as mesmas garantias que apanham o erro de um humano apanham igualmente o desvio de um agente de IA."
+      , body: "Cada rota, tradução e string HTML é comprovada correta em tempo de compilação, para que um erro nunca chegue aos seus utilizadores, seja escrito por um humano ou por um agente de IA."
       , ctaLabel: "Ver as garantias"
       , secondaryLabel: "Ver o repositório"
       }
