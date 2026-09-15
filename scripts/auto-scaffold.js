@@ -379,13 +379,37 @@ if (wire) {
 
   // routeMeta — one arm covers the static/dynamic caching decision
   // (staticRoutes derives from isStatic) and sitemap inclusion.
+  //
+  // The new arm's record is CLONED from the last existing arm's own text,
+  // not a hardcoded literal: RouteMeta is a closed record, so whoever adds
+  // or removes a field must already have updated every existing arm to
+  // compile — meaning the last arm always reflects the type's current
+  // shape. A hardcoded template here has no such guarantee, and drifting
+  // out of sync with RouteMeta silently is exactly the failure that hit
+  // this field twice before (see 05591c8, and the earlier articleSlots
+  // incident): a field removed from the real type, but the generator kept
+  // writing it into every new route until spago build failed downstream.
   routeContent = routeContent.replace(
     /routeMeta = case _ of\s*\n([\s\S]*?)(\n\n)/,
     (match, p1, p2) => {
       if (p1.includes(`${name} ->`)) return match;
+      const armRe = /\w+\s*->\s*\{([^}]*)\}/g;
+      let lastArm = null;
+      for (let m; (m = armRe.exec(p1)) !== null; ) lastArm = m;
+      if (!lastArm) {
+        throw new Error(
+          "routeMeta: could not find an existing arm to clone the record shape from — is routeMeta empty?"
+        );
+      }
+      if (!/isStatic:\s*(true|false)/.test(lastArm[1])) {
+        throw new Error(
+          "routeMeta: the last existing arm has no `isStatic` field — RouteMeta's shape has changed in a way this generator no longer understands. Update this insertion (and its isStatic substitution) to match."
+        );
+      }
       const isStatic = type === "static" ? "true" : "false";
+      const clonedFields = lastArm[1].replace(/isStatic:\s*(true|false)/, `isStatic: ${isStatic}`);
       const trimmed = p1.endsWith("\n") ? p1 : `${p1}\n`;
-      return `routeMeta = case _ of\n${trimmed}  ${name} -> { isStatic: ${isStatic}, inSitemap: true }\n${p2}`;
+      return `routeMeta = case _ of\n${trimmed}  ${name} -> {${clonedFields}}\n${p2}`;
     }
   );
 

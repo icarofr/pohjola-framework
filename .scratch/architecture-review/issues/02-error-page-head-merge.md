@@ -1,4 +1,5 @@
 Type: grilling
+Status: resolved
 
 ## Question
 
@@ -9,3 +10,11 @@ Decide: is a second, deliberately-minimal document construction the right shape 
 ## Blocked by
 
 None (can start immediately)
+
+## Answer
+
+Kept the two head *contents* separate — `renderErrorPage`'s minimal head is a legitimate, deliberate difference (no Route to be canonical/hreflang about), not a bug to dedupe away. Adding a mode-switch to `renderDocumentExtraHead` would have cheapened its interface for every other caller, all of which do have a real Route.
+
+Instead extracted the shared *skeleton* both were independently rebuilding (doctype/html/head/body/scripts) into one `renderShell :: Lang -> String -> Html -> Html -> String`, taking head content and body content as plain `Html` values. `renderDocumentExtraHead` now computes `extraHead <> renderHead ...` and hands it to `renderShell`; `renderErrorPage` hands its minimal head. One seam knows what a Pohjola document IS structurally; the two callers only differ in content, which was always the correct difference.
+
+Verified: `make gate` (19/19), `make test` (234/234), a live smoke test (200 on `/en`, 404 with correct title/single-doctype on an unknown route). Commit `373b471`.

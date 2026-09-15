@@ -13,6 +13,7 @@ Resolve the two open findings from the 2026-09-15 `/improve-codebase-architectur
 ## Decisions so far
 
 - [Delete dead renderShellOpen/renderShellClose from App.Layout.Page](https://github.com/icarofr/pohjola-framework/commit/b5534ed44485b3fd64db16b6f1a548cad0682126): zero production call sites confirmed via grep; deleted along with the two ContractSpec tests that only asserted on the dead functions' own output. CI green.
+- [renderErrorPage head merge](issues/02-error-page-head-merge.md): kept the two head contents separate (legitimate difference, not a bug) but extracted the shared doctype/html/body/scripts skeleton into one `renderShell` seam. Commit `373b471`.
 
 ## Not yet specified
 
