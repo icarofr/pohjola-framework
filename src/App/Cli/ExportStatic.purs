@@ -41,8 +41,8 @@ import Prelude
 
 import App.Bun (randomBase64, writeTextFile, getArgs)
 import App.Config (Config)
-import App.Html (Html, attr, doctype, el, href, render, text)
-import App.Layout.Page (renderDocumentExtraHead)
+import App.Html (Html, attr, el, href, text)
+import App.Layout.Page (renderDocumentExtraHead, renderShell)
 import App.Main (pageRenderer)
 import App.Server (cspWithNonce)
 import App.Sitemap (renderRobots, renderSitemap)
@@ -135,26 +135,27 @@ exportPage baseUrl outDir nonce lang route = do
 -- | there directly; this is the static-export equivalent of the live
 -- | server's Accept-Language-based `redirectRoot`, minus the content
 -- | negotiation a static file can't do.
-rootRedirectHtml :: String -> String
-rootRedirectHtml baseUrl =
-  render $
-    doctype
-      <> el "html" []
-        [ el "head" []
-            [ el "meta" [ attr "charset" "UTF-8" ] []
-            , el "meta" [ attr "http-equiv" "refresh", attr "content" ("0; url=" <> target) ] []
-            , el "link" [ attr "rel" "canonical", href (baseUrl <> target) ] []
-            ]
-        , el "body" []
-            [ el "p" []
-                [ text "Redirecting to "
-                , el "a" [ href target ] [ text target ]
-                , text "…"
-                ]
-            ]
-        ]
+-- |
+-- | Composed through `renderShell`, not a fourth hand-built doctype/html
+-- | skeleton: this used to bypass every document-shell seam entirely,
+-- | which is exactly why it was the one exported page with no `lang`
+-- | attribute and no CSP meta tag at all.
+rootRedirectHtml :: String -> String -> String
+rootRedirectHtml baseUrl nonce =
+  renderShell defaultLang nonce headContent bodyContent
   where
   target = routeUrl defaultLang Home
+  headContent =
+    el "meta" [ attr "charset" "UTF-8" ] []
+      <> el "meta" [ attr "http-equiv" "refresh", attr "content" ("0; url=" <> target) ] []
+      <> el "link" [ attr "rel" "canonical", href (baseUrl <> target) ] []
+      <> cspMetaTag nonce
+  bodyContent =
+    el "p" []
+      [ text "Redirecting to "
+      , el "a" [ href target ] [ text target ]
+      , text "…"
+      ]
 
 writeOrLog :: String -> String -> Aff Unit
 writeOrLog path content = do
@@ -171,7 +172,7 @@ runExportStatic = do
   for_ allLangs \lang ->
     for_ staticRoutes \route ->
       exportPage cli.baseUrl cli.outDir nonce lang route
-  writeOrLog (cli.outDir <> "/index.html") (rootRedirectHtml cli.baseUrl)
+  writeOrLog (cli.outDir <> "/index.html") (rootRedirectHtml cli.baseUrl nonce)
   writeOrLog (cli.outDir <> "/robots.txt") (renderRobots cli.baseUrl)
   writeOrLog (cli.outDir <> "/sitemap.xml") (renderSitemap cli.baseUrl)
   writeOrLog (cli.outDir <> "/.nojekyll") ""
