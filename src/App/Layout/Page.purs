@@ -38,15 +38,22 @@ renderDocument = renderDocumentExtraHead mempty
 -- | them at all, silently ungated rather than merely blocked.
 renderDocumentExtraHead :: Html -> String -> String -> Lang -> Route -> Html -> String
 renderDocumentExtraHead extraHead baseUrl nonce lang route content =
+  renderShell lang nonce (extraHead <> renderHead baseUrl nonce lang route) content
+
+-- | The one place that knows what a Pohjola document IS, structurally:
+-- | doctype, `<html lang>`, a head, a body, plus the shared scripts. Every
+-- | document-shell function (`renderDocumentExtraHead`, `renderErrorPage`)
+-- | differs only in what head/body content it supplies, never in the
+-- | skeleton — so there's exactly one seam to fix if that skeleton ever
+-- | needs to change, instead of one per caller.
+renderShell :: Lang -> String -> Html -> Html -> String
+renderShell lang nonce headContent bodyContent =
   render $
     doctype
       <> el "html" [ attr "lang" (langTag lang) ]
-        [ el "head" []
-            [ extraHead
-            , renderHead baseUrl nonce lang route
-            ]
+        [ el "head" [] [ headContent ]
         , el "body" [ class_ bodyClass ]
-            [ content
+            [ bodyContent
             , renderScripts nonce
             ]
         ]
@@ -69,21 +76,13 @@ renderErrorPage :: String -> Lang -> Int -> String
 renderErrorPage nonce lang status =
   let
     d = dict lang
+    headContent =
+      el "meta" [ attr "charset" "UTF-8" ] []
+        <> el "meta" [ attr "name" "viewport", attr "content" "width=device-width, initial-scale=1.0" ] []
+        <> el "meta" [ name_ "robots", attr "content" "noindex" ] []
+        <> el "title" [] [ text (show status <> " - " <> d.common.siteTitle) ]
+        <> el "style" [] [ text stylesCss ]
+        <> renderHeadScript nonce DarkModeInit
   in
-    render $
-      doctype
-        <> el "html" [ attr "lang" (langTag lang) ]
-          [ el "head" []
-              [ el "meta" [ attr "charset" "UTF-8" ] []
-              , el "meta" [ attr "name" "viewport", attr "content" "width=device-width, initial-scale=1.0" ] []
-              , el "meta" [ name_ "robots", attr "content" "noindex" ] []
-              , el "title" [] [ text (show status <> " - " <> d.common.siteTitle) ]
-              , el "style" [] [ text stylesCss ]
-              , renderHeadScript nonce DarkModeInit
-              ]
-          , el "body" [ class_ bodyClass ]
-              [ DatastarShell.dsSiteErrorPage lang status
-              , renderScripts nonce
-              ]
-          ]
+    renderShell lang nonce headContent (DatastarShell.dsSiteErrorPage lang status)
 
