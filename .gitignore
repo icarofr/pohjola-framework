@@ -24,6 +24,9 @@ dist/
 !.cursor/rules/
 !.cursor/rules/*.mdc
 
+# Superpowers SDD/brainstorm dirs if a plugin recreates them
+.superpowers/
+
 # Playwright
 playwright-report/
 test-results/

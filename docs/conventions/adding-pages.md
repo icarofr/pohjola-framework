@@ -7,7 +7,7 @@
 Route, Main, I18n, and Head. Then add navigation in `SiteShell` per
 [`chrome-checklist.md`](chrome-checklist.md) or use `CHROME=1`. Verify with `make eval EVAL=01-add-page CHECK=1`
 and `make eval EVAL=11-edit-chrome CHECK=1` when nav changes.
-Component/template UI: [`component-checklist.md`](component-checklist.md), [`page-architectures`](../superpowers/specs/2026-08-31-page-architectures.md), `make eval EVAL=12-add-ui-component CHECK=1`.
+Component/template UI: [`component-checklist.md`](component-checklist.md), [`page-architectures`](../specs/2026-08-31-page-architectures.md), `make eval EVAL=12-add-ui-component CHECK=1`.
 
 ## Component architecture (rule)
 
@@ -42,7 +42,7 @@ primitives — feature views never call `Container.container` or hand-write
 layout utility classes. Fill `PageTemplate` slots only.
 
 **Page layouts**: compose via `App.Ui.Templates.Render.renderPage` and a `PageTemplate`
-slot record in `View.purs`. Pick the template from [`page-architectures`](../superpowers/specs/2026-08-31-page-architectures.md). Do not add `class_` in feature views.
+slot record in `View.purs`. Pick the template from [`page-architectures`](../specs/2026-08-31-page-architectures.md). Do not add `class_` in feature views.
 
 **Cross-feature imports are forbidden** (enforced by ContractSpec). Features
 compose through shared `App.Ui.Templates` / primitives and `App.Data.Fetch`, never by
@@ -58,7 +58,7 @@ importing a sibling feature's modules.
 6. `src/App/Features/<Name>/Page.purs` :: `render :: Lang -> Aff (Either AppError Html)`
    via `staticPage` (handler only)
 7. `src/App/Features/<Name>/View.purs` — `renderPage` + `PageTemplate` slots
-   (see [`page-architectures`](../superpowers/specs/2026-08-31-page-architectures.md); default scaffold uses `Editorial`)
+   (see [`page-architectures`](../specs/2026-08-31-page-architectures.md); default scaffold uses `Editorial`)
 8. `src/App/Features/<Name>/Components/` — optional; extract when you have a
    distinct reusable visual unit (card, sidebar, etc.)
 9. i18n keys in `Data.I18n.purs` (every language in `allLangs`)
@@ -106,7 +106,7 @@ full `Types/Service/Page/View` split; no imports from sibling features.
 
 | Task | Doc |
 |---|---|
-| Page templates / slots | `design-system.md`, `docs/superpowers/specs/2026-08-30-ui-blueprint-recipe.md` |
-| Site chrome / nav | `chrome-checklist.md`, `docs/superpowers/specs/2026-08-30-shell-recipe.md` |
+| Page templates / slots | `design-system.md`, `docs/specs/2026-08-30-ui-blueprint-recipe.md` |
+| Site chrome / nav | `chrome-checklist.md`, `docs/specs/2026-08-30-shell-recipe.md` |
 | Scaffolding | `generators.md` |
 | DaisyUI reference | `vendor/daisyui/skills/daisyui/components/` (submodule) |

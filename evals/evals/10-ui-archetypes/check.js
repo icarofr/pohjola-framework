@@ -10,10 +10,10 @@ console.log("Eval 10: UI archetypes & theme (policy tier)");
 console.log("");
 
 const pageArchitectures =
-  "docs/superpowers/specs/2026-08-31-page-architectures.md";
+  "docs/specs/2026-08-31-page-architectures.md";
 const componentChecklist = "docs/conventions/component-checklist.md";
 const designSystem = "docs/conventions/design-system.md";
-const uiBlueprint = "docs/superpowers/specs/2026-08-30-ui-blueprint-recipe.md";
+const uiBlueprint = "docs/specs/2026-08-30-ui-blueprint-recipe.md";
 
 if (!(await exists(pageArchitectures))) {
   console.error(`ERROR: missing ${pageArchitectures}`);

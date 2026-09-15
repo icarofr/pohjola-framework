@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Feature views — template slots only
 
-Read `docs/superpowers/specs/2026-08-31-page-architectures.md` before any UI work.
+Read `docs/specs/2026-08-31-page-architectures.md` before any UI work.
 
 ## Rules
 

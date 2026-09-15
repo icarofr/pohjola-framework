@@ -3,7 +3,7 @@
 Read this **before** editing navbar, drawer, footer, or theme controls.
 Shell chrome is **not** feature code — it lives only in `App.DatastarShell`.
 
-Full recipe: `docs/superpowers/specs/2026-08-30-shell-recipe.md`.
+Full recipe: `docs/specs/2026-08-30-shell-recipe.md`.
 
 Chrome color: `DESIGN.md`'s Elevation & Depth **Level 2 (Dock / Terminal)**
 — navbar and footer are always the secondary/obsidian surface

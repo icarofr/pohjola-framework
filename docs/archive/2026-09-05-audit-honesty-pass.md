@@ -1,7 +1,5 @@
 # Audit honesty pass Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** Close every leftover from the second-audit challenge so the compiler, docs, cache headers, and CI match the story `AGENTS.md` already tells.
 
 **Architecture:** Fixed-arity slot records stay the ceiling (a 7th About value is a type change, not an array append). Delete silent array adapters. Copy lives as a named sextuple in `Data.I18n`. `x-default` follows `defaultLang` via `data-page-href-default`. Statusful fragments share `htmlOk` with full pages. CI runs only repo-law evals.
@@ -49,7 +47,7 @@ Do **not** create: new PageTemplates, I18n file splits, App.Bun gates.
 - Modify: `src/App/Features/About/View.purs`
 - Modify: `scripts/auto-scaffold.js`
 - Modify: `README.md` About sample
-- Modify: `docs/superpowers/specs/2026-08-31-page-architectures.md` Editorial row
+- Modify: `docs/specs/2026-08-31-page-architectures.md` Editorial row
 
 **Interfaces:**
 - Produces: `about.values.items :: { one, two, three, four, five, six :: { title, description } }`

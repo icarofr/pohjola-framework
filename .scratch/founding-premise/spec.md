@@ -1,6 +1,6 @@
 # Founding-premise grilling: does Pohjola justify existing as a bespoke framework?
 
-Origin: a `/grill-with-docs` session (2026-09-08) interrogating Pohjola's core concept against its own docs (README, CONTEXT.md, GUARANTEES.md, ADR-002, ADR-013, the deep-audit report) and against IHP — which turns out to have repositioned itself in 2026 for the exact "agent-safe framework" niche Pohjola claims, while already shipping working auth/ORM/scaffolding that Pohjola still lacks.
+Origin: a grilling session (2026-09-08) interrogating Pohjola's core concept against its own docs (README, CONTEXT.md, GUARANTEES.md, ADR-002, ADR-013, the deep-audit report) and against IHP — which turns out to have repositioned itself in 2026 for the exact "agent-safe framework" niche Pohjola claims, while already shipping working auth/ORM/scaffolding that Pohjola still lacks.
 
 Status as of 2026-09-08 (updated): 8 of 9 resolved/mostly-done, 1 open. Real code now exists in `src/`: `App.Auth` (session lifecycle, Lucia pattern) is implemented and verified (`make check` green, 262/262 tests). No login UI, no protected route, and no CSRF (ADR-005) yet — see ticket 08's two remaining open items.
 

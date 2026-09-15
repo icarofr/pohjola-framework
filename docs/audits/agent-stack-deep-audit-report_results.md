@@ -77,7 +77,7 @@ sequenceDiagram
 |---|---|---|
 | Safety floor / first orientation | `AGENTS.md` (symlinked as `CLAUDE.md`) | 47 lines, current, matches code (verified against `Policy.Contract` and `Main.purs`). |
 | "Which doc for which task" | `AGENTS.md` task→doc table | Accurate for every row checked (page, chrome, Alpine, FFI, forms, tests, deploy, i18n, auth). |
-| Page archetype choice | `docs/superpowers/specs/2026-08-31-page-architectures.md` | Best single doc in the repo — decision table + anti-pattern table + verification commands. |
+| Page archetype choice | `docs/specs/2026-08-31-page-architectures.md` | Best single doc in the repo — decision table + anti-pattern table + verification commands. |
 | Alpine seam rules | `docs/conventions/alpine-contracts.md` | Honest about its own scan limitations; matches `App.Alpine` exactly. |
 | Guarantees / enforcement claims | `docs/GUARANTEES.md` | Cross-checked against `make gate`/`make test` output; all clauses verified live. |
 | ADR index | `docs/adr/README.md` | Accurate status column, including "implementation pending" and "do not implement" states — matches code. |
@@ -94,7 +94,7 @@ A new agent can reach the right doc for "add page," "chrome," "Alpine," "FFI," "
 - **`docs/AGENT_CONTEXT.md`:** entirely a pointer ("Superseded by AGENTS.md. Do not load this file..."). It does its job, but it's a file whose only content is "don't read me," which costs a wasted tool call the first time any agent (or this audit) encounters it in a listing. Deleting it and letting a 404 speak for itself, or folding the one sentence into `AGENTS.md`'s header, would remove a hop without losing information.
 - **`docs/archive/htmx-4-migration.md`:** correctly labelled "planning artifact, not active" and referenced only from `ADR-011`'s "if triggered" clause — this is the right way to keep historical research without it competing for attention. No action needed.
 - **ADR-011 → ADR-010 tier reference:** `ADR-011-alpine-ajax-frozen-transport.md`'s interactivity-tier table names "Datastar island — ADR-010" at tier 5, but `ADR-010` itself is explicitly "Proposed — do not implement" and its own "Open questions" section leaves the client-runtime choice (Datastar vs. something else) undecided. An *accepted* ADR citing a specific runtime choice from a document that has explicitly not decided that choice is a small but real doc-consistency gap — not wrong exactly (ADR-011 is careful to say "explicit per feature"), but it reads as more settled than ADR-010 claims to be.
-- **Duplication between `llms.txt`, `AGENTS.md`, `.cursor/rules/*.mdc`, and `docs/superpowers/specs/2026-08-31-page-architectures.md`:** all four state some version of "no `class_`/primitives in feature views, fill slots only." This is intentional defense-in-depth for different tools (Cursor rules vs. CLAUDE.md vs. LLM quick-reference vs. the deep spec) rather than accidental duplication, and all four were consistent with each other and with the gate at the time of this audit — but it is four places to keep synchronized for one rule, and the Hero drift above shows that synchronization isn't free.
+- **Duplication between `llms.txt`, `AGENTS.md`, `.cursor/rules/*.mdc`, and `docs/specs/2026-08-31-page-architectures.md`:** all four state some version of "no `class_`/primitives in feature views, fill slots only." This is intentional defense-in-depth for different tools (Cursor rules vs. CLAUDE.md vs. LLM quick-reference vs. the deep spec) rather than accidental duplication, and all four were consistent with each other and with the gate at the time of this audit — but it is four places to keep synchronized for one rule, and the Hero drift above shows that synchronization isn't free.
 
 ### Proposed AGENTS.md diff (outline only)
 
@@ -190,7 +190,7 @@ The original audit above (commit `b16d325`) sampled two feature exemplars (About
 
 ### Remediation verified
 
-Commit `25daf5e` ("Close the audit leftovers: typed values, fragment cache, and repo-law CI") was already on `origin/master` when this pass began (authored outside this session, per `docs/superpowers/plans/2026-09-05-audit-honesty-pass.md`). Re-ran the full verification ladder against it from a clean shell:
+Commit `25daf5e` ("Close the audit leftovers: typed values, fragment cache, and repo-law CI") was already on `origin/master` when this pass began (authored outside this session, per `docs/archive/2026-09-05-audit-honesty-pass.md`). Re-ran the full verification ladder against it from a clean shell:
 
 ```
 make format-check   → All files are formatted.

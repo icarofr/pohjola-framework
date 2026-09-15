@@ -85,4 +85,4 @@ routes into template slot records only.
 - ADR-008 — component file structure
 - `docs/conventions/design-system.md`
 - `llms.txt` — compact agent rules
-- `docs/superpowers/specs/2026-08-30-ui-blueprint-recipe.md`
+- `docs/specs/2026-08-30-ui-blueprint-recipe.md`

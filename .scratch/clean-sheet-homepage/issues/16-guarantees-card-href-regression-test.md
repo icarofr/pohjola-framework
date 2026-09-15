@@ -13,4 +13,4 @@ Deliberately **not** a generic repo-wide "N items must have pairwise-distinct hr
 
 ## Comments
 
-From a `/grill-me` retrospective (2026-09-09). Closed on filing — both halves (fix + test) were already done earlier in this session.
+From a retrospective (2026-09-09). Closed on filing — both halves (fix + test) were already done earlier in this session.

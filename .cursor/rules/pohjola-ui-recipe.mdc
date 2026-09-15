@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Pohjola UI recipe
 
-Read **`docs/superpowers/specs/2026-08-31-page-architectures.md`** and **`docs/conventions/design-system.md`**.
+Read **`docs/specs/2026-08-31-page-architectures.md`** and **`docs/conventions/design-system.md`**.
 
 - Do not invent navbar style, fonts, or layout variants.
 - Feature views: one `PageTemplate` per page, slot records only (`ui-feature-views.mdc`).

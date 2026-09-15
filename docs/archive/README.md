@@ -1,7 +1,7 @@
 # Archived planning artifacts
 
 Superseded or deferred plans kept for history. **Not active guidance** — follow
-`docs/adr/`, `docs/conventions/`, and `docs/superpowers/specs/` instead.
+`docs/adr/`, `docs/conventions/`, and `docs/specs/` instead.
 
 | File | Status |
 |---|---|

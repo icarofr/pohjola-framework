@@ -11,4 +11,4 @@
 
 ## Comments
 
-From a `/grill-me` retrospective (2026-09-09) on why the clean-sheet homepage rebuild shipped a crowded/broken navbar, a lang dropdown that never opened, a footer that never reached viewport bottom, a Docs page narrower than its siblings, and a theme icon that never changed — none of these are visible in a `git diff`, and nothing in the documented verify ladder ever rendered a page. Recommended answer during grilling: yes, write it down — this alone would have caught 5 of 8 defects on the first pass.
+From a retrospective (2026-09-09) on why the clean-sheet homepage rebuild shipped a crowded/broken navbar, a lang dropdown that never opened, a footer that never reached viewport bottom, a Docs page narrower than its siblings, and a theme icon that never changed — none of these are visible in a `git diff`, and nothing in the documented verify ladder ever rendered a page. Recommended answer during grilling: yes, write it down — this alone would have caught 5 of 8 defects on the first pass.

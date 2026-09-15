@@ -12,4 +12,4 @@
 
 ## Comments
 
-From a `/grill-me` retrospective (2026-09-09). Recommended answer during grilling: yes, but as a backstop, not the primary fix. User's decision (2026-09-09): skip for now — deferred rather than rejected outright, contingent on ticket 13's discipline actually holding.
+From a retrospective (2026-09-09). Recommended answer during grilling: yes, but as a backstop, not the primary fix. User's decision (2026-09-09): skip for now — deferred rather than rejected outright, contingent on ticket 13's discipline actually holding.

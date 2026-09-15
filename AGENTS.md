@@ -25,7 +25,7 @@ make eval EVAL=01-add-page CHECK=1  # assertions
 
 ## Task → one doc
 | Task | Doc |
-| add page | docs/superpowers/specs/2026-08-31-page-architectures.md then make new-feature |
+| add page | docs/specs/2026-08-31-page-architectures.md then make new-feature |
 | chrome | docs/conventions/chrome-checklist.md |
 | colors / visual polish | DESIGN.md (tokens, elevation levels) + docs/conventions/design-system.md (scorecard) |
 | Datastar | docs/conventions/datastar-contracts.md |
@@ -51,7 +51,7 @@ After a convention change, run the matching eval CHECK=1 (01 page, 11 chrome, 12
 
 ### Issue tracker
 
-Markdown files under `.scratch/<feature-slug>/` (no GitHub issue tracker use — `gh` isn't assumed available). See `docs/agents/issue-tracker.md`.
+Markdown files under `.scratch/<feature-slug>/` (no GitHub Issues — `gh` isn't assumed available). See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 

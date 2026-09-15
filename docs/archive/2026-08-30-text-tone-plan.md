@@ -1,7 +1,5 @@
 # Text Tone Semantic Contract Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** Finish the interrupted TextTone work by collapsing to three semantic foreground roles (`Ink | Copy | Meta`), re-exporting from `App.Ui`, and passing `make check`.
 
 **Architecture:** `App.Ui.TextTone` remains the sole module emitting `text-base-content/N` literals. Consumers import `toneClass` or `interactiveSoftClass`. Headings continue using bare `text-base-content` (DaisyUI default ink). Gate + eval 06 enforce the seam.
@@ -201,12 +199,9 @@ Expected: no `Styles.purs`; `TextTone.purs` + migrated files + docs + Makefile +
 
 ## Execution Handoff
 
-**Plan saved to `docs/superpowers/plans/2026-08-30-text-tone.md`.**
+**Plan saved to `docs/archive/2026-08-30-text-tone.md`.**
 
-**Two execution options:**
-
-1. **Subagent-Driven (recommended)** — fresh subagent per task, review between tasks
-2. **Inline Execution** — we work through tasks together in this session with checkpoints
+This plan was executed in-session; it is kept as history only.
 
 **Prerequisite:** Design spec approved — Approach A (`Ink | Copy | Meta`).
 

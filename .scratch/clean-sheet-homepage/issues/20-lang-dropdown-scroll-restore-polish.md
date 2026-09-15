@@ -13,4 +13,4 @@
 
 ## Comments
 
-Retroactive ticket, filed 2026-09-09. These two commits landed directly on `master` after `07-push-and-review.md` closed the clean-sheet spec as done, bypassing this repo's `.scratch` ticket tracker (found by the Spec-axis code review of `dadcfe3..HEAD`, see ticket 12). `aa08b6a`'s lang-dropdown-never-opened fix is also the root cause behind this session's own `/grill-me` retrospective (ticket 14 — chrome-checklist.md's reuse-before-duplicate rule was added in this same commit). Logged here for the record per the user's decision on ticket 12: log retroactively, no process nudge.
+Retroactive ticket, filed 2026-09-09. These two commits landed directly on `master` after `07-push-and-review.md` closed the clean-sheet spec as done, bypassing this repo's `.scratch` ticket tracker (found by the Spec-axis code review of `dadcfe3..HEAD`, see ticket 12). `aa08b6a`'s lang-dropdown-never-opened fix is also the root cause behind this session's own retrospective (ticket 14 — chrome-checklist.md's reuse-before-duplicate rule was added in this same commit). Logged here for the record per the user's decision on ticket 12: log retroactively, no process nudge.

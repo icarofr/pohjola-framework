@@ -13,4 +13,4 @@ Deliberately **not** a mechanical gate rule (considered and rejected during gril
 
 ## Comments
 
-From a `/grill-me` retrospective (2026-09-09). Recommended answer during grilling: documented step, not a `Policy.Contract` rule — the mechanical version trades one bug class for false positives on cases like `Form`'s narrower container.
+From a retrospective (2026-09-09). Recommended answer during grilling: documented step, not a `Policy.Contract` rule — the mechanical version trades one bug class for false positives on cases like `Form`'s narrower container.

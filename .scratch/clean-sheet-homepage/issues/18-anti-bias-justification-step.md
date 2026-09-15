@@ -10,4 +10,4 @@
 
 ## Comments
 
-From a `/grill-me` retrospective (2026-09-09). This was the one point in the retrospective with no confident recommended answer during grilling. User's decision (2026-09-09): skip — hold via review only.
+From a retrospective (2026-09-09). This was the one point in the retrospective with no confident recommended answer during grilling. User's decision (2026-09-09): skip — hold via review only.

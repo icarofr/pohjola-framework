@@ -3,7 +3,7 @@
 **Status:** Active  
 **Date:** 2026-08-31
 
-**Prerequisite:** `docs/superpowers/specs/2026-08-30-ui-blueprint-recipe.md` (layers + `renderPage`).
+**Prerequisite:** `docs/specs/2026-08-30-ui-blueprint-recipe.md` (layers + `renderPage`).
 
 This is Pohjola's answer to "which layout?" — a small, enforced catalog instead of freestyle daisyUI in feature views. For exact component syntax when extending `App.Ui` or `Templates`, read `vendor/daisyui/skills/daisyui/components/<name>.md` (`make deps`).
 
@@ -75,4 +75,4 @@ Do not duplicate `<h1>` / lead copy in feature views — pass `title` / `subtitl
 
 - Scaffold: `make new-feature` → `docs/conventions/generators.md`
 - DaisyUI primitives: `docs/conventions/component-checklist.md`
-- Shell chrome: `docs/superpowers/specs/2026-08-30-shell-recipe.md`
+- Shell chrome: `docs/specs/2026-08-30-shell-recipe.md`

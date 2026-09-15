@@ -2,7 +2,7 @@
 
 Read this **before** adding UI capability, wrapping a DaisyUI component, or extending a page template.
 
-**Page intent first:** [`docs/superpowers/specs/2026-08-31-page-architectures.md`](../superpowers/specs/2026-08-31-page-architectures.md) — pick `PageTemplate` before touching daisyUI.
+**Page intent first:** [`docs/specs/2026-08-31-page-architectures.md`](../specs/2026-08-31-page-architectures.md) — pick `PageTemplate` before touching daisyUI.
 
 **Component syntax:** `vendor/daisyui/skills/daisyui/components/<name>.md` (vendored with `make deps`) — use when adding `App.Ui` primitives, not when authoring feature pages.
 

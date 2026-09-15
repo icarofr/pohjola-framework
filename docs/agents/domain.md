@@ -23,7 +23,22 @@ Single-context repo (this repo):
 └── src/
 ```
 
-Pohjola already has `docs/adr/` at the repo root; `CONTEXT.md` does not exist yet and will be created lazily by `/domain-modeling` when needed.
+Pohjola already has `docs/adr/` at the repo root; `CONTEXT.md` does not exist yet.
+
+Multi-context repo (presence of `CONTEXT-MAP.md` at the root):
+
+```
+/
+├── CONTEXT-MAP.md
+├── docs/adr/                          ← system-wide decisions
+└── src/
+    ├── ordering/
+    │   ├── CONTEXT.md
+    │   └── docs/adr/                  ← context-specific decisions
+    └── billing/
+        ├── CONTEXT.md
+        └── docs/adr/
+```
 
 ## Use the glossary's vocabulary
 

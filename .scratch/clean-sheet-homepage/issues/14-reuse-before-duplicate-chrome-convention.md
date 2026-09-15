@@ -10,4 +10,4 @@
 
 ## Comments
 
-From a `/grill-me` retrospective (2026-09-09). Raised as an open question during grilling ("should this be written down or left to review?") — checked the docs before filing and found it already answered: `aa08b6a`'s own commit message ("Both disclosures now share one Daisy recipe so item class and panel width cannot drift independently") shows the convention was codified in the same commit as the fix. Closing on arrival rather than re-opening what's already resolved.
+From a retrospective (2026-09-09). Raised as an open question during grilling ("should this be written down or left to review?") — checked the docs before filing and found it already answered: `aa08b6a`'s own commit message ("Both disclosures now share one Daisy recipe so item class and panel width cannot drift independently") shows the convention was codified in the same commit as the fix. Closing on arrival rather than re-opening what's already resolved.
