@@ -1,6 +1,10 @@
 -- | HTML <head> rendering — meta, SEO, hreflang, CSS, dark mode init
 module App.Layout.Head
-  ( renderHead
+  ( DocumentChrome
+  , chromeFor
+  , devChrome
+  , productionChrome
+  , renderHead
   , seoDescription
   , ogLocale
   , renderJsonLd
@@ -9,7 +13,7 @@ module App.Layout.Head
 
 import Prelude
 
-import App.Html (Html, attr, content_, el, href, name_, property_, rel_, text)
+import App.Html (Html, attr, content_, el, empty, href, name_, property_, rel_, text)
 import App.Layout.Scripts (HeadScript(..), renderHeadScript, renderJsonLdScript)
 import App.Layout.Styles (stylesCss)
 import Data.Argonaut.Core (Json, fromObject, fromString, stringify)
@@ -25,8 +29,25 @@ import Data.Tuple (Tuple(..))
 import Foreign.Object (Object)
 import Foreign.Object as Object
 
-renderHead :: String -> String -> Lang -> Route -> Html
-renderHead baseUrl nonce lang route =
+-- | How a document delivers CSS and whether live-reload is on.
+-- | Production and static export stay inlined. `make dev` sets both flags.
+type DocumentChrome =
+  { linkedCss :: Boolean
+  , liveReload :: Boolean
+  }
+
+productionChrome :: DocumentChrome
+productionChrome = { linkedCss: false, liveReload: false }
+
+devChrome :: DocumentChrome
+devChrome = { linkedCss: true, liveReload: true }
+
+chromeFor :: Boolean -> DocumentChrome
+chromeFor true = devChrome
+chromeFor false = productionChrome
+
+renderHead :: DocumentChrome -> String -> String -> Lang -> Route -> Html
+renderHead chrome baseUrl nonce lang route =
   -- Meta tags
   el "meta" [ attr "charset" "UTF-8" ] []
     <> el "meta" [ name_ "viewport", content_ "width=device-width, initial-scale=1.0" ] []
@@ -35,7 +56,7 @@ renderHead baseUrl nonce lang route =
     <> el "meta" [ name_ "theme-color", content_ siteInfo.themeColor ] []
     -- Pinned inline head scripts (closed HeadScript ADT per ADR-000)
     <> renderHeadScript nonce DarkModeInit
-    <> renderHeadScript nonce DevLiveReload
+    <> liveReloadScript nonce chrome
     -- Canonical
     <> el "link" [ rel_ "canonical", href (baseUrl <> routeUrl lang route) ] []
     -- hreflang alternates
@@ -43,8 +64,8 @@ renderHead baseUrl nonce lang route =
     <> el "link" [ rel_ "alternate", attr "hreflang" "x-default", href (baseUrl <> routeUrl defaultLang route) ] []
     -- Favicon
     <> el "link" [ rel_ "icon", attr "type" "image/svg+xml", href "/favicon.svg" ] []
-    -- Inlined CSS (eliminates render-blocking CSS network roundtrip)
-    <> el "style" [] [ text stylesCss ]
+    -- Production inlines CSS (no extra round-trip). Dev links the file.
+    <> stylesheet chrome
     -- Open Graph
     <> el "meta" [ property_ "og:type", content_ "website" ] []
     <> el "meta" [ property_ "og:title", content_ (routeTitle lang route) ] []
@@ -65,6 +86,20 @@ renderHead baseUrl nonce lang route =
 hreflangTag :: String -> Route -> Lang -> Html
 hreflangTag baseUrl route lang =
   el "link" [ rel_ "alternate", attr "hreflang" (langTag lang), href (baseUrl <> routeUrl lang route) ] []
+
+stylesheet :: DocumentChrome -> Html
+stylesheet chrome =
+  if chrome.linkedCss then
+    el "link" [ rel_ "stylesheet", href "/css/styles.css" ] []
+  else
+    el "style" [] [ text stylesCss ]
+
+liveReloadScript :: String -> DocumentChrome -> Html
+liveReloadScript nonce chrome =
+  if chrome.liveReload then
+    renderHeadScript nonce DevLiveReload
+  else
+    empty
 
 ogLocale :: Lang -> String
 ogLocale En = "en_US"

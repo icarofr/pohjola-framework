@@ -171,7 +171,7 @@ cd pohjola-framework
 make deps
 
 # 3. Start development environment with live reload
-# (scripts/dev.js — CSS embed, static sync, Tailwind + Spago watchers, Bun)
+# (scripts/dev.js — one supervisor: bind-loop port, CSS file, live-reload)
 make dev
 ```
 
@@ -181,9 +181,9 @@ Visit [`http://localhost:3000/en`](http://localhost:3000/en) locally, or view th
 
 | Command | Description |
 |:---|:---|
-| `make dev` | Local development — CSS + static sync + hot reload (picks port 3000, else 3001) |
+| `make dev` | Local development — one supervisor, bind from 3000 upward, live-reload |
 | `make run` | Production-like — full `make build` then bundled server (CI/e2e parity) |
-| `make watch` | Spago watcher only (no server) |
+| `make watch` | Same watchers as `make dev`, no server |
 | `make css` | One-shot Tailwind compile + embed (rarely needed — `make dev`/`make run` include this) |
 
 ---

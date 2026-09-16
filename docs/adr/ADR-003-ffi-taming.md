@@ -22,7 +22,9 @@ All FFI follows `docs/ffi-taming-guide.md`:
    (Exception: `streamResponseImpl` in `ServerBun.js` orchestrates the
    `ReadableStream` lifecycle, including fetching data and calling PS render
    callbacks, because the Bun `ReadableStream` API requires the producer logic
-   to run inside the JS `start` callback).
+   to run inside the JS `start` callback. The same exception covers the
+   `POHJOLA_DEV` live-reload SSE stream in that file — a held `ReadableStream`,
+   not a fifth FFI module.)
 3. Decode at the boundary (`Foreign` / `open-foreign-generic`); return
    `Aff (Either AppError a)`. Never throw across the boundary. One named
    exception exists — primitives produced by `Bun.serve` itself — bounded in

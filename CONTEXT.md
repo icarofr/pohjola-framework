@@ -36,6 +36,10 @@ _Avoid_: Path, URL
 The site-wide UI outside a feature's own content — nav, drawer, footer, close/menu labels — rendered by `App.Ui.Templates.SiteShell` and neighboring modules rather than by any feature. Chrome labels are meant to come from `Data.I18n`'s dictionary, not be hardcoded, but that rule is only mechanically enforced for feature views (see Content firewall).
 _Avoid_: Layout chrome, shell (ambiguous with the `SiteShell` module itself)
 
+**DocumentChrome**:
+How a document delivers CSS and whether live-reload is on. Production inlines CSS and omits live-reload; `make dev` links the stylesheet file and emits the live-reload HeadScript.
+_Avoid_: Chrome (that's nav/drawer/footer), theme
+
 **Content firewall**:
 `Policy.Contract`'s compile-time scan (part of `make gate`) that rejects hardcoded English-looking string literals (`text "..."`) in feature code, forcing copy through `Data.I18n`. Its glob scope is `src/App/Features/*/{Page,View}.purs` only — it does not reach `App.Ui.Templates/*.purs`, so hardcoded copy in chrome/shared-template modules is not caught by it.
 _Avoid_: Copy gate, i18n gate — the firewall is one check among several `make gate` runs

@@ -1,19 +1,86 @@
 // App.ServerBun.js
 // Bun.serve binding. Marshalling + ReadableStream lifecycle only; app logic via PS callbacks.
-//
-// PS FFI calls are curried. PS functions compile to curried JS functions:
-//   (a -> b -> Effect Unit) => function(a) { return function(b) { return function() { ... } } }
-// PS records compile to JS objects: { status, body } maps to { status: n, body: s }.
-// PS Tuple compiles to { value0, value1 }.
+// Live-reload SSE is the same ReadableStream exception as streamResponseImpl (ADR-003).
+
+import { watch } from "node:fs";
 
 const ASSET_CACHE = "public, max-age=31536000";
+const DEV_ASSET_CACHE = "no-store";
+const encoder = new TextEncoder();
+const liveReloadClients = new Set();
+
+function isPohjolaDev() {
+  return process.env.POHJOLA_DEV === "1";
+}
 
 function shouldReadBody(method) {
   return method === "POST" || method === "PUT" || method === "PATCH";
 }
 
 function cachedDir(dir) {
-  return { dir, headers: { "cache-control": ASSET_CACHE } };
+  return { dir, headers: { "Cache-Control": ASSET_CACHE } };
+}
+
+function devStaticPath(pathname) {
+  if (pathname.includes("..") || pathname.includes("\\") || pathname.includes("\0")) {
+    return null;
+  }
+  if (pathname === "/favicon.svg") return pathname;
+  if (
+    pathname.startsWith("/assets/") ||
+    pathname.startsWith("/css/") ||
+    pathname.startsWith("/images/")
+  ) {
+    return pathname;
+  }
+  return null;
+}
+
+function broadcastReload() {
+  const payload = encoder.encode("data: reload\n\n");
+  for (const client of liveReloadClients) {
+    try {
+      client.enqueue(payload);
+    } catch {
+      liveReloadClients.delete(client);
+    }
+  }
+}
+
+function liveReloadStream() {
+  let controller;
+  let ping;
+  return new ReadableStream({
+    start(ctrl) {
+      controller = ctrl;
+      liveReloadClients.add(ctrl);
+      ctrl.enqueue(encoder.encode(": connected\n\n"));
+      ping = setInterval(() => {
+        try {
+          ctrl.enqueue(encoder.encode(": ping\n\n"));
+        } catch {
+          clearInterval(ping);
+          liveReloadClients.delete(ctrl);
+        }
+      }, 15000);
+    },
+    cancel() {
+      if (ping) clearInterval(ping);
+      if (controller) liveReloadClients.delete(controller);
+    },
+  });
+}
+
+function watchReload(dir) {
+  try {
+    let timer;
+    watch(dir, { recursive: true }, () => {
+      clearTimeout(timer);
+      timer = setTimeout(broadcastReload, 80);
+    });
+  } catch {
+    /* directory may not exist yet */
+  }
 }
 
 function toPsRequest(req, server, body) {
@@ -70,8 +137,33 @@ export function generateNonce() {
   return btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(18))));
 }
 
-function makeFetch(handler) {
+function makeFetch(handler, staticRoot) {
   return async function fetch(req, server) {
+    if (isPohjolaDev()) {
+      try {
+        const url = new URL(req.url);
+        if (url.pathname === "/dev/live-reload") {
+          return new Response(liveReloadStream(), {
+            headers: {
+              "Content-Type": "text/event-stream",
+              "Cache-Control": "no-cache",
+              Connection: "keep-alive",
+            },
+          });
+        }
+        const rel = devStaticPath(url.pathname);
+        if (rel) {
+          const file = Bun.file(staticRoot + rel);
+          if (await file.exists()) {
+            return new Response(file, {
+              headers: { "Cache-Control": DEV_ASSET_CACHE },
+            });
+          }
+        }
+      } catch {
+        /* fall through to PS */
+      }
+    }
     try {
       const body = shouldReadBody(req.method) ? await req.text() : "";
       const psReq = toPsRequest(req, server, body);
@@ -157,14 +249,21 @@ export function serveImpl(port) {
           port,
           idleTimeout: 30,
           maxRequestBodySize: 64 * 1024,
-          routes: {
-            "/assets/*": cachedDir(staticRoot + "/assets"),
-            "/css/*": cachedDir(staticRoot + "/css"),
-            "/images/*": cachedDir(staticRoot + "/images"),
-            "/favicon.svg": Bun.file(staticRoot + "/favicon.svg"),
-          },
-          fetch: makeFetch(handler),
+          routes: isPohjolaDev()
+            ? {}
+            : {
+              "/assets/*": cachedDir(staticRoot + "/assets"),
+              "/css/*": cachedDir(staticRoot + "/css"),
+              "/images/*": cachedDir(staticRoot + "/images"),
+              "/favicon.svg": Bun.file(staticRoot + "/favicon.svg"),
+            },
+          fetch: makeFetch(handler, staticRoot),
         });
+
+        if (isPohjolaDev()) {
+          watchReload(staticRoot + "/css");
+          watchReload(staticRoot + "/assets");
+        }
 
         // Graceful shutdown — SIGTERM (docker stop) / SIGINT (Ctrl-C).
         // server.stop() (graceful) closes the listener, waits for in-flight

@@ -42,6 +42,8 @@ type Config =
   -- | Never set in production — this is an explicit opt-OUT of the safe
   -- | default, not the other way around.
   , secureCookies :: Boolean
+  -- | `make dev` sets POHJOLA_DEV=1: link /css/styles.css and emit live-reload.
+  , pohjolaDev :: Boolean
   }
 
 -- | Load configuration from environment variables.
@@ -72,6 +74,7 @@ loadConfig = do
 
   databaseUrl <- getEnvMaybe "DATABASE_URL"
   insecureCookiesStr <- getEnvDefault "DEV_ALLOW_INSECURE_COOKIES" "false"
+  pohjolaDevStr <- getEnvDefault "POHJOLA_DEV" "0"
 
   pure
     { port: port'
@@ -85,6 +88,7 @@ loadConfig = do
     , rateLimitWindowMs
     , databaseUrl
     , secureCookies: insecureCookiesStr /= "true"
+    , pohjolaDev: pohjolaDevStr == "1"
     }
 
 -- | Parse an env var as an EmailAddress, falling back to a known-valid default

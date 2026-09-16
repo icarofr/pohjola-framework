@@ -18,19 +18,24 @@ invariant here is enforced by gate, ContractSpec, or Venom.
 
 ## Static files
 
-Production and local dev: Bun's `routes: { dir }` in `App.ServerBun.js` serves
-`/assets/*`, `/css/*`, `/images/*`, and `/favicon.svg` from `staticRoot` with
-`Cache-Control: public, max-age=31536000` on directory routes. ETag /
-`Last-Modified` still come from Bun for revalidation. The `STATIC_ROOT` env var
-flows from `Config` → `serve` → `serveImpl` → Bun routes. Route path safety is
-verified via `isUnsafePath` (exact `..` / `\` segments rejected).
+Production and `make run`: Bun's `routes: { dir }` in `App.ServerBun.js` serves
+`/assets/*`, `/css/*`, `/images/*`, and `/favicon.svg` from `staticRoot`.
+`make dev` sets `POHJOLA_DEV=1` and serves those same paths from `fetch` with
+`Cache-Control: no-store` (Bun directory routes do not currently emit Cache-Control,
+so a long-cache header on the route object would not stop the browser keeping a
+stale stylesheet). It also holds `GET /dev/live-reload` as an SSE stream so CSS
+and enhancement-asset saves reload the browser without a PureScript rebuild. The
+`STATIC_ROOT` env var flows from `Config` → `serve` → `serveImpl` → Bun routes.
+Route path safety is verified via `isUnsafePath` (exact `..` / `\` segments
+rejected).
 
 ## Security headers
 
 All Response constructors carry security headers, asserted by ContractSpec.
 `script-src` is **nonce-based**: `'nonce-<random>' 'self' 'unsafe-eval'
-'strict-dynamic'`. There is no `unsafe-inline` in `script-src` — the two inline
-head scripts and the JSON-LD block carry a per-request nonce instead (`style-src`
+'strict-dynamic'`. There is no `unsafe-inline` in `script-src` — the inline
+head scripts (`DarkModeInit`, and `DevLiveReload` only under `DocumentChrome`)
+and the JSON-LD block carry a per-request nonce instead (`style-src`
 does still allow `'unsafe-inline'`). `'unsafe-eval'` remains because Datastar
 evaluates attribute expressions via `new Function()`; see ADR-000
 for the threat-model argument. ContractSpec pins the exact CSP string —

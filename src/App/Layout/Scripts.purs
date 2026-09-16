@@ -28,7 +28,7 @@ renderHeadScript nonce = case _ of
 
   DevLiveReload ->
     el "script" [ attr "nonce" nonce ]
-      [ text "if(window.__DEV_RELOAD__||localStorage.getItem('dev_reload')==='true'){var es=new EventSource('/dev/live-reload');es.onerror=function(){setTimeout(function(){location.reload()},1500)}}" ]
+      [ text "(()=>{var es=new EventSource('/dev/live-reload');es.onmessage=function(){location.reload()};es.onerror=function(){es.close();setTimeout(function(){location.reload()},400)}})()" ]
 
   DsShellRouter ->
     el "script" [ attr "nonce" nonce ]

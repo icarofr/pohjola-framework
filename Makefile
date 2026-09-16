@@ -11,9 +11,10 @@ SERVER_BUNDLE_DIR ?= dist-server
 STATIC_EXPORT_DIR ?= dist-static
 IMAGE_NAME ?= localhost/pohjola-framework:latest
 
-# Local-dev origin. The Origin gate (App.Main.sameOriginOk) requires POSTs
-# to match BASE_URL exactly — without this, forms 404 against the prod
-# default https://example.com. Production overrides via compose env.
+# Local-dev origin default. The Origin gate (App.Main.sameOriginOk) requires
+# POSTs to match BASE_URL exactly — without this, forms 404 against the prod
+# default https://example.com. `make dev` and `make run` rebind via
+# scripts/pick-port.js (3000–3099) and set BASE_URL to the bound port.
 export BASE_URL ?= http://localhost:3000
 
 # spago bundle shells out to esbuild (devDependency, installed locally)
@@ -116,15 +117,15 @@ assets-check:
 # DEVELOPMENT
 # ==================================================================================== #
 
-## dev: CSS embed + static sync + hot reload (Tailwind, Spago, Bun)
+## dev: one supervisor — bind-loop port, CSS file, live-reload, Spago on .purs
 .PHONY: dev
 dev:
 	@$(BUN) scripts/dev.js
 
-## watch: PureScript hot rebuild only (no server)
+## watch: same watchers as make dev, no server
 .PHONY: watch
 watch:
-	@$(BUN) -e "const { spawn } = require('child_process'), fs = require('fs'); let t; console.log('[watch] Watching src/ for changes...'); fs.watch('src', { recursive: true }, (e, f) => { if (f && f.endsWith('.purs')) { clearTimeout(t); t = setTimeout(() => spawn('bun', ['spago', 'build', '--pure', '--strict'], { stdio: 'inherit' }), 100); } });"
+	@$(BUN) scripts/dev.js --no-server
 
 ## css: compile Tailwind CSS (minified) and embed into PureScript
 .PHONY: css
@@ -133,7 +134,7 @@ css:
 	$(BUN) x @tailwindcss/cli -i css/input.css -o $(DIST_DIR)/css/styles.css --minify
 	$(BUN) scripts/embed-css.js
 
-## css-watch: Tailwind CSS hot reload
+## css-watch: Tailwind file watch (no embed — make dev uses this path)
 .PHONY: css-watch
 css-watch:
 	mkdir -p $(DIST_DIR)/css
@@ -199,6 +200,7 @@ migrate-create:
 test:
 	$(SPAGO) build --pure
 	$(BUN) -e "import { main } from './output/Test.Main/index.js'; main()"
+	$(BUN) test scripts/pick-port.test.js
 
 ## test/integration: run Venom HTTP tests via Docker Compose
 .PHONY: test/integration

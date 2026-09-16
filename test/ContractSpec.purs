@@ -22,8 +22,8 @@ import App.Theme (themeDarkName, themeLightName)
 import App.Config (Config)
 import App.Features.Home.View as Home
 import App.Form (FormStatus(..), contactFields, newsletterFields)
-import App.Layout.Head (escapeJson, renderJsonLd)
-import App.Layout.Page (renderErrorFragment, renderErrorPage, renderDocument)
+import App.Layout.Head (devChrome, escapeJson, productionChrome, renderJsonLd)
+import App.Layout.Page (renderErrorFragment, renderErrorPage, renderDocument, renderDocumentWith)
 import App.Main (pageRenderer)
 import App.Server (RedirectKind(..), Response, cspWithNonce, errorStatusCode, fileResponse, htmlErrorResponse, internalError, methodNotAllowed, notFound, notModified, ok, okText, okTextPublic, okWith, redirect, redirectVary, securityHeaders, tooManyRequests)
 import App.Html (render)
@@ -63,6 +63,7 @@ stubConfig =
   , rateLimitWindowMs: 60000.0
   , databaseUrl: Nothing
   , secureCookies: true
+  , pohjolaDev: false
   }
 
 testEmail :: String -> EmailAddress
@@ -187,8 +188,8 @@ spec = do
         for_ allLangs \lang -> do
           html <- renderStaticPage route lang
           html `StrAssert.shouldNotContain` "—"
-      renderErrorPage "test-nonce-123" En 404 `StrAssert.shouldNotContain` "—"
-      renderErrorPage "test-nonce-123" En 500 `StrAssert.shouldNotContain` "—"
+      renderErrorPage productionChrome "test-nonce-123" En 404 `StrAssert.shouldNotContain` "—"
+      renderErrorPage productionChrome "test-nonce-123" En 500 `StrAssert.shouldNotContain` "—"
 
     it "full documents carry the template page shell" do
       html <- renderStaticPage Home En
@@ -310,7 +311,7 @@ spec = do
       frag `StrAssert.shouldContain` (dict En).common.error404
     it "the full error page remains a complete document" do
       -- The non-fragment path must NOT be changed by the above.
-      let full = renderErrorPage "nonce123" En 500
+      let full = renderErrorPage productionChrome "nonce123" En 500
       full `StrAssert.shouldContain` "<!DOCTYPE"
       full `StrAssert.shouldContain` "<html"
     it "dsSiteErrorPage (App.DatastarShell) is what renderErrorFragment wraps" do
@@ -476,7 +477,22 @@ spec = do
           StrAssert.shouldContain html ".catch(function(){location.reload()})"
           StrAssert.shouldContain html "window.addEventListener('popstate',restore,true);"
           StrAssert.shouldContain html "if(!history.state)history.replaceState({__ds:true},'',location.href)"
-          html `StrAssert.shouldContain` "var es=new EventSource('/dev/live-reload')"
+          html `StrAssert.shouldNotContain` "EventSource('/dev/live-reload')"
+          html `StrAssert.shouldNotContain` "href=\"/css/styles.css\""
+
+    it "dev chrome links CSS and turns live-reload on" do
+      result <- pageRenderer stubConfig Home En Nothing
+      let html = case result of
+            Right body -> renderDocumentWith devChrome stubConfig.baseUrl "test-nonce-123" En Home body
+            Left _ -> ""
+      html `StrAssert.shouldContain` "href=\"/css/styles.css\""
+      html `StrAssert.shouldContain` "EventSource('/dev/live-reload')"
+      let err = renderErrorPage devChrome "test-nonce-123" En 404
+      err `StrAssert.shouldContain` "href=\"/css/styles.css\""
+      err `StrAssert.shouldContain` "EventSource('/dev/live-reload')"
+      let prodErr = renderErrorPage productionChrome "test-nonce-123" En 404
+      prodErr `StrAssert.shouldNotContain` "EventSource('/dev/live-reload')"
+      prodErr `StrAssert.shouldNotContain` "href=\"/css/styles.css\""
 
   describe "pages flow through the layout shell" do
     it "every static page is a full document with a footer" do

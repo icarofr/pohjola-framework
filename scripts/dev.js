@@ -1,9 +1,10 @@
 #!/usr/bin/env bun
 /**
- * Development server — one command for CSS embed, static sync, Spago, and Bun.
+ * Local-dev supervisor — one process group, one rebuild graph.
  *
- * Replaces the old make dev shell soup: Tailwind changes re-embed into
- * App.Layout.Styles so inlined CSS stays current without `make css` by hand.
+ * CSS stays a file in POHJOLA_DEV (no Spago). PureScript rebuilds when a
+ * non-generated .purs file changes. static/ copies into dist/. Bun --watch
+ * reloads output/App.Main.
  */
 import { spawn } from "node:child_process";
 import { watch } from "node:fs";
@@ -14,6 +15,7 @@ import { resolvePort } from "./pick-port.js";
 const DIST_DIR = join(ROOT, "dist");
 const CSS_OUT = join(DIST_DIR, "css/styles.css");
 const SRC_DIR = join(ROOT, "src");
+const STATIC_DIR = join(ROOT, "static");
 
 function syncStatic() {
   run([
@@ -41,22 +43,21 @@ function spagoBuild() {
   run(["bun", "spago", "build", "--pure", "--strict"]);
 }
 
-function startChild(cmd, args, env) {
-  const child = spawn(cmd, args, {
-    cwd: ROOT,
-    stdio: "inherit",
-    env,
-  });
-  child.on("exit", (code, signal) => {
-    if (signal) process.kill(process.pid, signal);
-    else if (code && code !== 0) process.exit(code);
-  });
-  return child;
+function isGeneratedStyles(filename) {
+  return filename != null && filename.replaceAll("\\", "/").endsWith("Layout/Styles.purs");
 }
 
 async function main() {
-  const { port, baseUrl } = await resolvePort();
-  const env = { ...process.env, PORT: String(port), BASE_URL: baseUrl };
+  const noServer = process.argv.includes("--no-server");
+  const { port, baseUrl } = noServer
+    ? { port: 0, baseUrl: "" }
+    : await resolvePort();
+  const env = {
+    ...process.env,
+    PORT: noServer ? process.env.PORT : String(port),
+    BASE_URL: noServer ? process.env.BASE_URL : baseUrl,
+    POHJOLA_DEV: "1",
+  };
 
   console.log("[pohjola] Building CSS (Tailwind + embed)…");
   buildCss();
@@ -64,43 +65,93 @@ async function main() {
   console.log("[pohjola] Building PureScript…");
   spagoBuild();
 
-  console.log(`\n[pohjola] Dev server → ${baseUrl}`);
-  console.log("[pohjola] Tailwind + Spago watchers active (Ctrl+C to stop)\n");
+  if (noServer) {
+    console.log("\n[pohjola] Watchers only — no server (Ctrl+C to stop)\n");
+  } else {
+    console.log(`\n[pohjola] Dev server → ${baseUrl}`);
+    console.log("[pohjola] CSS file + live-reload on; Spago on .purs (Ctrl+C to stop)\n");
+  }
 
   const children = [];
+  let stopping = false;
 
-  children.push(
-    startChild("bun", ["x", "@tailwindcss/cli", "-i", "css/input.css", "-o", CSS_OUT, "--watch"], env),
-  );
+  function startChild(cmd, args) {
+    const child = spawn(cmd, args, {
+      cwd: ROOT,
+      stdio: "inherit",
+      env,
+      detached: true,
+    });
+    child.on("exit", (code, signal) => {
+      if (stopping) return;
+      if (signal) {
+        stopping = true;
+        process.kill(process.pid, signal);
+      } else if (code && code !== 0) {
+        stopping = true;
+        process.exit(code);
+      }
+    });
+    children.push(child);
+    return child;
+  }
 
-  let cssTimer;
-  watch(CSS_OUT, () => {
-    clearTimeout(cssTimer);
-    cssTimer = setTimeout(() => {
-      console.log("[pohjola] CSS changed — re-embedding…");
-      run(["bun", "scripts/embed-css.js"], { env });
-      spagoBuild();
-    }, 150);
+  function killTree(child, signal) {
+    if (!child.pid) return;
+    try {
+      process.kill(-child.pid, signal);
+    } catch {
+      try {
+        child.kill(signal);
+      } catch {
+        /* already gone */
+      }
+    }
+  }
+
+  startChild("bun", [
+    "x",
+    "@tailwindcss/cli",
+    "-i",
+    "css/input.css",
+    "-o",
+    CSS_OUT,
+    "--watch",
+  ]);
+
+  let staticTimer;
+  watch(STATIC_DIR, { recursive: true }, () => {
+    clearTimeout(staticTimer);
+    staticTimer = setTimeout(() => {
+      console.log("[pohjola] static/ changed — syncing dist/");
+      syncStatic();
+    }, 100);
   });
 
   let psTimer;
   watch(SRC_DIR, { recursive: true }, (_event, filename) => {
-    if (filename?.endsWith(".purs")) {
-      clearTimeout(psTimer);
-      psTimer = setTimeout(() => spagoBuild(), 100);
-    }
+    if (!filename?.endsWith(".purs") || isGeneratedStyles(filename)) return;
+    clearTimeout(psTimer);
+    psTimer = setTimeout(() => {
+      console.log("[pohjola] PureScript changed — rebuilding…");
+      spagoBuild();
+    }, 100);
   });
 
-  children.push(
-    startChild(
-      "bun",
-      ["--watch", "--eval", "import('./output/App.Main/index.js').then(m => m.main())"],
-      env,
-    ),
-  );
+  if (!noServer) {
+    startChild("bun", [
+      "--watch",
+      "--eval",
+      "import('./output/App.Main/index.js').then(m => m.main())",
+    ]);
+  }
 
   const shutdown = (signal) => {
-    for (const child of children) child.kill(signal);
+    if (stopping) return;
+    stopping = true;
+    for (const child of children) {
+      killTree(child, signal);
+    }
     process.exit(0);
   };
   process.on("SIGINT", () => shutdown("SIGINT"));

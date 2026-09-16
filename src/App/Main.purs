@@ -19,7 +19,8 @@ import App.Features.Docs.Page (render) as Docs
 import App.Features.Guarantees.Page (render) as Guarantees
 import App.Features.About.Page (render) as About
 import App.Html (Html, render)
-import App.Layout.Page (renderErrorFragment, renderErrorPage, renderDocument)
+import App.Layout.Head (chromeFor)
+import App.Layout.Page (renderErrorFragment, renderErrorPage, renderDocumentWith)
 import App.Logger as Log
 import App.Server as Server
 import App.Sitemap (renderRobots, renderSitemap)
@@ -53,12 +54,11 @@ handleGet :: Config -> PageCache -> String -> Map String String -> Map String St
 handleGet cfg cache nonce headers query path = case path of
   [] -> redirectRoot headers
   [ "healthz" ] -> pure $ Server.okText "text/plain" "ok"
-  [ "dev", "live-reload" ] -> pure $ Server.okTextWith [ Tuple "Cache-Control" "no-cache", Tuple "Connection" "keep-alive" ] "text/event-stream" "retry: 1500\n\n: live-reload connected\n\n"
   [ "robots.txt" ] -> pure $ Server.okTextPublic "text/plain; charset=utf-8" (renderRobots cfg.baseUrl)
   [ "sitemap.xml" ] -> pure $ Server.okTextPublic "application/xml; charset=utf-8" (renderSitemap cfg.baseUrl)
   _ -> case parseRoute path of
     Just { lang, route } -> handleRoute { cfg, cache, nonce, lang, route, headers, query }
-    Nothing -> routeMiss404 nonce (isDatastarRequest headers) (langFromPath path)
+    Nothing -> routeMiss404 cfg nonce (isDatastarRequest headers) (langFromPath path)
 
 -- | 404 for a path that parses to no route.
 -- |
@@ -66,12 +66,12 @@ handleGet cfg cache nonce headers query path = case path of
 -- | `Route` to build from: a Datastar action to an unknown URL would
 -- | otherwise be answered with a complete `<!DOCTYPE>` document, which the
 -- | client would try to parse as an SSE patch event and fail on.
-routeMiss404 :: String -> Boolean -> Lang -> Aff Server.Response
-routeMiss404 nonce wantsPatch lang =
+routeMiss404 :: Config -> String -> Boolean -> Lang -> Aff Server.Response
+routeMiss404 cfg nonce wantsPatch lang =
   if wantsPatch then
     liftEffect $ Server.sseNoStoreEventResponse (Server.datastarPatchElementsEvent (renderErrorFragment lang 404))
   else
-    pure $ Server.htmlErrorResponse (renderErrorPage nonce lang 404) [ varyHeader ] (Server.errorStatusCode 404)
+    pure $ Server.htmlErrorResponse (renderErrorPage (chromeFor cfg.pohjolaDev) nonce lang 404) [ varyHeader ] (Server.errorStatusCode 404)
 
 -- | Best-effort language for a route-miss 404: the path's leading segment
 -- | wins when it carries a language prefix; unknown/prefixless paths fall
@@ -129,7 +129,7 @@ htmlOk statusful hdrs body =
 
 fullPage :: RequestCtx -> Maybe FormStatus -> Html -> Server.Response
 fullPage ctx status html =
-  htmlOk (isJust status) [ varyHeader ] (renderDocument ctx.cfg.baseUrl ctx.nonce ctx.lang ctx.route html)
+  htmlOk (isJust status) [ varyHeader ] (renderDocumentWith (chromeFor ctx.cfg.pohjolaDev) ctx.cfg.baseUrl ctx.nonce ctx.lang ctx.route html)
 
 -- | Log a page-render failure. Shared by both error paths so the log shape
 -- | cannot drift between them.
@@ -143,7 +143,7 @@ logRenderFailure ctx err =
 failurePage :: RequestCtx -> AppError -> Aff Server.Response
 failurePage ctx err = do
   logRenderFailure ctx err
-  pure $ Server.htmlErrorResponse (renderErrorPage ctx.nonce ctx.lang (errorStatus err)) [ varyHeader ]
+  pure $ Server.htmlErrorResponse (renderErrorPage (chromeFor ctx.cfg.pohjolaDev) ctx.nonce ctx.lang (errorStatus err)) [ varyHeader ]
     (Server.errorStatusCode (errorStatus err))
 
 -- | SSE-patch-shaped error response — a Datastar action must never be

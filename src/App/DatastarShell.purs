@@ -17,7 +17,7 @@ module App.DatastarShell
 
 import Prelude
 
-import App.Layout.Head (renderHead)
+import App.Layout.Head (productionChrome, renderHead)
 import App.Layout.Scripts (HeadScript(..), renderHeadScript)
 import App.Datastar
   ( DsFlag(..)
@@ -544,7 +544,7 @@ renderDsDocument baseUrl nonce lang route content =
   render $
     doctype
       <> el "html" [ attr "lang" (langTag lang) ]
-        [ el "head" [] [ renderHead baseUrl nonce lang route ]
+        [ el "head" [] [ renderHead productionChrome baseUrl nonce lang route ]
         , el "body" []
             [ content
             , el "script" [ type_ "module", src "/assets/js/datastar.js", attr "nonce" nonce ] []

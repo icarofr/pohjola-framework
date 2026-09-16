@@ -1,52 +1,56 @@
 #!/usr/bin/env bun
 /**
- * Pick a local dev port. Default: 3000, then 3001 when 3000 is busy.
- * Honors PORT when set (no fallback). Prints port or shell export lines.
+ * Pick a local-dev origin port by binding, not by connecting.
+ * Unset PORT: try 3000, then 3001, … up to 3099.
+ * Set PORT: that port or fail. BASE_URL always follows the bound port.
+ *
+ * The free test is Bun.serve itself (IPv6 dual-stack `*:port`, same as
+ * App.ServerBun). A Node listen on 127.0.0.1 misses leftover `*:port`
+ * listeners and then make dev collides with them.
  */
-import net from "node:net";
 
-const FALLBACKS = [3000, 3001];
+export const PORT_START = 3000;
+export const PORT_SPAN = 100;
 
-function portFree(port) {
-  return new Promise((resolve) => {
-    const socket = net.connect({ port, host: "127.0.0.1" });
-    socket.setTimeout(250);
-    socket.once("connect", () => {
-      socket.destroy();
-      resolve(false);
+export function listenFree(port) {
+  try {
+    const server = Bun.serve({
+      port,
+      fetch() {
+        return new Response("");
+      },
     });
-    socket.once("timeout", () => {
-      socket.destroy();
-      resolve(true);
-    });
-    socket.once("error", () => resolve(true));
-  });
+    server.stop(true);
+    return Promise.resolve(true);
+  } catch {
+    return Promise.resolve(false);
+  }
 }
 
-export async function resolvePort(env = process.env) {
+export async function resolvePort(env = process.env, isFree = listenFree) {
   const explicit = env.PORT?.trim() ?? "";
   if (explicit !== "") {
     const port = Number(explicit);
     if (!Number.isInteger(port) || port <= 0) {
       throw new Error(`Invalid PORT: ${explicit}`);
     }
-    if (!(await portFree(port))) {
+    if (!(await isFree(port))) {
       throw new Error(`Port ${port} is already in use`);
     }
-    const baseUrl = env.BASE_URL?.trim() || `http://localhost:${port}`;
-    return { port, baseUrl };
+    return { port, baseUrl: `http://localhost:${port}` };
   }
 
-  for (const port of FALLBACKS) {
-    if (await portFree(port)) {
-      if (port !== FALLBACKS[0]) {
-        console.error(`[pohjola] Port ${FALLBACKS[0]} busy — using ${port}`);
+  const last = PORT_START + PORT_SPAN - 1;
+  for (let port = PORT_START; port <= last; port++) {
+    if (await isFree(port)) {
+      if (port !== PORT_START) {
+        console.error(`[pohjola] Port ${PORT_START} busy — using ${port}`);
       }
       return { port, baseUrl: `http://localhost:${port}` };
     }
   }
 
-  throw new Error(`Ports ${FALLBACKS.join(" and ")} are already in use`);
+  throw new Error(`No free port in ${PORT_START}–${last}`);
 }
 
 async function main() {

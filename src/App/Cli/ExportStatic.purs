@@ -100,6 +100,7 @@ stubConfig =
   , rateLimitWindowMs: 60000.0
   , databaseUrl: Nothing
   , secureCookies: true
+  , pohjolaDev: false
   }
 
 -- | The CSP `<meta>` tag itself, composed as `Html` -- a static file has no
