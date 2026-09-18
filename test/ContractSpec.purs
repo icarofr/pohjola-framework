@@ -469,16 +469,28 @@ spec = do
           StrAssert.shouldContain html themeDarkName
           -- The shell-router glue: forward nav pushes state after Datastar's
           -- own "finished" event, and popstate re-fetches + replaces #content.
-          StrAssert.shouldContain html "document.addEventListener('datastar-fetch',function(e){if(e.detail.type!=='finished')return;"
-          StrAssert.shouldContain html "history.pushState({__ds:true},'',href);afterPatch(el.hasAttribute('data-keep-scroll'))"
+          -- Scroll Y is restored on history traversal (not a sessionStorage HTML snapshot).
+          StrAssert.shouldContain html "document.addEventListener('datastar-fetch',function(e){var el=e.detail.el;"
+          StrAssert.shouldContain html "if(e.detail.type==='started'){if(href){snap();restoring=true}return}"
+          StrAssert.shouldContain html "if(e.detail.type!=='finished')return;"
+          StrAssert.shouldContain html "history.scrollRestoration='manual'"
+          StrAssert.shouldContain html "var restoring=false"
+          StrAssert.shouldContain html "history.replaceState({__ds:true,scroll:window.scrollY},'',location.href)"
+          StrAssert.shouldContain html "history.pushState({__ds:true,scroll:keep?window.scrollY:0},'',href);restoring=false;afterPatch(keep)"
           StrAssert.shouldContain html "if(!keepScroll)window.scrollTo({top:0,left:0,behavior:'instant'})"
+          StrAssert.shouldContain html "restoring=true;var y=(history.state&&history.state.scroll)||0"
+          StrAssert.shouldContain html "im.loading='eager'"
+          StrAssert.shouldContain html "function go(){window.scrollTo({top:y,left:0,behavior:'instant'})}"
+          StrAssert.shouldContain html "im.decode().catch(function(){})"
+          StrAssert.shouldContain html "function done(){go();restoring=false}"
           StrAssert.shouldContain html "document.documentElement.lang=d.pageLang"
           StrAssert.shouldContain html "u.searchParams.set('datastar','{}')"
           StrAssert.shouldContain html "if(!r.ok)throw new Error('datastar restore '+r.status)"
           StrAssert.shouldContain html "if(!sse)throw new Error('empty datastar patch')"
           StrAssert.shouldContain html ".catch(function(){location.reload()})"
+          StrAssert.shouldContain html "requestAnimationFrame(go)}).catch(function(){location.reload()})"
           StrAssert.shouldContain html "window.addEventListener('popstate',restore,true);"
-          StrAssert.shouldContain html "if(!history.state)history.replaceState({__ds:true},'',location.href)"
+          StrAssert.shouldContain html "if(!history.state)history.replaceState({__ds:true,scroll:0},'',location.href)"
           html `StrAssert.shouldNotContain` "EventSource('/dev/live-reload')"
           html `StrAssert.shouldNotContain` "href=\"/css/styles.css\""
 

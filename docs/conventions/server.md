@@ -66,7 +66,10 @@ is not representable by an arbitrary `String`.
 shared cache would replay one visitor's nonce to everyone else; `max-age`
 because without a freshness lifetime the response is never reusable, which makes
 hover prefetch pure overhead. Both halves are pinned by the response contracts
-and `e2e/prefetch-cache.spec.js`.
+and `e2e/prefetch-cache.spec.js`. These lifetimes are seconds of HTTP freshness
+so hover, click, and popstate share one `?datastar={}` identity — not
+hx-boost's `historyCacheSize` (a count of sessionStorage HTML snapshots,
+default 10, no TTL). Do not copy that cache or retune 10/180 to match it.
 
 **Fragments share the policy for a different reason.** `renderFragment` emits no
 `<script>` tags and therefore carries no nonce at all — verified, a fragment

@@ -299,19 +299,47 @@ test.describe("Datastar navigation", () => {
     expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(300);
   });
 
-  test("scrolls to top on browser back (popstate restore)", async ({ page }) => {
+  test("restores scroll on browser back (popstate restore)", async ({ page }) => {
     await page.goto("/en");
-    await page.click('a[href="/en/about"]');
-    await expect(page).toHaveURL(/\/en\/about/);
-
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    await expect
-      .poll(() => page.evaluate(() => window.scrollY))
-      .toBeGreaterThan(0);
+    await page.evaluate(
+      () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))),
+    );
+    const homeY = await page.evaluate(() => window.scrollY);
+    expect(homeY).toBeGreaterThan(0);
+
+    await page
+      .locator('header nav.hidden.md\\:flex a[href="/en/about"]')
+      .click();
+    await expect(page).toHaveURL(/\/en\/about/);
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
 
     await page.goBack();
     await expect(page).toHaveURL(/\/en$/);
-    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+    await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 15_000 }).toBe(homeY);
+  });
+
+  test("restores scroll on browser forward", async ({ page }) => {
+    await page.goto("/en");
+    await page
+      .locator('header nav.hidden.md\\:flex a[href="/en/about"]')
+      .click();
+    await expect(page).toHaveURL(/\/en\/about/);
+
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.evaluate(
+      () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))),
+    );
+    const aboutY = await page.evaluate(() => window.scrollY);
+    expect(aboutY).toBeGreaterThan(0);
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\/en$/);
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+
+    await page.goForward();
+    await expect(page).toHaveURL(/\/en\/about/);
+    await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 10_000 }).toBe(aboutY);
   });
 
   test("404 patch keeps drawer chrome and data-page-title", async ({ page }) => {

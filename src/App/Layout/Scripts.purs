@@ -43,9 +43,10 @@ renderHeadScript nonce = case _ of
 -- | patch has already been applied to #content (verified against the
 -- | vendored datastar.js source: the "finished" dispatch sits in a finally
 -- | block after the patch-apply await) — so by the time this fires, the
--- | DOM is already correct; this only needs to pushState + sync, and to
--- | scroll to top on a real route change. Language switches re-render the
--- | same view (dsLangLink sets data-keep-scroll) and must not jump.
+-- | DOM is already correct; this then pushState + sync, snapshots scrollY
+-- | into history.state, and scrolls to top on a real route change. Language
+-- | switches re-render the same view (dsLangLink sets data-keep-scroll)
+-- | and must not jump.
 -- | The triggering <a>'s real href (event.detail.el) is the only source of
 -- | the target URL, since @get(url) itself never touches location.href.
 -- |
@@ -60,13 +61,25 @@ renderHeadScript nonce = case _ of
 -- | `location.reload()` of the URL the browser already committed on this
 -- | history traversal, as a real document instead of a silently unhandled
 -- | rejection. This handler does not pushState.
+-- |
+-- | Scroll: native documents and hx-boost restore Y on history traversal;
+-- | forward nav still goes to top. Each history entry holds its own
+-- | scrollY (replaceState on leave and on rAF-throttled scroll; paused
+-- | during restore so the async patch cannot clobber the destination).
+-- | After replace we mark imgs eager and scrollTo that Y after img.decode()
+-- | (and a short timeout), because lazy cards below the fold would otherwise
+-- | never load and the browser would clamp; restoring stays true until then
+-- | so snap cannot overwrite the destination entry with the clamped Y.
+-- | We do not snapshot HTML — the HTTP cache of the patch is the content
+-- | adapter. history.scrollRestoration is manual so the browser does not
+-- | fight the async replace.
 dsShellRouterScript :: String
 dsShellRouterScript =
-  "(function(){function sync(){var m=document.getElementById('"
+  "(function(){history.scrollRestoration='manual';var restoring=false,raf=0;function snap(){if(restoring)return;history.replaceState({__ds:true,scroll:window.scrollY},'',location.href)}window.addEventListener('scroll',function(){if(raf)return;raf=requestAnimationFrame(function(){raf=0;snap()})},{passive:true});function sync(){var m=document.getElementById('"
     <> contentTarget
-    <> "');if(!m)return;var d=m.dataset;if(d.pageTitle)document.title=d.pageTitle;if(d.pageLang)document.documentElement.lang=d.pageLang;}function afterPatch(keepScroll){sync();if(!keepScroll)window.scrollTo({top:0,left:0,behavior:'instant'})}document.addEventListener('datastar-fetch',function(e){if(e.detail.type!=='finished')return;var el=e.detail.el;var href=el&&el.getAttribute&&el.getAttribute('href');if(!href)return;history.pushState({__ds:true},'',href);afterPatch(el.hasAttribute('"
+    <> "');if(!m)return;var d=m.dataset;if(d.pageTitle)document.title=d.pageTitle;if(d.pageLang)document.documentElement.lang=d.pageLang;}function afterPatch(keepScroll){sync();if(!keepScroll)window.scrollTo({top:0,left:0,behavior:'instant'});snap()}document.addEventListener('datastar-fetch',function(e){var el=e.detail.el;var href=el&&el.getAttribute&&el.getAttribute('href');if(e.detail.type==='started'){if(href){snap();restoring=true}return}if(e.detail.type!=='finished')return;if(!href)return;var keep=el.hasAttribute('"
     <> keepScrollAttr
-    <> "'))});function restore(){var u=new URL(location.href);u.searchParams.set('"
+    <> "');history.pushState({__ds:true,scroll:keep?window.scrollY:0},'',href);restoring=false;afterPatch(keep)});function restore(){restoring=true;var y=(history.state&&history.state.scroll)||0;var u=new URL(location.href);u.searchParams.set('"
     <> datastarQueryParam
     <> "','"
     <> datastarEmptyPayload
@@ -76,7 +89,7 @@ dsShellRouterScript =
     <> contentTarget
     <> "'),o=document.getElementById('"
     <> contentTarget
-    <> "');if(!n||!o)throw new Error('invalid navigation fragment');o.replaceWith(n);afterPatch()}).catch(function(){location.reload()})}if(!history.state)history.replaceState({__ds:true},'',location.href);window.addEventListener('popstate',restore,true);sync()})();"
+    <> "');if(!n||!o)throw new Error('invalid navigation fragment');o.replaceWith(n);sync();n.querySelectorAll('img').forEach(function(im){im.loading='eager'});function go(){window.scrollTo({top:y,left:0,behavior:'instant'})}function done(){go();restoring=false}go();Promise.all(Array.prototype.map.call(n.querySelectorAll('img'),function(im){return im.decode().catch(function(){})})).then(done);setTimeout(done,1500);requestAnimationFrame(go)}).catch(function(){location.reload()})}if(!history.state)history.replaceState({__ds:true,scroll:0},'',location.href);window.addEventListener('popstate',restore,true);sync()})();"
 
 -- | Nonced JSON-LD structured data script renderer.
 renderJsonLdScript :: String -> String -> Html

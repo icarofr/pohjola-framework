@@ -133,13 +133,21 @@ behaviour belongs on the server, not that the seam needs loosening.
   piece of hand-written JS this seam needs, because Datastar itself has no
   `pushState`/`popstate` support (its own docs point to plain `<a>` navigation
   instead). Forward nav listens for Datastar's own `datastar-fetch`
-  `{type:"finished"}` event (dispatched *after* the SSE patch is already
-  applied) and only needs to `pushState` + sync title/lang, plus scroll to
-  top on a real route change. Language switches carry `data-keep-scroll` and
-  leave the window where it was.
+  `{type:"started"}` (before the patch) so the leaving page's Y is stored while
+  the URL is still that page, then `{type:"finished"}` to `pushState` + sync
+  title/lang. Snapshots pause between started and finished so the incoming
+  fragment cannot clamp-and-overwrite the leaving entry. Forward nav scrolls to
+  top on a real route change. Language
+  switches carry `data-keep-scroll` and leave the window where it was.
   Back/forward re-fetches as a Datastar request with the same `?datastar={}`
   identity, parses the `data: elements `
   payload out of the SSE body, and replaces `#content` wholesale.
+  History traversal restores that entry's `history.state.scroll` after the
+  patch (rAF-throttled `replaceState` keeps Y current; restore pauses
+  snapshots so the async replace cannot clobber the destination). Native-shaped
+  back/forward, without hx-boost's sessionStorage HTML snapshots.
+  `history.scrollRestoration` is `manual` so the browser does not fight the
+  async patch.
 
 ## Scopes
 
