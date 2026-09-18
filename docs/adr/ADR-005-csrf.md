@@ -15,8 +15,9 @@ The function now lives on `App.Server`; see the 2026-09-18 note.
 
 ## Context
 
-Current CSRF mitigations are the Origin gate (`sameOriginOk` in
-`src/App/Main.purs`) and a honeypot field. A supplied non-same-origin Origin is
+Current CSRF mitigations are `App.Server.sameOriginOk` (`Sec-Fetch-Site`
+primary, `Origin` secondary), called from mutating POST handlers, and a
+honeypot field. A supplied non-same-origin Origin is
 rejected; an absent Origin is not itself treated as a cross-origin request.
 That is distinct from credentialed cross-origin requests, which are never
 accepted. Real sessions now exist (`App.Auth`, `ADR-002`'s Amendment,
@@ -55,31 +56,26 @@ from elsewhere). Rejecting anything that isn't `same-origin` therefore
 costs nothing: there is no real client this project needs to accommodate
 that a strict same-origin check would ever break.
 
-**What's actually missing today is the `Sec-Fetch-Site` check itself.**
-`sameOriginOk` only implements the secondary (`Origin`) layer — the primary
-layer doesn't exist yet. Adding it is real, outstanding implementation
-work; this amendment fixes the *decision*, not the code (see Consequences).
+**Both layers now live in `App.Server.sameOriginOk`** (`Sec-Fetch-Site`
+primary, `Origin` secondary). The 2026-09-09 sentence that the primary
+layer was missing is historical; see the 2026-09-18 note.
 
 ## Decision (superseded by the Amendment above where they conflict)
 
 * While the app does **not** have session cookies, the existing Origin‑gate + honeypot remains the complete CSRF story – no per‑request CSRF tokens are required.
 * ~~When session support (ADR‑004) is added and authenticated state‑changing actions appear, a per‑session CSRF token must be introduced~~ — superseded; see Amendment. Sessions now exist (`App.Auth`, `ADR-002`'s Amendment); the required mechanism is the `Sec-Fetch-Site`/`Origin` header hierarchy above, not a token.
-* No per-request one-time token is required as the baseline mechanism; credentialed cross-origin requests are never accepted regardless. Absent `Origin` remains a separate case (see `sameOriginOk`) — the `Sec-Fetch-Site` check, once added, narrows this further since it doesn't depend on `Origin` being present at all.
+* No per-request one-time token is required as the baseline mechanism; credentialed cross-origin requests are never accepted regardless. Absent `Origin` remains a separate case when `Sec-Fetch-Site` is also absent (see `sameOriginOk`); a present non-`same-origin` `Sec-Fetch-Site` is enough to reject.
 
 ## Consequences
 
-* Real, outstanding work: add a `Sec-Fetch-Site` check (reject non-GET
-  requests unless the header equals `same-origin`) alongside the existing
-  `Origin` check, gating any future authenticated, state-changing route the
-  same way `handleContact` already gates unauthenticated form submissions
-  today. This is what `GUARANTEES.md`'s "CSRF is not optional... must land
-  alongside or before real session auth ships" actually refers to — a
-  header check, not a token build-out.
+* Done (2026-09-18): `sameOriginOk` implements both header layers. This tree's
+  POST handler is `notFound` and does not read a body; the gate requires
+  `sameOriginOk` the day a handler reads `req.body`. Wire any future
+  authenticated mutating route through the same function — header check,
+  not a token build-out.
 * A per-session token remains available as a documented fallback, not dead
   weight — if this project ever needs to support a browser old enough to
   lack `Sec-Fetch-Site`, add it then, scoped to that specific need, rather
   than building it speculatively now against a requirement that may never
   arrive.
-* Future implementation reuses the existing `sameOriginOk` shape (extend it,
-  or add a sibling check in `src/App/Main.purs`) — no new module, no new
-  FFI boundary, no change to the FFI allowlist.
+* No new module, no new FFI boundary, no change to the FFI allowlist.

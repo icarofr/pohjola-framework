@@ -4,10 +4,10 @@ Agent evals for Pohjola. Each eval is a prompt + assertion pair: a
 user-shaped task in `PROMPT.md`, and checks in `check.sh` that verify the agent
 followed our conventions.
 
-Structural policy lives in `src/Policy/Law.purs` (named laws) and
-`src/Policy/Contract.purs` (scan adapters), enforced by `make gate`.
-Eval `check.sh` scripts call `make gate` for shared laws and keep only
-eval-unique greps (refusal cases the gate does not cover).
+Structural policy: `Policy.Law` names catalog inhabitants; `Policy.Contract`
+owns the scan-config lists. `make gate` enforces both. Eval `check.sh`
+scripts call `make gate` for shared laws and keep only eval-unique greps
+(refusal cases the gate does not cover).
 
 The point: find places where agents get the conventions wrong, then fix it by
 improving the docs in `docs/conventions/` and `AGENTS.md`.

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Eval 06: Component architecture + ADR-012 UI contract
-# Asserts: Templates.Render in View, Layout.Page for staticPage, no class_, no cross-feature imports
+# Asserts: Templates.Render in View, Layout.Page for staticPage; class_/primitives via make gate
 set -euo pipefail
 
 pass=0; fail=0
@@ -32,20 +32,9 @@ check "I18n has team entries" "grep -i 'team' src/Data/I18n.purs | grep -iv 'imp
 
 # No FFI or raw used for a static page
 check "no FFI in Team feature" "! grep -r 'foreign import' src/App/Features/Team/ 2>/dev/null"
-check "no raw in Team feature" "! grep -r '\braw\b' src/App/Features/Team/ 2>/dev/null"
 
-# ADR-012: feature views fill template slots (no class_)
-check "no class_ in Team View.purs" "! grep -q 'class_' src/App/Features/Team/View.purs"
-check "no class_ in Team Components" "! grep -r 'class_' src/App/Features/Team/Components/ 2>/dev/null"
-
-# No hand-written mx-auto max-w-* anywhere in features
-check "no hand-written mx-auto max-w-* in any feature" "! grep -r 'mx-auto max-w-' src/App/Features/ 2>/dev/null"
-
-# No cross-feature imports
-check "no cross-feature imports" "! grep -r 'import App.Features.Posts\|import App.Features.Home\|import App.Features.About\|import App.Features.Contact' src/App/Features/Team/ 2>/dev/null"
-
-# Semantic text tones: no raw opacity modifiers in features (ADR-008)
-check "no raw text-base-content/N in features" "! grep -r 'text-base-content/' src/App/Features/ 2>/dev/null"
+# Route/i18n/existence above; class_, primitives, mx-auto, text-tone, cross-feature → make gate
+check "gate" "make gate >/dev/null 2>&1"
 
 echo ""
 echo "$pass passed, $fail failed"

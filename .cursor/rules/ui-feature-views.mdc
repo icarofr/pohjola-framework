@@ -11,7 +11,7 @@ Read `docs/specs/2026-08-31-page-architectures.md` before any UI work.
 
 1. One PageTemplate per page — `Landing | Editorial | Hub | Feed | Schedule | Article | Form | Notice`.
 2. **Slots only** — build records with `landingSlots` / `hubSlots` / `editorialSlots` / `feedSlots` / `articleSlots` / `scheduleSlots` / form field records.
-3. **No primitives in features** — no `import App.Ui.Card`, no `class_` (`make gate`). Views may import `Prelude`, `App.Form`, `App.Html`, `App.Ui.Templates.*`, and `Data.*` only.
+3. **No primitives in features** — no `import App.Ui.Card`, no `class_` (`make gate`). View/Components import prefixes are `Policy.Contract.featureViewImportAllowlist`.
 4. **Copy exemplars** — `Home`, `About`, `Guarantees`, `Docs` views; do not invent layout.
 5. **DaisyUI HTML lives in `App.Ui.Templates` / `App.Ui` primitives** — not in feature views.
 

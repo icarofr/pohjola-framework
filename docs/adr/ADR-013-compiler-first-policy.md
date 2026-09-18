@@ -20,15 +20,21 @@ typeclasses, closed view surfaces, and `nix flake check` — not parallel config
 
 ## Decision
 
-1. **`Policy.Contract` is the single source of truth** (`src/Policy/Contract.purs`).
-   All allowlists, forbidden patterns, and closed module sets are typed PureScript
-   values.
+1. **`Policy.Contract` is the single source of truth for policy scans**
+   (`src/Policy/Contract.purs`). Allowlists, forbidden patterns, and closed
+   module sets are typed PureScript values.
 
-2. **`make gate` runs `Test.Gate`** — a fast PureScript test module that scans the
-   filesystem using `Test.Policy.Scan` and asserts against `Policy.Contract`.
+2. **`Policy.Law` names catalog inhabitants** (`src/Policy/Law.purs`). Each
+   constructor has a `catalogNeedle` that must appear in `docs/GUARANTEES.md`.
+   Law does not own scan lists; Contract does not own the catalog of which
+   laws exist.
+
+3. **`make gate` runs `Test.Gate`** — a fast PureScript test module that scans the
+   filesystem using `Test.Policy.Scan` and asserts against `Policy.Contract`,
+   and that every `Law` needle appears in the catalog.
    No JSON, no Node policy script.
 
-3. **Kill `uiClassPolicy`** — class token allowlists are gone. Instead:
+4. **Kill `uiClassPolicy`** — class token allowlists are gone. Instead:
    - **Closed `App.Ui` primitive set** — new `src/App/Ui/*.purs` files fail the gate.
    - **Closed `App.Ui.Templates` set** — new template files fail the gate.
    - **Feature views** fill `PageTemplate` slots via `renderPage` only; forbidden
@@ -36,10 +42,10 @@ typeclasses, closed view surfaces, and `nix flake check` — not parallel config
    - **DaisyUI** — styling lives in primitives and templates; agents compose slots,
      they do not scaffold Tailwind from memory.
 
-4. **`Test.PolicySpec` is behavioral only** — reference-page archetype markers
+5. **`Test.PolicySpec` is behavioral only** — reference-page archetype markers
    (landing hero, hub cards, feed grid). Structural scans moved to `Test.Gate`.
 
-5. **Theme build check** — `scripts/verify-theme.js` reads `--color-primary` from
+6. **Theme build check** — `scripts/verify-theme.js` reads `--color-primary` from
    `css/input.css`, not a manifest field.
 
 ## Consequences
@@ -62,7 +68,7 @@ typeclasses, closed view surfaces, and `nix flake check` — not parallel config
 
 | Concern | Module | Command |
 |---------|--------|---------|
-| Structural scans | `Test.Gate` + `Policy.Contract` | `make gate` |
+| Structural scans | `Test.Gate` + `Policy.Contract` + `Policy.Law` catalog | `make gate` |
 | Reference page archetypes | `Test.PolicySpec` | `make test` |
 | CSP, Alpine seam, headers | `Test.ContractSpec` | `make test` |
 | Types (routes, i18n, handlers) | Compiler | `spago build` |

@@ -57,5 +57,5 @@ _Avoid_: Partial, island — island names the not-yet-implemented ADR-010 browse
 _Avoid_: Lint, policy check — several checks exist; "gate" names this specific structural one
 
 **Law**:
-A named constructor of `Policy.Law` whose `catalogNeedle` must appear in `docs/GUARANTEES.md`. The compiler forces a needle per constructor; `make gate` fails if the catalog omits one. `Policy.Contract` / `Test.Policy.Scan` are adapters that check some laws, not a second source of intent.
+A named constructor of `Policy.Law` whose `catalogNeedle` must appear in `docs/GUARANTEES.md`. Names which guarantees exist. The compiler forces a needle per constructor; `make gate` fails if the catalog omits one. Scan-config lists live in `Policy.Contract`; `Test.Policy.Scan` is the filesystem adapter.
 _Avoid_: Guarantee (the catalog title), policy (the scan lists)

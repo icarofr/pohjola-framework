@@ -19,7 +19,8 @@ implement anything on this page as written — read `ADR-002` and
 - **CSRF:** this page specified "a per-session CSRF token" as part of the
   session row itself. The implemented `sessions` table
   (`migrations/002_create_sessions.sql`) has no such column — CSRF is
-  entirely `ADR-005`'s separate, still-pending concern, not bundled into
+  entirely `ADR-005`'s separate concern (`sameOriginOk` on mutating POST),
+  not bundled into
   session storage. Don't add a CSRF column here to match this page; amend
   `ADR-005` instead if that's ever revisited.
 - **Persistence:** `App.Auth` connects per-call via `App.Data.SQL`

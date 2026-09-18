@@ -130,7 +130,7 @@ implements them:
 The SQL pool lifecycle is specified by ADR-009 Phase 3B. Until that source
 work lands, it must not be reported as a runtime-enforced guarantee.
 
-## Sessions (App.Auth) — implemented, CSRF is not
+## Sessions (App.Auth) — implemented; CSRF is origin-gated
 
 `App.Auth` (2026-09-08) implements ADR-002's fixed interface using Lucia's
 session pattern in full (ADR-002's Amendment; full reference at

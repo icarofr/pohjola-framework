@@ -1,6 +1,7 @@
--- | Typed architectural contract — single source of truth for policy scans.
+-- | Scan-config lists for `make gate` (ADR-013).
 -- |
--- | Enforced by `make gate` (Test.Gate) and `Test.PolicySpec`. No JSON manifest.
+-- | Allowlists, forbidden patterns, and closed module sets live here.
+-- | `Policy.Law` names which laws exist; this module does not. No JSON manifest.
 -- | Extend this module when the closed surface grows; agents cannot bypass by
 -- | editing a config file.
 module Policy.Contract

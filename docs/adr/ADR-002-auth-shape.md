@@ -1,6 +1,6 @@
 # ADR-002: Auth shape — PS-first assembly behind App.Auth
 
-**Status:** Accepted — session lifecycle implemented (`App.Auth`, 2026-09-08). CSRF (ADR-005) is a separate, still-pending ADR; see GUARANTEES.md's "Sessions (App.Auth) — implemented, CSRF is not" section before wiring `requireAuth` into any mutating route. No users table, registration, or login UI exists (out of this ADR's scope — see module header of `App.Auth`).
+**Status:** Accepted — session lifecycle implemented (`App.Auth`, 2026-09-08). CSRF (ADR-005) is implemented as `App.Server.sameOriginOk` on mutating POST; still do not wire `requireAuth` into a mutating route without it. No login UI exists (out of this ADR's scope — see module header of `App.Auth`).
 **Date:** 2026-08
 **Amended:** 2026-09-08 — session-token/expiry model replaced with Lucia's pattern, adopted in full (see "Amendment" below); implemented same day.
 

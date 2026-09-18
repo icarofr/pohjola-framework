@@ -1,4 +1,4 @@
--- | Structural policy gate — fast scans from Policy.Contract (make gate).
+-- | Structural policy gate — Law catalog needles + Contract scans (make gate).
 module Test.Policy.GateSpec (gateSpec) where
 
 import Prelude
@@ -23,7 +23,7 @@ import Test.Spec.Assertions.String as StrAssert
 
 gateSpec :: Spec Unit
 gateSpec =
-  describe "Policy gate (Policy.Contract)" do
+  describe "Policy gate (Law catalog + Contract scans)" do
     it "no raw/Raw words in src/" do
       offenders <- Scan.findRawInSrc "src"
       offenders `shouldEqual` []

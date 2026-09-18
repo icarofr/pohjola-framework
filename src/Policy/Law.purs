@@ -1,9 +1,9 @@
--- | Named architectural laws — the interface of what must hold (ADR-013).
+-- | Named architectural laws — catalog inhabitants for docs/GUARANTEES.md.
 -- |
--- | `Policy.Contract` and `Test.Policy.Scan` are adapters: needle lists and
--- | filesystem scans. This module names the laws. Adding a constructor without
--- | updating `catalogNeedle` is a compile error; a needle missing from
--- | `docs/GUARANTEES.md` fails `make gate`.
+-- | This module names which laws exist. `Policy.Contract` owns the scan-config
+-- | lists; `Test.Policy.Scan` is the filesystem adapter. Adding a constructor
+-- | without updating `catalogNeedle` is a compile error; a needle missing from
+-- | the catalog fails `make gate`.
 module Policy.Law
   ( Law(..)
   , allLaws
