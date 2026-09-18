@@ -88,17 +88,19 @@ renderErrorPage chrome nonce lang status =
         <> el "meta" [ attr "name" "viewport", attr "content" "width=device-width, initial-scale=1.0" ] []
         <> el "meta" [ name_ "robots", attr "content" "noindex" ] []
         <> el "title" [] [ text (show status <> " - " <> d.common.siteTitle) ]
-        <> ( if chrome.linkedCss then
+        <>
+          ( if chrome.linkedCss then
               el "link" [ attr "rel" "stylesheet", attr "href" "/css/styles.css" ] []
             else
               el "style" [] [ text stylesCss ]
-           )
+          )
         <> renderHeadScript nonce DarkModeInit
-        <> ( if chrome.liveReload then
+        <>
+          ( if chrome.liveReload then
               renderHeadScript nonce DevLiveReload
             else
               empty
-           )
+          )
   in
     renderShell lang nonce headContent (DatastarShell.dsSiteErrorPage lang status)
 

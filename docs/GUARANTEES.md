@@ -20,7 +20,7 @@ check fails loudly — on every push, in CI.
 | 7 | Dictionary completeness — every language in `allLangs` shares one record type; a missing key in any language is a compile error | Compiler | `spago build` |
 | 8 | Runtime exceptions (socket errors, JS failures) are contained at one boundary, logged, and answered with a 500 — never a process crash | `attempt` in `App.Server` + `makeFetch` try/catch in `App.ServerBun` | `make test` |
 | 9 | No hung requests — `idleTimeout: 30` closes connections with unresolved handler Promises; `makeFetch` catches synchronous throws in the callback bridge; stream `controller.close()` is guaranteed via `try/finally` | `idleTimeout` + `makeFetch` guard + `try/finally` in `App.ServerBun` | runtime-verified at introduction; exercised under Venom/Playwright |
-| 10 | Security headers on every response, including errors and redirects | ContractSpec security-header suite (12 `Response` constructors) | `make test` |
+| 10 | Security headers on every response, including errors and redirects | ContractSpec security-header suite (every `Response` constructor, including `forbidden`) | `make test` |
 | 11 | CSP is the pinned nonce-based policy — `script-src 'nonce-<random>' 'self' 'unsafe-eval' 'strict-dynamic'`; no `unsafe-inline`. Widening it fails a test that demands a justification | ContractSpec (`cspWithNonce` exact-string assertion + `securityHeaders` carries no CSP) | `make test` |
 | 12 | Datastar seams can't silently break — the `contentTarget` id and `data-page-title` attribute are asserted in rendered output. Datastar attribute *names* should only be built inside `App.Datastar`, **enforced by a literal-text scan** scoped to Datastar's own reactive vocabulary (`attr "data-signals`, `attr "data-show`, `attr "data-on:`, `attr "data-bind`, `attr "data-class`, `attr "data-text`): a non-literal construction such as `let k = "data-show" in attr k …` evades it, since `App.Html.attr` is exported unrestricted. Clause 12a is the compiler-enforced half | ContractSpec (literal scan) | `make test` |
 | 12a | Browser JS cannot be hand-written at a call site for the values that matter — `dsSetTheme`/`dsShowTheme`/`dsClassWhenTheme` take `App.Theme.ThemeMode` and `dsShowFlag`/`dsToggleFlag`/`dsSetFlag`/`dsClassWhenFlag` take `App.Datastar.DsFlag`, both closed types, so a string literal in either position is a compile error. Closes ADR-000 Vector B by construction for these. The generated expressions themselves are pinned by assertion | Compiler (closed sum types) + ContractSpec | `spago build`, `make test` |
@@ -31,6 +31,7 @@ check fails loudly — on every push, in CI.
 | 17 | No external scripts — rendered pages never reference `src="http…"` | ContractSpec (static routes) | `make test` |
 | 18 | Every page flows through the layout shell — no hand-rolled HTML documents | ContractSpec | `make test` |
 | 19 | All of the above runs on every push | GitHub Actions (build+gate, unit, Venom, Playwright) | `.github/workflows/ci.yml` |
+| 20 | Mutating POST is origin-gated — `Sec-Fetch-Site: same-origin` primary, `Origin` matching `BASE_URL` secondary (`App.Server.sameOriginOk`). A body-reading `Main` without `sameOriginOk` fails `make gate`. This tree's POST handler is currently `notFound` | Compiler (call site) + `Policy.Contract` gate + ServerSpec | `make gate`, `make test` |
 
 ## Named exemptions and scan limits
 
@@ -160,20 +161,14 @@ callback seam). Same SQL-integration test limitation as `App.Auth`; the pure
 row-decode logic is unit-tested. No HTTP route calls any of this yet — see
 `docs/conventions/auth-lucia-arctic.md`.
 
-**CSRF (ADR-005) is a real, currently-open gap, not a formality.** ADR-005
+**CSRF (ADR-005) is implemented as `App.Server.sameOriginOk`, not a formality.** ADR-005
 was amended (2026-09-09) to Lucia's actual header-based hierarchy —
 `Sec-Fetch-Site` primary, `Origin` secondary, an anti-CSRF token demoted
-to an explicit legacy-browser fallback, not a requirement. Neither layer
-is implemented right now: the clean-sheet rebuild removed the last
-mutating route (Contact/newsletter POST) along with the `sameOriginOk`
-origin-check that guarded it, so there is currently no mutating route to
-protect and no partial defense in place. Any code that wires
-`App.Auth.requireAuth` into a real protected, mutating route (a form
-submission, not a GET) needs to rebuild this hierarchy first, not assume
-`sameOriginOk` is still there to fall back on — reopening it half-built
-is exactly the risk ADR-005 and Lucia's own docs warn about. Read-only
-protected pages are lower risk; anything that writes is not safe to ship
-without it.
+to an explicit legacy-browser fallback, not a requirement. The engine
+function is in place. This tree currently answers POST with `notFound` and
+does not read a body; the gate fails a future body-reading `Main` that omits
+`sameOriginOk`. Do not wire `App.Auth.requireAuth` into a mutating route
+without going through that function.
 
 ## Keeping it true
 

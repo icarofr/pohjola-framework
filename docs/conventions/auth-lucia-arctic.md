@@ -91,13 +91,10 @@ comment). Otherwise: `Path=/`, `Secure` (when applicable), `HttpOnly`,
 a cookie-carried session token needs CSRF protection regardless of
 `SameSite`. `ADR-005` (amended 2026-09-09 to match Lucia's actual
 hierarchy — `Sec-Fetch-Site` primary, `Origin` secondary, a token demoted
-to an explicit legacy-browser fallback, not a requirement) must land
-alongside or before real session auth ships — not after. Neither layer
-is implemented right now — `sameOriginOk`, which covered the secondary
-`Origin` layer, was removed along with the last mutating route it
-guarded (see `ADR-005`'s note on this); the primary `Sec-Fetch-Site`
-check was never added. Both need building before wiring
-`requireAuth` into any mutating route.
+to an explicit legacy-browser fallback, not a requirement) is implemented
+as `App.Server.sameOriginOk`. This tree's POST handler is `notFound`.
+Still do not wire `requireAuth` into a mutating route without going
+through that function — the gate fails a body-reading `Main` that omits it.
 
 ## Arctic's OAuth pattern
 

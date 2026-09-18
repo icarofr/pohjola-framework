@@ -3,8 +3,9 @@ module Test.ServerSpec where
 import Prelude
 
 import App.Bun (wyhash)
-import App.Server (ResponseBody(..), isUnsafePath, notModified, sseEventResponse, sseEventResponseMatching, sseNoStoreEventResponse)
+import App.Server (ResponseBody(..), forbidden, isUnsafePath, notModified, sameOriginOk, sseEventResponse, sseEventResponseMatching, sseNoStoreEventResponse)
 import Data.Array (find, mapMaybe, last)
+import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..), snd)
 import Effect.Class (liftEffect)
@@ -34,6 +35,26 @@ spec = do
         h1 `shouldEqual` h2
         h1 `shouldNotEqual` h3
         h1 `shouldNotEqual` ""
+
+    describe "sameOriginOk (ADR-005)" do
+      let base = "http://localhost:3000"
+      it "accepts Sec-Fetch-Site same-origin" do
+        sameOriginOk base (Map.singleton "sec-fetch-site" "same-origin") `shouldEqual` true
+      it "rejects Sec-Fetch-Site cross-site even with a matching Origin" do
+        let
+          headers = Map.fromFoldable
+            [ Tuple "sec-fetch-site" "cross-site"
+            , Tuple "origin" base
+            ]
+        sameOriginOk base headers `shouldEqual` false
+      it "accepts a matching Origin when Sec-Fetch-Site is absent" do
+        sameOriginOk base (Map.singleton "origin" base) `shouldEqual` true
+      it "rejects a mismatched Origin when Sec-Fetch-Site is absent" do
+        sameOriginOk base (Map.singleton "origin" "https://evil.example") `shouldEqual` false
+      it "allows a missing Origin when Sec-Fetch-Site is absent" do
+        sameOriginOk base Map.empty `shouldEqual` true
+      it "forbidden is 403" do
+        forbidden.status `shouldEqual` 403
 
     describe "notModified response" do
       it "constructs 304 response with security headers and empty body" do

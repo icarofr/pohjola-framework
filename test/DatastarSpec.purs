@@ -10,6 +10,8 @@ import App.Datastar
   , contentTarget
   , dataPageLangAttr
   , dataPageTitleAttr
+  , datastarEmptyPayload
+  , datastarQueryParam
   , datastarRequestHeader
   , dsBindFlag
   , dsClassWhenFlag
@@ -48,6 +50,8 @@ spec = do
       datastarRequestHeader `shouldEqual` "datastar-request"
       dataPageTitleAttr `shouldEqual` "data-page-title"
       dataPageLangAttr `shouldEqual` "data-page-lang"
+      datastarEmptyPayload `shouldEqual` "{}"
+      datastarQueryParam `shouldEqual` "datastar"
 
     it "flagName is stable for every DsFlag" do
       -- Underscore prefix: Datastar omits these from GET ?datastar= (exclude

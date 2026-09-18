@@ -41,7 +41,7 @@ How a document delivers CSS and whether live-reload is on. Production inlines CS
 _Avoid_: Chrome (that's nav/drawer/footer), theme
 
 **Content firewall**:
-`Policy.Contract`'s compile-time scan (part of `make gate`) that rejects hardcoded English-looking string literals (`text "..."`) in feature code, forcing copy through `Data.I18n`. Its glob scope is `src/App/Features/*/{Page,View}.purs` only — it does not reach `App.Ui.Templates/*.purs`, so hardcoded copy in chrome/shared-template modules is not caught by it.
+`Policy.Contract`'s compile-time scan (part of `make gate`) that rejects hardcoded English-looking string literals (`text "..."`) in feature code and shared templates, forcing copy through `Data.I18n`. Glob: `src/App/Features/*/{Page,View}.purs` and `src/App/Ui/Templates/*.purs`.
 _Avoid_: Copy gate, i18n gate — the firewall is one check among several `make gate` runs
 
 **Statusful** (fragment or page):
@@ -53,5 +53,9 @@ The `#content`-only HTML Alpine AJAX swaps in for same-origin navigation, as opp
 _Avoid_: Partial, island — island names the not-yet-implemented ADR-010 browser-island runtime
 
 **Gate**:
-`make gate` — the structural policy scan (`Test.Gate` against `Policy.Contract`): banned unsafe imports, the FFI allowlist, the content firewall, the closed template set, and the feature-view contract. Distinct from `make test` (behavioral specs) and `make check` (the full local verification ladder).
+`make gate` — the structural policy scan (`Test.Gate` against `Policy.Contract` and `Policy.Law`): banned unsafe imports, the FFI allowlist, the content firewall, the closed template set, the feature-view contract, and catalog sync for every `Law`. Distinct from `make test` (behavioral specs) and `make check` (the full local verification ladder).
 _Avoid_: Lint, policy check — several checks exist; "gate" names this specific structural one
+
+**Law**:
+A named constructor of `Policy.Law` whose `catalogNeedle` must appear in `docs/GUARANTEES.md`. The compiler forces a needle per constructor; `make gate` fails if the catalog omits one. `Policy.Contract` / `Test.Policy.Scan` are adapters that check some laws, not a second source of intent.
+_Avoid_: Guarantee (the catalog title), policy (the scan lists)

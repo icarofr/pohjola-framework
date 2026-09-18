@@ -15,6 +15,8 @@ module Test.Policy.Scan
   , findFeaturesMissingView
   , findFilesMatching
   , findForbiddenImportsInFiles
+  , findDisallowedImportsInFiles
+  , findMutatingPostMissingOriginGate
   , findConcatenatedEl
   , findForbiddenInFiles
   , findForeignImportsOutsideAllowlist
@@ -34,9 +36,10 @@ import Data.Array (concat, elem, filter, length, mapMaybe, uncons)
 import Data.Char (toCharCode)
 import Data.Either (Either(..))
 import Data.Foldable (any)
-import Data.Maybe (Maybe(..), fromMaybe)
-import Data.String.Common (split) as Common
+import Data.Maybe (Maybe(..), fromMaybe, isJust)
+import Data.String (trim)
 import Data.String.CodeUnits (fromCharArray, stripPrefix, stripSuffix, toCharArray) as CodeUnits
+import Data.String.Common (split) as Common
 import Data.String.Pattern (Pattern(..))
 import Data.Traversable (for)
 import Effect (Effect)
@@ -213,6 +216,45 @@ findForbiddenImportsInFiles modules files = do
           Nothing
       Left _ -> Nothing
   pure (mapMaybe identity results)
+
+-- | Feature View imports must start with an allowlisted prefix (exact or dotted).
+findDisallowedImportsInFiles :: Array String -> Array String -> Aff (Array String)
+findDisallowedImportsInFiles prefixes files = do
+  results <- for files \file -> do
+    content <- readTextFile file
+    pure case content of
+      Right c ->
+        if any (not <<< allowedImport prefixes) (importModules c) then
+          Just file
+        else
+          Nothing
+      Left _ -> Nothing
+  pure (mapMaybe identity results)
+
+importModules :: String -> Array String
+importModules content =
+  mapMaybe importModuleName (Common.split (Pattern "\n") content)
+
+importModuleName :: String -> Maybe String
+importModuleName line = do
+  rest <- CodeUnits.stripPrefix (Pattern "import ") (trim line)
+  map (_.head) (uncons (Common.split (Pattern " ") rest))
+
+allowedImport :: Array String -> String -> Boolean
+allowedImport prefixes modName =
+  any (\p -> modName == p || isJust (CodeUnits.stripPrefix (Pattern (p <> ".")) modName)) prefixes
+
+-- | A Main that reads the POST body must call sameOriginOk (ADR-005).
+findMutatingPostMissingOriginGate :: String -> Aff (Array String)
+findMutatingPostMissingOriginGate file = do
+  content <- readTextFile file
+  pure case content of
+    Right c ->
+      if containsSubstring "req.body" c && not (containsSubstring "sameOriginOk" c) then
+        [ file ]
+      else
+        []
+    Left _ -> []
 
 findTextToneViolations :: String -> Array String -> String -> Aff (Array String)
 findTextToneViolations pattern allowlist root = do

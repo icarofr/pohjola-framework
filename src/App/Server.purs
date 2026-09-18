@@ -56,6 +56,8 @@ module App.Server
   , parseQuery
   , headersToMap
   , isUnsafePath
+  , sameOriginOk
+  , forbidden
   ) where
 
 import Prelude
@@ -74,7 +76,7 @@ import Data.Int as Int
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe)
-import Data.String (split) as S
+import Data.String (split, stripSuffix) as S
 import Data.String.Common (toLower)
 import Data.String.Pattern (Pattern(..))
 import Data.Tuple (Tuple(..))
@@ -361,6 +363,26 @@ methodNotAllowed =
 internalError :: Response
 internalError =
   { status: 500, headers: securityHeaders <> [ Tuple "Content-Type" "text/plain; charset=utf-8" ] <> [ errorCacheControl ], body: StringBody "Internal Server Error" }
+
+forbidden :: Response
+forbidden =
+  { status: 403, headers: securityHeaders <> [ Tuple "Content-Type" "text/plain; charset=utf-8" ] <> [ errorCacheControl ], body: StringBody "Forbidden" }
+
+-- | ADR-005: mutating requests. `Sec-Fetch-Site: same-origin` is enough.
+-- | If that header is absent, `Origin` must match `baseUrl` when present;
+-- | an absent Origin is not treated as cross-origin (old sameOriginOk).
+sameOriginOk :: String -> Map String String -> Boolean
+sameOriginOk baseUrl headers =
+  case Map.lookup "sec-fetch-site" headers of
+    Just "same-origin" -> true
+    Just _ -> false
+    Nothing ->
+      case Map.lookup "origin" headers of
+        Nothing -> true
+        Just origin -> normalizeOrigin origin == normalizeOrigin baseUrl
+
+normalizeOrigin :: String -> String
+normalizeOrigin url = fromMaybe url (S.stripSuffix (Pattern "/") url)
 
 -- | The kind of redirect, which fixes BOTH the status code and the cache policy.
 -- |

@@ -25,7 +25,7 @@ import App.Form (FormStatus(..), contactFields, newsletterFields)
 import App.Layout.Head (devChrome, escapeJson, productionChrome, renderJsonLd)
 import App.Layout.Page (renderErrorFragment, renderErrorPage, renderDocument, renderDocumentWith)
 import App.Main (pageRenderer)
-import App.Server (RedirectKind(..), Response, cspWithNonce, errorStatusCode, fileResponse, htmlErrorResponse, internalError, methodNotAllowed, notFound, notModified, ok, okText, okTextPublic, okWith, redirect, redirectVary, securityHeaders, tooManyRequests)
+import App.Server (RedirectKind(..), Response, cspWithNonce, errorStatusCode, fileResponse, forbidden, htmlErrorResponse, internalError, methodNotAllowed, notFound, notModified, ok, okText, okTextPublic, okWith, redirect, redirectVary, securityHeaders, tooManyRequests)
 import App.Html (render)
 import Data.Array (find, last, mapMaybe)
 import Data.Content (services)
@@ -147,6 +147,7 @@ spec = do
     it "notFound" $ checkSecurityHeaders notFound
     it "methodNotAllowed" $ checkSecurityHeaders methodNotAllowed
     it "internalError" $ checkSecurityHeaders internalError
+    it "forbidden" $ checkSecurityHeaders forbidden
     it "redirect" $ checkSecurityHeaders (redirect Found "/en")
     it "redirectVary" $ checkSecurityHeaders (redirectVary Found "/en" [])
     it "tooManyRequests" $ checkSecurityHeaders (tooManyRequests 60.0)
@@ -333,7 +334,7 @@ spec = do
       -- inconsistent three ways. tooManyRequests was missed on the first pass
       -- because the list was enumerated by hand rather than taken from the
       -- constructors that actually exist — it is included explicitly here.
-      for_ [ notFound, methodNotAllowed, internalError, tooManyRequests 30.0 ] \r ->
+      for_ [ notFound, methodNotAllowed, internalError, forbidden, tooManyRequests 30.0 ] \r ->
         cacheControl r `shouldEqual` Just "no-store"
     it "the enumerated non-2xx constructors are all no-store" do
       -- NOTE ON SCOPE: this list is hand-maintained. It cannot detect a NEW
@@ -347,6 +348,7 @@ spec = do
           [ notFound
           , methodNotAllowed
           , internalError
+          , forbidden
           , tooManyRequests 30.0
           , redirect SeeOther "/en"
           , redirectVary Found "/en" [ Tuple "Vary" "Accept-Language" ]
@@ -482,9 +484,10 @@ spec = do
 
     it "dev chrome links CSS and turns live-reload on" do
       result <- pageRenderer stubConfig Home En Nothing
-      let html = case result of
-            Right body -> renderDocumentWith devChrome stubConfig.baseUrl "test-nonce-123" En Home body
-            Left _ -> ""
+      let
+        html = case result of
+          Right body -> renderDocumentWith devChrome stubConfig.baseUrl "test-nonce-123" En Home body
+          Left _ -> ""
       html `StrAssert.shouldContain` "href=\"/css/styles.css\""
       html `StrAssert.shouldContain` "EventSource('/dev/live-reload')"
       let err = renderErrorPage devChrome "test-nonce-123" En 404

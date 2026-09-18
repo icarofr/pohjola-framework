@@ -3,15 +3,19 @@ module Test.Policy.GateSpec (gateSpec) where
 
 import Prelude
 
+import App.Bun (readTextFile)
 import App.Theme (themeInitScript, themeDarkName, themeLightName)
 import Data.Array (concat, filter)
+import Data.Either (Either(..))
 import Data.Route (allRoutes, isStaticRoute)
 import Data.String as String
 import Data.String.Pattern (Pattern(..))
+import Data.Foldable (for_)
 import Data.Traversable (for)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Policy.Contract as Policy
+import Policy.Law as Law
 import Test.Policy.Scan as Scan
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldEqual, shouldSatisfy)
@@ -54,6 +58,23 @@ gateSpec =
       files <- liftGlob Policy.featureViewGlobPatterns
       offenders <- Scan.findForbiddenImportsInFiles Policy.forbiddenImportsInFeatureViews files
       offenders `shouldEqual` []
+
+    it "feature views only import allowlisted prefixes" do
+      files <- liftGlob Policy.featureViewImportGlobPatterns
+      offenders <- Scan.findDisallowedImportsInFiles Policy.featureViewImportAllowlist files
+      offenders `shouldEqual` []
+
+    it "a body-reading Main POST calls sameOriginOk" do
+      offenders <- Scan.findMutatingPostMissingOriginGate "src/App/Main.purs"
+      offenders `shouldEqual` []
+
+    it "every Law appears in GUARANTEES.md" do
+      md <- readTextFile "docs/GUARANTEES.md"
+      case md of
+        Left err -> err `shouldEqual` ""
+        Right text ->
+          for_ Law.allLaws \law ->
+            text `StrAssert.shouldContain` (Law.catalogNeedle law)
 
     it "no forbidden calls in feature views" do
       files <- liftGlob Policy.featureViewGlobPatterns

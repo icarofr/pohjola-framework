@@ -8,7 +8,7 @@ module App.Layout.Scripts
 
 import Prelude
 
-import App.Datastar (contentTarget, keepScrollAttr)
+import App.Datastar (contentTarget, datastarEmptyPayload, datastarQueryParam, datastarRequestHeader, keepScrollAttr)
 import App.Html (Html, attr, el, text)
 import App.Theme (themeInitScript)
 
@@ -66,7 +66,13 @@ dsShellRouterScript =
     <> contentTarget
     <> "');if(!m)return;var d=m.dataset;if(d.pageTitle)document.title=d.pageTitle;if(d.pageLang)document.documentElement.lang=d.pageLang;}function afterPatch(keepScroll){sync();if(!keepScroll)window.scrollTo({top:0,left:0,behavior:'instant'})}document.addEventListener('datastar-fetch',function(e){if(e.detail.type!=='finished')return;var el=e.detail.el;var href=el&&el.getAttribute&&el.getAttribute('href');if(!href)return;history.pushState({__ds:true},'',href);afterPatch(el.hasAttribute('"
     <> keepScrollAttr
-    <> "'))});function restore(){var u=new URL(location.href);u.searchParams.set('datastar','{}');fetch(u.href,{headers:{'datastar-request':'true'}}).then(function(r){if(!r.ok)throw new Error('datastar restore '+r.status);return r.text()}).then(function(sse){if(!sse)throw new Error('empty datastar patch');var marker='data: elements ';var i=sse.indexOf(marker);if(i===-1)throw new Error('invalid datastar patch event');var html=sse.slice(i+marker.length).split('\\n\\n')[0];var d=new DOMParser().parseFromString(html,'text/html'),n=d.getElementById('"
+    <> "'))});function restore(){var u=new URL(location.href);u.searchParams.set('"
+    <> datastarQueryParam
+    <> "','"
+    <> datastarEmptyPayload
+    <> "');fetch(u.href,{headers:{'"
+    <> datastarRequestHeader
+    <> "':'true'}}).then(function(r){if(!r.ok)throw new Error('datastar restore '+r.status);return r.text()}).then(function(sse){if(!sse)throw new Error('empty datastar patch');var marker='data: elements ';var i=sse.indexOf(marker);if(i===-1)throw new Error('invalid datastar patch event');var html=sse.slice(i+marker.length).split('\\n\\n')[0];var d=new DOMParser().parseFromString(html,'text/html'),n=d.getElementById('"
     <> contentTarget
     <> "'),o=document.getElementById('"
     <> contentTarget

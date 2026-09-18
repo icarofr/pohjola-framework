@@ -4,16 +4,14 @@
 **Date:** 2026-08-04
 **Amended:** 2026-09-09 — the token requirement is replaced with Lucia's actual header-based hierarchy (`Sec-Fetch-Site` primary, `Origin` secondary); a token is demoted to an explicit, optional legacy-browser fallback, not a requirement. See "Amendment" below before implementing anything from the original Decision as written.
 
+**Note (2026-09-18):** `App.Server.sameOriginOk` implements `Sec-Fetch-Site` primary and `Origin` secondary. This tree's POST handler is `notFound` and does not read a body; the gate requires `sameOriginOk` the day a handler reads `req.body`.
+
 **Note (2026-09-09, retroactive doc review):** the clean-sheet homepage
 rebuild removed `handleContact`/`handleNewsletter` and the `sameOriginOk`
 check that gated them, from `src/App/Main.purs` — the same day as the
 amendment above, so the rest of this file (written when that code still
 existed) describes `sameOriginOk` as current infrastructure to extend.
-It no longer exists: there is currently **no** mutating route and **no**
-partial CSRF layer of either kind, not just a missing primary layer.
-Implementing this ADR now means building the secondary (`Origin`) layer
-from scratch alongside the primary — not extending an existing
-`sameOriginOk` shape, wherever the text below says otherwise.
+The function now lives on `App.Server`; see the 2026-09-18 note.
 
 ## Context
 

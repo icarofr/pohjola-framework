@@ -9,6 +9,8 @@ module Policy.Contract
   , contentFirewallPattern
   , envReadAllowlist
   , featureViewGlobPatterns
+  , featureViewImportAllowlist
+  , featureViewImportGlobPatterns
   , forbiddenCallsInFeatureViews
   , forbiddenImportsInFeatureViews
   , forbiddenInAppUi
@@ -34,7 +36,9 @@ import Data.String.Common (replaceAll)
 -- | Modules that quote policy literals — excluded from content scans.
 policyScanExclusions :: Array String
 policyScanExclusions =
-  [ "src/Policy/Contract.purs" ]
+  [ "src/Policy/Contract.purs"
+  , "src/Policy/Law.purs"
+  ]
 
 -- | Foreign import is allowed only in these modules (ADR-003).
 ffiAllowlist :: Array String
@@ -81,6 +85,23 @@ featureViewGlobPatterns =
   [ "src/App/Features/*/Page.purs"
   , "src/App/Features/*/View.purs"
   , "src/App/Features/*/Components/*.purs"
+  ]
+
+-- | Slot-filling seam only — Page.purs is allowed to import handlers.
+featureViewImportGlobPatterns :: Array String
+featureViewImportGlobPatterns =
+  [ "src/App/Features/*/View.purs"
+  , "src/App/Features/*/Components/*.purs"
+  ]
+
+-- | Positive allowlist: a View may import these prefixes (exact or dotted).
+featureViewImportAllowlist :: Array String
+featureViewImportAllowlist =
+  [ "Prelude"
+  , "App.Form"
+  , "App.Html"
+  , "App.Ui.Templates"
+  , "Data"
   ]
 
 contentFirewallGlobPatterns :: Array String

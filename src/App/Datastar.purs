@@ -37,6 +37,8 @@ module App.Datastar
   , dsOnKeydownEscape
   , dsSetTheme
   , keepScrollAttr
+  , datastarEmptyPayload
+  , datastarQueryParam
   ) where
 
 import Prelude
@@ -185,6 +187,10 @@ dsShowTheme mode = attr "data-show" ("$" <> themeSignalName <> " === '" <> theme
 datastarEmptyPayload :: String
 datastarEmptyPayload = "{}"
 
+-- | Query-param name for the empty payload. Shared with Layout.Scripts.
+datastarQueryParam :: String
+datastarQueryParam = "datastar"
+
 -- | evt.preventDefault() keeps the real href as a working no-JS fallback;
 -- | @get(url) is Datastar's real, verified action syntax (data-star.dev/docs.md).
 -- | Clears the given flag first: DaisyUI's drawer/dropdowns are checkboxes
@@ -231,7 +237,9 @@ dsLangNavGet = dsNavGetClearing DsLangMenuOpen
 -- | `private, max-age=180` cache entry.
 dsPrefetchTrigger :: String
 dsPrefetchTrigger =
-  "var u = new URL(el.href); u.searchParams.set('datastar', '"
+  "var u = new URL(el.href); u.searchParams.set('"
+    <> datastarQueryParam
+    <> "', '"
     <> datastarEmptyPayload
     <> "'); fetch(u.href, {headers: {'"
     <> datastarRequestHeader
