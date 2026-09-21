@@ -128,11 +128,6 @@ dsDropdownItemClasses isActive = dsDropdownItemClass <> if isActive then " btn-a
 dsActiveNavClass :: String -> Boolean -> String
 dsActiveNavClass base isActive = base <> if isActive then " text-primary font-semibold" else ""
 
--- | Daisy footer-title is the uppercase column recipe; Ink is the contrast
--- | token. Daisy's own 60% mute is not a contrast token.
-footerTitleClass :: String
-footerTitleClass = "footer-title opacity-100 " <> TextTone.toneClass TextTone.Ink
-
 maybeStatusBanner :: Lang -> Maybe FormStatus -> Html
 maybeStatusBanner lang = maybe (text "") \status ->
   let
@@ -395,7 +390,7 @@ renderFooter lang route labels =
                 , el "p" [ class_ "text-sm opacity-70" ] [ text labels.copyright ]
                 ]
             , el "nav" []
-                ( [ el "p" [ class_ footerTitleClass ] [ text labels.footerExploreTitle ] ]
+                ( [ el "p" [ class_ TextTone.footerTitleClass ] [ text labels.footerExploreTitle ] ]
                     <>
                       [ footerLink lang route Home labels.homeLabel
                       , footerLink lang route About labels.aboutLabel
@@ -404,7 +399,7 @@ renderFooter lang route labels =
                       ]
                 )
             , el "nav" []
-                [ el "p" [ class_ footerTitleClass ] [ text labels.footerResourcesTitle ]
+                [ el "p" [ class_ TextTone.footerTitleClass ] [ text labels.footerResourcesTitle ]
                 , footerExternalLink bookingUrl labels.githubLabel
                 , footerExternalLink issuesUrl labels.issuesLabel
                 ]
