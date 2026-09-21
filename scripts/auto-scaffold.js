@@ -10,6 +10,15 @@
  */
 
 import { exists, readText, run, writeText } from "./lib/repo.js";
+import {
+  assertI18nLangs,
+  langTagsFromI18n,
+  titleWired,
+  wireCanonicalRoute,
+  wireI18nLangs,
+  wireRouteCodecs,
+  wireRouteTitle,
+} from "./lib/wire-live-shape.js";
 
 const args = process.argv.slice(2);
 let name = "";
@@ -341,41 +350,20 @@ if (wire) {
     }
   );
 
-  // Show instance
+  // Show instance. Stop at `-- ==` or `routeCodec` so a missing separator
+  // comment does not swallow the codecs.
   routeContent = routeContent.replace(
-    /instance showRoute :: Show Route where\s*\n\s*show = case _ of\s*\n([\s\S]*?)(-- ==)/,
-    (match, p1, p2) => {
+    /instance showRoute :: Show Route where\s*\n\s*show = case _ of\s*\n([\s\S]*?)(?=\n(?:-- ==|routeCodec ))/,
+    (match, p1) => {
       if (p1.includes(`${name} ->`)) return match;
-      return `instance showRoute :: Show Route where\n  show = case _ of\n${p1}    ${name} -> "${name}"\n\n${p2}`;
+      return `instance showRoute :: Show Route where\n  show = case _ of\n${p1.trimEnd()}\n    ${name} -> "${name}"\n`;
     }
   );
 
-  // routeCodec En
-  routeContent = routeContent.replace(
-    /routeCodec En = root \$ prefix "en" \$ G\.sum\s*\n\s*\{([\s\S]*?)\}/,
-    (match, p1) => {
-      if (p1.includes(`"${name}":`)) return match;
-      return `routeCodec En = root $ prefix "en" $ G.sum\n  {${p1}  , "${name}": "${slugEn}" / G.noArgs\n  }`;
-    }
-  );
-
-  // routeCodec Fr
-  routeContent = routeContent.replace(
-    /routeCodec Fr = root \$ prefix "fr" \$ G\.sum\s*\n\s*\{([\s\S]*?)\}/,
-    (match, p1) => {
-      if (p1.includes(`"${name}":`)) return match;
-      return `routeCodec Fr = root $ prefix "fr" $ G.sum\n  {${p1}  , "${name}": "${slugFr}" / G.noArgs\n  }`;
-    }
-  );
-
-  // routeCodec Pt
-  routeContent = routeContent.replace(
-    /routeCodec Pt = root \$ prefix "pt" \$ G\.sum\s*\n\s*\{([\s\S]*?)\}/,
-    (match, p1) => {
-      if (p1.includes(`"${name}":`)) return match;
-      return `routeCodec Pt = root $ prefix "pt" $ G.sum\n  {${p1}  , "${name}": "${slugPt}" / G.noArgs\n  }`;
-    }
-  );
+  // Clone whatever codec shape this tree actually has (per-lang prefixes
+  // and/or a unified `I18n.langTag` clause). Do not bake En/Fr/Pt here.
+  routeContent = wireRouteCodecs(routeContent, name, { en: slugEn, fr: slugFr, pt: slugPt });
+  routeContent = wireCanonicalRoute(routeContent, name);
 
   // routeMeta — one arm covers the static/dynamic caching decision
   // (staticRoutes derives from isStatic) and sitemap inclusion.
@@ -422,27 +410,26 @@ if (wire) {
     }
   );
 
-  // routeTitle
-  routeContent = routeContent.replace(
-    /routeTitle lang route =[\s\S]*?case route of\s*\n([\s\S]*?)$/,
-    (match, p1) => {
-      if (p1.includes(`${name} ->`)) return match;
-      return `${match.trimEnd()}\n      ${name} -> d.nav.${lower} <> " - " <> siteTitle\n`;
-    }
-  );
+  // routeTitle — clone whichever live shape this tree has.
+  routeContent = wireRouteTitle(routeContent, name, lower);
 
   await writeText("src/Data/Route.purs", routeContent);
   for (const marker of [
     `| ${name}`,
     `${name} -> "${name}"`,
     `"${name}": "${slugEn}"`,
-    `"${name}": "${slugFr}"`,
-    `"${name}": "${slugPt}"`,
     `${name} -> { isStatic: `,
     `allRoutes = [`,
-    `routeTitle lang route =`,
-    `${name} -> d.nav.${lower}`,
   ]) requireMarker(routeContent, marker, "src/Data/Route.purs", `Route marker ${marker}`);
+  if (slugFr !== slugEn && /routeCodec Fr =/.test(routeContent)) {
+    requireMarker(routeContent, `"${name}": "${slugFr}"`, "src/Data/Route.purs", `Route marker "${name}": "${slugFr}"`);
+  }
+  if (slugPt !== slugEn && /routeCodec Pt =/.test(routeContent)) {
+    requireMarker(routeContent, `"${name}": "${slugPt}"`, "src/Data/Route.purs", `Route marker "${name}": "${slugPt}"`);
+  }
+  if (!titleWired(routeContent, name, lower)) {
+    throw new Error(`Auto-wiring failed: Route marker ${name} -> nav.${lower} was not inserted in src/Data/Route.purs.`);
+  }
   const allRoutesLine = routeContent.match(/allRoutes = \[[^\n]*\n?/);
   if (!allRoutesLine || !allRoutesLine[0].includes(name)) throw new Error(`Auto-wiring failed: allRoutes was not updated in src/Data/Route.purs.`);
   const expectedIsStatic = type === "static" ? "true" : "false";
@@ -528,59 +515,8 @@ if (wire) {
     }
   );
 
-  // 3. en nav
-  i18nContent = i18nContent.replace(
-    /(en\s*::\s*Dictionary\s*\nen\s*=\s*\{\s*nav:\s*\{[\s\S]*?)(\n\s*\})/,
-    (match, p1, p2) => {
-      if (p1.includes(`      , ${lower}:`)) return match;
-      return `${p1}\n      , ${lower}: "${name}"${p2}`;
-    }
-  );
-
-  // 4. en section
-  i18nContent = i18nContent.replace(
-    /(en\s*::\s*Dictionary\s*\nen\s*=\s*\{[\s\S]*?)(\n\s*,\s*common:)/,
-    (match, p1, p2) => {
-      if (p1.includes(`  , ${lower}:\n      { heading:`)) return match;
-      return `${p1}\n  , ${lower}:\n      { heading: "${name}"\n      , body: "Explore our ${name}."\n      }${p2}`;
-    }
-  );
-
-  // 5. fr nav
-  i18nContent = i18nContent.replace(
-    /(fr\s*::\s*Dictionary\s*\nfr\s*=\s*\{\s*nav:\s*\{[\s\S]*?)(\n\s*\})/,
-    (match, p1, p2) => {
-      if (p1.includes(`      , ${lower}:`)) return match;
-      return `${p1}\n      , ${lower}: "${name}"${p2}`;
-    }
-  );
-
-  // 6. fr section
-  i18nContent = i18nContent.replace(
-    /(fr\s*::\s*Dictionary\s*\nfr\s*=\s*\{[\s\S]*?)(\n\s*,\s*common:)/,
-    (match, p1, p2) => {
-      if (p1.includes(`  , ${lower}:\n      { heading:`)) return match;
-      return `${p1}\n  , ${lower}:\n      { heading: "${name}"\n      , body: "Description de ${name}."\n      }${p2}`;
-    }
-  );
-
-  // 7. pt nav
-  i18nContent = i18nContent.replace(
-    /(pt\s*::\s*Dictionary\s*\npt\s*=\s*\{\s*nav:\s*\{[\s\S]*?)(\n\s*\})/,
-    (match, p1, p2) => {
-      if (p1.includes(`      , ${lower}:`)) return match;
-      return `${p1}\n      , ${lower}: "${name}"${p2}`;
-    }
-  );
-
-  // 8. pt section
-  i18nContent = i18nContent.replace(
-    /(pt\s*::\s*Dictionary\s*\npt\s*=\s*\{[\s\S]*?)(\n\s*,\s*common:)/,
-    (match, p1, p2) => {
-      if (p1.includes(`  , ${lower}:\n      { heading:`)) return match;
-      return `${p1}\n  , ${lower}:\n      { heading: "${name}"\n      , body: "Explore o ${name}."\n      }${p2}`;
-    }
-  );
+  const liveLangs = langTagsFromI18n(i18nContent);
+  i18nContent = wireI18nLangs(i18nContent, name, lower, liveLangs);
 
   const headPreview = await readText("src/App/Layout/Head.purs");
   const headUsesSeoDescriptions =
@@ -617,14 +553,7 @@ if (wire) {
     `      , ${lower}: "${name}"`,
     `  , ${lower}:\n      { heading: "${name}"`,
   ]) requireMarker(i18nContent, marker, "src/Data/I18n.purs", `I18n field ${marker}`);
-  // The same field names occur in each language dictionary; verify each one
-  // in its own section rather than accepting an English-only replacement.
-  for (const lang of ["en", "fr", "pt"]) {
-    const section = i18nContent.match(new RegExp(`${lang}\\s*::\\s*Dictionary\\s*\\n${lang}\\s*=([\\s\\S]*?)(?=\\n\\n(?:en|fr|pt|dict)\\s*::|$)`));
-    if (!section || !section[1].includes(`  , ${lower}:`) || !section[1].includes(`      , ${lower}:`)) {
-      throw new Error(`Auto-wiring failed: ${lang} I18n fields were not inserted in src/Data/I18n.purs.`);
-    }
-  }
+  assertI18nLangs(i18nContent, lower, liveLangs);
   console.log("  ✓ Updated src/Data/I18n.purs");
 
   // D. Update src/App/Layout/Head.purs (seoDescription)

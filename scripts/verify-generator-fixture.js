@@ -12,6 +12,7 @@ import {
   rmRecursive,
   run,
 } from "./lib/repo.js";
+import { langTagsFromI18n, minCodecInsertions } from "./lib/wire-live-shape.js";
 
 function assertIncludes(haystack, needle, label) {
   if (!haystack.includes(needle)) {
@@ -58,29 +59,36 @@ async function runFixture(cwd, name, type, slug) {
   }
 
   const codecCount = route.split(`"${name}": "${slug}"`).length - 1;
-  if (codecCount < 3) {
-    console.error(`Missing Route codec insertion(s): ${name} (expected 3 langs, got ${codecCount})`);
+  const minCodecs = minCodecInsertions(route);
+  if (codecCount < minCodecs) {
+    console.error(`Missing Route codec insertion(s): ${name} (expected at least ${minCodecs}, got ${codecCount})`);
     process.exit(1);
   }
 
   // routeMeta's isStatic drives handleRoute/fragmentHtml (both blanket
   // if/else, no per-route case) as well as staticRoutes — one place to get
-  // right instead of three.
-  assertIncludes(
-    route,
-    `${name} -> { isStatic: ${type === "data" ? "false" : "true"}, inSitemap: true }`,
-    `Route isStatic/inSitemap (${name})`,
-  );
+  // right instead of three. Clone-from-live may carry other fields from the
+  // last arm, so do not bake `inSitemap: true` into the needle.
+  const expectedIsStatic = type === "data" ? "false" : "true";
+  if (!new RegExp(`${name} -> \\{[^}]*isStatic: ${expectedIsStatic}`).test(route)) {
+    console.error(`Missing Route isStatic (${name}): expected isStatic: ${expectedIsStatic}`);
+    process.exit(1);
+  }
 
-  assertIncludes(route, `${name} -> d.nav.${lower}`, `Route title (${name})`);
+  assertIncludesAny(
+    route,
+    [`${name} -> d.nav.${lower}`, `${name} -> (dict lang).nav.${lower}`],
+    `Route title (${name})`,
+  );
   assertIncludes(main, `${name} ->`, `Main insertion (${name})`);
   assertIncludes(main, `${name}.`, `Main renderer (${name})`);
   assertIncludes(i18n, `${lower} :: String`, `I18n type (${name})`);
   assertIncludes(i18n, `${lower}: "${name}"`, `I18n English (${name})`);
 
   const i18nCount = i18n.split(`${lower}: "${name}"`).length - 1;
-  if (i18nCount < 3) {
-    console.error(`Missing I18n language insertion(s): ${name} (expected 3 langs, got ${i18nCount})`);
+  const langs = langTagsFromI18n(i18n);
+  if (i18nCount < langs.length) {
+    console.error(`Missing I18n language insertion(s): ${name} (expected ${langs.length} langs, got ${i18nCount})`);
     process.exit(1);
   }
 
