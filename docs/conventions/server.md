@@ -53,10 +53,11 @@ HTML, so the claim was false in exactly the case it was broadest about.
 | Datastar SSE patches (error) | `no-store` (still HTTP 200 — ADR-015) | `sseNoStoreEventResponse` |
 | Errors (4xx/5xx full documents) | `no-store` | `htmlErrorResponse`, `notFound`, `methodNotAllowed`, `internalError`, `tooManyRequests` (`errorCacheControl`) |
 | Redirects | `RedirectKind` derives `public, max-age=3600` for 301/308 and `no-store` for 302/303/307 | `redirect`, `redirectVary` |
-| robots.txt, sitemap.xml | `public, max-age=86400` | `okTextPublic` in `Main.purs` |
+| robots.txt | `no-store` | `okTextRobots` in `Main.purs` |
+| sitemap.xml | `public, max-age=86400` | `okTextPublic` in `Main.purs` |
 | healthz | none — no nonce, genuinely public | `okText` |
-| Static files (Bun `routes: { dir }`) | `public, max-age=31536000` | `App.ServerBun.js` |
-| Static files (`fileResponse`, tests) | `public, max-age=31536000` | `fileResponse` |
+| Static files (Bun.serve routes + `Bun.file`) | `public, max-age=31536000, immutable` plus `CDN-Cache-Control` and `Cloudflare-CDN-Cache-Control` with the same value | `App.ServerBun.js` |
+| Static files (`fileResponse`, tests) | same three headers | `fileResponse` |
 
 The `RedirectKind` type enforces the status/policy pairing. For 301/308,
 callers must still supply a request-independent location; that semantic property

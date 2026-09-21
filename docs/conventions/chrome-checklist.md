@@ -67,6 +67,8 @@ Never duplicate this active-state logic in `DatastarShell` — extend `dsActiveN
 
 Never hand-roll a second dropdown width or item class in `DatastarShell` — change `dsDropdownPanelClass` / `dsDropdownItemClass` in `App.DatastarShell` so both menus move together.
 
+The hamburger `<label>` names the checkbox via `for`; do not put `aria-label` on the label as well. Footer column titles use `footer-title opacity-100` plus `TextTone.Ink` — Daisy's 60% mute is not a contrast token.
+
 ## Pre-ship checks
 
 - [ ] Changes only in `DatastarShell.purs` (or `App.Datastar` if adding a seam).

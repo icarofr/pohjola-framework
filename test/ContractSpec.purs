@@ -25,7 +25,7 @@ import App.Form (FormStatus(..), contactFields, newsletterFields)
 import App.Layout.Head (devChrome, escapeJson, productionChrome, renderJsonLd)
 import App.Layout.Page (renderErrorFragment, renderErrorPage, renderDocument, renderDocumentWith)
 import App.Main (pageRenderer)
-import App.Server (RedirectKind(..), Response, cspWithNonce, errorStatusCode, fileResponse, forbidden, htmlErrorResponse, internalError, methodNotAllowed, notFound, notModified, ok, okText, okTextPublic, okWith, redirect, redirectVary, securityHeaders, tooManyRequests)
+import App.Server (RedirectKind(..), Response, cspWithNonce, errorStatusCode, fileResponse, forbidden, htmlErrorResponse, internalError, methodNotAllowed, notFound, notModified, ok, okText, okTextPublic, okTextRobots, okWith, redirect, redirectVary, securityHeaders, tooManyRequests)
 import App.Html (render)
 import Data.Array (find, last, mapMaybe)
 import Data.Content (services)
@@ -143,6 +143,7 @@ spec = do
     it "okWith" $ checkSecurityHeaders (okWith [] "body")
     it "okText" $ checkSecurityHeaders (okText "text/plain; charset=utf-8" "body")
     it "okTextPublic" $ checkSecurityHeaders (okTextPublic "text/plain; charset=utf-8" "body")
+    it "okTextRobots" $ checkSecurityHeaders (okTextRobots "text/plain; charset=utf-8" "body")
     it "htmlErrorResponse" $ checkSecurityHeaders (htmlErrorResponse "body" [] (errorStatusCode 500))
     it "notFound" $ checkSecurityHeaders notFound
     it "methodNotAllowed" $ checkSecurityHeaders methodNotAllowed
@@ -155,6 +156,11 @@ spec = do
     it "fileResponse" do
       let buf = ""
       checkSecurityHeaders (fileResponse "text/css" buf)
+    it "fileResponse is year-long immutable" do
+      let resp = fileResponse "text/css" ""
+      cacheControl resp `shouldEqual` Just "public, max-age=31536000, immutable"
+      lastHeaderValue "CDN-Cache-Control" resp `shouldEqual` Just "public, max-age=31536000, immutable"
+      lastHeaderValue "Cloudflare-CDN-Cache-Control" resp `shouldEqual` Just "public, max-age=31536000, immutable"
 
   describe "CSP exact value" do
     it "cspWithNonce produces the pinned policy with nonce" do
@@ -425,9 +431,11 @@ spec = do
     -- leaving CSP structurally intact but hollow. `private` is the guard.
     it "okWith carries Cache-Control: private" do
       cacheControl (okWith [] "<p>x</p>") `shouldEqual` Just "private, max-age=10"
-    it "robots.txt and sitemap.xml are publicly cacheable" do
+    it "sitemap.xml is publicly cacheable" do
       -- okTextPublic serves nonce-free public documents with shared-cache policy.
       cacheControl (okTextPublic "text/plain" "User-agent: *") `shouldEqual` Just "public, max-age=86400"
+    it "robots.txt is no-store so a Disallow latch cannot stick in a CDN HIT" do
+      cacheControl (okTextRobots "text/plain" "User-agent: *") `shouldEqual` Just "no-store"
 
   describe "nav link chrome classes" do
     it "desktop active uses the brand color, not a neutral fill" do

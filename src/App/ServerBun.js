@@ -4,8 +4,13 @@
 
 import { watch } from "node:fs";
 
-const ASSET_CACHE = "public, max-age=31536000";
+const ASSET_CACHE = "public, max-age=31536000, immutable";
 const DEV_ASSET_CACHE = "no-store";
+const ASSET_HEADERS = {
+  "Cache-Control": ASSET_CACHE,
+  "CDN-Cache-Control": ASSET_CACHE,
+  "Cloudflare-CDN-Cache-Control": ASSET_CACHE,
+};
 const encoder = new TextEncoder();
 const liveReloadClients = new Set();
 
@@ -17,8 +22,31 @@ function shouldReadBody(method) {
   return method === "POST" || method === "PUT" || method === "PATCH";
 }
 
-function cachedDir(dir) {
-  return { dir, headers: { "Cache-Control": ASSET_CACHE } };
+function isUnsafeRel(pathname) {
+  return pathname.includes("..") || pathname.includes("\\") || pathname.includes("\0");
+}
+
+// Bun `{ dir, headers }` currently ignores `headers` (verified: dir responses
+// have ETag/Last-Modified and no Cache-Control). Wrap Bun.file so the Guest
+// still gets zero-copy sendfile with the year-long policy.
+async function cachedAsset(staticRoot, req) {
+  const pathname = new URL(req.url).pathname;
+  if (isUnsafeRel(pathname)) {
+    return new Response("Bad Request", { status: 400 });
+  }
+  const file = Bun.file(staticRoot + pathname);
+  if (!(await file.exists())) {
+    return new Response("Not Found", { status: 404 });
+  }
+  const lastModified = new Date(file.lastModified).toUTCString();
+  const etag = `W/"${file.size.toString(16)}-${Math.trunc(file.lastModified).toString(16)}"`;
+  return new Response(file, {
+    headers: {
+      ...ASSET_HEADERS,
+      "Last-Modified": lastModified,
+      ETag: etag,
+    },
+  });
 }
 
 function devStaticPath(pathname) {
@@ -252,10 +280,10 @@ export function serveImpl(port) {
           routes: isPohjolaDev()
             ? {}
             : {
-              "/assets/*": cachedDir(staticRoot + "/assets"),
-              "/css/*": cachedDir(staticRoot + "/css"),
-              "/images/*": cachedDir(staticRoot + "/images"),
-              "/favicon.svg": Bun.file(staticRoot + "/favicon.svg"),
+              "/assets/*": (req) => cachedAsset(staticRoot, req),
+              "/css/*": (req) => cachedAsset(staticRoot, req),
+              "/images/*": (req) => cachedAsset(staticRoot, req),
+              "/favicon.svg": (req) => cachedAsset(staticRoot, req),
             },
           fetch: makeFetch(handler, staticRoot),
         });

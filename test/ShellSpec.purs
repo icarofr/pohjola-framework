@@ -24,14 +24,19 @@ spec = do
       html `shouldContain` "main class=\"flex-1\""
     it "footer column titles are not headings" do
       -- DaisyUI samples use h6.footer-title, which skips heading levels.
+      -- Daisy's 60% mute is not a contrast token: Ink + opacity-100.
       let html = render (Home.renderHome En Nothing)
-      html `shouldContain` "<p class=\"footer-title\">"
+      html `shouldContain` "<p class=\"footer-title opacity-100 text-base-content\">"
       html `shouldNotContain` "<h6"
     it "drawer toggle checkbox has an accessible name" do
       let html = render (Home.renderHome En Nothing)
       html
         `shouldContain`
           "class=\"drawer-toggle\" id=\"site-drawer\" data-bind=\"_drawerOpen\" aria-label=\"Open menu\""
+    it "hamburger label does not carry a second accessible name" do
+      let html = render (Home.renderHome En Nothing)
+      html `shouldContain` "for=\"site-drawer\" class=\"btn btn-square btn-ghost drawer-button\""
+      html `shouldNotContain` "drawer-button\" aria-label"
     it "marks the current route in desktop nav with the brand color" do
       let html = render (Home.renderHome En Nothing)
       html

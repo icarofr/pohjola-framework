@@ -54,7 +54,7 @@ handleGet :: Config -> PageCache -> String -> Map String String -> Map String St
 handleGet cfg cache nonce headers query path = case path of
   [] -> redirectRoot headers
   [ "healthz" ] -> pure $ Server.okText "text/plain" "ok"
-  [ "robots.txt" ] -> pure $ Server.okTextPublic "text/plain; charset=utf-8" (renderRobots cfg.baseUrl)
+  [ "robots.txt" ] -> pure $ Server.okTextRobots "text/plain; charset=utf-8" (renderRobots cfg.baseUrl)
   [ "sitemap.xml" ] -> pure $ Server.okTextPublic "application/xml; charset=utf-8" (renderSitemap cfg.baseUrl)
   _ -> case parseRoute path of
     Just { lang, route } -> handleRoute { cfg, cache, nonce, lang, route, headers, query }

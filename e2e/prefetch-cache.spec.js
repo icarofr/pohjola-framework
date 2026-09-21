@@ -58,25 +58,27 @@ test("HTML responses are private and carry no validators (W6)", async ({
   }
 });
 
-test("public documents are shared-cacheable", async ({ request }) => {
-  // robots.txt and sitemap.xml are static files with long public cache.
-  for (const path of ["/robots.txt", "/sitemap.xml"]) {
-    const res = await request.get(path);
-    expect(res.status()).toBe(200);
-    expect(res.headers()["cache-control"], `${path}`).toBe(
-      "public, max-age=86400",
-    );
-  }
+test("sitemap is shared-cacheable; robots is no-store", async ({ request }) => {
+  const sitemap = await request.get("/sitemap.xml");
+  expect(sitemap.status()).toBe(200);
+  expect(sitemap.headers()["cache-control"]).toBe("public, max-age=86400");
+  const robots = await request.get("/robots.txt");
+  expect(robots.status()).toBe(200);
+  expect(robots.headers()["cache-control"]).toBe("no-store");
 });
 
-test("static assets DO carry validators (Bun routes:{dir} supplies them)", async ({
+test("static assets carry year-long immutable cache headers", async ({
   request,
 }) => {
-  // The contrast that shows the HTML asymmetry is accidental, not policy.
   const res = await request.get("/css/styles.css");
   expect(res.status()).toBe(200);
   const h = res.headers();
   expect(h["etag"] ?? h["last-modified"]).toBeTruthy();
+  expect(h["cache-control"]).toBe("public, max-age=31536000, immutable");
+  expect(h["cdn-cache-control"]).toBe("public, max-age=31536000, immutable");
+  expect(h["cloudflare-cdn-cache-control"]).toBe(
+    "public, max-age=31536000, immutable",
+  );
 });
 
 test("patch signal matrix — header present or absent (W2)", async ({

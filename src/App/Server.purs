@@ -33,6 +33,7 @@ module App.Server
   , okWithNoStore
   , okText
   , okTextPublic
+  , okTextRobots
   , okTextWith
   , htmlErrorResponse
   , notFound
@@ -225,9 +226,32 @@ htmlCacheControl = Tuple "Cache-Control" "private, max-age=10"
 patchCacheControl :: Tuple String String
 patchCacheControl = Tuple "Cache-Control" "private, max-age=180"
 
--- | Nonce-free public documents (robots.txt, sitemap.xml). Shared-cacheable.
+-- | Nonce-free public documents (sitemap.xml). Shared-cacheable for a day.
+-- | robots.txt is *not* this policy: a Disallow latch must not survive a day
+-- | in a CDN HIT (see `okTextRobots`).
 publicDocumentCacheControl :: Tuple String String
 publicDocumentCacheControl = Tuple "Cache-Control" "public, max-age=86400"
+
+-- | robots.txt — index/Disallow is a safety latch, not a static brochure.
+robotsCacheControl :: Tuple String String
+robotsCacheControl = Tuple "Cache-Control" "no-store"
+
+-- | Static files (images, fonts, JS, CSS). Same policy in `fileResponse`
+-- | and Bun.serve routes (`App.ServerBun.js`). `{ dir, headers }` does not
+-- | emit Cache-Control on current Bun, so the FFI wraps `Bun.file`.
+-- | `CDN-Cache-Control` (RFC 9213) and Cloudflare's twin keep the edge on
+-- | origin TTL when Browser Cache TTL is Respect Existing Headers.
+assetCachePolicy :: String
+assetCachePolicy = "public, max-age=31536000, immutable"
+
+assetCacheControl :: Tuple String String
+assetCacheControl = Tuple "Cache-Control" assetCachePolicy
+
+cdnAssetCacheControl :: Tuple String String
+cdnAssetCacheControl = Tuple "CDN-Cache-Control" assetCachePolicy
+
+cloudflareCdnAssetCacheControl :: Tuple String String
+cloudflareCdnAssetCacheControl = Tuple "Cloudflare-CDN-Cache-Control" assetCachePolicy
 
 ok :: String -> Response
 ok body = okWith [] body
@@ -279,6 +303,14 @@ okTextPublic :: String -> String -> Response
 okTextPublic contentType body =
   { status: 200
   , headers: securityHeaders <> [ Tuple "Content-Type" contentType ] <> [ publicDocumentCacheControl ]
+  , body: StringBody body
+  }
+
+-- | robots.txt. `no-store` so a stale Disallow cannot ride a day-long CDN HIT.
+okTextRobots :: String -> String -> Response
+okTextRobots contentType body =
+  { status: 200
+  , headers: securityHeaders <> [ Tuple "Content-Type" contentType ] <> [ robotsCacheControl ]
   , body: StringBody body
   }
 
@@ -475,7 +507,9 @@ fileResponse contentType body =
   { status: 200
   , headers: securityHeaders <>
       [ Tuple "Content-Type" contentType
-      , Tuple "Cache-Control" "public, max-age=31536000"
+      , assetCacheControl
+      , cdnAssetCacheControl
+      , cloudflareCdnAssetCacheControl
       ]
   , body: StringBody body
   }

@@ -56,3 +56,8 @@
     animation-duration: 0.01ms !important;
   }
 }
+
+/* Daisy footer-title is 60% mute; column titles need Ink contrast. */
+.footer-title {
+  opacity: 1;
+}

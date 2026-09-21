@@ -43,6 +43,7 @@ import App.Theme (ThemeMode(..))
 import App.Ui.Alert (AlertVariant(..), alert)
 import App.Ui.Container as Container
 import App.Ui.Templates.Contract as Contract
+import App.Ui.TextTone as TextTone
 import Data.Content (bookingUrl, issuesUrl)
 import Data.I18n (Lang(..), dict, langTag)
 import Data.Maybe (Maybe(..), maybe)
@@ -126,6 +127,11 @@ dsDropdownItemClasses isActive = dsDropdownItemClass <> if isActive then " btn-a
 -- | instead — see footerLink.
 dsActiveNavClass :: String -> Boolean -> String
 dsActiveNavClass base isActive = base <> if isActive then " text-primary font-semibold" else ""
+
+-- | Daisy footer-title is the uppercase column recipe; Ink is the contrast
+-- | token. Daisy's own 60% mute is not a contrast token.
+footerTitleClass :: String
+footerTitleClass = "footer-title opacity-100 " <> TextTone.toneClass TextTone.Ink
 
 maybeStatusBanner :: Lang -> Maybe FormStatus -> Html
 maybeStatusBanner lang = maybe (text "") \status ->
@@ -228,7 +234,7 @@ renderHeader lang route labels =
                 ]
             , el "div" [ class_ "navbar-end md:hidden" ]
                 [ el "label"
-                    [ for_ siteDrawerId, class_ "btn btn-square btn-ghost drawer-button", ariaLabel labels.menuLabel ]
+                    [ for_ siteDrawerId, class_ "btn btn-square btn-ghost drawer-button" ]
                     [ hamburgerIcon ]
                 ]
             ]
@@ -372,9 +378,9 @@ mobileNavLink lang current target label =
 -- | (GitHub source + issues) — matching App.Ui.Templates.SiteShell's footer
 -- | exactly, all four routes now that every route is ported.
 -- |
--- | Column labels use `p.footer-title`, not DaisyUI's sample `h6`. The class
--- | is the visual part; an h6 skips heading levels (axe heading-order)
--- | whenever the page outline has not reached h6.
+-- | Column labels use `p.footer-title` plus TextTone.Ink, not DaisyUI's
+-- | sample `h6`. The class is the visual part; an h6 skips heading levels
+-- | (axe heading-order) whenever the page outline has not reached h6.
 renderFooter :: Lang -> Route -> ShellLabels -> Html
 renderFooter lang route labels =
   el "footer"
@@ -389,7 +395,7 @@ renderFooter lang route labels =
                 , el "p" [ class_ "text-sm opacity-70" ] [ text labels.copyright ]
                 ]
             , el "nav" []
-                ( [ el "p" [ class_ "footer-title" ] [ text labels.footerExploreTitle ] ]
+                ( [ el "p" [ class_ footerTitleClass ] [ text labels.footerExploreTitle ] ]
                     <>
                       [ footerLink lang route Home labels.homeLabel
                       , footerLink lang route About labels.aboutLabel
@@ -398,7 +404,7 @@ renderFooter lang route labels =
                       ]
                 )
             , el "nav" []
-                [ el "p" [ class_ "footer-title" ] [ text labels.footerResourcesTitle ]
+                [ el "p" [ class_ footerTitleClass ] [ text labels.footerResourcesTitle ]
                 , footerExternalLink bookingUrl labels.githubLabel
                 , footerExternalLink issuesUrl labels.issuesLabel
                 ]
