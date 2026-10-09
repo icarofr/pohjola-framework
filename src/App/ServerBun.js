@@ -1,6 +1,11 @@
 // App.ServerBun.js
 // Bun.serve binding. Marshalling + ReadableStream lifecycle only; app logic via PS callbacks.
 // Live-reload SSE is the same ReadableStream exception as streamResponseImpl (ADR-003).
+// cachedAsset/isUnsafeRel/devStaticPath are ADR-003's third named exception:
+// Bun.serve's routes table needs a plain JS function per path, and
+// Bun.file/Response/ETag construction have nothing on the PS side to decode
+// into. isUnsafeRel is the one real decision in there — called from both,
+// not duplicated.
 
 import { watch } from "node:fs";
 
@@ -50,7 +55,7 @@ async function cachedAsset(staticRoot, req) {
 }
 
 function devStaticPath(pathname) {
-  if (pathname.includes("..") || pathname.includes("\\") || pathname.includes("\0")) {
+  if (isUnsafeRel(pathname)) {
     return null;
   }
   if (pathname === "/favicon.svg") return pathname;

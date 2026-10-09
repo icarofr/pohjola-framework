@@ -24,7 +24,14 @@ All FFI follows `docs/ffi-taming-guide.md`:
    callbacks, because the Bun `ReadableStream` API requires the producer logic
    to run inside the JS `start` callback. The same exception covers the
    `POHJOLA_DEV` live-reload SSE stream in that file — a held `ReadableStream`,
-   not a fifth FFI module.)
+   not a fifth FFI module. A third exception covers `cachedAsset`/
+   `isUnsafeRel`/`devStaticPath`, also in `ServerBun.js`: `Bun.serve`'s
+   `routes` table requires a plain JS function value per path, and
+   `Bun.file`/`Response`/`ETag` construction are native JS-object operations
+   with nothing on the PS side to decode into. `isUnsafeRel`'s path-traversal
+   check is the one piece of real decision logic here — narrow,
+   single-purpose, called from both functions rather than duplicated, not the
+   open-ended app logic this rule guards against.)
 3. Decode at the boundary (`Foreign` / `open-foreign-generic`); return
    `Aff (Either AppError a)`. Never throw across the boundary. One named
    exception exists — primitives produced by `Bun.serve` itself — bounded in
