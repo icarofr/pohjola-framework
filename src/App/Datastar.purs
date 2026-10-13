@@ -260,6 +260,15 @@ dsPrefetchTrigger =
 -- | so a hover-capable visitor landing on a page that had already
 -- | link-prefetched a route paid for that route twice, in two different
 -- | response shapes, the moment they hovered it.
+-- |
+-- | The entire payoff here -- the click reusing this fetch's cache entry --
+-- | depends on the live server's `App.Server.patchCacheControl`
+-- | (`private, max-age=180`) plus a matching ETag; nothing in this module's
+-- | types says so. `App.Cli.ExportStatic` reuses this same chrome and nav
+-- | markup on a static host with no such cooperation, so there this still
+-- | fires (harmless) but warms nothing reusable -- a known degradation, not
+-- | a bug to fix in this module; see ExportStatic's own module doc for the
+-- | deployment-target tradeoffs it accepts.
 dsPrefetch :: Array Attr
 dsPrefetch =
   [ attr "data-on:mouseenter" dsPrefetchTrigger
