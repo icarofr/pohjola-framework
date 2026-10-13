@@ -14,7 +14,30 @@
 -- | `datastar-patch-elements` fragment takes, and outer-mode patching
 -- | matches top-level `<html>`/`<head>`/`<body>` tags to their real DOM
 -- | node). So the click-morphs-instead-of-reloading feel keeps working
--- | without any live server cooperation.
+-- | without any live server cooperation. Browser back/forward shares this:
+-- | the hand-rolled shell-router's popstate handler
+-- | (`App.Layout.Scripts.dsShellRouterScript`) checks the response's
+-- | `Content-Type` to tell a static host's `text/html` document apart from
+-- | the live server's `text/event-stream` patch, then pulls `#content` out
+-- | of whichever shape it got -- the same signal Datastar's own client uses
+-- | for forward clicks -- so history traversal morphs here too, not just
+-- | real navigations.
+-- |
+-- | Known, accepted gap: `robots.txt` loses the live server's `no-store`
+-- | safety latch (`App.Server.okTextRobots` — an operator-facing emergency
+-- | Disallow must propagate immediately, never ride a cached response) once
+-- | baked into a static file here. Changing it after export means a fresh
+-- | `make export-static` plus a real redeploy, not an instant header flip.
+-- | A static host was never going to offer a dynamic no-store response, so
+-- | this is named rather than worked around.
+-- |
+-- | Known, accepted gap: `App.Datastar.dsPrefetch`'s hover/touch prefetch
+-- | exists to warm a cache entry the click's own fetch can reuse, but that
+-- | payoff depends on the live server's `private, max-age=180` + ETag
+-- | (`App.Server.patchCacheControl`) — a static host has no such
+-- | cooperation, so the prefetch still fires here (harmless) but warms
+-- | nothing the click goes on to reuse. See `dsPrefetch`'s own doc for the
+-- | live-server-only contract this degrades from.
 -- |
 -- | Known, accepted gap: the CSP nonce is generated once per export run
 -- | and baked identically into every file, not freshly per request the way

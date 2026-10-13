@@ -52,15 +52,26 @@ renderHeadScript nonce = case _ of
 -- |
 -- | Back/forward: Datastar has no history awareness at all, so popstate is
 -- | wholly hand-rolled here: re-fetch as a Datastar request with the same
--- | `?datastar={}` identity hover and `@get({payload: {}})` use, parse the
--- | "data: elements " payload out of the unparsed SSE body, and replace
--- | #content wholesale (a full replace, not Datastar's own morph — simpler
--- | to hand-roll correctly than reimplementing morphing by hand). A non-ok
--- | response (including HTTP 304, whose body is empty), an empty body, or
--- | an unparseable patch each throw; `.catch()` falls back to
--- | `location.reload()` of the URL the browser already committed on this
--- | history traversal, as a real document instead of a silently unhandled
--- | rejection. This handler does not pushState.
+-- | `?datastar={}` identity hover and `@get({payload: {}})` use. The live
+-- | server answers with an SSE patch (`Content-Type: text/event-stream`,
+-- | "data: elements " framing — see App.Server.sseEventResponseMatching); a
+-- | static export (App.Cli.ExportStatic) has no server to frame one, so the
+-- | exact same request there just returns the prerendered document itself
+-- | (`text/html`). Branch on `Content-Type`, not a substring search: the
+-- | marker text is itself part of this very script's own source, which
+-- | lives inline in every exported page, so a plain indexOf search for
+-- | "data: elements " can find that coincidental occurrence instead of real
+-- | SSE framing and silently corrupt the parse — confirmed by reproducing
+-- | it against a real static export before Content-Type sniffing replaced
+-- | the naive search. DOMParser parses a full document fine either way;
+-- | #content is pulled out of it the same way once the shape is known.
+-- | Replaces #content wholesale (a full replace, not Datastar's own morph —
+-- | simpler to hand-roll correctly than reimplementing morphing by hand). A
+-- | non-ok response (including HTTP 304, whose body is empty), an empty
+-- | body, or a response with no #content at all each throw; `.catch()`
+-- | falls back to `location.reload()` of the URL the browser already
+-- | committed on this history traversal, as a real document instead of a
+-- | silently unhandled rejection. This handler does not pushState.
 -- |
 -- | Scroll: native documents and hx-boost restore Y on history traversal;
 -- | forward nav still goes to top. Each history entry holds its own
@@ -85,7 +96,7 @@ dsShellRouterScript =
     <> datastarEmptyPayload
     <> "');fetch(u.href,{headers:{'"
     <> datastarRequestHeader
-    <> "':'true'}}).then(function(r){if(!r.ok)throw new Error('datastar restore '+r.status);return r.text()}).then(function(sse){if(!sse)throw new Error('empty datastar patch');var marker='data: elements ';var i=sse.indexOf(marker);if(i===-1)throw new Error('invalid datastar patch event');var html=sse.slice(i+marker.length).split('\\n\\n')[0];var d=new DOMParser().parseFromString(html,'text/html'),n=d.getElementById('"
+    <> "':'true'}}).then(function(r){if(!r.ok)throw new Error('datastar restore '+r.status);var isSse=(r.headers.get('content-type')||'').indexOf('event-stream')!==-1;return r.text().then(function(t){return [t,isSse]})}).then(function(parts){var sse=parts[0],isSse=parts[1];if(!sse)throw new Error('empty datastar patch');var html;if(isSse){var marker='data: elements ';var i=sse.indexOf(marker);if(i===-1)throw new Error('invalid datastar patch event');html=sse.slice(i+marker.length).split('\\n\\n')[0]}else{html=sse}var d=new DOMParser().parseFromString(html,'text/html'),n=d.getElementById('"
     <> contentTarget
     <> "'),o=document.getElementById('"
     <> contentTarget
