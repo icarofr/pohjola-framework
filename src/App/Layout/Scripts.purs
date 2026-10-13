@@ -96,7 +96,7 @@ dsShellRouterScript =
     <> datastarEmptyPayload
     <> "');fetch(u.href,{headers:{'"
     <> datastarRequestHeader
-    <> "':'true'}}).then(function(r){if(!r.ok)throw new Error('datastar restore '+r.status);var isSse=(r.headers.get('content-type')||'').indexOf('event-stream')!==-1;return r.text().then(function(t){return [t,isSse]})}).then(function(parts){var sse=parts[0],isSse=parts[1];if(!sse)throw new Error('empty datastar patch');var html;if(isSse){var marker='data: elements ';var i=sse.indexOf(marker);if(i===-1)throw new Error('invalid datastar patch event');html=sse.slice(i+marker.length).split('\\n\\n')[0]}else{html=sse}var d=new DOMParser().parseFromString(html,'text/html'),n=d.getElementById('"
+    <> "':'true'}}).then(function(r){if(!r.ok)throw new Error('datastar restore '+r.status);var isSse=(r.headers.get('content-type')||'').indexOf('event-stream')!==-1;return r.text().then(function(t){return {sse:t,isSse:isSse}})}).then(function(parts){var sse=parts.sse,isSse=parts.isSse;if(!sse)throw new Error('empty datastar patch');var html;if(isSse){var marker='data: elements ';var i=sse.indexOf(marker);if(i===-1)throw new Error('invalid datastar patch event');html=sse.slice(i+marker.length).split('\\n\\n')[0]}else{html=sse}var d=new DOMParser().parseFromString(html,'text/html'),n=d.getElementById('"
     <> contentTarget
     <> "'),o=document.getElementById('"
     <> contentTarget
